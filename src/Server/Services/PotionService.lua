@@ -267,6 +267,31 @@ function PotionService:EnsureCharge(player, meterId, minCharge)
     return true
 end
 
+-- One sip of an existing brew without consuming a flask or starting the
+-- drink lock. Same BrewMeter.sip + _applyMeter path as Drink, so stacked
+-- landings diminish toward the cap the same way extra sips do.
+function PotionService:SipBrew(player, potionId)
+    if not (player and player.Parent) then
+        return nil, "no_player"
+    end
+    local pcfg = self:_potionCfg(potionId)
+    if not pcfg then
+        return nil, "unknown_potion"
+    end
+    local meterId = pcfg.meter
+    local m = self:_meterCfg(meterId)
+    if not m or m.target == "enemy" then
+        return nil, "bad_meter"
+    end
+    local uid = player.UserId
+    self._meters[uid] = self._meters[uid] or {}
+    local charge = BrewMeter.sip(self._meters[uid][meterId] or 0, pcfg.sip_fraction)
+    self._meters[uid][meterId] = charge
+    self:_applyMeter(player, meterId, charge)
+    self:_push(player)
+    return { ok = true, charge = charge, meter = meterId }
+end
+
 -- Apply one enemy meter through the canonical additive vulnerability writer. Charge belongs to the
 -- enemy, not the thrower: several vials top up the same target and the meter drains on that target.
 function PotionService:_applyEnemyMeter(target, meterId, charge)

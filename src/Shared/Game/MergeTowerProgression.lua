@@ -31,7 +31,7 @@ local FAMILIES = {
         id = "rage",
         name = "Rage Cannon",
         role = "Fury",
-        description = "A fury piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A fury piece on the pad. Landing drops a Berserk circle at the impact. Tiers are size-only until distinct meshes land.",
         previewAssetIds = {
             "100102545353592",
             "100102545353592",
@@ -39,10 +39,10 @@ local FAMILIES = {
             "100102545353592",
         },
         upgradeNotes = {
-            { "+ Starter Rage chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Larger Rage chassis", "+ Same current-art mesh", "+ Still visual shots" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Still visual shots" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Still visual shots" },
+            { "+ Starter Rage chassis", "+ Sits on this pad", "+ Lands a Berserk circle" },
+            { "+ Larger Rage chassis", "+ Same current-art mesh", "+ Same Berserk circle" },
+            { "+ Held at the playtest size", "+ Distinct art later", "+ Same Berserk circle" },
+            { "+ Top playtest rank", "+ Distinct art later", "+ Same Berserk circle" },
         },
     },
     {

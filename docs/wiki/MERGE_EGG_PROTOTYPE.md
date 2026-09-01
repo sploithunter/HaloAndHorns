@@ -502,9 +502,13 @@ team and queue model:
   wave. `BreachOverrun` begins when enemies beyond the red line reach the greater of four or one per
   active defender. `BreachOverrun` is now diagnostic/banner telemetry only; it never manufactures
   damage. Egg HP changes only through ordinary landed enemy attacks or the finish-line fallback.
-- Crossing the red line stamps that enemy as eligible to attack `MergeEggObjective` models and
+-   Crossing the red line stamps that enemy as eligible to attack `MergeEggObjective` models and
   retargets their march onto a living egg. They cannot resolve as escaped while any hatcher
-  egg is still up; the finish line only opens after the last objective dies. The
+  egg is still up; the finish line only opens after the last objective dies.
+  When an installed egg dies, leftover marchers always rewrite onto a remaining
+  egg from their live position (never a skipped "already close" march off the
+  spawn pivot). The lost hatcher's pets open (`CombatTargetOpen`) and every
+  surviving folder is re-alerted; at most one idle team stays in reserve. The
   existing bulwark re-alert then seeds normal threat across the open defense, including installed
   eggs. Eggs publish explicit target threat but are not implicit-taunt tanks; real pet tanks retain
   their ordinary taunt authority and can pull an attacker away.
@@ -1040,16 +1044,18 @@ clean.
   first three use the supplied concept art directly; the latter three were generated in the same
   low-poly wheeled-siege silhouette. All six were rebuilt through the Meshy smart-topology pipeline
   and retextured from their corresponding concept art.
-- Each cannon is a single watertight mesh below 9,500 triangles. The group-owned Model, Mesh,
-  and Texture IDs live in `scripts/merge_cannon_model_ids.json`; the reproducible ImageGen prompts
-  live beside the concept art in `assets/concepts/merge_cannons/prompts.json`.
+- Every tier is a single watertight mesh below 9,500 triangles. All 24 group-owned Model, Mesh,
+  and Texture ID triples, checksums, Meshy task IDs, integrity reports, and runtime paths live in
+  `scripts/merge_cannon_model_ids.json`; `scripts/merge_cannon_pipeline.js audit` verifies the
+  complete local chain. The concept briefs live beside the art in
+  `assets/concepts/merge_cannons/prompts.json`.
 - Cannon visuals are repo-owned spawnable assets under
-  `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2`, prebaked into
+  `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
-  Workspace review lineup is removed; maps own mounts, not cannon visuals. Tier 2 is normalized to
-  the corrected 7.95-stud-wide Repulsor reference, and the temporary Tier 1 presentation reuses the
-  same art at 85% size. `src/Shared/Game/MergeTowerModels.lua` clones a requested role/tier and
-  grounds it on a pad's `TowerAnchor`. Tier 3 and Tier 4 remain future distinct art passes.
+  Workspace review lineup is removed; maps own mounts, not cannon visuals. Every tier is normalized
+  to the corrected 7.953594-stud reference width at template scale 1.
+  `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier and grounds it on a
+  pad's `TowerAnchor`; no current-art substitution or resize fallback remains.
 - Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
   and one immediately outside position 9, pulled one 8.4-stud pad-width back
   from the egg-stand depth so they are not on top of the red-line engineer.
@@ -1058,9 +1064,8 @@ clean.
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Pads
-  start empty. Runtime clones an installed role at playtest-locked `tier_scales`
-  (0.40 starter, 0.50 for tiers 2–4) on the current-art mesh; distinct
-  per-tier models wait. Seats the chassis on the pad, and
+  start empty. Runtime clones the installed role's distinct gameplay-tier template at scale 1,
+  seats the chassis on the pad, and
   lofts a fireball along a parabolic arc toward the nearest enemy on the gate
   side of the lane. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
   the model pivot (that CFrame stays at the portal spawn). Range reaches
@@ -1079,9 +1084,12 @@ clean.
   ownership is applied on every workshop read so Install does not
   require a Buy. Board-action toasts use DisplayOrder 130 so they
   sit in front of the workshop (120), not behind it. Heal aims injured pets (`CombatDamageTaken`) and
-  places the existing Healing Field at impact; rage still reuses the Rage rune look.
+  places the existing Healing Field at impact; Rage aims live ally
+  pets and drops a one-time ruddy MagicCircle that sips Berserk for
+  each unique owner in the radius (existing brew stack math, no ticks).
   Hard rule: no shot at a target on the egg side of BreachLine. Heal
-  uses that same floor (`heal_fire_line`, also `bulwark` or `mid`).
+  and Rage use that same floor (`heal_fire_line` / `rage_fire_line`,
+  also `bulwark` or `mid`).
   New landing effects wait. Playtest unlock is Wave 1 / one Waycoin;
   production stays the Wave-10 intermission. Hits do not deal damage yet.
 

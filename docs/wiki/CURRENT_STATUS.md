@@ -14,9 +14,21 @@ models land later. Board-action toasts sit above the workshop
 Heal aims injured pets (`CombatDamageTaken` or `HP`/`MaxHP`,
 including the player's real pets) and places the existing Healing
 Field at impact (same rune and ticks; no rebuilt visual). Heal tiers
-only change magnitude and fire interval; `hot_tick` stays 2s. Cannons never fire at a target on the egg side
-of BreachLine. Heal uses that same floor for now; bulwark/mid stay
+only change magnitude and fire interval; `hot_tick` stays 2s. Rage
+aims live ally pets and drops a one-time ruddy MagicCircle; each
+unique owner in the radius gets one Berserk sip (existing stack
+math, no ticks). Rage tiers only change fire interval and circle
+size. Cannons never fire at a target on the egg side
+of BreachLine. Heal and Rage use that same floor for now; bulwark/mid stay
 tunable. Not Play-confirmed yet.
+
+## Dead hatcher egg retargets leftover marchers (2026-09-01)
+
+Wave 14 traces showed leftovers loitering at the gate (~170 studs,
+pets `current=0` after a brief lock). Egg death now always marches
+them to a living egg from live position, re-alerts every hatcher
+folder including the lost team, and keeps one idle reserve. Finish
+is last. Not Play-confirmed yet.
 
 ## Merge bulwark slots are independent of combat planes (2026-09-01)
 
@@ -162,12 +174,16 @@ Settings → Prop Effects turns it off; it defaults on.
 ## Merge tower E fires a cannonball (2026-08-30)
 
 Walk-up E on a pad cannon lofts the same arcing sphere. No combat session required.
-Size cycling is off; chassis stays at the locked 0.40 / 0.50 scales.
+Size cycling is off; the installed gameplay tier selects its matching cannon model.
 
-## Merge cannon sizes locked (2026-08-30)
+## Merge cannon four-tier art complete (2026-09-01)
 
-Playtest lock: tier 1 is 0.40, tiers 2–4 are 0.50. The E prompt sits on an unscaled
-preview host so shrinking the mesh no longer shrinks the activation radius.
+All six families now have distinct Tier 1–4 concepts, Meshy geometry, manifold repairs,
+2K retextures, embedded-texture FBXs, group-owned Roblox Model/Mesh/Image assets, and
+prebaked runtime templates. The 24-way manifest and audit live in
+`scripts/merge_cannon_model_ids.json` and `scripts/merge_cannon_pipeline.js`; Roblox
+ownership verification covers all 72 component assets. Runtime selects the gameplay tier
+directly at uniform template scale. The old scaled-copy fallback is removed.
 
 ## Merge tower E cycles size previews (2026-08-30)
 
@@ -177,13 +193,12 @@ Temporary authoring prompt; later E will cycle models instead.
 
 ## Merge edge towers fire a sphere and aim (2026-08-30)
 
-Starter cannons spawn at `tier_1_scale` 0.85 (was full-size Tier 2). Each shot is a metal
-sphere on the same parabola. The cannon yaws and pitches along the launch tangent before
-it fires. Upgrades still later.
+Installed cannons spawn their own tier-specific model. Each shot is a metal sphere on the same
+parabola. The cannon yaws and pitches along the launch tangent before it fires.
 
 ## Merge edge towers loft a spear (2026-08-30)
 
-Claiming a bay clones the current-art Repulsor onto both authored tower pads. Each cannon
+Installing a chassis clones that role's selected tier onto its authored tower pad. Each cannon
 lofts a labeled spear on a 14-stud parabola every 2.4s toward the nearest in-lane enemy, or
 a gate-side landing point if the lane is empty. The spear plants for 1.2s. Upgrades and
 cannonball art are still later.

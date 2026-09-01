@@ -6767,3 +6767,39 @@ first-session cohort rates.
   `shot.landing.heal.magnitude` and `interval` (both start at 110 /
   2.4). Strength is the existing per-tick number; overlapping fields
   still stack.
+
+## 2026-09-01 — Rage landing is a one-time Berserk circle
+
+- Not the tank Rage power. Impact stamps the Healing Field
+  MagicCircle in ruddy red and sips Berserk once per unique player
+  in the radius (`PotionService:SipBrew`, no flask). No tick loop.
+  Stacking is the brew's diminishing sip. Tier knobs are
+  `shot.landing.rage.interval` and `radius` (both start at 2.4 / 28).
+
+## 2026-09-01 — Dead hatcher egg must retarget marchers and pets
+
+- Wave 14 traces: after one egg died, enemies 273/275/277 loitered at
+  the gate (~170 studs out, `current=0` with a 250 seed). Pets briefly
+  locked then dropped. March was skipped when "close" off a stale
+  pivot, and only `CanAttackObjective` marchers were rewritten.
+  Egg death now always marches leftovers to a living egg from live
+  position, re-alerts every hatcher folder (lost team included,
+  CombatTargetOpen), and keeps one idle reserve. Finish stays last.
+
+## 2026-09-01 — All 24 Merge cannon art tiers completed and uploaded
+
+- Preserved the supplied Heal, Red/Rage, and Purple/Debuff Tier 1–4 concepts verbatim and created
+  distinct Tier 1, 3, and 4 concepts for Gravity, Repulsor, and Nullifier. The 24-way textured
+  contact sheet is `assets/qa/merge_cannons/mesh_validation_contact_sheet.png`.
+- Ran every tier through Meshy Smart Topology, Blender voxel repair, a strict zero-boundary /
+  zero-non-manifold gate, 2K concept-guided retexture, and embedded-texture FBX export. All models
+  stay below 9,500 triangles; the manifest records 24 geometry and 24 retexture task IDs plus
+  checksums and integrity reports.
+- Uploaded 24 distinct Model/Mesh/Image triples to Open Simulator Group (15872767). Studio
+  `MarketplaceService:GetProductInfo` verified all 72 components and their types/ownership.
+  `scripts/merge_cannon_model_ids.json` is COMPLETE, and
+  `node scripts/merge_cannon_pipeline.js audit` passes.
+- Rebuilt `assets/place/Models.rbxm` with all six families × four tiers. Runtime now requests the
+  gameplay tier directly at template scale 1; `current_art_tier`, `tier_scales`, and model resizing
+  are removed. Both the Lune prebake checker and live Studio Edit-datamodel inspection confirmed 24
+  templates with 24 distinct Mesh IDs and 24 distinct Texture IDs.

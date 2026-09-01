@@ -1,70 +1,1836 @@
 {
-  "_note": "Group-owned review Models for the six-cannon Merge tower family. The local binary source/export directories are intentionally gitignored; concepts, prompts, resolved Roblox IDs, and topology measurements are durable here.",
+  "schemaVersion": 2,
+  "status": "COMPLETE",
+  "completedAt": "2026-09-01T16:18:01Z",
   "creatorGroupId": "15872767",
-  "tiering": {
+  "creatorName": "Open Simulator Group",
+  "acceptance": {
+    "expectedFamilies": 6,
+    "expectedTiersPerFamily": 4,
+    "expectedVariants": 24,
+    "distinctConceptSha256Count": 24,
+    "distinctModelAssetIdCount": 24,
+    "distinctMeshIdCount": 24,
+    "distinctTextureIdCount": 24,
+    "scaledCopyTiers": 0
+  },
+  "pipeline": {
+    "geometryModel": "meshy-t2 smart-topology",
+    "targetPolycount": 8500,
+    "repair": "Blender voxel remesh 0.0026 diagonal ratio; strict manifold gate",
+    "maxTriangles": 9500,
+    "retextureModel": "latest",
+    "textureResolution": "2k",
+    "export": "FBX with embedded texture and root-bone armor",
+    "canonicalRuntimeWidth": 7.953594207763672,
+    "totalMeshyCredits": 360,
+    "geometryCredits": 120,
+    "retextureCredits": 240
+  },
+  "ownershipVerification": {
+    "verifiedInStudioAt": "2026-09-01T16:15:55Z",
+    "method": "MarketplaceService:GetProductInfo",
+    "passed": true,
+    "verifiedAssets": 72,
+    "assetTypeCounts": {
+      "Model": 24,
+      "Mesh": 24,
+      "Image": 24
+    },
+    "creatorName": "Open Simulator Group",
+    "creatorGroupId": "15872767",
+    "failures": []
+  },
+  "visualQa": {
+    "path": "assets/qa/merge_cannons/mesh_validation_contact_sheet.png",
+    "sha256": "d9cbbffd66a66d5befe79eda76f428958c41d0e90ad1a027380fd2c274f16da8",
+    "layout": "Rows: Heal, Rage, Debuff, Gravity, Repulsor, Nullifier. Columns: Tier 1 through Tier 4.",
+    "passed": true
+  },
+  "runtimeContract": {
+    "prebakedTemplateCount": 24,
     "modelTierCount": 4,
-    "currentArtTier": 2,
-    "tier1Scale": 0.85,
-    "tier2ReferenceWidth": 7.953594207763672
+    "sourceArtTierMatchesGameplayTier": true,
+    "templateScale": 1,
+    "scaledCopyFallbackRemoved": true,
+    "studioVerification": {
+      "verifiedInStudioAt": "2026-09-01T16:18:01Z",
+      "method": "ReplicatedStorage prebake inspection in Edit datamodel",
+      "passed": true,
+      "templates": 24,
+      "distinctMeshIds": 24,
+      "distinctTextureIds": 24,
+      "scaledCopyFallbackRemoved": true,
+      "failures": []
+    }
   },
-  "heal": {
-    "modelAssetId": "139934426250291",
-    "meshId": "101416290536855",
-    "textureId": "125180760410565",
-    "triangles": 9468,
-    "canonicalTier2Size": [7.953594207763672, 6.8637055649483045, 6.665047942707133],
-    "concept": "assets/concepts/merge_cannons/heal_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/heal/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/heal/merge_heal_cannon.fbx"
-  },
-  "rage": {
-    "modelAssetId": "100102545353592",
-    "meshId": "122743079797635",
-    "textureId": "112130547119678",
-    "triangles": 9468,
-    "canonicalTier2Size": [7.953594207763672, 6.860730294364203, 7.626240014340738],
-    "concept": "assets/concepts/merge_cannons/rage_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/rage/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/rage/merge_rage_cannon.fbx"
-  },
-  "debuff": {
-    "modelAssetId": "98058587937305",
-    "meshId": "79845338311693",
-    "textureId": "122268989880172",
-    "triangles": 9464,
-    "canonicalTier2Size": [7.953594207763672, 6.737808383951233, 6.7853700468926945],
-    "concept": "assets/concepts/merge_cannons/debuff_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/debuff/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/debuff/merge_debuff_cannon.fbx"
-  },
-  "gravity": {
-    "modelAssetId": "117227343235730",
-    "meshId": "84216404542389",
-    "textureId": "125199654859868",
-    "triangles": 9464,
-    "canonicalTier2Size": [7.953594207763672, 7.233683292963438, 7.435465315029953],
-    "concept": "assets/concepts/merge_cannons/gravity_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/gravity/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/gravity/merge_gravity_cannon.fbx"
-  },
-  "repulsor": {
-    "modelAssetId": "121632029834795",
-    "meshId": "123147846691160",
-    "textureId": "80442912867791",
-    "triangles": 9466,
-    "canonicalTier2Size": [7.953594207763672, 7.255610466003418, 7.391720294952393],
-    "concept": "assets/concepts/merge_cannons/repulsor_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/repulsor/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/repulsor/merge_repulsor_cannon.fbx"
-  },
-  "nullifier": {
-    "modelAssetId": "97270924486976",
-    "meshId": "125200316700851",
-    "textureId": "98389823322538",
-    "triangles": 9466,
-    "canonicalTier2Size": [7.953594207763672, 6.505625939393733, 6.646858509640619],
-    "concept": "assets/concepts/merge_cannons/nullifier_cannon.png",
-    "sourceGlb": "assets/source/props/merge_cannons/nullifier/textured/model.glb",
-    "exportFbx": "assets/exports/props/merge_cannons/nullifier/merge_nullifier_cannon.fbx"
+  "families": {
+    "heal": {
+      "displayName": "Heal",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/heal/tier_1.png",
+            "sha256": "9bbc73cf0eca4d1df3c180cfd17ba1275af427a171c6be1db35b6e023526509c",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "healing_cannon_level_1.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-4855-77cf-8cd3-7228f97743a0",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/heal/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_1/geometry/task.json",
+              "sourceSha256": "9bbc73cf0eca4d1df3c180cfd17ba1275af427a171c6be1db35b6e023526509c",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/heal/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/heal/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/heal/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-c4f3-7496-a19d-8d16813f4b91",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/heal/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_1/textured/task.json",
+              "styleImageSha256": "9bbc73cf0eca4d1df3c180cfd17ba1275af427a171c6be1db35b6e023526509c",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/heal/tier_1/textured/model.glb",
+            "texturedGlbSha256": "67805aef5d0e8422e87d5e7274b68993c61e261e2e1d74f12991bdc66bd7e53f",
+            "texturedIntegrity": "assets/source/props/merge_cannons/heal/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/heal/tier_1/merge_heal_cannon_tier_1.fbx",
+            "exportFbxSha256": "4c8c7dfb5bd2488b0d33001be50e6d0ae2fea28bbd4adaad355bb6cd3b065095",
+            "exportIntegrity": "assets/exports/props/merge_cannons/heal/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "83384749432985",
+            "meshId": "114650833232709",
+            "textureId": "139686347540585",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.833754062652588,
+              1.4915599822998047
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.292468,
+              5.931631
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/heal/tier_2.png",
+            "sha256": "fee9437d3840b271ecac750766f7f48b70cbf986ce8bbf1c32ee5c03477822d0",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "HealthCannon2.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f6d-9ccc-7181-ac0a-1a4b139dfb78",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/heal/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_2/geometry/task.json",
+              "sourceSha256": "fee9437d3840b271ecac750766f7f48b70cbf986ce8bbf1c32ee5c03477822d0",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/heal/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/heal/tier_2/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/heal/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f73-742e-7286-af83-46b93552a316",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/heal/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_2/textured/task.json",
+              "styleImageSha256": "fee9437d3840b271ecac750766f7f48b70cbf986ce8bbf1c32ee5c03477822d0",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/heal/tier_2/textured/model.glb",
+            "texturedGlbSha256": "678caa3ad8835594192807c9c45e9a2539d9812df35d59000159948aa9016283",
+            "texturedIntegrity": "assets/source/props/merge_cannons/heal/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/heal/tier_2/merge_heal_cannon_tier_2.fbx",
+            "exportFbxSha256": "2322ca5d387e182cb3019c116e9f6bc5e6e1cd837037c83a379dd372ccdc08fd",
+            "exportIntegrity": "assets/exports/props/merge_cannons/heal/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "139934426250291",
+            "meshId": "101416290536855",
+            "textureId": "125180760410565",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.725938081741333,
+              1.6759839057922363
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.863706,
+              6.665048
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/heal/tier_3.png",
+            "sha256": "006db076ae79f9056ce295072230ba5c2f902dc71205dd35c8429db8b8d889ea",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "healing_cannon_level_3.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-4b2c-7779-8947-363cab68f679",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/heal/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_3/geometry/task.json",
+              "sourceSha256": "006db076ae79f9056ce295072230ba5c2f902dc71205dd35c8429db8b8d889ea",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/heal/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/heal/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/heal/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-c929-70c4-950c-d1637cea0c53",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/heal/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_3/textured/task.json",
+              "styleImageSha256": "006db076ae79f9056ce295072230ba5c2f902dc71205dd35c8429db8b8d889ea",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/heal/tier_3/textured/model.glb",
+            "texturedGlbSha256": "57673e5244a5d2abae8c673e7190a1c6c873772a7132cb3bddc101097550710d",
+            "texturedIntegrity": "assets/source/props/merge_cannons/heal/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/heal/tier_3/merge_heal_cannon_tier_3.fbx",
+            "exportFbxSha256": "d1d4cdb5de4572dd9753528d670594b72bf146cefb32bbff1adabaf54b888952",
+            "exportIntegrity": "assets/exports/props/merge_cannons/heal/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "108940380608596",
+            "meshId": "70463710680411",
+            "textureId": "111446641271808",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.842965841293335,
+              1.7739460468292236
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.329101,
+              7.054624
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/heal/tier_4.png",
+            "sha256": "553f16b3f55301a3ed44c0f51cf8e8eee64b26775323ce6afaef433ee4294609",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "healing_cannon_level_4.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-4dff-75a1-a1f0-43fe3a592df3",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/heal/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_4/geometry/task.json",
+              "sourceSha256": "553f16b3f55301a3ed44c0f51cf8e8eee64b26775323ce6afaef433ee4294609",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/heal/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/heal/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/heal/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-ce30-7304-b1f7-a5edb31c6068",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/heal/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/heal/tier_4/textured/task.json",
+              "styleImageSha256": "553f16b3f55301a3ed44c0f51cf8e8eee64b26775323ce6afaef433ee4294609",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/heal/tier_4/textured/model.glb",
+            "texturedGlbSha256": "61abbdabc3f5858e11f60623f823eb03e53544ca3375085de983d80ebac0bb3c",
+            "texturedIntegrity": "assets/source/props/merge_cannons/heal/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/heal/tier_4/merge_heal_cannon_tier_4.fbx",
+            "exportFbxSha256": "362bc1e330cc57ca0b52f2ee20e6ebfb60246528c95ef5abbe7c31c3fcc9ab2e",
+            "exportIntegrity": "assets/exports/props/merge_cannons/heal/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "124634979760401",
+            "meshId": "100407635866251",
+            "textureId": "84388175252193",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.6046059131622314,
+              1.590824007987976
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.381192,
+              6.326384
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    },
+    "rage": {
+      "displayName": "Rage",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/rage/tier_1.png",
+            "sha256": "05e288ac1e089a3c1fbcb754324b63fc7f9368f57ee05a99ef4cc0f4a3876666",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "RedCannon1.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-51f3-75a7-8a08-adc1d366796a",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/rage/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_1/geometry/task.json",
+              "sourceSha256": "05e288ac1e089a3c1fbcb754324b63fc7f9368f57ee05a99ef4cc0f4a3876666",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/rage/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/rage/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/rage/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-d2e9-747d-9b02-c88834607e2a",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/rage/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_1/textured/task.json",
+              "styleImageSha256": "05e288ac1e089a3c1fbcb754324b63fc7f9368f57ee05a99ef4cc0f4a3876666",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/rage/tier_1/textured/model.glb",
+            "texturedGlbSha256": "d9246fccb9cffa51e9af8fb7b66ce41ad1569f81c29a0cc5777302a1e1f23347",
+            "texturedIntegrity": "assets/source/props/merge_cannons/rage/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/rage/tier_1/merge_rage_cannon_tier_1.fbx",
+            "exportFbxSha256": "29b236e95e42ccd987a0a96f16aff952ba56fb96f2efc4fa2346461edc3ef6f4",
+            "exportIntegrity": "assets/exports/props/merge_cannons/rage/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "74085555919304",
+            "meshId": "140445830725136",
+            "textureId": "120457257412811",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              1.9975420236587524,
+              1.7343921661376953,
+              1.9999998807907104
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.905813,
+              7.963381
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/rage/tier_2.png",
+            "sha256": "dcda583b60e040675ab31d32dd4cc09495336bf9c77424f124ea3129fc120f8c",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "RedCannon2.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f6d-9cd0-7035-9de5-ea7e4db1e027",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/rage/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_2/geometry/task.json",
+              "sourceSha256": "dcda583b60e040675ab31d32dd4cc09495336bf9c77424f124ea3129fc120f8c",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/rage/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/rage/tier_2/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/rage/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f73-742d-70df-9b19-0015cf0adefc",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/rage/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_2/textured/task.json",
+              "styleImageSha256": "dcda583b60e040675ab31d32dd4cc09495336bf9c77424f124ea3129fc120f8c",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/rage/tier_2/textured/model.glb",
+            "texturedGlbSha256": "2c1714a53b068d127bb82689993f98fc7a86bc380d183e4f699d28db28d2e72b",
+            "texturedIntegrity": "assets/source/props/merge_cannons/rage/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/rage/tier_2/merge_rage_cannon_tier_2.fbx",
+            "exportFbxSha256": "8ffa7a28e95caaa5f3d5e4b19ded6ee5a4c38663ecd85fa48bdbc655153060ba",
+            "exportIntegrity": "assets/exports/props/merge_cannons/rage/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "100102545353592",
+            "meshId": "122743079797635",
+            "textureId": "112130547119678",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.7251899242401123,
+              1.9176839590072632
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.86073,
+              7.62624
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/rage/tier_3.png",
+            "sha256": "b650969e15ab4b8252cb6e34a2fa565848aef3206ab8635130be6232e9f01fd3",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "RedCannon3.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-564e-74aa-842e-44783947ee9a",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/rage/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_3/geometry/task.json",
+              "sourceSha256": "b650969e15ab4b8252cb6e34a2fa565848aef3206ab8635130be6232e9f01fd3",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/rage/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/rage/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/rage/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-d7db-7436-8af4-3e16207126d1",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/rage/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_3/textured/task.json",
+              "styleImageSha256": "b650969e15ab4b8252cb6e34a2fa565848aef3206ab8635130be6232e9f01fd3",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/rage/tier_3/textured/model.glb",
+            "texturedGlbSha256": "e28a5403415cb2d0782311ff309841a544a8e3ca17297c3a1f4ffeebb3970e90",
+            "texturedIntegrity": "assets/source/props/merge_cannons/rage/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/rage/tier_3/merge_rage_cannon_tier_3.fbx",
+            "exportFbxSha256": "ab5d2aee330c582b7008450e39067fb332086af894bd3f00b85206d6c63ae68e",
+            "exportIntegrity": "assets/exports/props/merge_cannons/rage/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "102457421153837",
+            "meshId": "138331655618830",
+            "textureId": "123219933125620",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.8558740615844727,
+              1.709589958190918
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.380435,
+              6.798692
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/rage/tier_4.png",
+            "sha256": "290cfe773fa8d97b20655f8db819e84fb36e6412cf051dead04c6904e6e479ba",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "RedCannon4.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-5aa0-7232-8fee-777464705529",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/rage/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_4/geometry/task.json",
+              "sourceSha256": "290cfe773fa8d97b20655f8db819e84fb36e6412cf051dead04c6904e6e479ba",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/rage/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/rage/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/rage/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9464,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-dd29-772d-ad7d-9951d0dc3b64",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/rage/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/rage/tier_4/textured/task.json",
+              "styleImageSha256": "290cfe773fa8d97b20655f8db819e84fb36e6412cf051dead04c6904e6e479ba",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/rage/tier_4/textured/model.glb",
+            "texturedGlbSha256": "2601153996f332fe8115688d74181b4731b26158c347bc51704083d2aed5a865",
+            "texturedIntegrity": "assets/source/props/merge_cannons/rage/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/rage/tier_4/merge_rage_cannon_tier_4.fbx",
+            "exportFbxSha256": "cd07eab28d262995ccd3a6dbd4f22076079062ead0f8120ba63f51a2eb1d1c8a",
+            "exportIntegrity": "assets/exports/props/merge_cannons/rage/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "87762252278760",
+            "meshId": "127623585613419",
+            "textureId": "78472306743043",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.769291877746582,
+              1.8132840394973755
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.036115,
+              7.211063
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    },
+    "debuff": {
+      "displayName": "Debuff",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/debuff/tier_1.png",
+            "sha256": "c1ed5630e164071e6bfe66e1de2fbe503dffd0363301655a7fe76b5ca87d61de",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "PurpleCannon1.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-6007-730f-86dd-c1b7a9cbaa01",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/debuff/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_1/geometry/task.json",
+              "sourceSha256": "c1ed5630e164071e6bfe66e1de2fbe503dffd0363301655a7fe76b5ca87d61de",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/debuff/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/debuff/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/debuff/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-e2c4-7600-9b48-f05eb69a4d78",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/debuff/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_1/textured/task.json",
+              "styleImageSha256": "c1ed5630e164071e6bfe66e1de2fbe503dffd0363301655a7fe76b5ca87d61de",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/debuff/tier_1/textured/model.glb",
+            "texturedGlbSha256": "fa8bf85b51574681ef1320879105160b4d3b4959648ae704301eb8e200c1809a",
+            "texturedIntegrity": "assets/source/props/merge_cannons/debuff/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/debuff/tier_1/merge_debuff_cannon_tier_1.fbx",
+            "exportFbxSha256": "aae5e126eeab9d45c3c768fb9c48af0172ae926fb81ab710ab7d58c72456d846",
+            "exportIntegrity": "assets/exports/props/merge_cannons/debuff/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "90303291334041",
+            "meshId": "101528155910040",
+            "textureId": "100157293936396",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.9985281229019165,
+              1.9994200468063354
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.947741,
+              7.951288
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/debuff/tier_2.png",
+            "sha256": "f36d131df8b1317d2908e74fee6214443ec523648126da9ed3b8d2ed8c7a8029",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "PurpleCannon2.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f6d-9cc8-71ea-b4c4-6e14df444637",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/debuff/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_2/geometry/task.json",
+              "sourceSha256": "f36d131df8b1317d2908e74fee6214443ec523648126da9ed3b8d2ed8c7a8029",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/debuff/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/debuff/tier_2/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/debuff/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9464,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f73-742e-77f9-94fe-8d2e46fba237",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/debuff/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_2/textured/task.json",
+              "styleImageSha256": "f36d131df8b1317d2908e74fee6214443ec523648126da9ed3b8d2ed8c7a8029",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/debuff/tier_2/textured/model.glb",
+            "texturedGlbSha256": "15ca587b06d00314ab6503a4897584156babfa4c69f521da16f75dbf5f7d65c6",
+            "texturedIntegrity": "assets/source/props/merge_cannons/debuff/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/debuff/tier_2/merge_debuff_cannon_tier_2.fbx",
+            "exportFbxSha256": "2d3f913e47c0ded06f42afe643fa4200ad54dd3c0a9bfe90c8e712fc61dcadc9",
+            "exportIntegrity": "assets/exports/props/merge_cannons/debuff/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "98058587937305",
+            "meshId": "79845338311693",
+            "textureId": "122268989880172",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.6942801475524902,
+              1.706239938735962
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.737808,
+              6.78537
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/debuff/tier_3.png",
+            "sha256": "08ef0b59305da022e22a3a6ac6362503660eac5bba9010a45141346d27e6936f",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "PurpleCannon3.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-667b-72a9-87ce-41cd23a9957c",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/debuff/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_3/geometry/task.json",
+              "sourceSha256": "08ef0b59305da022e22a3a6ac6362503660eac5bba9010a45141346d27e6936f",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/debuff/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/debuff/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/debuff/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9464,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-e763-74e3-8c5a-60791b332b5c",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/debuff/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_3/textured/task.json",
+              "styleImageSha256": "08ef0b59305da022e22a3a6ac6362503660eac5bba9010a45141346d27e6936f",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/debuff/tier_3/textured/model.glb",
+            "texturedGlbSha256": "9c6abde5346c808d2603b511560394b4fa52477bbae2ca19a34fd0b45c16d86c",
+            "texturedIntegrity": "assets/source/props/merge_cannons/debuff/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/debuff/tier_3/merge_debuff_cannon_tier_3.fbx",
+            "exportFbxSha256": "267db01358f7f54322138ffc197aeaf0b88fd886f2ea1e72ddbc77fe747860ca",
+            "exportIntegrity": "assets/exports/props/merge_cannons/debuff/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "108380777646775",
+            "meshId": "119280408890657",
+            "textureId": "111095034109245",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              1.7659460306167603,
+              1.6624161005020142,
+              2
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.487309,
+              9.007743
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/debuff/tier_4.png",
+            "sha256": "b898ed1544891f5051179acf475841cb477bffd8d3275b9d94a44729f08d2c44",
+            "origin": "user-supplied",
+            "preservedVerbatim": true,
+            "originalFilename": "PurpleCannon4.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-6c43-70e6-91ff-32965733337b",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/debuff/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_4/geometry/task.json",
+              "sourceSha256": "b898ed1544891f5051179acf475841cb477bffd8d3275b9d94a44729f08d2c44",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/debuff/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/debuff/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/debuff/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-ec27-7250-b04c-5832d6e5a723",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/debuff/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/debuff/tier_4/textured/task.json",
+              "styleImageSha256": "b898ed1544891f5051179acf475841cb477bffd8d3275b9d94a44729f08d2c44",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/debuff/tier_4/textured/model.glb",
+            "texturedGlbSha256": "31fde5d2c29031a9079263fb4f631c11fc53dd03a04364713a97a31e049e7d8d",
+            "texturedIntegrity": "assets/source/props/merge_cannons/debuff/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/debuff/tier_4/merge_debuff_cannon_tier_4.fbx",
+            "exportFbxSha256": "c466240ea9061669dd9089f8a33e8a49727510feda0b134a112bd6a46142a4ff",
+            "exportIntegrity": "assets/exports/props/merge_cannons/debuff/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "88248287711565",
+            "meshId": "122588599717914",
+            "textureId": "138671610283207",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              1.9993760585784912,
+              1.8854899406433105,
+              2
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.500551,
+              7.956076
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    },
+    "gravity": {
+      "displayName": "Gravity",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/gravity/tier_1.png",
+            "sha256": "46a5bcf01853afa29e10c097e9689d591768991a37f6eff5c2f7a4f717de9dd7",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/gravity/tier_2.png",
+            "designBrief": "Simplified starter silhouette with fewer reinforcements and ornaments."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-70d6-74db-b966-9635756856b9",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/gravity/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_1/geometry/task.json",
+              "sourceSha256": "46a5bcf01853afa29e10c097e9689d591768991a37f6eff5c2f7a4f717de9dd7",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/gravity/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/gravity/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/gravity/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-f18b-7689-a8c3-768d6f7dc2d3",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/gravity/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_1/textured/task.json",
+              "styleImageSha256": "46a5bcf01853afa29e10c097e9689d591768991a37f6eff5c2f7a4f717de9dd7",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/gravity/tier_1/textured/model.glb",
+            "texturedGlbSha256": "ffdb323a0bfc037e61d2b2a9894534c6e33fcccf4d1494be18d02bce7050bfea",
+            "texturedIntegrity": "assets/source/props/merge_cannons/gravity/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/gravity/tier_1/merge_gravity_cannon_tier_1.fbx",
+            "exportFbxSha256": "6c17a3cfa3fbf79a156a4a5a7342844ea5119ad45692fa706f054a5915982058",
+            "exportIntegrity": "assets/exports/props/merge_cannons/gravity/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "77152402298985",
+            "meshId": "127753732493357",
+            "textureId": "86492725259912",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.9440181255340576,
+              1.7411099672317505
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.730966,
+              6.924041
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/gravity/tier_2.png",
+            "sha256": "ec6bb4562c32084f00d96290d68efd8cf25c9e89b1c609ef1488faefdffd3e60",
+            "origin": "existing-approved-project-concept",
+            "preservedVerbatim": true,
+            "originalFilename": "gravity_cannon.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f26-0616-73e7-a605-57fa37e4eef0",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/gravity/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_2/geometry/task.json",
+              "sourceSha256": "ec6bb4562c32084f00d96290d68efd8cf25c9e89b1c609ef1488faefdffd3e60",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/gravity/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/gravity/tier_2/repaired_voxel/repair.json",
+              "integrity": "assets/source/props/merge_cannons/gravity/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9464,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f31-526b-74a9-85d9-06d11c8a5f54",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/gravity/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_2/textured/task.json",
+              "styleImageSha256": "ec6bb4562c32084f00d96290d68efd8cf25c9e89b1c609ef1488faefdffd3e60",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/gravity/tier_2/textured/model.glb",
+            "texturedGlbSha256": "c43c2a72059bd16d620e22fe139d4bdcb51be59f37ec3a64400a3c90e427f8c5",
+            "texturedIntegrity": "assets/source/props/merge_cannons/gravity/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/gravity/tier_2/merge_gravity_cannon_tier_2.fbx",
+            "exportFbxSha256": "84575e6f030cd8843ecfb2b6a5dba8558036328083faa29ee1116c4c2f9537b6",
+            "exportIntegrity": "assets/exports/props/merge_cannons/gravity/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "117227343235730",
+            "meshId": "84216404542389",
+            "textureId": "125199654859868",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.818972110748291,
+              1.869711995124817
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.233683,
+              7.435465
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/gravity/tier_3.png",
+            "sha256": "28cebac5067462839b6e535afc12e46868876dec4eedbe41eb7ee5b1478c3a9e",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/gravity/tier_2.png",
+            "designBrief": "Reinforced battlefield upgrade with added armor, bands, bolts, and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-749f-74fd-80a5-acf271f8e1ce",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/gravity/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_3/geometry/task.json",
+              "sourceSha256": "28cebac5067462839b6e535afc12e46868876dec4eedbe41eb7ee5b1478c3a9e",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/gravity/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/gravity/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/gravity/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-f67f-72c8-aeff-8e09b9f713db",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/gravity/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_3/textured/task.json",
+              "styleImageSha256": "28cebac5067462839b6e535afc12e46868876dec4eedbe41eb7ee5b1478c3a9e",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/gravity/tier_3/textured/model.glb",
+            "texturedGlbSha256": "3973c6a1ecd8e9086e4dc68109ea1120d05117a00f3435c4282d34b6cb743fc8",
+            "texturedIntegrity": "assets/source/props/merge_cannons/gravity/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/gravity/tier_3/merge_gravity_cannon_tier_3.fbx",
+            "exportFbxSha256": "6c2c92822b51e381ab574cf49c9965605c2fe65553948725f736c8dc17419aae",
+            "exportIntegrity": "assets/exports/props/merge_cannons/gravity/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "122229990932951",
+            "meshId": "103722578550022",
+            "textureId": "109547694123216",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.663451910018921,
+              1.7945200204849243
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.615211,
+              7.136442
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/gravity/tier_4.png",
+            "sha256": "598e0e5f19aa3c67ee86079ab9d2b11aadad5434f335c3639d4fd9c43b9f801d",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/gravity/tier_2.png",
+            "designBrief": "Ornate mythic capstone with an unmistakably upgraded silhouette and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-7972-740b-8079-836f56b0d483",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/gravity/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_4/geometry/task.json",
+              "sourceSha256": "598e0e5f19aa3c67ee86079ab9d2b11aadad5434f335c3639d4fd9c43b9f801d",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/gravity/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/gravity/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/gravity/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db4-fbec-7580-99b9-3f9286f70f53",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/gravity/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/gravity/tier_4/textured/task.json",
+              "styleImageSha256": "598e0e5f19aa3c67ee86079ab9d2b11aadad5434f335c3639d4fd9c43b9f801d",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/gravity/tier_4/textured/model.glb",
+            "texturedGlbSha256": "753891357c6d700b84ee022123a52093538776201482a3592c85e225018e9d1f",
+            "texturedIntegrity": "assets/source/props/merge_cannons/gravity/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/gravity/tier_4/merge_gravity_cannon_tier_4.fbx",
+            "exportFbxSha256": "518718cb0b0d83aeb22d76a0337ed3397cce15ada2463f3635e257e4ddfae737",
+            "exportIntegrity": "assets/exports/props/merge_cannons/gravity/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "74242056171109",
+            "meshId": "75538738354253",
+            "textureId": "106500478108571",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.4010639190673828,
+              1.3860340118408203
+            ],
+            "canonicalSize": [
+              7.953594,
+              5.571747,
+              5.511976
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    },
+    "repulsor": {
+      "displayName": "Repulsor",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/repulsor/tier_1.png",
+            "sha256": "a78a9f37feba6ef263dc9a3ac5ed99bdc184bb818742e9b6b2a0eea289140da2",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/repulsor/tier_2.png",
+            "designBrief": "Simplified starter silhouette with fewer reinforcements and ornaments."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-7e6c-7147-ac71-8c615af63905",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_1/geometry/task.json",
+              "sourceSha256": "a78a9f37feba6ef263dc9a3ac5ed99bdc184bb818742e9b6b2a0eea289140da2",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/repulsor/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/repulsor/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/repulsor/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-02ff-75e3-9368-29c420cccc97",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_1/textured/task.json",
+              "styleImageSha256": "a78a9f37feba6ef263dc9a3ac5ed99bdc184bb818742e9b6b2a0eea289140da2",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/repulsor/tier_1/textured/model.glb",
+            "texturedGlbSha256": "36d47fd00dd32cee54e31d61bf3208621f52bd4cf73056c6eee649f7f53d1c1f",
+            "texturedIntegrity": "assets/source/props/merge_cannons/repulsor/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/repulsor/tier_1/merge_repulsor_cannon_tier_1.fbx",
+            "exportFbxSha256": "b6e6f01eeed1580c1e4bfa0a3e6c457080818b2180de9b797836ddc19e6626a2",
+            "exportIntegrity": "assets/exports/props/merge_cannons/repulsor/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "97936800984221",
+            "meshId": "86200070009329",
+            "textureId": "114202274285615",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.8552321195602417,
+              1.5309339761734009
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.377882,
+              6.088214
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/repulsor/tier_2.png",
+            "sha256": "d833164d28b3b955cae57de7fb6e19796834f4009f375234a9c3391acc507a0c",
+            "origin": "existing-approved-project-concept",
+            "preservedVerbatim": true,
+            "originalFilename": "repulsor_cannon.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f26-0625-7532-b4d9-43fd82e7d122",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_2/geometry/task.json",
+              "sourceSha256": "d833164d28b3b955cae57de7fb6e19796834f4009f375234a9c3391acc507a0c",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/repulsor/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/repulsor/tier_2/repaired_voxel/repair.json",
+              "integrity": "assets/source/props/merge_cannons/repulsor/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f31-5025-7244-806a-f3720f957c63",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_2/textured/task.json",
+              "styleImageSha256": "d833164d28b3b955cae57de7fb6e19796834f4009f375234a9c3391acc507a0c",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/repulsor/tier_2/textured/model.glb",
+            "texturedGlbSha256": "01551930739303f4be2838d2b7438f9687369795170d6309e56c75b648340e64",
+            "texturedIntegrity": "assets/source/props/merge_cannons/repulsor/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/repulsor/tier_2/merge_repulsor_cannon_tier_2.fbx",
+            "exportFbxSha256": "e8bc09f5293f03ba4b53c0bb0144a777fda34af25a3dee8e894eff11f70f26eb",
+            "exportIntegrity": "assets/exports/props/merge_cannons/repulsor/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "121632029834795",
+            "meshId": "123147846691160",
+            "textureId": "80442912867791",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.8244858980178833,
+              1.8587119579315186
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.25561,
+              7.39172
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/repulsor/tier_3.png",
+            "sha256": "89098e5832bd6f5f72805a4268873f252f7523ea89628fa8242b001fd9010774",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/repulsor/tier_2.png",
+            "designBrief": "Reinforced battlefield upgrade with added armor, bands, bolts, and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-8424-764e-a7ff-4dd21389a003",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_3/geometry/task.json",
+              "sourceSha256": "89098e5832bd6f5f72805a4268873f252f7523ea89628fa8242b001fd9010774",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/repulsor/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/repulsor/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/repulsor/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9452,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-0828-77f3-bc8b-6fd81f768b7d",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_3/textured/task.json",
+              "styleImageSha256": "89098e5832bd6f5f72805a4268873f252f7523ea89628fa8242b001fd9010774",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/repulsor/tier_3/textured/model.glb",
+            "texturedGlbSha256": "9cc678da7d36e298262c775d28ad7bcc0644a7927861501cdda0ef2b8b397e4d",
+            "texturedIntegrity": "assets/source/props/merge_cannons/repulsor/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/repulsor/tier_3/merge_repulsor_cannon_tier_3.fbx",
+            "exportFbxSha256": "6e010839227369c10e0fe4809449f6fa02d961ecba0b066898577de961ca545a",
+            "exportIntegrity": "assets/exports/props/merge_cannons/repulsor/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "85711564245566",
+            "meshId": "130732092642003",
+            "textureId": "99120964974996",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.624380111694336,
+              1.67889404296875
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.45983,
+              6.676621
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/repulsor/tier_4.png",
+            "sha256": "ac02bd298dbffe6db992ae9ad00af1059bdb5ad5c7521a4542e0b5136af526f4",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/repulsor/tier_2.png",
+            "designBrief": "Ornate mythic capstone with an unmistakably upgraded silhouette and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-8c06-7335-9575-de89f70a0ca2",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_4/geometry/task.json",
+              "sourceSha256": "ac02bd298dbffe6db992ae9ad00af1059bdb5ad5c7521a4542e0b5136af526f4",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/repulsor/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/repulsor/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/repulsor/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9458,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-0dc8-77b4-ae64-dd675e11a4fd",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/repulsor/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/repulsor/tier_4/textured/task.json",
+              "styleImageSha256": "ac02bd298dbffe6db992ae9ad00af1059bdb5ad5c7521a4542e0b5136af526f4",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/repulsor/tier_4/textured/model.glb",
+            "texturedGlbSha256": "48bf9a7a3c5f171bf7e7398eb11f606da8267c35400744b21260e52f180c6b00",
+            "texturedIntegrity": "assets/source/props/merge_cannons/repulsor/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/repulsor/tier_4/merge_repulsor_cannon_tier_4.fbx",
+            "exportFbxSha256": "fa0f906b97187fd6ed50d826051740866817187c3e268355f83acc3a00d7221f",
+            "exportIntegrity": "assets/exports/props/merge_cannons/repulsor/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "81406275628540",
+            "meshId": "82000379884068",
+            "textureId": "113912676709629",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.873343825340271,
+              1.9617400169372559
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.449908,
+              7.801442
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    },
+    "nullifier": {
+      "displayName": "Nullifier",
+      "tiers": [
+        {
+          "tier": 1,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/nullifier/tier_1.png",
+            "sha256": "41e73212651b1c16b404efb8635710ca966daa59d4ce7e7f433f34150e096477",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/nullifier/tier_2.png",
+            "designBrief": "Simplified starter silhouette with fewer reinforcements and ornaments."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-9107-7581-a316-c9b187ad95ae",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_1/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_1/geometry/task.json",
+              "sourceSha256": "41e73212651b1c16b404efb8635710ca966daa59d4ce7e7f433f34150e096477",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/nullifier/tier_1/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/nullifier/tier_1/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/nullifier/tier_1/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-1395-7590-86d1-e69aafe7e7ba",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_1/textured/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_1/textured/task.json",
+              "styleImageSha256": "41e73212651b1c16b404efb8635710ca966daa59d4ce7e7f433f34150e096477",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/nullifier/tier_1/textured/model.glb",
+            "texturedGlbSha256": "b0151ddf8b40b43d273c378358def41f27d498b86f76488a2fe1b1a1c6780a3f",
+            "texturedIntegrity": "assets/source/props/merge_cannons/nullifier/tier_1/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/nullifier/tier_1/merge_nullifier_cannon_tier_1.fbx",
+            "exportFbxSha256": "28a66cade86124b83f32b70db858b67cc1a7802780cc426514646c3b67fab57d",
+            "exportIntegrity": "assets/exports/props/merge_cannons/nullifier/tier_1/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "79964691038207",
+            "meshId": "112018017672665",
+            "textureId": "92158246124108",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.84732186794281,
+              1.7097680568695068
+            ],
+            "canonicalSize": [
+              7.953594,
+              7.346424,
+              6.799401
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier1",
+            "sourceArtTier": 1,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 2,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/nullifier/tier_2.png",
+            "sha256": "691891a2ffcab6dc727bf548a72357b8a9ecd9d47374e1078255b140bb8bb463",
+            "origin": "existing-approved-project-concept",
+            "preservedVerbatim": true,
+            "originalFilename": "nullifier_cannon.png"
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a04f26-0627-7246-8f89-84e0cb4d61ce",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_2/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_2/geometry/task.json",
+              "sourceSha256": "691891a2ffcab6dc727bf548a72357b8a9ecd9d47374e1078255b140bb8bb463",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/nullifier/tier_2/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/nullifier/tier_2/repaired_voxel/repair.json",
+              "integrity": "assets/source/props/merge_cannons/nullifier/tier_2/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9466,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a04f31-5286-752c-b415-d25fa2730884",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_2/textured/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_2/textured/task.json",
+              "styleImageSha256": "691891a2ffcab6dc727bf548a72357b8a9ecd9d47374e1078255b140bb8bb463",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/nullifier/tier_2/textured/model.glb",
+            "texturedGlbSha256": "0095e1b06aaf0d2bc558d5b4d13fa90099451999707e989d22a355ea8d127827",
+            "texturedIntegrity": "assets/source/props/merge_cannons/nullifier/tier_2/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/nullifier/tier_2/merge_nullifier_cannon_tier_2.fbx",
+            "exportFbxSha256": "86f5fc3e07422279b335ec3130fe83630b8f9565fe05d3304acb60acd85aa302",
+            "exportIntegrity": "assets/exports/props/merge_cannons/nullifier/tier_2/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "97270924486976",
+            "meshId": "125200316700851",
+            "textureId": "98389823322538",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.635895848274231,
+              1.6714099645614624
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.505626,
+              6.646858
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier2",
+            "sourceArtTier": 2,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 3,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/nullifier/tier_3.png",
+            "sha256": "9945cdee13a20132a3d5f7d8391a5ea05d57c771b10738ec7c8ab3e49faba8e2",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/nullifier/tier_2.png",
+            "designBrief": "Reinforced battlefield upgrade with added armor, bands, bolts, and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-952d-7125-bec9-3fd9eeaab17e",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_3/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_3/geometry/task.json",
+              "sourceSha256": "9945cdee13a20132a3d5f7d8391a5ea05d57c771b10738ec7c8ab3e49faba8e2",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/nullifier/tier_3/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/nullifier/tier_3/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/nullifier/tier_3/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9460,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-1945-7688-b2d9-cf3becc00528",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_3/textured/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_3/textured/task.json",
+              "styleImageSha256": "9945cdee13a20132a3d5f7d8391a5ea05d57c771b10738ec7c8ab3e49faba8e2",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/nullifier/tier_3/textured/model.glb",
+            "texturedGlbSha256": "76e09d9d2be9b6effbcdb536294e687b4cdfac9d9b25f7a1f95288f2cd02948e",
+            "texturedIntegrity": "assets/source/props/merge_cannons/nullifier/tier_3/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/nullifier/tier_3/merge_nullifier_cannon_tier_3.fbx",
+            "exportFbxSha256": "0d5d25997a8bddd08773135240b799044a07d4ed45c8c94797fc4aff433386e2",
+            "exportIntegrity": "assets/exports/props/merge_cannons/nullifier/tier_3/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "73215093759999",
+            "meshId": "84856296327141",
+            "textureId": "80720189474681",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.7103221416473389,
+              1.9156839847564697
+            ],
+            "canonicalSize": [
+              7.953594,
+              6.801604,
+              7.618287
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier3",
+            "sourceArtTier": 3,
+            "templateScale": 1
+          }
+        },
+        {
+          "tier": 4,
+          "status": "COMPLETE",
+          "concept": {
+            "path": "assets/concepts/merge_cannons/nullifier/tier_4.png",
+            "sha256": "bfbb34c4c48e00a56b07458a64266c8d8e8dcc4940fb34446a1b57a5ca840bda",
+            "origin": "openai-imagegen-controlled-edit",
+            "preservedVerbatim": false,
+            "derivedFrom": "assets/concepts/merge_cannons/nullifier/tier_2.png",
+            "designBrief": "Ornate mythic capstone with an unmistakably upgraded silhouette and family motifs."
+          },
+          "meshy": {
+            "geometry": {
+              "taskId": "01a05db1-9a04-76af-9538-a5c0060cce94",
+              "status": "SUCCEEDED",
+              "consumedCredits": 5,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_4/geometry/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_4/geometry/task.json",
+              "sourceSha256": "bfbb34c4c48e00a56b07458a64266c8d8e8dcc4940fb34446a1b57a5ca840bda",
+              "targetPolycount": 8500
+            },
+            "repair": {
+              "model": "assets/source/props/merge_cannons/nullifier/tier_4/repaired_voxel/model.glb",
+              "report": "assets/source/props/merge_cannons/nullifier/tier_4/repaired_voxel/model.repair.json",
+              "integrity": "assets/source/props/merge_cannons/nullifier/tier_4/repaired_voxel/integrity.json",
+              "integrityPassed": true,
+              "triangles": 9468,
+              "boundaryEdges": 0,
+              "nonManifoldEdges": 0,
+              "maxTriangles": 9500
+            },
+            "retexture": {
+              "taskId": "01a05db5-1ec8-775a-9e63-d25e0df8f427",
+              "status": "SUCCEEDED",
+              "consumedCredits": 10,
+              "request": "assets/source/props/merge_cannons/nullifier/tier_4/textured/request.json",
+              "task": "assets/source/props/merge_cannons/nullifier/tier_4/textured/task.json",
+              "styleImageSha256": "bfbb34c4c48e00a56b07458a64266c8d8e8dcc4940fb34446a1b57a5ca840bda",
+              "textureResolution": "2k"
+            }
+          },
+          "deliverables": {
+            "texturedGlb": "assets/source/props/merge_cannons/nullifier/tier_4/textured/model.glb",
+            "texturedGlbSha256": "23b9f51a088738dd4540df22e099d98add423582c49e59814017a0be98aaf33c",
+            "texturedIntegrity": "assets/source/props/merge_cannons/nullifier/tier_4/textured/integrity.json",
+            "texturedIntegrityPassed": true,
+            "exportFbx": "assets/exports/props/merge_cannons/nullifier/tier_4/merge_nullifier_cannon_tier_4.fbx",
+            "exportFbxSha256": "e25302bca54f54aefd524999fe4f686255d278f7960c70ace9deba244f0ac227",
+            "exportIntegrity": "assets/exports/props/merge_cannons/nullifier/tier_4/integrity.json",
+            "exportIntegrityPassed": true
+          },
+          "roblox": {
+            "modelAssetId": "74540150269159",
+            "meshId": "95125160919558",
+            "textureId": "92959528373062",
+            "creatorGroupId": "15872767",
+            "rawRobloxSize": [
+              2,
+              1.4780378341674805,
+              1.5631680488586426
+            ],
+            "canonicalSize": [
+              7.953594,
+              5.877857,
+              6.216402
+            ]
+          },
+          "runtime": {
+            "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier4",
+            "sourceArtTier": 4,
+            "templateScale": 1
+          }
+        }
+      ]
+    }
   }
 }

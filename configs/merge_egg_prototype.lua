@@ -472,11 +472,8 @@ return {
             maximum_tier = 4,
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
-            current_art_tier = 2,
-            -- Playtest-locked chassis sizes on the current-art mesh. Live with
-            -- scale-only tiers until distinct T1–T4 models are actually uploaded.
-            tier_1_scale = 0.40,
-            tier_scales = { 0.40, 0.50, 0.50, 0.50 },
+            -- All six families ship distinct Tier 1–4 meshes at a uniform template scale.
+            distinct_art_tiers = true,
             available_roles = {
                 "heal",
                 "rage",
@@ -504,14 +501,18 @@ return {
                 diameter = 1.2,
                 land_seconds = 0.55,
                 -- Heal landing casts the real Healing Field at impact (same
-                -- kind numbers, no Focus/cooldown). Rage landing is still a look.
+                -- kind numbers, no Focus/cooldown). Rage landing is a one-time
+                -- Berserk sip in a ruddy MagicCircle — no tick loop.
                 -- Hard floor: never shoot a target on the egg side of BreachLine.
-                -- Heal aims injured pets (CombatDamageTaken). heal_fire_line can
-                -- tighten to "bulwark" or "mid" later; breach is the live floor.
+                -- Heal aims injured pets (CombatDamageTaken). Rage aims live
+                -- ally pets. heal_fire_line / rage_fire_line can tighten to
+                -- "bulwark" or "mid" later; breach is the live floor.
                 fire_line = "breach",
                 fire_line_epsilon = 2,
                 heal_target = "injured_pets",
                 heal_fire_line = "breach",
+                rage_target = "ally_pets",
+                rage_fire_line = "breach",
                 landing = {
                     -- Tiers only change magnitude (existing per-tick heal) and
                     -- fire interval. hot_tick stays 2s on Healing Field.
@@ -520,7 +521,13 @@ return {
                         magnitude = { 110, 110, 110, 110 },
                         interval = { 2.4, 2.4, 2.4, 2.4 },
                     },
-                    rage = { visual = "rage" },
+                    -- Tiers only change fire interval and circle size.
+                    -- Sip size stays Berserk Brew's sip_fraction.
+                    rage = {
+                        cast = "berserk_brew",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 28, 28, 28, 28 },
+                    },
                 },
                 role_colors = {
                     heal = { 85, 255, 130 },

@@ -2,6 +2,7 @@
 -- cloned from ReplicatedStorage.Assets.Models.MergeBulwarks when a defense exists.
 
 local AssetService = game:GetService("AssetService")
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MergeBulwarkModels = {}
@@ -85,7 +86,10 @@ function MergeBulwarkModels.Clone(family, tier, rootOverride)
         end
     end
     for _, descendant in ipairs(clone:GetDescendants()) do
-        if descendant:IsA("BasePart") and descendant:GetAttribute("MergeBulwarkAuthoredSize") == nil then
+        if
+            descendant:IsA("BasePart")
+            and descendant:GetAttribute("MergeBulwarkAuthoredSize") == nil
+        then
             descendant:SetAttribute("MergeBulwarkAuthoredSize", descendant.Size)
         end
     end
@@ -143,6 +147,7 @@ local function bakeMeshPart(part)
         return part
     end
     local ok, baked = pcall(function()
+        -- selene: allow(undefined_variable)
         return AssetService:CreateMeshPartAsync(Content.fromUri(part.MeshId))
     end)
     if not (ok and baked) then
@@ -224,23 +229,16 @@ end
 
 local function refitWhenMeshesLoad(model, placementScale)
     task.defer(function()
-        local deadline = os.clock() + 4
-        while model.Parent and os.clock() < deadline do
-            local pending = false
-            for _, descendant in ipairs(model:GetDescendants()) do
-                if
-                    descendant:IsA("MeshPart")
-                    and descendant.MeshId ~= ""
-                    and descendant.MeshSize.Magnitude < 0.01
-                then
-                    pending = true
-                    break
-                end
+        local meshes = {}
+        for _, descendant in ipairs(model:GetDescendants()) do
+            if descendant:IsA("MeshPart") and descendant.MeshId ~= "" then
+                table.insert(meshes, descendant)
             end
-            if not pending then
-                break
-            end
-            task.wait(0.1)
+        end
+        if #meshes > 0 then
+            pcall(function()
+                ContentProvider:PreloadAsync(meshes)
+            end)
         end
         if model.Parent then
             MergeBulwarkModels.FitToTile(model, placementScale)

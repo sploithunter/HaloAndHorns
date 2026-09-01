@@ -42,7 +42,11 @@ local FAMILIES = {
             "90245489274928",
         },
         upgradeNotes = {
-            { "+ Razor wire on the strip", "+ Bleed and slow on the wire", "+ Stops when they leave" },
+            {
+                "+ Razor wire on the strip",
+                "+ Bleed and slow on the wire",
+                "+ Stops when they leave",
+            },
             { "+ Steel razor coils", "+ Heavier bleed", "+ Short linger" },
             { "+ Electrified wire", "+ Faster tick", "+ Longer linger" },
             { "+ Plasma coils", "+ Bleed stacks", "+ Permanent linger" },
@@ -104,7 +108,11 @@ local FAMILIES = {
             "87259173917660",
         },
         upgradeNotes = {
-            { "+ Thorn hedge on the strip", "+ Roots the front of the wave", "+ Then they break through" },
+            {
+                "+ Thorn hedge on the strip",
+                "+ Roots the front of the wave",
+                "+ Then they break through",
+            },
             { "+ Ironwood roots", "+ Longer root", "+ Two at the front" },
             { "+ Venom briar", "+ Poisoned grab", "+ Longer slow" },
             { "+ Worldroot wall", "+ Roots more of the wave", "+ Still wears off" },
@@ -474,15 +482,11 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
                 0.35,
                 tonumber(tierPick(combat.venom_period, STOP_SHOVE.venom_period, step)) or 0.7
             ),
-            venomPermanent = tierPick(
-                combat.venom_permanent,
-                STOP_SHOVE.venom_permanent,
-                step
-            ) == true,
+            venomPermanent = tierPick(combat.venom_permanent, STOP_SHOVE.venom_permanent, step)
+                == true,
             contagionRadius = math.max(
                 0,
-                tonumber(tierPick(combat.contagion_radius, STOP_SHOVE.contagion_radius, step))
-                    or 0
+                tonumber(tierPick(combat.contagion_radius, STOP_SHOVE.contagion_radius, step)) or 0
             ),
             contagionInterval = math.max(
                 0.2,
@@ -515,11 +519,8 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
                 0,
                 tonumber(tierPick(combat.linger_seconds, BLEED_SLOW.linger_seconds, step)) or 0
             ),
-            bleedPermanent = tierPick(
-                combat.bleed_permanent,
-                BLEED_SLOW.bleed_permanent,
-                step
-            ) == true,
+            bleedPermanent = tierPick(combat.bleed_permanent, BLEED_SLOW.bleed_permanent, step)
+                == true,
             bleedStacks = tierPick(combat.bleed_stacks, BLEED_SLOW.bleed_stacks, step) == true,
             stackCap = math.max(
                 1,
@@ -570,8 +571,7 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
             ),
             venomRangeStuds = math.max(
                 0,
-                tonumber(tierPick(combat.venom_range_studs, HUNT_DRAG.venom_range_studs, step))
-                    or 0
+                tonumber(tierPick(combat.venom_range_studs, HUNT_DRAG.venom_range_studs, step)) or 0
             ),
             preferBosses = tierPick(combat.prefer_bosses, HUNT_DRAG.prefer_bosses, step) == true,
         }
@@ -633,13 +633,11 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
             ),
             stripDepthStuds = math.max(
                 4,
-                tonumber(tierPick(combat.strip_depth_studs, GRAB_ROOT.strip_depth_studs, step))
-                    or 8
+                tonumber(tierPick(combat.strip_depth_studs, GRAB_ROOT.strip_depth_studs, step)) or 8
             ),
             exitBufferStuds = math.max(
                 2,
-                tonumber(tierPick(combat.exit_buffer_studs, GRAB_ROOT.exit_buffer_studs, step))
-                    or 6
+                tonumber(tierPick(combat.exit_buffer_studs, GRAB_ROOT.exit_buffer_studs, step)) or 6
             ),
         }
     end

@@ -1179,6 +1179,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             WorldTravelService = isFeatureEnabled("map_binding") and modules:Get(
                 "WorldTravelService"
             ) or nil,
+            PotionService = modules:Get("PotionService"),
         })
         if isFeatureEnabled("map_binding") then
             modules:Get("WorldTravelService"):BindPowerService(modules:Get("PowerService"))

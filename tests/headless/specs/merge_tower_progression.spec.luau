@@ -11,15 +11,18 @@ return function()
             action_cost = 1,
         }
 
-        it("uses the Wave-1 playtest unlock while retaining the Wave-10 production cadence", function()
-            expect(Progression.unlockWave(config)).to.equal(1)
-            expect(Progression.isUnlocked(0, config)).to.equal(true)
-            config.playtest_unlock_enabled = false
-            expect(Progression.unlockWave(config)).to.equal(10)
-            expect(Progression.isUnlocked(9, config)).to.equal(false)
-            expect(Progression.isUnlocked(10, config)).to.equal(true)
-            config.playtest_unlock_enabled = true
-        end)
+        it(
+            "uses the Wave-1 playtest unlock while retaining the Wave-10 production cadence",
+            function()
+                expect(Progression.unlockWave(config)).to.equal(1)
+                expect(Progression.isUnlocked(0, config)).to.equal(true)
+                config.playtest_unlock_enabled = false
+                expect(Progression.unlockWave(config)).to.equal(10)
+                expect(Progression.isUnlocked(9, config)).to.equal(false)
+                expect(Progression.isUnlocked(10, config)).to.equal(true)
+                config.playtest_unlock_enabled = true
+            end
+        )
 
         it("keeps bought cannons and switches them onto one pad at the owned tier", function()
             local installed = Progression.apply(nil, "select", "repulsor", 0, config, "left")

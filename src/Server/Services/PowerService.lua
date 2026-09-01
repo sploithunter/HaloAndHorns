@@ -173,6 +173,7 @@ function PowerService:BindPeerServices(services)
     self._playerProgressionService = services.PlayerProgressionService
     self._hotbarService = services.HotbarService
     self._worldTravelService = services.WorldTravelService
+    self._potionService = services.PotionService
 end
 
 -- Families whose `passive = true` powers apply permanently by OWNERSHIP. Each maps to its single
@@ -1428,7 +1429,9 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId, op
     opts = type(opts) == "table" and opts or {}
     local center = opts.center
     if typeof(center) ~= "Vector3" then
-        local hrp = player and player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local hrp = player
+            and player.Character
+            and player.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then
             return
         end
@@ -1509,6 +1512,84 @@ function PowerService:PlaceHealingField(player, center, opts)
             floor_y = opts.floor_y,
         }
     )
+end
+
+-- One-time Berserk circle. Same MagicCircle art as Healing Field, tinted
+-- ruddy red. No tick loop: each unique player with a pet (or themselves)
+-- in the radius gets one no-consume Berserk sip. Stacking is BrewMeter.
+local BERSERK_CIRCLE_COLOR = Color3.fromRGB(168, 36, 32)
+
+function PowerService:PlaceBerserkCircle(center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local color = opts.color
+    if typeof(color) ~= "Color3" then
+        color = BERSERK_CIRCLE_COLOR
+    end
+    self:_spawnGroundRune(center, radius, color, {
+        name = opts.name or "BerserkCircle",
+        fade_in = 0.18,
+        hold = 1.35,
+        fade_out = 0.55,
+        bright = 0,
+        spin = true,
+        spin_deg = 90,
+        floor_y = opts.floor_y,
+    })
+
+    local potions = self._potionService
+    if not (potions and potions.SipBrew) then
+        return nil, "potion_service_missing"
+    end
+
+    local seen = {}
+    local sipped = 0
+    local function sip(player)
+        if not (player and player.Parent) or seen[player] then
+            return
+        end
+        seen[player] = true
+        local result = potions:SipBrew(player, "berserk_brew")
+        if result and result.ok then
+            sipped += 1
+        end
+    end
+
+    local pfs = self._petFollowService
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    for _, folder in ipairs(pp and pp:GetChildren() or {}) do
+        local owner = Players:FindFirstChild(folder.Name)
+        if owner then
+            for _, pet in ipairs(folder:GetChildren()) do
+                if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+                    local reported = pfs
+                        and pfs.GetReportedPosition
+                        and pfs:GetReportedPosition(pet)
+                    local pos = (reported and reported.Position) or pet:GetPivot().Position
+                    if (pos - center).Magnitude <= radius then
+                        sip(owner)
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp and (hrp.Position - center).Magnitude <= radius then
+            sip(player)
+        end
+    end
+
+    if opts.extra_owner and type(opts.extra_pets) == "table" and #opts.extra_pets > 0 then
+        sip(opts.extra_owner)
+    end
+
+    return { ok = true, sipped = sipped, radius = radius }
 end
 
 function PowerService:_healOverTime(player, perTick, tickSeconds, totalSeconds)

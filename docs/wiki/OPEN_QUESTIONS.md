@@ -34,14 +34,11 @@ Status: current
 - Should later bulwark lines use different talkable avatars (Colorado alts,
   one person per line) or one Colorado plus a line-picker in the workshop?
   Current path is one person per line and no menu change.
-- Distinct per-tier cannon meshes are later, not this pass. One
-  current-art mesh per role; tiers are scale-only until those models
-  exist.
-- Cannon powers stay after the visual pass except Heal: landing
-  places the existing Healing Field (not a rebuilt rune). Rage still
-  reuses the Rage rune look. Which of debuff / gravity / repulsor /
-  nullifier can borrow an existing telegraph versus needing a new
-  effect later?
+- Cannon powers stay after the visual pass except Heal and Rage.
+  Heal places the existing Healing Field. Rage is a one-time Berserk
+  sip inside a ruddy MagicCircle (no ticks). Which of debuff /
+  gravity / repulsor / nullifier can borrow an existing telegraph
+  versus needing a new effect later?
 - Heal fire line is BreachLine (same hard floor as other chassis).
   Tighten to the gold line or the computed mid plane only after live
   shots prove pets sit in a band we do not want to heal?

@@ -697,6 +697,16 @@ The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exi
 and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
 deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
 
+## Rage Cannon Is A One-Time Berserk Circle (2026-09-01)
+
+Do not use the tank Rage power and do not invent a tick loop. Landing
+is the Healing Field MagicCircle, tinted ruddy red, as a one-shot
+telegraph. Everyone in the circle gets one no-consume Berserk Brew
+sip (`PotionService:SipBrew` → existing `BrewMeter.sip`). Stacking
+is the brew's diminishing sip; it will not climb far. Tier knobs
+are fire `interval` and circle `radius` only. Sip size stays the
+brew's `sip_fraction`. No Focus, no flask consume, no player cooldown.
+
 ## Heal Cannon Tiers Are Magnitude And Fire Rate (2026-09-01)
 
 Do not change Healing Field ticks (`hot_tick` stays 2s). A heal tier
@@ -714,13 +724,14 @@ look and a combat loop, so the heal cannon lands by placing that same
 `_healZone` at impact. New cannon roles may still wait on missing
 telegraphs. This does not spend Focus or start the player cooldown.
 
-## Cannon Tiers Stay Scale-Only Until Distinct Meshes Land (2026-09-01)
+## Cannon Gameplay Tier Selects Distinct Art At Uniform Scale (2026-09-01)
 
-Each role has one current-art mesh (`current_art_tier = 2`). Playtest
-tiers change size only: `tier_scales` 0.40 / 0.50 / 0.50 / 0.50. Do not
-hunt for T3/T4 (or a unique T1) Heal meshes in this pass — they are not
-in the catalog or group inventory. Distinct per-tier models are a later
-art drop after that work is actually finished.
+Supersedes the temporary scale-only decision. Heal, Rage, Debuff, Gravity,
+Repulsor, and Nullifier each ship four distinct tier meshes. Runtime must request
+the gameplay tier directly and must not substitute `current_art_tier`, apply a
+`tier_scales` table, or derive one tier by resizing another. Templates keep scale
+1 and normalize to the shared 7.953594-stud reference width. The proof manifest
+must retain 24 distinct concept hashes, Model IDs, Mesh IDs, and Texture IDs.
 
 ## Cannons Never Fire Behind the Breach (2026-09-01)
 

@@ -55,7 +55,7 @@ async function uploadFbx(file, displayName) {
   const request = {
     assetType: "Model",
     displayName: displayName.slice(0, 50),
-    description: "Gem drop model (auto-uploaded FBX).",
+    description: String(arg("description", "Game model (auto-uploaded FBX).")),
     creationContext: { creator },
   };
   const boundary = "----rbxModelUpload" + Date.now() + Math.floor(Math.random() * 1e6);

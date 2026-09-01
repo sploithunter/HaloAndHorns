@@ -69,9 +69,9 @@ per bay and their invisible `TowerAnchor` parts under
 objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
 `Models.MergeCannons/<Role>/<Tier>`. Runtime clones and grounds a selected template through
 `src/Shared/Game/MergeTowerModels.lua`, so changing tower role or tier never mutates or duplicates
-the permanent map. A claimed bay currently grounds the current-art Repulsor at locked
-`tier_scales` (0.40 / 0.50) and lofts a labeled sphere from each pad; the cannon aims
-along the launch tangent. Upgrades and role acquisition stay later.
+the permanent map. All six roles have distinct Tier 1–4 templates at scale 1; the installed
+gameplay tier is the art tier. The cannon lofts a sphere from its pad and aims along the launch
+tangent. The Artillery Commander owns role acquisition, installation, and tier upgrades.
 
 `BulwarkLine` and `BreachLine` are combat planes, not install catalogs. Crossing
 the gold line opens pet combat; crossing the red line opens hatcher-egg attacks.
