@@ -67,6 +67,17 @@ local PET_EFFECTS = {
         label = "DMG",
         icon = POWER_ICONS.status.damage,
     },
+    -- Rage cannon circle stamps the same brew attrs on the pet itself.
+    -- Player flask stays on the player descriptor above.
+    {
+        key = "damage_potion_pet",
+        source = "pet",
+        untilAttr = "PetDamageBuffPotionUntil",
+        powerIdAttr = "PetDamageBuffPotionPowerId",
+        color = Color3.fromRGB(235, 90, 90),
+        label = "DMG",
+        icon = POWER_ICONS.status.damage,
+    },
     {
         key = "speed_potion",
         source = "player",

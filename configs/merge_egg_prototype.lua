@@ -504,14 +504,17 @@ return {
                 -- kind numbers, no Focus/cooldown). Rage landing is a one-time
                 -- Berserk sip in a ruddy MagicCircle — no tick loop.
                 -- Hard floor: never shoot a target on the egg side of BreachLine.
-                -- Heal aims injured pets (CombatDamageTaken). Rage aims live
-                -- ally pets. heal_fire_line / rage_fire_line can tighten to
+                -- Heal aims injured pets (CombatDamageTaken). Rage fires at
+                -- one ally already in combat (TargetType Enemy / AggroTargetRef);
+                -- that pet and anyone else inside the landing circle get a
+                -- per-unit sip. No idle-pet or empty-lane shot.
+                -- heal_fire_line / rage_fire_line can tighten to
                 -- "bulwark" or "mid" later; breach is the live floor.
                 fire_line = "breach",
                 fire_line_epsilon = 2,
                 heal_target = "injured_pets",
                 heal_fire_line = "breach",
-                rage_target = "ally_pets",
+                rage_target = "combat_pets",
                 rage_fire_line = "breach",
                 landing = {
                     -- Tiers only change magnitude (existing per-tick heal) and

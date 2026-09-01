@@ -1082,11 +1082,18 @@ clean.
   Upgrade advances the owned tier. The visual pass owns the six roles so
   each chassis can be installed and judged before powers. Catalog
   ownership is applied on every workshop read so Install does not
-  require a Buy. Board-action toasts use DisplayOrder 130 so they
+  require a Buy. Persist is `MergeCannonPersist`: owned + per-pad
+  slots only. Purchase does not compare the bay record to a rebuilt
+  MergeDefense table and does not read the live wave. Board-action toasts use DisplayOrder 130 so they
   sit in front of the workshop (120), not behind it. Heal aims injured pets (`CombatDamageTaken`) and
-  places the existing Healing Field at impact; Rage aims live ally
-  pets and drops a one-time ruddy MagicCircle that sips Berserk for
-  each unique owner in the radius (existing brew stack math, no ticks).
+  places the existing Healing Field at impact; Rage fires at one
+  ally already in combat (`TargetType` Enemy / `AggroTargetRef`)
+  and stamps Berserk on that pet plus any other ally inside the
+  landing circle (`SipBrewOn` on each model, existing brew stack
+  math, no ticks). No idle-pet or empty-lane shot. Owner sip is
+  forbidden: that broadcast made the circle a visual only. Floor
+  cards read the pet stamp; CombatAura watches the pet Until. Flask
+  drink still writes the player.
   Hard rule: no shot at a target on the egg side of BreachLine. Heal
   and Rage use that same floor (`heal_fire_line` / `rage_fire_line`,
   also `bulwark` or `mid`).
@@ -1098,7 +1105,9 @@ clean.
 - The walk-up workshop is a pick-then-act panel: Currently Owned and Next
   Upgrade previews on the left, the six families as a list on the right.
   Buy/Upgrade lives in the next-upgrade card; Install only deploys an owned
-  family onto the strip. Per-tier `upgradeNotes` and draft roles (stop, bleed,
+  family onto the strip. Persist is `MergeBulwarkPersist` (owned + per-slot
+  installs only). Purchase does not compare the bay record to MergeDefense
+  and does not read the live wave. Per-tier `upgradeNotes` and draft roles (stop, bleed,
   hunt, shred, hold, ward) live on `MergeBulwarkProgression`. Impaler Palisade
   is the first live effect: a no-damage stop shove toward the gate (same
   displacement as tank Seismic) plus a short root. Charges are per marcher,

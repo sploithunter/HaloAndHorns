@@ -8,16 +8,28 @@ SploitHunter stands behind each pad. Talk opens an artillery workshop
 that matches the bulwark panel (six roles, buy / upgrade / install).
 Ownership is global; each commander installs only that pad. Pads start
 empty. The visual pass owns the six chassis so Install does not need
-a Buy. Tiers are scale-only on the current-art mesh until distinct
-models land later. Board-action toasts sit above the workshop
-(DisplayOrder 130).
+a Buy. All six families use distinct Tier 1–4 models at uniform runtime
+scale; gameplay tier selects the matching prebaked template directly.
+Board-action toasts sit above the workshop
+(DisplayOrder 130). Install writes `MergeCannonPersist` only — no
+wave/MergeDefense signature compare. The `CANNON STATE CHANGED`
+toast was that compare; it is no longer returned. Bulwark install
+is the same cut (`MergeBulwarkPersist`). Egg create/merge already
+mutated the board without that compare. Waves stay start → result
+→ optional pause → start. Headless covers both persist modules.
+Not Play-confirmed yet.
 Heal aims injured pets (`CombatDamageTaken` or `HP`/`MaxHP`,
 including the player's real pets) and places the existing Healing
 Field at impact (same rune and ticks; no rebuilt visual). Heal tiers
 only change magnitude and fire interval; `hot_tick` stays 2s. Rage
-aims live ally pets and drops a one-time ruddy MagicCircle; each
-unique owner in the radius gets one Berserk sip (existing stack
-math, no ticks). Rage tiers only change fire interval and circle
+fires at one ally already in combat (`TargetType` Enemy or
+`AggroTargetRef`) and drops a one-time ruddy MagicCircle; that pet
+and any other ally inside the radius each get their own Berserk
+stamp (`SipBrewOn` on the model, existing stack math, no ticks). No
+idle-pet or empty-lane shot. Pets outside the circle are not buffed. Flask
+drink still broadcasts from the player. Floor cards read the pet
+stamp (`damage_potion_pet`); CombatAura watches the pet Until. Not
+Play-confirmed. Rage tiers only change fire interval and circle
 size. Cannons never fire at a target on the egg side
 of BreachLine. Heal and Rage use that same floor for now; bulwark/mid stay
 tunable. Not Play-confirmed yet.

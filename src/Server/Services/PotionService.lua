@@ -40,6 +40,7 @@ function PotionService:Init()
     self._config = self._configLoader:LoadConfig("potions")
     self._meters = {} -- [userId][meterId] = charge (0..1), transient
     self._enemyMeters = setmetatable({}, { __mode = "k" }) -- [enemy Model][meterId] = charge
+    self._instanceMeters = setmetatable({}, { __mode = "k" }) -- [Model][meterId] = charge (circle sips)
     self._lastDrink = {} -- [userId][potionId] = os.clock()
 
     self._remote = Signals.PotionUpdate
@@ -63,6 +64,7 @@ function PotionService:Start()
         accum = 0
         self:_drainAll(step)
         self:_drainEnemyMeters(step)
+        self:_drainInstanceMeters(step)
     end)
     Players.PlayerRemoving:Connect(function(player)
         self._meters[player.UserId] = nil
@@ -212,9 +214,9 @@ end
 -- move_speed (init.client + PetFollowController), pet_damage (PetFollowService BuffStack list),
 -- luck (EggService). The value is a RAW FRACTION (magnitude = charge × cap) for every axis — the
 -- consumers add it directly (no -1), so it's correct on fraction- AND multiplier-convention axes.
-function PotionService:_applyMeter(player, meterId, charge)
+function PotionService:_applyMeter(target, meterId, charge)
     local m = self:_meterCfg(meterId)
-    if not m or m.target == "enemy" then
+    if not m or m.target == "enemy" or not (target and target.SetAttribute) then
         return -- enemy debuffs apply at throw time (S2b)
     end
     local base = m.buff_attr
@@ -223,20 +225,20 @@ function PotionService:_applyMeter(player, meterId, charge)
     end
     local attr = base .. "Potion" -- potion's own source, summed alongside the power's <base>
     if charge and charge > 0 then
-        player:SetAttribute(attr, BrewMeter.magnitude(charge, m.cap))
-        player:SetAttribute(
+        target:SetAttribute(attr, BrewMeter.magnitude(charge, m.cap))
+        target:SetAttribute(
             attr .. "Until",
             os.time() + BrewMeter.remainingSeconds(charge, m.drain_seconds)
         )
         -- Tag with a potion power-id so the unified badge (PetBadge.forPotion) resolves on the
         -- squad cards / player bar that key off "<attr>PowerId".
-        player:SetAttribute(attr .. "PowerId", "potion_" .. meterId)
-        player:SetAttribute("Brew_" .. meterId, charge) -- live pie source for the hotbar
+        target:SetAttribute(attr .. "PowerId", "potion_" .. meterId)
+        target:SetAttribute("Brew_" .. meterId, charge) -- live pie source for the hotbar
     else
-        player:SetAttribute(attr, nil)
-        player:SetAttribute(attr .. "Until", 0)
-        player:SetAttribute(attr .. "PowerId", nil)
-        player:SetAttribute("Brew_" .. meterId, nil)
+        target:SetAttribute(attr, nil)
+        target:SetAttribute(attr .. "Until", 0)
+        target:SetAttribute(attr .. "PowerId", nil)
+        target:SetAttribute("Brew_" .. meterId, nil)
     end
 end
 
@@ -289,6 +291,33 @@ function PotionService:SipBrew(player, potionId)
     self._meters[uid][meterId] = charge
     self:_applyMeter(player, meterId, charge)
     self:_push(player)
+    return { ok = true, charge = charge, meter = meterId }
+end
+
+-- Same BrewMeter.sip + drain as SipBrew, but the stamp lives on THIS instance.
+-- Used by the Rage cannon circle so only units inside the radius get Berserk.
+-- Refuses Player: writing the player attr rebroadcasts to every owned pet.
+-- No flask consume, no drink lock, no hotbar push.
+function PotionService:SipBrewOn(target, potionId)
+    if not (target and target.Parent) then
+        return nil, "no_target"
+    end
+    if target:IsA("Player") then
+        return nil, "player_target_use_sip_brew"
+    end
+    local pcfg = self:_potionCfg(potionId)
+    if not pcfg then
+        return nil, "unknown_potion"
+    end
+    local meterId = pcfg.meter
+    local m = self:_meterCfg(meterId)
+    if not m or m.target == "enemy" then
+        return nil, "bad_meter"
+    end
+    self._instanceMeters[target] = self._instanceMeters[target] or {}
+    local charge = BrewMeter.sip(self._instanceMeters[target][meterId] or 0, pcfg.sip_fraction)
+    self._instanceMeters[target][meterId] = charge
+    self:_applyMeter(target, meterId, charge)
     return { ok = true, charge = charge, meter = meterId }
 end
 
@@ -480,6 +509,27 @@ function PotionService:_drainEnemyMeters(dt)
             end
             if next(meters) == nil then
                 self._enemyMeters[target] = nil
+            end
+        end
+    end
+end
+
+function PotionService:_drainInstanceMeters(dt)
+    for target, meters in pairs(self._instanceMeters) do
+        if not target.Parent then
+            self._instanceMeters[target] = nil
+        else
+            for meterId, charge in pairs(meters) do
+                local m = self:_meterCfg(meterId)
+                local nextCharge = BrewMeter.drain(charge, dt, m and m.drain_seconds)
+                meters[meterId] = nextCharge
+                self:_applyMeter(target, meterId, nextCharge)
+                if BrewMeter.isEmpty(nextCharge) then
+                    meters[meterId] = nil
+                end
+            end
+            if next(meters) == nil then
+                self._instanceMeters[target] = nil
             end
         end
     end

@@ -41,6 +41,7 @@ local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
+local MergeBulwarkPersist = require(ReplicatedStorage.Shared.Game.MergeBulwarkPersist)
 local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
 local MergeBulwarkSlots = require(ReplicatedStorage.Shared.Game.MergeBulwarkSlots)
 local MergeCannonPersist = require(ReplicatedStorage.Shared.Game.MergeCannonPersist)
@@ -3235,46 +3236,12 @@ function MergeEggPrototypeService:_edgeBulwarkConfig()
     return type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
 end
 
-function MergeEggPrototypeService:_bulwarkPersistInput(source)
-    source = type(source) == "table" and source or {}
-    local input = {
-        owned = source.bulwarkOwned or source.bulwark_owned or source.owned,
-        slots = source.slots or source.bulwark_slots,
-    }
-    for _, def in ipairs(MergeBulwarkSlots.all()) do
-        input[def.aliasFamily] = source[def.aliasFamily]
-            or source[def.recordFamily]
-            or source[def.persistFamily]
-        input[def.aliasTier] = source[def.aliasTier]
-            or source[def.recordTier]
-            or source[def.persistTier]
-    end
-    return input
-end
-
 function MergeEggPrototypeService:_normalizeBulwarkState(source)
-    return MergeBulwarkProgression.normalize(
-        self:_bulwarkPersistInput(source),
-        self:_edgeBulwarkConfig().maximum_tier
-    )
+    return MergeBulwarkPersist.read(source, self:_edgeBulwarkConfig())
 end
 
 function MergeEggPrototypeService:_writeBulwarkState(record, progress, state)
-    local persisted = MergeBulwarkProgression.persistFields(state)
-    if record then
-        for _, def in ipairs(MergeBulwarkSlots.all()) do
-            local family, tier = MergeBulwarkProgression.slotFamily(state, def.id)
-            record[def.recordFamily] = family
-            record[def.recordTier] = tier
-        end
-        record.bulwarkOwned = table.clone(state.owned or {})
-        record.bulwarkSlots = table.clone(persisted.bulwark_slots or {})
-    end
-    if progress then
-        for key, value in pairs(persisted) do
-            progress[key] = value
-        end
-    end
+    MergeBulwarkPersist.write(record, progress, state)
 end
 
 function MergeEggPrototypeService:_liveMergeDefense(player)
@@ -3544,6 +3511,50 @@ function MergeEggPrototypeService:_towerPetReady(pet)
     return true
 end
 
+function MergeEggPrototypeService:_towerLiveEnemyById(record, targetId)
+    targetId = tonumber(targetId)
+    if not targetId then
+        return nil
+    end
+    for _, enemy in ipairs(record and record.enemies or {}) do
+        if tonumber(enemy.targetId) == targetId then
+            local model = enemy.model
+            if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
+                return enemy
+            end
+        end
+    end
+    return nil
+end
+
+-- Same fight signals `_teamEngagedWithEnemy` already uses: this pet is
+-- swinging at a live enemy, or a live enemy has this pet as AggroTargetRef.
+function MergeEggPrototypeService:_towerPetInCombat(record, pet)
+    if not self:_towerPetReady(pet) then
+        return false
+    end
+    local targetType = pet:FindFirstChild("TargetType")
+    local targetId = pet:FindFirstChild("TargetID")
+    if
+        targetType
+        and tostring(targetType.Value) == "Enemy"
+        and self:_towerLiveEnemyById(record, targetId and targetId.Value)
+    then
+        return true
+    end
+    for _, enemy in ipairs(record and record.enemies or {}) do
+        local model = enemy.model
+        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
+            local targetRef = model:FindFirstChild("AggroTargetRef")
+            local target = targetRef and targetRef.Value
+            if target == pet or (target and target:IsDescendantOf(pet)) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 function MergeEggPrototypeService:_towerRoleFireLine(role)
     local _, shot = self:_edgeTowerConfig()
     local id = string.lower(tostring(role or ""))
@@ -3783,13 +3794,13 @@ function MergeEggPrototypeService:_castTowerBerserkCircle(flight, position)
             extras[#extras + 1] = pet
         end
     end)
-    -- Existing MagicCircle, ruddy red. One sip per unique owner in
-    -- the radius. No tick loop; BrewMeter already diminishes stacks.
+    -- Existing MagicCircle, ruddy red. Shot aims one pet; extras are
+    -- every ally already inside that landing radius. Stamp each, not
+    -- the owner. No tick loop.
     self._powerService:PlaceBerserkCircle(position, {
         radius = radius,
         floor_y = floorY,
         extra_pets = extras,
-        extra_owner = record and record.player,
     })
 end
 
@@ -4206,7 +4217,7 @@ function MergeEggPrototypeService:_towerRageTarget(record, origin, look)
     local best
     local bestDistance = math.huge
     self:_towerEachAllyPet(record, function(pet)
-        if not self:_towerPetReady(pet) then
+        if not self:_towerPetInCombat(record, pet) then
             return
         end
         local position = self:_towerPetLivePosition(pet)
@@ -4688,7 +4699,7 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
         families = MergeBulwarkProgression.familiesForSlot(slot),
-        unlocked = MergeBulwarkProgression.isUnlocked(currentWave, cfg),
+        unlocked = MergeBulwarkProgression.isUnlocked(MergeBulwarkProgression.unlockWave(cfg), cfg),
         unlockWave = MergeBulwarkProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 20)),
         tutorialIntermissionWave = math.max(
@@ -5340,7 +5351,7 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
         families = MergeTowerProgression.familiesForSlot(slot),
-        unlocked = MergeTowerProgression.isUnlocked(currentWave, cfg),
+        unlocked = MergeTowerProgression.isUnlocked(MergeTowerProgression.unlockWave(cfg), cfg),
         unlockWave = MergeTowerProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 10)),
         tutorialIntermissionWave = math.max(
@@ -5706,7 +5717,7 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         if role == "heal" then
             skip = "no_injured_pet"
         elseif role == "rage" then
-            skip = "no_ally_pet"
+            skip = "no_combat_pet"
         end
         cannon:SetAttribute("MergeTowerSkipReason", skip)
         return false
@@ -13335,31 +13346,17 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     end
     local cfg = self:_edgeBulwarkConfig()
     local requestedAction = tostring(request.bulwarkAction or "")
-    local before = self:_normalizeBulwarkState(record)
-    local nextState, progressionReason = MergeBulwarkProgression.apply(
-        before,
-        requestedAction,
-        request.family,
-        record.waveIndex,
-        cfg,
-        slot
-    )
-    if not nextState then
-        return false, progressionReason
-    end
     if not (self._economyService and self._economyService.Transact) then
         return false, "economy_unavailable"
     end
-    local progress = self:_mergeDefenseProgress(player)
-    if not progress then
+    if not self:_liveMergeDefense(player) then
         return false, "profile_unavailable"
     end
-    local durableBefore = self:_normalizeBulwarkState(progress)
-    if
-        MergeBulwarkProgression.signature(durableBefore)
-        ~= MergeBulwarkProgression.signature(before)
-    then
-        return false, "bulwark_state_changed"
+    local before = MergeBulwarkPersist.read(record, cfg)
+    local nextState, progressionReason =
+        MergeBulwarkPersist.apply(before, requestedAction, request.family, cfg, slot)
+    if not nextState then
+        return false, progressionReason
     end
 
     local price = MergeBulwarkProgression.actionCost(cfg)
@@ -13372,24 +13369,17 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
         } or {},
         reason = "merge_egg_bulwark_" .. requestedAction,
         commit = function()
-            if
-                not self:_isRecordActive(record)
-                or record.terminal == true
-                or MergeBulwarkProgression.signature(self:_bulwarkPersistInput(record)) ~= MergeBulwarkProgression.signature(
-                    before
-                )
-                or MergeBulwarkProgression.signature(self:_bulwarkPersistInput(progress))
-                    ~= MergeBulwarkProgression.signature(durableBefore)
-            then
-                commitFailure = "bulwark_state_changed"
+            if not self:_isRecordActive(record) or record.terminal == true then
+                commitFailure = "not_active_encounter"
                 return false
             end
-            self:_writeBulwarkState(record, progress, nextState)
-            record.bulwarkWaycoinsSpent = (record.bulwarkWaycoinsSpent or 0) + charged
-            progress.bulwark_waycoins_spent = math.max(
-                0,
-                math.floor(tonumber(progress.bulwark_waycoins_spent) or 0)
-            ) + charged
+            local live = self:_liveMergeDefense(player)
+            if not live then
+                commitFailure = "profile_unavailable"
+                return false
+            end
+            MergeBulwarkPersist.write(record, live, nextState)
+            MergeBulwarkPersist.addSpent(record, live, charged)
             return true
         end,
     })
@@ -13455,13 +13445,8 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
         return false, "profile_unavailable"
     end
     local before = MergeCannonPersist.read(record, cfg)
-    local nextState, progressionReason = MergeCannonPersist.apply(
-        before,
-        requestedAction,
-        request.family,
-        cfg,
-        slot
-    )
+    local nextState, progressionReason =
+        MergeCannonPersist.apply(before, requestedAction, request.family, cfg, slot)
     if not nextState then
         return false, progressionReason
     end

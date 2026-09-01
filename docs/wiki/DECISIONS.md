@@ -2,6 +2,36 @@
 
 Status: current
 
+## Merge Actions Are Async And Independent (2026-09-01)
+
+Eggs, bulwarks, and cannons do not share a state machine with waves
+or with each other. A system may *read* another system's live
+position for targeting (pets, marchers, hatcher eggs). It may not
+ask that system for permission to apply its own action.
+
+- **Eggs:** create / merge / place mutate the board. They do not
+  compare-and-swap `MergeDefense` and do not read `waveIndex`.
+- **Bulwarks:** `MergeBulwarkPersist` owns wall keys only. Install
+  writes the live profile table. No signature compare. No live wave.
+- **Cannons:** `MergeCannonPersist` owns pad keys the same way. Fire
+  still hands off to `PowerService`. Pads do not talk to each other.
+- **Waves:** start → result (auto or manual) → start. The only
+  wave hook other systems need is an optional pause between two
+  waves (`gap_after`, checkpoint intermission, later a tutorial
+  insert between 10 and 11 or 1 and 2). Shops and the board are
+  not unlock-gated on the live wave.
+
+## Cannon Persist Is Independent Of The Wave Machine (2026-09-01)
+
+Pad install/upgrade does not compare the encounter record to
+`GameData.MergeDefense`, does not read `waveIndex`, and does not
+rebuild the onboarding blob. `MergeCannonPersist` owns the tower
+keys (`tower_owned`, `tower_slots`, left/right family+tier). Apply
+uses the authored unlock wave only. A click writes that slice onto
+the live profile table, then the pad respawns. Fire still lives on
+the bay heartbeat and hands off to `PowerService`. Cannons do not
+talk to each other.
+
 ## Game Identity
 
 The game is **Halo & Horns** (working codename "Pet Realm"). Core fantasy: hatch soul-bound pets, conquer the elemental ring, and tip your **Soul** toward Heaven (Halo) or Hell (Horns) — no neutral ending. The published store description (kept ≤1000 chars) is in `docs/STORE_DESCRIPTION.md`. The Roblox experience is "Halo and Horns" (see Roblox Places below for IDs). Internal branch/codename slugs may still use `pet-realm`/`game`.
@@ -701,11 +731,19 @@ deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or
 
 Do not use the tank Rage power and do not invent a tick loop. Landing
 is the Healing Field MagicCircle, tinted ruddy red, as a one-shot
-telegraph. Everyone in the circle gets one no-consume Berserk Brew
-sip (`PotionService:SipBrew` → existing `BrewMeter.sip`). Stacking
-is the brew's diminishing sip; it will not climb far. Tier knobs
-are fire `interval` and circle `radius` only. Sip size stays the
-brew's `sip_fraction`. No Focus, no flask consume, no player cooldown.
+telegraph. Each unit inside the circle gets one no-consume Berserk
+Brew sip on that model (`PotionService:SipBrewOn` → existing
+`BrewMeter.sip`). Do not sip the owner: player `PetDamageBuffPotion`
+broadcasts to every pet and makes the radius a visual only.
+Stacking is the brew's diminishing sip; it will not climb far. Tier
+knobs are fire `interval` and circle `radius` only. Sip size stays
+the brew's `sip_fraction`. No Focus, no flask consume, no player
+cooldown. Rage fires at one ally already in combat
+(`rage_target = "combat_pets"`: `TargetType == Enemy` on a live
+wave enemy, or that enemy's `AggroTargetRef`). That pet gets the
+sip; any other ally inside the landing circle gets it too. Idle
+pets and empty-lane shots are not aims. Heal still aims injured
+pets. Aim does not sip the owner.
 
 ## Heal Cannon Tiers Are Magnitude And Fire Rate (2026-09-01)
 

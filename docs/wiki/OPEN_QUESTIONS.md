@@ -36,7 +36,9 @@ Status: current
   Current path is one person per line and no menu change.
 - Cannon powers stay after the visual pass except Heal and Rage.
   Heal places the existing Healing Field. Rage is a one-time Berserk
-  sip inside a ruddy MagicCircle (no ticks). Which of debuff /
+  sip on one in-combat pet plus anyone else inside a ruddy
+  MagicCircle (no ticks, no owner broadcast, no idle-pet aim).
+  Which of debuff /
   gravity / repulsor / nullifier can borrow an existing telegraph
   versus needing a new effect later?
 - Heal fire line is BreachLine (same hard floor as other chassis).

@@ -6803,3 +6803,50 @@ first-session cohort rates.
   gameplay tier directly at template scale 1; `current_art_tier`, `tier_scales`, and model resizing
   are removed. Both the Lune prebake checker and live Studio Edit-datamodel inspection confirmed 24
   templates with 24 distinct Mesh IDs and 24 distinct Texture IDs.
+
+## 2026-09-01 — Cannon persist leaves the wave machine
+
+- Install was failing with `cannon_state_changed` because
+  `PurchaseCannonAction` compared the bay record to a rebuilt
+  `MergeDefense` blob. Cannons do not share state with waves or
+  each other. `MergeCannonPersist` now owns tower keys only; apply
+  uses the authored unlock wave; write mutates the live profile
+  table. No signature compare. Hydrate no longer wipes a free
+  catalog Install when spent is 0. Not Play-confirmed.
+
+## 2026-09-01 — Bulwark persist leaves the wave machine
+
+- Same shop lock as cannons: `PurchaseBulwarkAction` compared the bay
+  record to a rebuilt MergeDefense blob and passed `waveIndex` into
+  apply. `MergeBulwarkPersist` now owns wall keys only. Egg
+  create/merge already mutated the board without that compare. Waves
+  stay start → result → optional pause (`gap_after` /
+  checkpoint intermission) → start. Targeting may read other
+  systems; actions do not wait on them. Not Play-confirmed.
+
+## 2026-09-01 — Hatcher pets show the owner's Berserk
+
+- SipBrew still writes the player. Merged hatcher units were not
+  on `PlayerPets/<player>`, so CombatAura never refreshed and the
+  floor roster never called StatusBadges. Floor cards now resolve
+  the same pet/player vocabulary as SquadHud. CombatAura follows
+  `NpcOwner` and draws the existing PetBadge disc over those
+  models. Damage already used the owner principal. Not
+  Play-confirmed.
+
+## 2026-09-01 — Rage circle stamps each unit, not the owner
+
+- Owner `SipBrew` wrote player `PetDamageBuffPotion`, so every pet
+  inherited Berserk and the circle did not limit anyone. Rage also
+  refused to fire without an ally aim. Circle now `SipBrewOn` each
+  model in the radius (same brew sip, charge on the pet). Rage
+  fires a lane land point toward the gate. Flask drink still
+  broadcasts from the player. Not Play-confirmed.
+
+## 2026-09-01 — Rage aims an ally again
+
+- Lane-only land made the barrel ignore pets. Locked rule: fire at
+  one ally already in combat (`TargetType` Enemy or
+  `AggroTargetRef`); that pet and any other ally in the landing
+  circle each get `SipBrewOn`. No idle-pet or empty-lane shot. Not
+  Play-confirmed.

@@ -1541,52 +1541,56 @@ function PowerService:PlaceBerserkCircle(center, opts)
     })
 
     local potions = self._potionService
-    if not (potions and potions.SipBrew) then
+    if not (potions and potions.SipBrewOn) then
         return nil, "potion_service_missing"
     end
 
+    -- Stamp each unit in the radius. Do not SipBrew the owner: that writes
+    -- player PetDamageBuffPotion and every pet inherits it.
     local seen = {}
     local sipped = 0
-    local function sip(player)
-        if not (player and player.Parent) or seen[player] then
+    local function sipUnit(pet)
+        if
+            not (pet and pet:IsA("Model") and pet.Parent)
+            or seen[pet]
+            or pet:GetAttribute("CombatDowned")
+            or pet:GetAttribute("MergeEggObjective") == true
+        then
             return
         end
-        seen[player] = true
-        local result = potions:SipBrew(player, "berserk_brew")
+        seen[pet] = true
+        local result = potions:SipBrewOn(pet, "berserk_brew")
         if result and result.ok then
             sipped += 1
         end
     end
 
     local pfs = self._petFollowService
+    local function unitInCircle(pet)
+        if not (pet and pet:IsA("Model")) then
+            return false
+        end
+        local reported = pfs and pfs.GetReportedPosition and pfs:GetReportedPosition(pet)
+        local pos = (reported and reported.Position) or pet:GetPivot().Position
+        return (pos - center).Magnitude <= radius
+    end
+
     local pp = Workspace:FindFirstChild("PlayerPets")
     for _, folder in ipairs(pp and pp:GetChildren() or {}) do
-        local owner = Players:FindFirstChild(folder.Name)
-        if owner then
-            for _, pet in ipairs(folder:GetChildren()) do
-                if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
-                    local reported = pfs
-                        and pfs.GetReportedPosition
-                        and pfs:GetReportedPosition(pet)
-                    local pos = (reported and reported.Position) or pet:GetPivot().Position
-                    if (pos - center).Magnitude <= radius then
-                        sip(owner)
-                        break
-                    end
-                end
+        for _, pet in ipairs(folder:GetChildren()) do
+            if unitInCircle(pet) then
+                sipUnit(pet)
             end
         end
     end
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp and (hrp.Position - center).Magnitude <= radius then
-            sip(player)
+    -- extras are already the aimed pet plus anyone the caster measured
+    -- inside the radius (live positions). Do not re-filter on pivot;
+    -- hatcher ghosts can sit away from their last rendered pivot.
+    if type(opts.extra_pets) == "table" then
+        for _, pet in ipairs(opts.extra_pets) do
+            sipUnit(pet)
         end
-    end
-
-    if opts.extra_owner and type(opts.extra_pets) == "table" and #opts.extra_pets > 0 then
-        sip(opts.extra_owner)
     end
 
     return { ok = true, sipped = sipped, radius = radius }

@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
+local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
 local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMenu)
@@ -55,6 +56,9 @@ local tutorialClickChevron
 local tutorialClickCueTarget
 local tutorialClickCue
 local PANEL_WIDTH = 214
+local STATUS_BADGE_GUTTER = 40
+local STATUS_BADGE_BLINK_LEAD = tonumber((COMBAT.status_badges or {}).blink_lead_seconds) or 5
+local STATUS_BADGE_BLINK_PERIOD = tonumber((COMBAT.status_badges or {}).blink_period_seconds) or 0.5
 local GROUND_PANEL_GAP_BEHIND_EGG = 1
 local PANEL_HEADER_HEIGHT = 61
 local PANEL_CARD_HEIGHT = 44
@@ -1015,8 +1019,17 @@ local function spraySawShredChunks(model, count)
         bit.Color = colors[math.random(1, #colors)]
         bit.Size = Vector3.new(size, size, size)
         bit.CFrame = CFrame.new(
-            origin + Vector3.new((math.random() - 0.5) * 1.4, 0.55 + math.random() * 0.9, (math.random() - 0.5) * 1.4)
-        ) * CFrame.Angles(math.random() * math.pi, math.random() * math.pi, math.random() * math.pi)
+            origin
+                + Vector3.new(
+                    (math.random() - 0.5) * 1.4,
+                    0.55 + math.random() * 0.9,
+                    (math.random() - 0.5) * 1.4
+                )
+        ) * CFrame.Angles(
+            math.random() * math.pi,
+            math.random() * math.pi,
+            math.random() * math.pi
+        )
         bit.AssemblyLinearVelocity = Vector3.new(
             (math.random() - 0.5) * 30,
             12 + math.random() * 20,
@@ -1168,7 +1181,11 @@ local function inferLandSharkField(model, along)
                 acc += Vector3.new(position.X, 0, position.Z)
                 count += 1
                 look = look
-                    or Vector3.new(descendant.CFrame.LookVector.X, 0, descendant.CFrame.LookVector.Z)
+                    or Vector3.new(
+                        descendant.CFrame.LookVector.X,
+                        0,
+                        descendant.CFrame.LookVector.Z
+                    )
                 tile = tonumber(descendant:GetAttribute("MergeBulwarkTileLength")) or tile
             end
         end
@@ -1190,8 +1207,7 @@ local function inferLandSharkField(model, along)
 end
 
 local function landSharkWander(time, phase, seed)
-    local along = math.sin(time * 0.23 + phase * 6.1 + seed)
-        * 0.56
+    local along = math.sin(time * 0.23 + phase * 6.1 + seed) * 0.56
         + math.sin(time * 0.39 + phase * 3.7 + seed * 1.8) * 0.29
         + math.sin(time * 0.61 + phase * 2.2 + seed * 0.7) * 0.15
     local depth = math.sin(time * 0.31 + phase * 5.4 + seed * 1.3) * 0.67
@@ -1200,7 +1216,8 @@ local function landSharkWander(time, phase, seed)
 end
 
 local function registerLandSharkRig(model)
-    local direction = planarUnit(model:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
+    local direction =
+        planarUnit(model:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
     local field = inferLandSharkField(model, direction)
     local center = model:GetAttribute("MergeLandSharkFieldCenter")
     if typeof(center) ~= "Vector3" then
@@ -1429,7 +1446,8 @@ local function updateSawBladeRigs(dt, observing)
                 else
                     local _, size = child:GetBoundingBox()
                     local longest = math.max(size.X, size.Y, size.Z)
-                    local target = 10 * (tonumber(child:GetAttribute("MergeBulwarkSpawnScale")) or 1)
+                    local target = 10
+                        * (tonumber(child:GetAttribute("MergeBulwarkSpawnScale")) or 1)
                     if longest > target * 1.5 then
                         sawBladeRigs[child] = nil
                         registerSawBladeRig(child)
@@ -1877,7 +1895,8 @@ local function createGroundTeamPanels()
         surface.Name = "TeamSurface"
         surface.Face = Enum.NormalId.Top
         surface.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-        surface.CanvasSize = Vector2.new(PANEL_WIDTH, logicalHeight)
+        surface.CanvasSize = Vector2.new(PANEL_WIDTH + STATUS_BADGE_GUTTER, logicalHeight)
+        surface.ClipsDescendants = false
         surface.LightInfluence = 0
         surface.AlwaysOnTop = false
         surface.ZOffset = 0
@@ -1889,6 +1908,8 @@ local function createGroundTeamPanels()
         root.BackgroundTransparency = 1
         root.Parent = surface
         local panel = createPanel(root, teamCfg, order)
+        panel.frame.Position = UDim2.fromOffset(STATUS_BADGE_GUTTER, 0)
+        panel.frame.ClipsDescendants = false
         panels[panel.id] = panel
     end
     return panels, displayFolder
@@ -1943,6 +1964,7 @@ local function cardFor(panel, slot)
     })
     card.frame.Active = false
     card.frame.Selectable = false
+    card.frame.ClipsDescendants = false
     HudCard.applyFunctionMark(card, nil)
     HudCard.applyHighlight(card, nil)
     panel.cards[slot] = card
@@ -2016,6 +2038,13 @@ local function updatePetCard(card, pet, authored, factor, queued, noEgg)
         card.fill.BackgroundColor3 = queued and Color3.fromRGB(225, 145, 65) or HudCard.HP_RED
         card.note.Text = queued and "QUEUED" or "DEFEATED"
     end
+    -- Same player/pet brew vocabulary as SquadHud. Flask Berserk comes from
+    -- the owner; a Rage cannon circle stamps only the pet models it hits.
+    StatusBadges.update(
+        card,
+        pet and StatusBadges.resolve("pet", { pet = pet, player = localPlayer }, os.time()) or {},
+        STATUS_BADGE_BLINK_LEAD
+    )
 end
 
 local function updatePanel(panel, folder, wave, waveCount, factor)
@@ -3455,6 +3484,11 @@ function MergeEggPrototypeObserver.start()
     local rotationElapsed = 0
     RunService.RenderStepped:Connect(function(dt)
         local observing = localPlayer:GetAttribute("InMergeEggPrototype") == true
+        if observing then
+            for _, panel in pairs(panels) do
+                StatusBadges.applyBlink(panel.cards, STATUS_BADGE_BLINK_PERIOD)
+            end
+        end
         updateSawBladeRigs(dt, observing)
         if observing and tutorialPathTarget then
             updateTutorialPath(tutorialPathTarget)
