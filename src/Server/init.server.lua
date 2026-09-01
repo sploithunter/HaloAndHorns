@@ -1159,6 +1159,10 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 PrologueService = modules:Get("PrologueService"),
                 StarterPetService = modules:Get("StarterPetService"),
                 CombatTutorialService = modules:Get("CombatTutorialService"),
+                MergeEggPrototypeService = isFeatureEnabled("map_binding") and modules:Get(
+                    "MergeEggPrototypeService"
+                ) or nil,
+                SettingsService = modules:Get("SettingsService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({
@@ -1258,7 +1262,71 @@ local loadSuccess, loadOrderOrError = pcall(function()
             ModifierService = isFeatureEnabled("modifiers") and modules:Get("ModifierService")
                 or nil,
             PetFollowService = modules:Get("PetFollowService"),
+            AdminToolsService = isFeatureEnabled("admin_tools") and modules:Get(
+                "AdminToolsService"
+            ) or nil,
+            MergeEggPrototypeService = isFeatureEnabled("map_binding") and modules:Get(
+                "MergeEggPrototypeService"
+            ) or nil,
         })
+
+        -- Studio command-bar/MCP code runs with an isolated ModuleScript cache, so requiring
+        -- RuntimeServiceBindings there cannot see this composition root's service instances.
+        -- Expose a deliberately narrow, server-only BindableFunction for deterministic Merge
+        -- lifecycle tests. This is never created in production and does not bypass the same
+        -- public service methods used by gameplay.
+        if RunService:IsStudio() then
+            local ServerStorage = game:GetService("ServerStorage")
+            local bridge = ServerStorage:FindFirstChild("MergeEggStudioAutomation")
+            if bridge then
+                bridge:Destroy()
+            end
+            bridge = Instance.new("BindableFunction")
+            bridge.Name = "MergeEggStudioAutomation"
+            bridge.Parent = ServerStorage
+
+            local mergeService = isFeatureEnabled("map_binding")
+                    and modules:Get("MergeEggPrototypeService")
+                or nil
+            local adminToolsService = isFeatureEnabled("admin_tools")
+                    and modules:Get("AdminToolsService")
+                or nil
+            bridge.OnInvoke = function(action, player, payload)
+                if typeof(player) ~= "Instance" or not player:IsA("Player") then
+                    return false, "invalid_player"
+                end
+                action = tostring(action or "")
+                payload = type(payload) == "table" and payload or {}
+                if action == "audit" then
+                    if not mergeService then
+                        return false, "merge_service_unavailable"
+                    end
+                    return mergeService:GetLifecycleAudit(player)
+                elseif action == "admin_reset" then
+                    if not adminToolsService then
+                        return false, "admin_tools_unavailable"
+                    end
+                    adminToolsService:_handleResetToBeginning(player, payload)
+                    return true
+                elseif action == "create_egg" then
+                    if not mergeService then
+                        return false, "merge_service_unavailable"
+                    end
+                    return mergeService:CreateBaseEgg(player, payload)
+                elseif action == "board_action" then
+                    if not mergeService then
+                        return false, "merge_service_unavailable"
+                    end
+                    return mergeService:HandleBoardAction(player, payload)
+                elseif action == "start_coin_runner" then
+                    if not mergeService then
+                        return false, "merge_service_unavailable"
+                    end
+                    return mergeService:StartCoinRunner(player, payload)
+                end
+                return false, "unknown_action"
+            end
+        end
     end)
 end)
 

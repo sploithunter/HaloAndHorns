@@ -9,18 +9,22 @@ local FAMILIES = {
         id = "impaler_palisade",
         name = "Impaler Palisade",
         role = "Stop",
-        description = "Stakes the strip. Marchers that hit the line take a burst and get shoved back toward the gate.",
+        description = "Stakes the strip. Marchers that hit the line get shoved back toward the gate. No damage — after enough hits they walk through.",
         previewAssetIds = {
-            "129803988118337",
-            "98392384350392",
-            "102201870134911",
-            "125827629437462",
+            "116860085128235",
+            "97859864666503",
+            "129822630921173",
+            "74198495305059",
         },
         upgradeNotes = {
-            { "+ Timber stakes on the strip", "+ Burst on contact", "+ Shove back toward the gate" },
-            { "+ Iron-capped stakes", "+ Harder shove", "+ Forged braces" },
-            { "+ Venom-coated tips", "+ Burst hits more of the wave", "+ Stronger knockback" },
-            { "+ Soulforged pylons", "+ Holds the shove", "+ Void burst" },
+            {
+                "+ Timber stakes on the strip",
+                "+ Shove back toward the gate",
+                "+ One bounce, then they breach",
+            },
+            { "+ Iron-capped stakes", "+ Harder shove", "+ Two bounces before they breach" },
+            { "+ Venom-coated tips", "+ Stronger knockback", "+ Three bounces before they breach" },
+            { "+ Soulforged pylons", "+ Holds the shove", "+ Four bounces before they breach" },
         },
     },
     {
@@ -29,10 +33,10 @@ local FAMILIES = {
         role = "Bleed",
         description = "Razor wire across the lane. Anything that keeps walking the strip takes damage for as long as it stays on it.",
         previewAssetIds = {
-            "136599170104983",
-            "114115802025357",
-            "97116236163143",
-            "127236634177361",
+            "113357672010171",
+            "105913949349922",
+            "72955017349938",
+            "90245489274928",
         },
         upgradeNotes = {
             { "+ Razor wire on the strip", "+ Bleed while they walk it", "+ Posts hold the lane" },
@@ -47,13 +51,17 @@ local FAMILIES = {
         role = "Hunt",
         description = "Sharks travel the strip and bite the nearest marcher. They chase instead of sitting still.",
         previewAssetIds = {
-            "93689656194809",
-            "75537065187935",
-            "104209939997210",
-            "75511812682521",
+            "113908496978867",
+            "88409379844802",
+            "111766652323283",
+            "108251207551720",
         },
         upgradeNotes = {
-            { "+ One shark on the strip", "+ Bites the nearest marcher", "+ Chases instead of sitting still" },
+            {
+                "+ One shark on the strip",
+                "+ Bites the nearest marcher",
+                "+ Chases instead of sitting still",
+            },
             { "+ Ironjaw armor", "+ Harder bite", "+ Faster chase" },
             { "+ Venom fins", "+ Poisoned bite", "+ Keeps the hunt" },
             { "+ Apex void shark", "+ Heavier bite", "+ Boss of the strip" },
@@ -65,13 +73,17 @@ local FAMILIES = {
         role = "Shred",
         description = "Spinning blades chew anything on the line. Highest raw damage, no control.",
         previewAssetIds = {
-            "135106892647800",
-            "127121637387172",
-            "95208080901306",
-            "75817556345709",
+            "121529052464390",
+            "77664713466251",
+            "72827689088718",
+            "112838270832676",
         },
         upgradeNotes = {
-            { "+ One saw on the line", "+ Chews anything that crosses", "+ Highest raw damage, no control" },
+            {
+                "+ One saw on the line",
+                "+ Chews anything that crosses",
+                "+ Highest raw damage, no control",
+            },
             { "+ Twin hardened blades", "+ Higher shred", "+ Riveted track" },
             { "+ Triple heated saws", "+ Faster chew", "+ Hotter cut" },
             { "+ Quad void blades", "+ Highest shred", "+ Runic hubs" },
@@ -83,10 +95,10 @@ local FAMILIES = {
         role = "Hold",
         description = "Thorns grab the front of the wave and slow it so your pets can finish the pile.",
         previewAssetIds = {
-            "124036242227752",
-            "88689523917752",
-            "105129779394582",
-            "95382045660111",
+            "85025651891171",
+            "80372327819409",
+            "90028794177150",
+            "87259173917660",
         },
         upgradeNotes = {
             { "+ Thorn hedge on the strip", "+ Grabs the front of the wave", "+ Slows the pile" },
@@ -101,10 +113,10 @@ local FAMILIES = {
         role = "Ward",
         description = "Wards the hatcher eggs, not the lane. Cuts damage that gets past the fight and hits an installed egg.",
         previewAssetIds = {
-            "78858133707824",
-            "130243428103758",
-            "111395473839332",
-            "82814362109464",
+            "135466894164464",
+            "115291422790551",
+            "138858336514150",
+            "100267714245380",
         },
         upgradeNotes = {
             { "+ Two ward stones", "+ Cuts hatcher-egg damage", "+ Not a lane trap" },
@@ -222,6 +234,45 @@ function MergeBulwarkProgression.actionCost(config)
     return {
         currency = tostring(config.currency or "hall_coins"),
         amount = whole(config.action_cost, 1),
+    }
+end
+
+-- Impaler Palisade is a stop wall, not a damage trap. Each marcher gets a small shove budget,
+-- then walks through. Five bounces on Tier 1 would farm-lock the wave; T1 is one bounce.
+local STOP_SHOVE = {
+    charges = { 1, 2, 3, 4 },
+    shove_studs = { 16, 20, 24, 28 },
+    root_seconds = { 0.4, 0.45, 0.55, 0.7 },
+}
+
+local function tierPick(source, defaults, tier)
+    local list = type(source) == "table" and source or defaults
+    local value = list[tier]
+    if value == nil then
+        value = defaults[tier]
+    end
+    return value
+end
+
+function MergeBulwarkProgression.combatEffect(family, tier, config)
+    local id = string.lower(tostring(family or ""))
+    if id ~= "impaler_palisade" then
+        return nil
+    end
+    config = type(config) == "table" and config or {}
+    local combat = type(config.combat) == "table" and config.combat[id] or {}
+    local step = math.clamp(whole(tier, 1), 1, 4)
+    return {
+        kind = "stop_shove",
+        charges = math.max(1, whole(tierPick(combat.charges, STOP_SHOVE.charges, step), 1)),
+        shoveStuds = math.max(
+            4,
+            tonumber(tierPick(combat.shove_studs, STOP_SHOVE.shove_studs, step)) or 16
+        ),
+        rootSeconds = math.max(
+            0,
+            tonumber(tierPick(combat.root_seconds, STOP_SHOVE.root_seconds, step)) or 0.4
+        ),
     }
 end
 

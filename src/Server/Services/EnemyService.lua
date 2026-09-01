@@ -2601,6 +2601,47 @@ end
 -- knockdown (no fall-over animations yet — flagged as future polish). Same server-move rules as
 -- every other step: grounded (a wall shortens the shove — slammed into it), home-area leashed,
 -- published via MoveTarget so the client lerps the anchored model.
+function EnemyService:_displaceEnemy(entry, targetId, enemyModel, away, distance)
+    local ePos = entry.pos
+    if not ePos then
+        return false
+    end
+    if self:_outsideMovementLeash(entry) then
+        return self:_recoverPersistentEnemy(
+            entry,
+            targetId,
+            "knockback found enemy outside authored movement room"
+        )
+    end
+    local dist = tonumber(distance) or 12
+    if dist <= 0 or away.Magnitude <= 1e-3 then
+        return false
+    end
+    away = Vector3.new(away.X, 0, away.Z).Unit
+    local eng = (self._combatConfig and self._combatConfig.engagement) or {}
+    local climbMax = tonumber(eng.ground_climb_max) or 10
+    local newPos
+    local step = dist
+    while step >= 1 do
+        local nx, nz = ePos.X + away.X * step, ePos.Z + away.Z * step
+        local groundedY = self:_groundedY(entry, nx, nz, ePos.Y)
+        local flyer = (entry.hoverHeight or 0) > 0
+        if flyer or (groundedY - ePos.Y) <= climbMax then
+            newPos = Vector3.new(nx, groundedY, nz)
+            break
+        end
+        step = step / 2
+    end
+    if not newPos then
+        return false
+    end
+    newPos = self:_leashToHomeArea(entry, newPos)
+    entry.pos = newPos
+    enemyModel:SetAttribute("MoveTarget", newPos)
+    enemyModel:SetAttribute("MoveFace", newPos - away * 4)
+    return true
+end
+
 function EnemyService:ApplyKnockback(enemyModel, player, distance)
     local dist = tonumber(distance) or 12
     if dist <= 0 then
@@ -2611,15 +2652,6 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
             local ePos = entry.pos
             if not ePos then
                 return false
-            end
-            -- A prior/unknown displacement already escaped the room: do not clamp from the wrong
-            -- side of a wall. Recover to the authored room anchor immediately.
-            if self:_outsideMovementLeash(entry) then
-                return self:_recoverPersistentEnemy(
-                    entry,
-                    targetId,
-                    "knockback found enemy outside authored movement room"
-                )
             end
             local pfs = self._petFollowServiceInstance
             local fromPos
@@ -2638,29 +2670,25 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
             end
             local away = Vector3.new(ePos.X - fromPos.X, 0, ePos.Z - fromPos.Z)
             away = (away.Magnitude > 1e-3) and away.Unit or Vector3.new(1, 0, 0)
-            local eng = (self._combatConfig and self._combatConfig.engagement) or {}
-            local climbMax = tonumber(eng.ground_climb_max) or 10
-            -- try the full shove, halving against a wall until it fits (a cornered enemy barely moves)
-            local newPos
-            local step = dist
-            while step >= 1 do
-                local nx, nz = ePos.X + away.X * step, ePos.Z + away.Z * step
-                local groundedY = self:_groundedY(entry, nx, nz, ePos.Y)
-                local flyer = (entry.hoverHeight or 0) > 0
-                if flyer or (groundedY - ePos.Y) <= climbMax then
-                    newPos = Vector3.new(nx, groundedY, nz)
-                    break
-                end
-                step = step / 2
-            end
-            if not newPos then
-                return false -- back to the wall: the quake pins it where it stands
-            end
-            newPos = self:_leashToHomeArea(entry, newPos)
-            entry.pos = newPos
-            enemyModel:SetAttribute("MoveTarget", newPos)
-            enemyModel:SetAttribute("MoveFace", newPos - away * 4) -- knocked back FACING the fight
-            return true
+            return self:_displaceEnemy(entry, targetId, enemyModel, away, dist)
+        end
+    end
+    return false
+end
+
+-- Same shove as the tank Seismic knockback, but along an authored direction (Merge gate, not
+-- "away from the nearest pet"). Used by the Impaler Palisade stop wall.
+function EnemyService:ApplyDirectedKnockback(enemyModel, direction, distance)
+    if typeof(direction) ~= "Vector3" then
+        return false
+    end
+    local away = Vector3.new(direction.X, 0, direction.Z)
+    if away.Magnitude <= 1e-3 then
+        return false
+    end
+    for targetId, entry in pairs(self._enemies) do
+        if entry.model == enemyModel then
+            return self:_displaceEnemy(entry, targetId, enemyModel, away.Unit, distance)
         end
     end
     return false

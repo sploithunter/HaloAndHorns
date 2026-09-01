@@ -11,6 +11,8 @@ function RuntimeServiceBindings.configure(bindings)
             bindings.PetFollowService,
             "PetFollowService binding is required"
         ),
+        AdminToolsService = bindings.AdminToolsService,
+        MergeEggPrototypeService = bindings.MergeEggPrototypeService,
     }
 end
 
@@ -24,6 +26,14 @@ end
 
 function RuntimeServiceBindings.getPetFollowService()
     return services and services.PetFollowService or nil
+end
+
+function RuntimeServiceBindings.getAdminToolsService()
+    return services and services.AdminToolsService or nil
+end
+
+function RuntimeServiceBindings.getMergeEggPrototypeService()
+    return services and services.MergeEggPrototypeService or nil
 end
 
 return RuntimeServiceBindings

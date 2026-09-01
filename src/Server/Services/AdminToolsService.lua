@@ -622,6 +622,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     end
 
     local playerData = self._dataService:GetData(targetPlayer)
+    local inMerge = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+    local priorMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(
+        playerData and playerData.GameData and playerData.GameData.MergeDefense
+    )
+    local preserveMergeTutorial = inMerge and priorMergeDefense.tutorial_completed == true
     local pets = playerData and playerData.Inventory and playerData.Inventory.pets
     if type(pets) ~= "table" or type(pets.items) ~= "table" then
         self:_sendResult(adminPlayer, {
@@ -741,7 +746,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     end
     -- Merge's Wave-1 lesson lays 600 Waycoins on the ground from a zero wallet. The hall_coins
     -- profile default is 100 and must not survive this reset or collect_setup has nothing to pick up.
-    if PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) then
+    if inMerge then
         self._economyService:SetCurrency(targetPlayer, "hall_coins", 0, "admin_reset_to_beginning")
     end
 
@@ -764,9 +769,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
     playerData.GameData.PromoCodes = { claims = {}, attribution = {} }
-    -- Merge Defense is a complete beginning-state reset: onboarding/tutorial, mode notices,
-    -- rebirths, management upgrades, and spent-gem accounting all return to profile defaults.
-    playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    -- Merge Defense playstate, checkpoints, prestige, upgrades, and currency spending all reset.
+    -- A player who already learned the dedicated Merge loop does not repeat that tutorial merely
+    -- because an administrator cleared this play session.
+    local resetMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    resetMergeDefense.tutorial_completed = preserveMergeTutorial
+    playerData.GameData.MergeDefense = resetMergeDefense
     playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
     playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService
@@ -938,15 +946,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         founderChoiceReset = ok and reset == true
     end
 
-    -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models) + save.
+    -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models).
     if self._inventoryService and self._inventoryService.RebuildPetProjections then
         self._inventoryService:RebuildPetProjections(targetPlayer)
     end
-    self._dataService:RequestSave(
-        targetPlayer,
-        "admin_reset_to_beginning",
-        { critical = true, debounceSeconds = 0 }
-    )
     if founderChoiceReset and self._monetizationService then
         -- Remove the previously selected Founder entitlement immediately. The tutorial-complete
         -- event will reserve ordinal 0 again and open the chooser for the next test selection.
@@ -961,7 +964,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         playerData.Settings.AutoSystems = nil
     end
     if self._settingsService and self._settingsService.ResetMergeDefenseForBeginning then
-        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer)
+        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer, {
+            preserveTutorialCompleted = preserveMergeTutorial,
+        })
     else
         targetPlayer:SetAttribute("MergeDefenseFullEligible", false)
         targetPlayer:SetAttribute("MergeDefenseModeChoicePending", false)
@@ -974,11 +979,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- reads gate-nil as "unresolved"), not render over the battle.
     -- Merge has no Home cold open — leaving the gate nil here would hold Home tutorial
     -- forever and the Replay below would drop the player in the mall river.
-    local inMerge = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
     if not inMerge and self._prologueService and self._prologueService.Replay then
         targetPlayer:SetAttribute("PrologueGate", nil)
     end
-    if self._starterPetService and self._starterPetService.Refresh then
+    if not inMerge and self._starterPetService and self._starterPetService.Refresh then
         self._starterPetService:Refresh(targetPlayer)
     end
 
@@ -989,6 +993,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
             prog:SetLevel(targetPlayer, 1)
         end)
     end
+
+    -- Save only after every reset owner has made its final mutation. Saving earlier allowed the
+    -- pre-Settings Merge record (including eggs/tutorial state) to win a leave/rejoin race.
+    self._dataService:RequestSave(
+        targetPlayer,
+        "admin_reset_to_beginning",
+        { critical = true, debounceSeconds = 0 }
+    )
 
     self._logger:Warn("🔄 ADMIN RESET TO BEGINNING (KEEP HUGE)", {
         admin = adminPlayer.Name,

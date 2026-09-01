@@ -10,9 +10,9 @@
   Reads ROBLOX_OPEN_CLOUD_KEY from the environment or .env.local. The key must have
   the "asset" (write) scope — the place-publish key may not; if so you'll get 401/403.
 
-  Images upload as Decal assets; the returned assetId works in ImageLabel.Image as
-  rbxassetid://<id>. New uploads go through moderation (id is assigned immediately,
-  may render once approved).
+  Images upload as Decal assets. The returned id is the Decal container id, not the underlying
+  Image content id required by ImageLabel.Image. Resolve Decal.Texture in Studio edit mode before
+  wiring runtime UI. New uploads go through moderation (id is assigned immediately).
 */
 
 const fs = require("fs");

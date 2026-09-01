@@ -85,6 +85,23 @@ coverage/
 !/assets/source/props/merge_bulwarks/roblox_originals/**/
 !/assets/source/props/merge_bulwarks/roblox_originals/**/*.rbxm
 !/assets/source/props/merge_bulwarks/roblox_originals/**/*.json
+!/assets/source/props/merge_bulwarks/roblox_approved/
+!/assets/source/props/merge_bulwarks/roblox_approved/**/
+!/assets/source/props/merge_bulwarks/roblox_approved/**/*.rbxm
+# Saw Blade is the first animated Merge bulwark. Preserve both the exact
+# accepted textured input and the editable split-rig source; generated FBX/GLB
+# exports and previews remain reproducible from the Blender script.
+!/assets/source/props/merge_bulwarks/saw_blade/
+/assets/source/props/merge_bulwarks/saw_blade/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/
+/assets/source/props/merge_bulwarks/saw_blade/tier*/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/
+/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/*
+/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/model.glb
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/model.blend
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/report.json
 /assets/source/hoverboards/
 /assets/source/rocketboards/
 /assets/source/surfboards/

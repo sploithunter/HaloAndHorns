@@ -1,0 +1,234 @@
+{
+  "_note": "Transparent Meshy thumbnails recovered from the accepted retexture tasks. Five static families use the same long side-to-side UI presentation; Land Shark is the only special case.",
+  "sourceModelManifest": "scripts/merge_bulwark_model_ids.json",
+  "families": {
+    "concertina_line": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538c-f785-77d4-b36f-8ebf23167d95",
+        "file": "assets/ui/merge_bulwarks/concertina_line_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538c-fbcc-7307-b95e-06ce2329f9bb",
+        "file": "assets/ui/merge_bulwarks/concertina_line_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538d-0018-764e-9072-49162d02dea6",
+        "file": "assets/ui/merge_bulwarks/concertina_line_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538d-051b-70f1-a257-e4413de60f58",
+        "file": "assets/ui/merge_bulwarks/concertina_line_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ],
+    "grasping_hedge": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538d-0a5a-74e3-be0c-994ebddc06ff",
+        "file": "assets/ui/merge_bulwarks/grasping_hedge_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538d-0f21-7470-bf4b-0e7866dd7d22",
+        "file": "assets/ui/merge_bulwarks/grasping_hedge_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538d-13b2-738b-9505-8357fbaf2341",
+        "file": "assets/ui/merge_bulwarks/grasping_hedge_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538d-1990-763d-9fe0-fb6c470e97b9",
+        "file": "assets/ui/merge_bulwarks/grasping_hedge_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ],
+    "impaler_palisade": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538d-1e82-7121-992e-ce19245aa737",
+        "file": "assets/ui/merge_bulwarks/impaler_palisade_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538d-2331-77da-b455-a4ae65bddbf6",
+        "file": "assets/ui/merge_bulwarks/impaler_palisade_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538d-282b-71c5-af78-bf703fd63fcc",
+        "file": "assets/ui/merge_bulwarks/impaler_palisade_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538d-2cbb-704d-a838-169c7b573d9c",
+        "file": "assets/ui/merge_bulwarks/impaler_palisade_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ],
+    "land_shark": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538d-317d-7796-9b56-118fafca893a",
+        "file": "assets/ui/merge_bulwarks/land_shark_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538d-35e1-7295-861c-b4e4f54b33a6",
+        "file": "assets/ui/merge_bulwarks/land_shark_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538d-3a51-74ff-b399-f40ee88315f2",
+        "file": "assets/ui/merge_bulwarks/land_shark_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538d-3f4f-743b-8bcf-ff0927c83695",
+        "file": "assets/ui/merge_bulwarks/land_shark_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ],
+    "saw_blade": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538d-43cf-714f-8fb8-77fa86e77c64",
+        "file": "assets/ui/merge_bulwarks/saw_blade_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538d-4844-713f-8c4d-5022d8b65ec2",
+        "file": "assets/ui/merge_bulwarks/saw_blade_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538d-4cfd-71ab-86bb-ac8f70b5f2e3",
+        "file": "assets/ui/merge_bulwarks/saw_blade_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538d-51bb-745e-b432-ca2501892c14",
+        "file": "assets/ui/merge_bulwarks/saw_blade_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ],
+    "wardstone_barrier": [
+      {
+        "tier": 1,
+        "retextureTaskId": "01a0538f-427b-763f-9bc9-b8f7f3b504a4",
+        "file": "assets/ui/merge_bulwarks/wardstone_barrier_tier1.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 2,
+        "retextureTaskId": "01a0538f-470c-7744-ba4f-647a8dd7bfac",
+        "file": "assets/ui/merge_bulwarks/wardstone_barrier_tier2.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 3,
+        "retextureTaskId": "01a0538f-4ba2-764b-9aef-d3b77f9d3c89",
+        "file": "assets/ui/merge_bulwarks/wardstone_barrier_tier3.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      },
+      {
+        "tier": 4,
+        "retextureTaskId": "01a0538f-5047-71bf-8536-8abd401ab15a",
+        "file": "assets/ui/merge_bulwarks/wardstone_barrier_tier4.png",
+        "dimensions": [
+          512,
+          512
+        ]
+      }
+    ]
+  }
+}

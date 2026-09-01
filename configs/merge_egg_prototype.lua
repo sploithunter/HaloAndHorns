@@ -500,6 +500,14 @@ return {
         edge_bulwarks = {
             enabled = true,
             tile_count = 10,
+            -- Land Sharks are a moving field hazard, not a wall tile. Three independently phased
+            -- sharks travel along the lane with only their dorsal silhouette above the deck.
+            land_shark_count = 3,
+            land_shark_track_studs = 28,
+            land_shark_speed_studs = 10,
+            land_shark_surface_distance = 8,
+            land_shark_fin_exposure_studs = 1,
+            land_shark_bite_period_seconds = 1.4,
             maximum_tier = 4,
             -- Permanent cadence is Wave 20. For the interaction playtest, expose the exact same
             -- production transaction/menu from the pending Wave 1 and charge one Waycoin for an
@@ -511,6 +519,15 @@ return {
             action_cost = 1,
             currency = "hall_coins",
             prompt_distance = 14,
+            -- Impaler Palisade: tank-style shove + short pin, no damage. Charges are per marcher.
+            -- T1 is one bounce; five per enemy would lock the wave for pets to farm.
+            combat = {
+                impaler_palisade = {
+                    charges = { 1, 2, 3, 4 },
+                    shove_studs = { 16, 20, 24, 28 },
+                    root_seconds = { 0.4, 0.45, 0.55, 0.7 },
+                },
+            },
         },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically

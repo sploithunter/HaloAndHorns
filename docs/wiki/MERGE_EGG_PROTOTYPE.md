@@ -604,18 +604,20 @@ team and queue model:
   with the current Merge playstate as soon as the final tutorial action completes; later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
   independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
-  rebirth. Admin **Reset to Beginning** is the deliberate exception: it closes any live/pending
-  Merge session before wallet restoration, resets the entire `MergeDefense` record (tutorial,
-  onboarding notices, rebirths, management upgrades, and spent gems), restores the default Full
-  preference/locked-Simple effective mode, and therefore re-arms a true first visit. On the
-  dedicated Merge place it does **not** replay the Farm prologue (that missing mezzanine CFrame
-  lands in the mall river). It ends the live encounter without streaming Home, wipes
-  `MergeDefense` (checkpoint and tutorial flags), clears leftover board/hatcher chrome, then
-  `ResumeDedicatedEntry` re-enters on the next scheduler turn with `ignoreCheckpoint` +
-  `forceTutorial` so the player
-  sits on the hatcher pad at Wave 1 with an empty board and the first-visit lesson. The Farm
-  tutorial capsule stays hidden — Merge's own left-side card and the upper-right wave meter
-  own that HUD.
+  rebirth. Admin **Reset to Beginning** (`🔄 Reset to Beginning (keeps ALL unique pets)`) is the
+  deliberate clean-slate exception for Merge possessions, but it is **not** a tutorial replay.
+  It closes any live/pending Merge session before profile mutation; clears wallet, checkpoint,
+  board and deployed eggs, hatcher/bulwark runtime models, rebirths, management upgrades, and spent
+  Gems; then re-enters on the next scheduler turn with no scheduled wave. A previously completed
+  Merge tutorial remains completed and inactive. The new session starts at Wave 0 with zero
+  Waycoins and exactly five owner-only opening piles worth 120 each; Wave 1 remains sealed until an
+  egg is deployed. Unique/huge pets stay, while ordinary inventory follows the global Reset to
+  Beginning contract. On the dedicated Merge place this never starts the Farm prologue or first-pet
+  chooser. Wall cards show the reset values (Coin Value 100%, Rebirth R1) and next purchase
+  (+5% → 105%, Next R2). `scripts/studio/test_merge_admin_reset_lifecycle.luau` exercises the real
+  pickup, five-purchase, merge, Equip Best, combat, bulwark-install, and reset path; it asserts the
+  same clean result during the live session, and the result was separately verified across
+  Stop→Play.
 - The perfect runner follows the same sequence at actual character walk speed while combat remains
   asynchronous: collect drops → create base egg → repeat/merge as necessary → walk to the selected
   hatcher → place. One merge press always chooses the lowest available equal pair, keeping this
@@ -951,8 +953,11 @@ clean.
   Waycoin wallet, uncollected drops, merge-board eggs, base-egg progression, deployed egg
   tiers/positions, current rosters, and every purchased Gem upgrade. Destroyed deployed eggs retain
   their placement identity while inactive, then every retained egg/objective and combat roster
-  returns at full health before the wave after the checkpoint rolls again. Gameplay recovery is
+  returns at full health before the wave after the checkpoint rolls again.   Gameplay recovery is
   automatic after the defeat delay; the rear reset control can trigger it immediately.
+  Before the first Wave-10 bank, Wave 0 is that boundary: overrun or egg-loss rewinds
+  to Wave 1 and keeps the live egg/board/wallet. A missing snapshot used to leave
+  DefenseOverrun parked with no restart.
 - Normal exit/logout saves possessions independently from the last banked boundary. Re-entry keeps
   the live wallet, board inventory, base tier, deployed egg tiers, and purchased systems exactly as
   they were, restores objectives at full health, and rerolls only session-only squads. The wave is
@@ -1068,8 +1073,11 @@ clean.
   Upgrade previews on the left, the six families as a list on the right.
   Buy/Upgrade lives in the next-upgrade card; Install only deploys an owned
   family onto the strip. Per-tier `upgradeNotes` and draft roles (stop, bleed,
-  hunt, shred, hold, ward) live on `MergeBulwarkProgression` until combat
-  effects exist.
+  hunt, shred, hold, ward) live on `MergeBulwarkProgression`. Impaler Palisade
+  is the first live effect: a no-damage stop shove toward the gate (same
+  displacement as tank Seismic) plus a short root. Charges are per marcher,
+  1–4 by tier; after the last bounce they walk through and the gold line
+  opens combat. Other families are still visual-only.
 - The first bulwark catalog has six four-tier visual families: Impaler Palisade, Concertina Line,
   Land Shark, Saw Blade, Grasping Hedge, and Wardstone Barrier. Every tier is distinct art rather
   than a resized copy. Their shared material progression is primitive, reinforced, elemental, and
@@ -1092,13 +1100,43 @@ clean.
 - `scripts/studio/author_merge_bulwark_anchors.luau` authors 100 permanent hooks: ten per bay for
   all five Heaven and five Hell bays. A 96-stud line uses a 94-stud defense strip (ten 9.4-stud
   tiles) with one-stud wall clearance on each side. Anchors are grounded to `LandStrip`, not the
-  yellow marker's center. Runtime currently installs Tier 1 Impaler Palisade visuals on a claimed
-  bay; acquisition, upgrades, and gameplay effects remain later work.
-- All four tiers of Impaler Palisade, Concertina Line, Grasping Hedge, and Wardstone Barrier were
-  placement-audited against the same hooks: every strip spans exactly 94 studs, is laterally
-  centered, and grounds without an offset. Land Shark and Saw Blade remain excluded from this
-  static placement approval until their motion/rigging pass.
-- Land Sharks are complete below-ground bodies and Saw Blades retain recognizable mechanisms, but
-  the current library entries are static presentation meshes. Rigging the sharks and separating or
-  skinning the saw drive parts are later animation passes; this asset pass does not invent their
-  damage, pathing, acquisition, or upgrade economy.
+  yellow marker's center. The edge prompt opens the six-family menu; Select buys Tier 1 or switches
+  to an owned family, and Upgrade advances the installed family through Tier 4. The temporary
+  playtest contract unlocks at Wave 1 and charges one Waycoin per acquisition/upgrade; production
+  remains configured for the Wave-20 intermission.
+- Every one of the 24 family/tier variants is presentation-audited against all ten Heaven/Hell bays.
+  The five static families use uniform `0.94` scaling on ten 9.4-stud anchors; each line spans 94
+  studs and retains the authored one-stud wall clearance. Land Sharks are audited separately as
+  three submerged hazards per bay. Saw Blade also has explicit six-stud depth and height ceilings so
+  a deck-sized import cannot pass. The repeatable server audit is
+  `scripts/studio/test_merge_bulwark_fit.luau` (2,120 placements under the current presentation rules).
+- Saw Blade has four approved independently pivoted Roblox rigs. The accepted runtime snapshots live
+  under `assets/source/props/merge_bulwarks/roblox_approved/saw_blade/` and are reproducibly rebuilt
+  by `scripts/prebake/build_approved_merge_saw_blades.luau`; the Blender working sources remain under
+  `assets/source/props/merge_bulwarks/saw_blade/`. Tier 1 uses the repaired brown rotor and wood hub,
+  Tier 3 uses three repaired dark-metal rotors with the center rotor counter-rotating, and the
+  accepted Tier 2 / Tier 4 mechanisms run at twice the Tier 1 / Tier 3 speed. All scaling remains
+  uniform. The split/repaired MeshIds are 200-stud Roblox assets; Studio QA previews shrink them
+  with Model.Scale `0.04` / `0.05`. The lune-assembled templates copy the 8–10 stud Size boxes
+  without MeshSize, so spawn recreates each MeshPart through `CreateMeshPartAsync` and keeps the
+  authored tile Size. `Models.rbxm` is the runtime authority and contains only these four approved
+  variants.
+- Saw rotors animate locally in `MergeEggPrototypeObserver`, scoped to the current bay's
+  `MergeEggBulwarks` folder; the server never streams per-frame rotor CFrames. An installed line has
+  one spatial idle-whirl loop centered on the line. The separate circular-saw contact asset is
+  reserved for a real damage tick at the struck enemy and must not play while Saw Blade remains a
+  visual-only bulwark.
+- Land Sharks deploy as three independent client-animated patrols rather than a ten-model wall.
+  Each shark is sunk to a fixed one-stud dorsal silhouette, follows a staggered 28-stud lane track at
+  ten studs per second, turns at its track ends, and performs a 1.4-second rise-and-dive bite cycle
+  when an enemy is within eight studs. The presentation still does no damage; acquisition and upgrades remain under
+  the shared server-authoritative bulwark progression.
+- Bulwark menu art is flat, authored transparent art, not a live model viewport. Impaler Palisade,
+  Concertina Line, Saw Blade, Grasping Hedge, and Wardstone Barrier all use the same long
+  side-to-side presentation; Land Shark is the sole special case. The 24 source PNGs live under
+  `assets/ui/merge_bulwarks/`, task provenance is recorded in
+  `scripts/merge_bulwark_preview_sources.json`, and the group-owned Roblox Decal/Image IDs are
+  recorded in `scripts/merge_bulwark_preview_ids.json`. The runtime card uses the Decal asset through
+  `rbxthumb` because it preserves the authored alpha and resolves reliably without creating a
+  `ViewportFrame`. Deployment remains separate: all five static families share the generalized
+  anchor orientation, while only Land Shark is exempted in `MergeBulwarkModels.LONG_AXIS`.

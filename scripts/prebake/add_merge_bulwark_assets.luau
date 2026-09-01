@@ -60,8 +60,8 @@ for _, familyId in ipairs(familyOrder) do
     familyFolder.Parent = bulwarkRoot
 
     for _, entry in ipairs(family.tiers) do
-        local nativePath =
-            string.format("%s/%s/tier%d/model.rbxm", nativeRoot, familyId, entry.tier)
+        local nativePath = entry.approvedNativeSource
+            or string.format("%s/%s/tier%d/model.rbxm", nativeRoot, familyId, entry.tier)
         assert(fs.isFile(nativePath), "missing native Roblox bulwark snapshot " .. nativePath)
         local nativeRoots = roblox.deserializeModel(fs.readFile(nativePath))
         assert(#nativeRoots == 1, "expected one root in " .. nativePath)
@@ -82,6 +82,19 @@ for _, familyId in ipairs(familyOrder) do
         )
         if family.animationClass then
             model:SetAttribute("MergeBulwarkAnimationClass", family.animationClass)
+        end
+        if entry.speedDegrees then
+            model:SetAttribute("SawBladeSpeedDegrees", entry.speedDegrees)
+            model:SetAttribute("PreviewSpeedDegrees", entry.speedDegrees)
+        end
+        if entry.robloxRotationAxis then
+            model:SetAttribute("RotationAxis", entry.robloxRotationAxis)
+        end
+        if entry.idleSoundKey then
+            model:SetAttribute("MergeBulwarkIdleSoundKey", entry.idleSoundKey)
+        end
+        if entry.impactSoundKey then
+            model:SetAttribute("MergeBulwarkImpactSoundKey", entry.impactSoundKey)
         end
         -- Keep the lossless PackageLink in the source snapshot, but detach the runtime template so
         -- Studio cannot update the served library behind the prebake's back.

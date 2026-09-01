@@ -323,6 +323,28 @@ return {
         bus = "effects",
     },
 
+    -- Merge Saw Blade bulwark. The whirling loop belongs to the installed mechanism; the saw
+    -- contact cue is reserved for a real damage tick at the enemy's position (never fake ambience).
+    merge_saw_idle = {
+        id = "rbxassetid://104782229131004",
+        volume = 0.24,
+        playback_speed = 1.0,
+        duration_seconds = 5,
+        looped = true,
+        roll_off_min_distance = 30,
+        roll_off_max_distance = 120,
+        bus = "effects",
+    },
+    merge_saw_hit = {
+        id = "rbxassetid://137143310095075",
+        volume = 0.42,
+        playback_speed = 1.0,
+        duration_seconds = 5,
+        roll_off_min_distance = 10,
+        roll_off_max_distance = 90,
+        bus = "effects",
+    },
+
     -- LOOPING AREA MUSIC. AreaMusicController plays the track for the player's CURRENT area, looped,
     -- on the "music" SoundGroup bus (so the Music volume slider controls it), crossfading on area
     -- change. New uploads play once Roblox moderation approves them.

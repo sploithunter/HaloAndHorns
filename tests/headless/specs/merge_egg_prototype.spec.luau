@@ -114,17 +114,23 @@ return function()
             expect(enterBody:find("self:_begin(player)", 1, true)).to.equal(nil)
             expect(service:find("player:RequestStreamAroundAsync", 1, true)).to.be.ok()
             local beginAt = service:find("function MergeEggPrototypeService:_begin", 1, true)
-            local streamAt =
-                service:find("player:RequestStreamAroundAsync(target.Position", beginAt, true)
+            local dedicatedStreamGuardAt =
+                service:find("if not self:_isDedicatedMergePlace() then", beginAt, true)
+            local streamAt = service:find("player:RequestStreamAroundAsync(", beginAt, true)
             local pivotAt = service:find("character:PivotTo(target)", beginAt, true)
             local insideAt =
                 service:find('player:SetAttribute("InMergeEggPrototype", true)', beginAt, true)
             local locationAt =
                 service:find("self:_setPlayerArea(player, self:_prototypeAreaId())", beginAt, true)
             expect(service:find("self._enteringRecordByPlayer[player] = record", beginAt, true)).to.be.ok()
-            expect(streamAt ~= nil and pivotAt ~= nil and locationAt ~= nil and insideAt ~= nil).to.equal(
-                true
-            )
+            expect(
+                dedicatedStreamGuardAt ~= nil
+                    and streamAt ~= nil
+                    and pivotAt ~= nil
+                    and locationAt ~= nil
+                    and insideAt ~= nil
+            ).to.equal(true)
+            expect(dedicatedStreamGuardAt < streamAt).to.equal(true)
             expect(streamAt < pivotAt and pivotAt < locationAt and locationAt < insideAt).to.equal(
                 true
             )
@@ -203,8 +209,10 @@ return function()
             expect(service:find("MergeEggRebirth.normalizeCount(progress.rebirths) > 0", 1, true)).to.be.ok()
         end)
 
-        it("admin reset returns all Merge Defense state to first-visit defaults", function()
+        it("admin reset clears Merge playstate without replaying a completed tutorial", function()
             local admin = readFile("src/Server/Services/AdminToolsService.lua")
+            local server = readFile("src/Server/init.server.lua")
+            local panel = readFile("src/Client/UI/Menus/AdminPanel.lua")
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local settings = readFile("src/Server/Services/SettingsService.lua")
             local liveResetAt = admin:find(
@@ -218,27 +226,31 @@ return function()
             expect(currencyResetAt).to.be.ok()
             expect(liveResetAt < currencyResetAt).to.equal(true)
             expect(
-                admin:find(
-                    "playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)",
-                    1,
-                    true
-                )
+                admin:find("resetMergeDefense.tutorial_completed = preserveMergeTutorial", 1, true)
             ).to.be.ok()
             expect(admin:find('playerData.Settings.MergeDefenseMode = "full"', 1, true)).to.be.ok()
-            expect(admin:find("ResetMergeDefenseForBeginning(targetPlayer)", 1, true)).to.be.ok()
+            expect(admin:find("preserveTutorialCompleted = preserveMergeTutorial", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:ResetForBeginning", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:ResumeDedicatedEntry", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:GetLifecycleAudit", 1, true)).to.be.ok()
+            expect(
+                service:find('drop:GetAttribute("DropSource") == "merge_egg_prototype"', 1, true)
+            ).to.be.ok()
+            expect(service:find("durableDeployedEggs = durableDeployedEggs", 1, true)).to.be.ok()
+            expect(service:find("bulwarkInstalled = bulwarkState.family ~= nil", 1, true)).to.be.ok()
+            expect(service:find("bulwarkVisuals = spawnedBulwarks", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_wipeMergeDefenseProgress", 1, true)
-            ).to.be.ok()
+            ).to.equal(nil)
             expect(service:find("function MergeEggPrototypeService:_forceClearBay", 1, true)).to.be.ok()
             expect(
                 service:find(
-                    "return self:_begin(player, nil, { ignoreCheckpoint = true, forceTutorial = true })",
+                    "return self:_begin(player, nil, { ignoreCheckpoint = true })",
                     1,
                     true
                 )
             ).to.be.ok()
+            expect(service:find("forceTutorial = true", 1, true)).to.equal(nil)
             expect(admin:find("ResumeDedicatedEntry(targetPlayer)", 1, true)).to.be.ok()
             expect(admin:find("task.defer(function()", 1, true)).to.be.ok()
             expect(admin:find("task.delay(0.75", 1, true)).to.equal(nil)
@@ -258,14 +270,31 @@ return function()
                 )
             ).to.be.ok()
             expect(service:find('player:SetAttribute("MergeDefenseRebirths", 0)', 1, true)).to.be.ok()
+            expect(panel:find('name = "🔄 Reset to Beginning (keeps ALL unique pets)"', 1, true)).to.be.ok()
+            expect(panel:find('action = "admin_reset_to_beginning"', 1, true)).to.be.ok()
+            expect(panel:find('elseif action == "admin_reset_to_beginning" then', 1, true)).to.be.ok()
+            expect(panel:find("self:_requestResetToBeginning(false)", 1, true)).to.be.ok()
             expect(settings:find("function SettingsService:ResetMergeDefenseForBeginning", 1, true)).to.be.ok()
             expect(
                 settings:find(
-                    "data.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)",
+                    "reset.tutorial_completed = options.preserveTutorialCompleted == true",
                     1,
                     true
                 )
             ).to.be.ok()
+            expect(server:find("MergeEggPrototypeService = isFeatureEnabled", 1, true)).to.be.ok()
+            expect(server:find('modules:Get("SettingsService")', 1, true)).to.be.ok()
+
+            local settingsResetAt =
+                admin:find("self._settingsService:ResetMergeDefenseForBeginning", 1, true)
+            local finalSaveAt = admin:find(
+                '"admin_reset_to_beginning",\n        { critical = true, debounceSeconds = 0 }',
+                1,
+                true
+            )
+            expect(settingsResetAt).to.be.ok()
+            expect(finalSaveAt).to.be.ok()
+            expect(settingsResetAt < finalSaveAt).to.equal(true)
         end)
 
         it("supports automatic Simple combat and real-pet Full combat", function()
@@ -609,8 +638,13 @@ return function()
                 service:find("function MergeEggPrototypeService:_ensureOpeningCoinLesson", 1, true)
             ).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_playstateHasBoard", 1, true)).to.be.ok()
+            expect(service:find("local durableCoins = math.max", 1, true)).to.be.ok()
+            expect(service:find("durableCoins > 0 or self:_playstateHasBoard", 1, true)).to.be.ok()
             expect(service:find("self:_resetSessionCurrency(record)", 1, true)).to.be.ok()
-            expect(service:find("local hasPossessions = progress.tutorial_completed == true or hasBoard", 1, true)).to.be.ok()
+            expect(service:find("local hasPossessions = hasBoard or coins > 0", 1, true)).to.be.ok()
+            expect(service:find('options.reason = "opening"', 1, true)).to.be.ok()
+            expect(service:find('drop:GetAttribute("DropReason") == "opening"', 1, true)).to.be.ok()
+            expect(service:find("if restoredTeams > 0 then", 1, true)).to.be.ok()
             expect(service:find('"merge_egg_opening_pickup_fallback"', 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_canUseEggStation", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:CreateBaseEgg", 1, true)).to.be.ok()
@@ -701,6 +735,9 @@ return function()
             expect(observer:find("MergeEggCostFormat.format(spawnCost)", 1, true)).to.be.ok()
             expect(observer:find("MergeEggCostFormat.format(buyCost)", 1, true)).to.be.ok()
             expect(observer:find("MergeEggCostFormat.format(rebirthCost)", 1, true)).to.be.ok()
+            expect(observer:find('"%s %d%s"', 1, true)).to.be.ok()
+            expect(observer:find('"+%d%s → %d%s"', 1, true)).to.be.ok()
+            expect(observer:find('"NEXT R%d · %s DAMAGE"', 1, true)).to.be.ok()
             expect(observer:find("level * step", 1, true)).never.to.be.ok()
             expect(service:find("1 + level * math.max", 1, true)).to.be.ok()
             expect(observer:find("local function setDragTarget", 1, true)).to.be.ok()
@@ -1001,6 +1038,8 @@ return function()
                 )
             ).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_canRestartCheckpoint", 1, true)).to.be.ok()
+            expect(service:find("allowWaveZero = checkpointWave <= 0", 1, true)).to.be.ok()
+            expect(service:find("No Wave-10 bank yet: Wave 0 is the opening boundary", 1, true)).to.be.ok()
             expect(
                 service:find(
                     "function MergeEggPrototypeService:RestoreCheckpointSnapshotForTest",
@@ -1293,7 +1332,7 @@ return function()
                 expect(service:find('"MergeDefenseAlliedDamageMultiplier"', 1, true)).to.be.ok()
                 expect(service:find('"MergeDefenseNextAlliedDamageMultiplier"', 1, true)).to.be.ok()
                 expect(observer:find("formatDamageMultiplier", 1, true)).to.be.ok()
-                expect(observer:find("%s TOTAL DAMAGE", 1, true)).to.be.ok()
+                expect(observer:find("NEXT R%d · %s DAMAGE", 1, true)).to.be.ok()
                 expect(follow:find('player:GetAttribute("InMergeEggPrototype")', 1, true)).to.be.ok()
                 expect(follow:find('player:GetAttribute("MergeEggPlayerCombatMode")', 1, true)).to.be.ok()
                 expect(follow:find('pet:GetAttribute("MergeEggUnit")', 1, true)).to.be.ok()
@@ -1589,6 +1628,17 @@ return function()
             expect(bulwarks.playtest_unlock_wave).to.equal(1)
             expect(bulwarks.action_cost).to.equal(1)
             expect(bulwarks.currency).to.equal("hall_coins")
+            expect(bulwarks.land_shark_count).to.equal(3)
+            expect(bulwarks.land_shark_track_studs).to.equal(28)
+            expect(bulwarks.land_shark_speed_studs).to.equal(10)
+            expect(bulwarks.land_shark_fin_exposure_studs).to.equal(1)
+            expect(bulwarks.land_shark_bite_period_seconds).to.equal(1.4)
+            expect(bulwarks.combat.impaler_palisade.charges[1]).to.equal(1)
+            expect(bulwarks.combat.impaler_palisade.shove_studs[1]).to.equal(16)
+            expect(service:find("function MergeEggPrototypeService:_tryPalisadeStop", 1, true)).to.be.ok()
+            expect(service:find("ApplyDirectedKnockback", 1, true)).to.be.ok()
+            local enemyService = readFile("src/Server/Services/EnemyService.lua")
+            expect(enemyService:find("function EnemyService:ApplyDirectedKnockback", 1, true)).to.be.ok()
             expect(service:find("MergeBulwarkProgression", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureBulwarkMenuPrompts", 1, true)
@@ -1609,16 +1659,26 @@ return function()
             expect(menu:find('nextPane.Name = "NextPane"', 1, true)).to.be.ok()
             expect(menu:find('titleBar.Name = "TitleBar"', 1, true)).to.be.ok()
             expect(menu:find('upgradeFrame.Name = "UpgradeFrame"', 1, true)).to.be.ok()
-            expect(menu:find("ViewportFrame", 1, true)).to.be.ok()
+            expect(menu:find("ViewportFrame", 1, true)).to.equal(nil)
+            expect(menu:find("WorldModel", 1, true)).to.equal(nil)
+            expect(menu:find('Instance.new("ImageLabel")', 1, true)).to.be.ok()
+            expect(menu:find("previewAssetIds", 1, true)).to.be.ok()
+            expect(menu:find('"rbxthumb://type=Asset&id=%s&w=420&h=420"', 1, true)).to.be.ok()
             expect(menu:find("ScrollingFrame", 1, true)).to.be.ok()
-            expect(menu:find("math.rad(90)", 1, true)).to.be.ok()
-            expect(menu:find('mode = "upright"', 1, true)).to.be.ok()
-            expect(menu:find("yaw = 225", 1, true)).to.be.ok()
-            expect(menu:find("yaw = 180", 1, true)).to.be.ok()
+            expect(menu:find("frameStripPreview", 1, true)).to.equal(nil)
+            expect(menu:find('mode = "upright"', 1, true)).to.equal(nil)
+            expect(menu:find("boundingBoxCorners", 1, true)).to.equal(nil)
+            expect(menu:find("fitOrbitCamera", 1, true)).to.equal(nil)
             expect(menu:find('"SelectedDescription"', 1, true)).to.be.ok()
             expect(menu:find('"CURRENTLY OWNED"', 1, true)).to.be.ok()
             expect(menu:find('"NEXT UPGRADE"', 1, true)).to.be.ok()
-            expect(menu:find("MergeBulwarkModels.Clone", 1, true)).to.be.ok()
+            expect(menu:find("MergeBulwarkModels.Spawn", 1, true)).to.equal(nil)
+            expect(service:find('family == "land_shark"', 1, true)).to.be.ok()
+            expect(service:find('"MergeLandSharkPatrol"', 1, true)).to.be.ok()
+            expect(observer:find("registerLandSharkRig", 1, true)).to.be.ok()
+            expect(observer:find("updateLandSharkRigs", 1, true)).to.be.ok()
+            expect(observer:find("proximityElapsed = 0.1", 1, true)).to.be.ok()
+            expect(observer:find("math.sin(math.pi * bitePhase) ^ 2", 1, true)).to.be.ok()
             expect(menu:find("atMaximum", 1, true)).to.be.ok()
             expect(menu:find('"MAXIMUM"', 1, true)).to.be.ok()
         end)
@@ -1632,7 +1692,11 @@ return function()
             expect(prebake:find('roblox.Instance.new("MeshPart")', 1, true)).to.equal(nil)
             expect(models:find("MergeBulwarkNativePackage", 1, true)).to.be.ok()
             expect(models:find("sourceUniformScale * placementScale", 1, true)).to.be.ok()
-            expect(models:find("model:ScaleTo(sourceUniformScale * placementScale)", 1, true)).to.be.ok()
+            expect(models:find("model:ScaleTo(uniform)", 1, true)).to.be.ok()
+            expect(models:find("SAW_BLADE_IMPORT_SCALE", 1, true)).to.be.ok()
+            expect(models:find("CreateMeshPartAsync", 1, true)).to.be.ok()
+            expect(models:find("function MergeBulwarkModels.ApplySawBladeImportScale", 1, true)).to.be.ok()
+            expect(models:find("function MergeBulwarkModels.FitToTile", 1, true)).to.be.ok()
             expect(
                 models:find(
                     "model.PrimaryPart.PivotOffset = CFrame.new(model.PrimaryPart.PivotOffset.Position)",
@@ -1641,6 +1705,31 @@ return function()
                 )
             ).to.be.ok()
             expect(models:find("target *= nativeRotation", 1, true)).to.equal(nil)
+        end)
+
+        it("animates approved saw rigs locally and separates idle from contact audio", function()
+            local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local prebake = readFile("scripts/prebake/add_merge_bulwark_assets.luau")
+
+            expect(sounds.merge_saw_idle.id).to.equal("rbxassetid://104782229131004")
+            expect(sounds.merge_saw_idle.looped).to.equal(true)
+            expect(sounds.merge_saw_hit.id).to.equal("rbxassetid://137143310095075")
+            expect(observer:find("registerSawBladeRig", 1, true)).to.be.ok()
+            expect(observer:find("MergeBulwarkModels.ApplySawBladeImportScale(model)", 1, true)).to.be.ok()
+            expect(observer:find("updateSawBladeRigs(dt, observing)", 1, true)).to.be.ok()
+            expect(observer:find('world:FindFirstChild("MergeEggBulwarks")', 1, true)).to.be.ok()
+            expect(
+                observer:find('child:GetAttribute("MergeBulwarkFamily") == "saw_blade"', 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_ensureSawBladeIdleSound", 1, true)
+            ).to.be.ok()
+            expect(service:find("self:_ensureSawBladeIdleSound(folder, family)", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_playSawBladeImpact", 1, true)).to.be.ok()
+            expect(service:find("self:_playSawBladeImpact(", 1, true)).to.equal(nil)
+            expect(prebake:find("entry.approvedNativeSource", 1, true)).to.be.ok()
+            expect(prebake:find("SawBladeSpeedDegrees", 1, true)).to.be.ok()
         end)
 
         it("activates egg-local anti-heal fields on breaches and damage", function()

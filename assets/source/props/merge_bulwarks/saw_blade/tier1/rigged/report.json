@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "source": "assets/source/props/merge_bulwarks/saw_blade/tier1/textured/model.glb",
+  "tier": 1,
+  "rotation_axis": "Y",
+  "blade_count": 1,
+  "source_bounds": {
+    "min": [
+      -1.0,
+      -0.38867199420928955,
+      -0.45117199420928955
+    ],
+    "max": [
+      1.0,
+      0.38867199420928955,
+      0.45117199420928955
+    ]
+  },
+  "source_triangles": 4058,
+  "output_triangles": 4058,
+  "triangle_accounting_exact": true,
+  "parts": [
+    {
+      "name": "Base",
+      "triangles": 3610,
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bounds": {
+        "min": [
+          -1.0,
+          -0.38867199420928955,
+          -0.45117199420928955
+        ],
+        "max": [
+          1.0,
+          0.38867199420928955,
+          0.22753900289535522
+        ]
+      },
+      "rotation_axis": null
+    },
+    {
+      "name": "Blade01",
+      "triangles": 448,
+      "origin": [
+        0.029999999329447746,
+        0.0,
+        0.054999999701976776
+      ],
+      "bounds": {
+        "min": [
+          -0.33398398756980896,
+          -0.04467799887061119,
+          -0.38867199420928955
+        ],
+        "max": [
+          0.41992199420928955,
+          0.04443399980664253,
+          0.45117199420928955
+        ]
+      },
+      "rotation_axis": "Y"
+    }
+  ]
+}

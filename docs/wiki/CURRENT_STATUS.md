@@ -2,17 +2,33 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Pre-checkpoint overrun returns to Wave 1 (2026-08-31)
+
+A loss before Wave 10 had no checkpoint snapshot, so auto-restart never
+fired. Wave 0 is now the opening boundary: keep the egg/board and roll
+Wave 1 again.
+
+## Impaler Palisade is a no-damage stop wall (2026-08-31)
+
+First live bulwark combat: tank-style shove toward the gate plus a short
+root. No damage. Each marcher gets T1=1 / T2=2 / T3=3 / T4=4 bounces,
+then walks through and combat opens. Five per enemy on T1 would farm-lock
+the wave.
+
 ## Merge first-visit collect re-lays 600 Waycoins (2026-08-31)
 
 Durable-wallet entry kept the `hall_coins` profile default of 100 and skipped
 the five stacks. Fresh Wave-1 / admin reset / incomplete-tutorial empty board
 now zero the Merge wallet and spawn the 600-Waycoin lesson again.
 
-## Merge shark and wardstone previews stay upright (2026-08-31)
+## Merge bulwark previews use authored flat art (2026-08-31)
 
-Those two families no longer get the palisade 90° pitch. The import pivot
-is cleared like strip spawn, the model sits on XZ, and the camera orbits.
-Locked from the Edit board: Land Shark CAM 225, Wardstone CAM 180.
+All five static families use the same long side-to-side presentation. Land
+Shark is the sole special case. The workshop uses the exact transparent
+family/tier thumbnails under `assets/ui/merge_bulwarks/`; it does not rebuild
+cards from live models or per-family cameras. This is independent of runtime
+deployment orientation, which remains one generalized anchor rule with only
+Land Shark exempted in `MergeBulwarkModels`.
 
 ## Merge bulwark workshop shows owned vs next (2026-08-31)
 

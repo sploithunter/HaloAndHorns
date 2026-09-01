@@ -697,6 +697,13 @@ The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exi
 and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
 deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
 
+## Impaler Palisade Stops, Then Breaches (2026-08-31)
+
+The Stop wall deals no damage. Each marcher is shoved toward the gate with the
+same displacement as tank Seismic, pinned briefly, and must leave the line
+before the next bounce. Tier is bounce count (1/2/3/4), not wall HP and not
+five-per-enemy on T1. Combat opens on the crossing after charges are spent.
+
 ## Merge Combat IDs Establish Fronts but Do Not Strand Idle Teams (2026-08-27)
 
 Keep per-team `CombatTargetGroup` values for readable opening assignments. Once the complete wave has

@@ -69,6 +69,13 @@ local function collectAssetRoots(root)
         end
     end
 
+    local mergeBulwarks = root:FindFirstChild("MergeBulwarks")
+    if mergeBulwarks then
+        for _, familyFolder in ipairs(mergeBulwarks:GetChildren()) do
+            addModelChildren(familyFolder, roots)
+        end
+    end
+
     local pets = root:FindFirstChild("Pets")
     if pets then
         for _, petType in ipairs(pets:GetChildren()) do

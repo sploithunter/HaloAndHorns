@@ -920,13 +920,16 @@ end
 -- Admin Reset to Beginning owns a whole-profile replay, not a normal preference edit. Rebuild both
 -- the durable Merge onboarding/prestige record and its combat-mode preference, then republish the
 -- effective locked-Simple state expected of a fresh level-one player.
-function SettingsService:ResetMergeDefenseForBeginning(player)
+function SettingsService:ResetMergeDefenseForBeginning(player, options)
     local data = self._dataService:GetData(player)
     if not data then
         return false
     end
+    options = type(options) == "table" and options or {}
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
-    data.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    local reset = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    reset.tutorial_completed = options.preserveTutorialCompleted == true
+    data.GameData.MergeDefense = reset
     data.Settings = type(data.Settings) == "table" and data.Settings or {}
     data.Settings.MergeDefenseMode =
         MergeEggPlayerCombat.normalizeMode(nil, self:_mergeDefenseRules().default_mode)

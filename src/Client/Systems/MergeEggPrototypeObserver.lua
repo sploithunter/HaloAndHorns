@@ -21,6 +21,7 @@ local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
+local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -933,6 +934,196 @@ prototypeWorld = function()
         end
     end
     return maps:FindFirstChild((CONFIG.world or {}).model_name or "MergeEggPrototype")
+end
+
+-- Saw Blade bulwarks are anchored presentation rigs. Animate their independently pivoted rotors
+-- locally so a ten-tile line never spends server replication budget on sixty-per-second CFrames.
+-- Only the active player's bay is scanned; no Workspace-wide mechanism loop is allowed here.
+local sawBladeRigs = {}
+local landSharkRigs = {}
+local sawBladeScanElapsed = 0
+
+local function sawBladeRotation(axis, angle)
+    if axis == "X" then
+        return CFrame.Angles(angle, 0, 0)
+    elseif axis == "Y" then
+        return CFrame.Angles(0, angle, 0)
+    end
+    return CFrame.Angles(0, 0, angle)
+end
+
+local function registerSawBladeRig(model)
+    -- Fit before capturing startCFrame. Import-scale meshes render ~100× until this lands;
+    -- fitting after register makes rotors orbit the oversized frame.
+    MergeBulwarkModels.ApplySawBladeImportScale(model)
+    local blades = {}
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") and string.match(descendant.Name, "^Blade%d+$") then
+            blades[#blades + 1] = {
+                part = descendant,
+                startCFrame = descendant.CFrame,
+                axis = tostring(
+                    descendant:GetAttribute("RotationAxis")
+                        or model:GetAttribute("RotationAxis")
+                        or "Z"
+                ),
+                direction = tonumber(descendant:GetAttribute("RotationDirection")) or 1,
+            }
+        end
+    end
+    if #blades > 0 then
+        sawBladeRigs[model] = {
+            model = model,
+            blades = blades,
+            angle = 0,
+            speedDegrees = math.max(
+                0,
+                tonumber(model:GetAttribute("SawBladeSpeedDegrees"))
+                    or tonumber(model:GetAttribute("PreviewSpeedDegrees"))
+                    or 180
+            ),
+        }
+    end
+end
+
+local function registerLandSharkRig(model)
+    local direction = model:GetAttribute("MergeLandSharkTrackDirection")
+    if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.001 then
+        direction = Vector3.new(1, 0, 0)
+    else
+        direction = direction.Unit
+    end
+    landSharkRigs[model] = {
+        model = model,
+        baseCFrame = model:GetPivot(),
+        direction = direction,
+        trackStuds = math.max(4, tonumber(model:GetAttribute("MergeLandSharkTrackStuds")) or 28),
+        speedStuds = math.max(1, tonumber(model:GetAttribute("MergeLandSharkSpeedStuds")) or 10),
+        surfaceDistance = math.max(
+            2,
+            tonumber(model:GetAttribute("MergeLandSharkSurfaceDistance")) or 8
+        ),
+        surfaceRise = math.max(0, tonumber(model:GetAttribute("MergeLandSharkSurfaceRise")) or 2),
+        bitePeriod = math.max(
+            0.5,
+            tonumber(model:GetAttribute("MergeLandSharkBitePeriodSeconds")) or 1.4
+        ),
+        phase = tonumber(model:GetAttribute("MergeLandSharkPhase")) or 0,
+        surfaced = 0,
+        proximityElapsed = 0,
+        nearestEnemy = math.huge,
+    }
+end
+
+local function nearestEnemyDistance(position)
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    local nearest = math.huge
+    for _, enemy in ipairs(enemies and enemies:GetChildren() or {}) do
+        if enemy:IsA("Model") then
+            local enemyPosition = enemy:GetPivot().Position
+            local planar =
+                Vector3.new(enemyPosition.X - position.X, 0, enemyPosition.Z - position.Z)
+            nearest = math.min(nearest, planar.Magnitude)
+        end
+    end
+    return nearest
+end
+
+local function updateLandSharkRigs(dt)
+    local now = os.clock()
+    for model, rig in pairs(landSharkRigs) do
+        if not model.Parent then
+            landSharkRigs[model] = nil
+        else
+            local halfTrack = rig.trackStuds * 0.5
+            local angularSpeed = rig.speedStuds / math.max(1, halfTrack)
+            local phase = now * angularSpeed + rig.phase * math.pi * 2
+            local travel = math.sin(phase) * halfTrack
+            local forward = math.cos(phase) >= 0
+            local patrolCFrame = rig.baseCFrame + rig.direction * travel
+            if not forward then
+                patrolCFrame *= CFrame.Angles(0, math.pi, 0)
+            end
+            rig.proximityElapsed -= dt
+            if rig.proximityElapsed <= 0 then
+                rig.proximityElapsed = 0.1
+                rig.nearestEnemy = nearestEnemyDistance(patrolCFrame.Position)
+            end
+            local wantsSurface = rig.nearestEnemy <= rig.surfaceDistance
+            -- A nearby enemy triggers a discrete rise-and-dive bite cycle. The shark never
+            -- idles above the deck: outside a bite, only its configured dorsal-fin exposure
+            -- remains visible.
+            local bitePhase = ((now / rig.bitePeriod) + rig.phase) % 1
+            local targetSurface = if wantsSurface then math.sin(math.pi * bitePhase) ^ 2 else 0
+            rig.surfaced += (targetSurface - rig.surfaced) * math.min(1, dt * 12)
+            model:PivotTo(patrolCFrame + Vector3.new(0, rig.surfaceRise * rig.surfaced, 0))
+        end
+    end
+end
+
+local function updateSawBladeRigs(dt, observing)
+    if not observing then
+        return
+    end
+    local world = prototypeWorld()
+    local folder = world and world:FindFirstChild("MergeEggBulwarks")
+    sawBladeScanElapsed += dt
+    if sawBladeScanElapsed >= 0.25 then
+        sawBladeScanElapsed = 0
+        for model in pairs(sawBladeRigs) do
+            if not (folder and model.Parent and model:IsDescendantOf(folder)) then
+                sawBladeRigs[model] = nil
+            end
+        end
+        for model in pairs(landSharkRigs) do
+            if not (folder and model.Parent and model:IsDescendantOf(folder)) then
+                landSharkRigs[model] = nil
+            end
+        end
+        for _, child in ipairs(folder and folder:GetChildren() or {}) do
+            if
+                child:IsA("Model")
+                and child:GetAttribute("MergeBulwarkSpawned") == true
+                and child:GetAttribute("MergeBulwarkFamily") == "saw_blade"
+            then
+                if sawBladeRigs[child] == nil then
+                    registerSawBladeRig(child)
+                else
+                    local _, size = child:GetBoundingBox()
+                    local longest = math.max(size.X, size.Y, size.Z)
+                    local target = 10 * (tonumber(child:GetAttribute("MergeBulwarkSpawnScale")) or 1)
+                    if longest > target * 1.5 then
+                        sawBladeRigs[child] = nil
+                        registerSawBladeRig(child)
+                    end
+                end
+            end
+            if
+                child:IsA("Model")
+                and child:GetAttribute("MergeBulwarkSpawned") == true
+                and child:GetAttribute("MergeBulwarkFamily") == "land_shark"
+                and child:GetAttribute("MergeLandSharkPatrol") == true
+                and landSharkRigs[child] == nil
+            then
+                registerLandSharkRig(child)
+            end
+        end
+    end
+    for model, rig in pairs(sawBladeRigs) do
+        if not model.Parent then
+            sawBladeRigs[model] = nil
+        else
+            rig.angle = (rig.angle + math.rad(rig.speedDegrees) * dt) % (math.pi * 2)
+            for _, blade in ipairs(rig.blades) do
+                if blade.part.Parent then
+                    blade.part.CFrame = blade.startCFrame
+                        * sawBladeRotation(blade.axis, rig.angle * blade.direction)
+                end
+            end
+        end
+    end
+    updateLandSharkRigs(dt)
 end
 
 local function enemyName(targetId)
@@ -2144,11 +2335,26 @@ local function updateBoardWallControls(controls, observing)
         local prefix = "Management" .. data.attribute
         local step = math.max(0, tonumber(world:GetAttribute(prefix .. "Step")) or 0)
         local stepPercent = math.floor(step * 100 + 0.5)
+        local currentPercent =
+            math.max(0, math.floor(tonumber(world:GetAttribute(prefix .. "Percent")) or 100))
+        local nextPercent = math.max(
+            currentPercent,
+            math.floor(
+                tonumber(world:GetAttribute(prefix .. "NextPercent"))
+                    or (currentPercent + stepPercent)
+            )
+        )
         local cost = world:GetAttribute(prefix .. "Cost")
         local maxed = world:GetAttribute(prefix .. "Maxed") == true
         setManagementCard(card, observing, {
-            title = data.title,
-            detail = string.format("+%d%s", stepPercent, data.suffix),
+            title = string.format("%s %d%s", data.title, currentPercent, data.suffix),
+            detail = maxed and "MAX" or string.format(
+                "+%d%s → %d%s",
+                stepPercent,
+                data.suffix,
+                nextPercent,
+                data.suffix
+            ),
             available = not maxed,
             currency = "gems",
             pillText = maxed and "MAX" or MergeEggCostFormat.format(cost),
@@ -2263,9 +2469,10 @@ local function updateBoardWallControls(controls, observing)
         })
     elseif not rebirthRequirementMet then
         setManagementCard(rebirthCard, observing, {
-            title = string.format("REBIRTH R%d", rebirthRank + 1),
+            title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "ALL EGGS NEED TIER %d",
+                "NEXT R%d · ALL EGGS NEED TIER %d",
+                rebirthRank + 1,
                 math.max(1, math.floor(tonumber(rebirthMinimumTier) or 1))
             ),
             available = false,
@@ -2283,9 +2490,10 @@ local function updateBoardWallControls(controls, observing)
         })
     else
         setManagementCard(rebirthCard, observing, {
-            title = string.format("REBIRTH R%d", rebirthRank + 1),
+            title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "%s TOTAL DAMAGE",
+                "NEXT R%d · %s DAMAGE",
+                rebirthRank + 1,
                 formatDamageMultiplier(nextAlliedDamageMultiplier)
             ),
             available = rebirthAvailable,
@@ -2886,6 +3094,7 @@ function MergeEggPrototypeObserver.start()
     local rotationElapsed = 0
     RunService.RenderStepped:Connect(function(dt)
         local observing = localPlayer:GetAttribute("InMergeEggPrototype") == true
+        updateSawBladeRigs(dt, observing)
         if observing and tutorialPathTarget then
             updateTutorialPath(tutorialPathTarget)
         end

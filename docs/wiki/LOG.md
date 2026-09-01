@@ -6404,6 +6404,20 @@ first-session cohort rates.
   soul/void) and the draft role, not fake strip length. Combat numbers still
   do not exist.
 
+## 2026-08-31 — Pre-checkpoint overrun rewinds to Wave 1
+
+- Auto-restart required a banked Wave-10 snapshot. Wave 4 overrun therefore sat
+  on DefenseOverrun. Wave 0 is now the opening boundary: keep the live egg/board
+  and roll Wave 1 again. The Wave-0 snapshot is not persisted.
+
+## 2026-08-31 — Impaler Palisade stop shove (no damage)
+
+- First Merge bulwark combat effect. Contact uses the tank Seismic shove
+  (`ApplyDirectedKnockback` toward the gate) plus a short `RootedUntil` pin.
+  No damage. Per-marcher charges: 1/2/3/4 by tier. They must walk back off
+  the line between bounces; the last crossing opens combat as before.
+- Five bounces on T1 would lock the wave for a pet farm. T1 is one bounce.
+
 ## 2026-08-31 — Merge tutorial reset re-lays the 600-Waycoin stacks
 
 - Durable-wallet entry plus `hall_coins.defaultAmount = 100` saved a coins-only
@@ -6431,3 +6445,110 @@ first-session cohort rates.
 - Removed the old entry/exit wallet swap that zeroed Merge money on entry and restored a pre-session
   balance on exit. Admin Reset explicitly discards both playstate/checkpoint and now re-enters the
   dedicated Merge session on the next scheduler turn without requiring a Studio reboot.
+
+## 2026-08-31 — Admin Reset to Beginning is a same-Play clean slate
+
+- `🔄 Reset to Beginning (keeps ALL unique pets)` still keeps unique/huge pets only.
+  On dedicated Merge it must land pre-Wave 1, empty board, zero Waycoins, tutorial
+  again, without a Studio restart.
+- Same-Play failures were leftover `HatcherEggObjective` models plus
+  CharacterAdded / session-end persist rewriting the wiped playstate.
+- Reset now sets `MergeEggIgnorePlaystate`, wipes `MergeDefense`, destroys leftover
+  hatcher eggs / Merge units on every bay, and `ResumeDedicatedEntry` re-enters
+  with `ignoreCheckpoint` + `forceTutorial`. Persist no-ops while the flag is set.
+
+## 2026-08-31 — Saw Blade tiers split into independent rotors
+
+- Recovered and preserved the exact accepted textured GLB for all four Saw Blade tiers, then split
+  each in Blender without remeshing, decimation, normalization, or non-uniform scaling.
+- Packed editable sources now contain `Base` plus independently pivoted rotors: one blade in Tier 1,
+  two in Tier 2, three in Tier 3, and four in Tier 4. Tiers 1–3 rotate on local Y; Tier 4 rotates on
+  local X. Every rotor origin is at its own axle and every part scale is `(1, 1, 1)`.
+- Source/output triangle accounting is exact at 4,058 / 5,968 / 5,968 / 4,028 triangles. The
+  reproducible splitter and per-tier reports are checked in with the packed `.blend` sources.
+
+## 2026-08-31 — Admin Reset rewinds the live Merge session
+
+- Same-Play Reset to Beginning restarted the tutorial but kept three board eggs
+  and looked like the Gem wall / Rebirth R2 had not reset. Ending the session
+  raced persist; the live record was never zeroed.
+- Dedicated Merge now rewinds the live record in place: empty board, rebirth 0,
+  no Gem upgrades, no bulwarks, Earth spawn, opening stacks, first-visit lesson.
+- Wall cards now print the current value so a reset is readable: Coin Value 100%
+  / +5% → 105%, Rebirth R1 / Next R2. Players start at free Rank 1; the first
+  paid rebirth is Rank 2 at 50,000 Waycoins.
+
+## 2026-08-31 — Reverted live Admin Reset / datastore wipe
+
+- The same-Play live-session reset and `MergeEggIgnorePlaystate` persist block
+  left leftover eggs and hid Waycoins. Those reset/datastore changes are
+  reverted. Wall-card current-value copy stays.
+
+## 2026-08-31 — Saw Blade Tier 1 / Tier 3 symmetric rotor candidates
+
+- Rebuilt the unusable hidden spindles for the single-blade brown saw and the
+  triple-blade black/orange saw as complete symmetric low-poly rotors. Tier 1's
+  orphan teeth are now part of its rotor; Tier 3 has three independent complete
+  disks, hubs, collars, and axle covers.
+- Source `.blend`, FBX, GLB, render, and repair report are preserved per tier.
+  Studio comparison models use uniform `0.04` scale (eight studs wide), are
+  grounded beside the ten-stud originals, and spin around Roblox local Z.
+
+## 2026-08-31 — Approved Saw Blade rigs saved to runtime models
+
+- Replaced the runtime Saw Blade family with the four visually approved split rigs. Tier 1 and 3
+  use the repaired symmetric rotors, Tier 3's middle disk counter-rotates, and Tier 2 / 4 spin at
+  twice the Tier 1 / 3 speed. Approved Roblox snapshots are preserved under
+  `assets/source/props/merge_bulwarks/roblox_approved/` and prebaked into `Models.rbxm`.
+- Runtime rotor motion is client-local and scoped to the active bay. A single positional idle-whirl
+  loop represents the whole installed line; the separate circular-saw contact sound is catalogued
+  for a future real saw damage tick at the enemy position and is not used as fake ambient audio.
+
+## 2026-08-31 — Merge reset lifecycle and 24-variant bulwark audit
+
+- Dedicated Merge Admin Reset now produces the same exact clean state both inside the current Play
+  session and after Stop→Play: Wave 0, zero Waycoins, five owner-only 120-Waycoin opening piles, no
+  board/deployed eggs, no hatcher or bulwark visuals, and no replay of an already-completed Merge
+  tutorial. The repeatable Studio lifecycle test walks the avatar through real pickups, buys five
+  eggs, merges, uses Equip Best, advances combat, installs a bulwark, resets, and asserts the result.
+- Mechanically spawned all six bulwark families at all four tiers across all ten authored bays.
+  Every line uses ten uniformly scaled `0.94` models on 9.4-stud centers, spans the exact 94-stud
+  inset, and clears both walls. A checked-in Studio geometry audit now reproduces all 2,400
+  placement checks without saving its temporary clones.
+
+## 2026-08-31 — Corrected bulwark presentation contracts
+
+- Removed all preview-only model pitching. The six-family menu now uses the production spawn path
+  unchanged and fits each complete deployed bounding box into the actual viewport aspect ratio with
+  camera movement only. A live client projection audit kept every family inside 81% of its card.
+- Land Sharks now deploy as three independent submerged patrols with staggered 28-stud tracks, a
+  fixed one-stud fin silhouette, and a proximity-triggered bite rise. They are not a tiled wall.
+- Replaced the obsolete ten-tiles-for-every-family geometry check with a presentation-aware audit.
+  The new pass checks 2,120 placements across ten bays and all 24 variants, enforces three sharks per
+  bay, fixed shark exposure, static wall clearance, and six-stud Saw Blade depth/height limits.
+
+## 2026-08-31 — Restored authored side-to-side bulwark menu art
+
+- Removed the live `ViewportFrame`/camera reconstruction from the bulwark workshop. Recovered the
+  exact 24 transparent thumbnails from the accepted Meshy tasks, preserved them under
+  `assets/ui/merge_bulwarks/`, uploaded group-owned Roblox assets, and recorded source plus asset-ID
+  manifests under `scripts/`.
+- Locked the presentation contract to one rule: Impaler Palisade, Concertina Line, Saw Blade,
+  Grasping Hedge, and Wardstone Barrier use the same long side-to-side art; Land Shark is the sole
+  exception. Runtime deployment transforms were not changed and retain the matching generalized
+  five-static-family rule.
+- Added headless guards against reintroducing live preview models or accidentally using runtime
+  Model IDs as menu artwork. Live Studio verification loaded both visible flat previews through
+  their Decal `rbxthumb` assets.
+
+## 2026-09-01 — Saw Blade natural size vs lune assembly
+
+- Checked the uploaded Roblox assets directly. The original unsplit catalog model
+  (`135106892647800`) is 2 studs. The repaired/split MeshIds used by the approved rigs are
+  200-stud natives (Base MeshSize 200×57×78, Blade01 83×83×32). Studio QA previews in
+  `ServerStorage._QA.SawBladeRigPreviews` are those same meshes at Model.Scale `0.04` (T1/T3)
+  or `0.05` (T2/T4), which is how they read as 8–10 stud tiles.
+- `build_approved_merge_saw_blades.luau` copied the post-scale Size numbers onto new lune
+  MeshParts at scale 1 and cannot serialize MeshSize. Runtime therefore drew the 200-stud
+  mesh — about 100× the original 2-stud import. Spawn now bakes each MeshPart through
+  `AssetService:CreateMeshPartAsync` and keeps the authored tile Size.

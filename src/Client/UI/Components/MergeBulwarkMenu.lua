@@ -1,10 +1,7 @@
 -- Walk-up bulwark management menu. All state and purchases remain server-authoritative; this
 -- component only presents the state returned by MergeEggPrototypeService.
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-
-local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 
 local MergeBulwarkMenu = {}
 
@@ -80,62 +77,11 @@ local function label(parent, name, text, size, bold)
     return value
 end
 
--- Strip families keep the bbox-align + 90° pitch so the side faces the camera.
--- Shark and wardstone stand the same way they do on the strip (import pivot
--- cleared), then the camera orbits. Locked from the Edit orient board:
--- shark CAM 225, wardstone CAM 180.
-local PREVIEW = {
-    land_shark = { mode = "upright", yaw = 225, elev = 22 },
-    wardstone_barrier = { mode = "upright", yaw = 180, elev = 16 },
-}
-
-local function frameStripPreview(model, extraYaw)
-    local boxCf = model:GetBoundingBox()
-    model:PivotTo(CFrame.new() * boxCf:ToObjectSpace(model:GetPivot()))
-    -- Underside faces +Z after align; pitch 90 so the side faces the camera.
-    model:PivotTo(CFrame.Angles(math.rad(90), math.rad(extraYaw or 0), 0) * model:GetPivot())
-    boxCf = model:GetBoundingBox()
-    model:PivotTo(CFrame.new(-boxCf.Position) * model:GetPivot())
-    return select(2, model:GetBoundingBox())
-end
-
-local function standPreviewModel(model)
-    if model.PrimaryPart then
-        model.PrimaryPart.PivotOffset = CFrame.new(model.PrimaryPart.PivotOffset.Position)
-    end
-    local boxCf, size = model:GetBoundingBox()
-    model:PivotTo(CFrame.new() * boxCf:ToObjectSpace(model:GetPivot()))
-    boxCf, size = model:GetBoundingBox()
-    model:PivotTo(
-        model:GetPivot()
-            + Vector3.new(-boxCf.Position.X, -(boxCf.Position.Y - size.Y * 0.5), -boxCf.Position.Z)
-    )
-    return select(2, model:GetBoundingBox())
-end
-
-local function fitStripCamera(camera, size)
-    local fov = 30
-    local worldHeight = math.max(size.Y, size.Z)
-    local fit = math.max(size.X, worldHeight) * 1.22
-    local distance = (fit * 0.5) / math.tan(math.rad(fov * 0.5))
-    camera.FieldOfView = fov
-    camera.CFrame = CFrame.lookAt(Vector3.new(0, worldHeight * 0.08, distance), Vector3.zero)
-end
-
-local function fitOrbitCamera(camera, size, yawDeg, elevDeg)
-    local radius = math.max(size.X, size.Y, size.Z) * 1.35
-    local elev = math.rad(elevDeg or 20)
-    local yaw = math.rad(yawDeg or 0)
-    local height = math.max(size.Y * 0.42, radius * math.sin(elev))
-    local dist = radius * math.cos(elev)
-    camera.FieldOfView = 32
-    camera.CFrame = CFrame.lookAt(
-        Vector3.new(math.sin(yaw) * dist, height, math.cos(yaw) * dist),
-        Vector3.new(0, size.Y * 0.38, 0)
-    )
-end
-
-local function makeViewport(parent, name)
+-- The preview art was authored and uploaded specifically to show every static bulwark in the same
+-- long, side-to-side presentation. Land Sharks intentionally use their own presentation. Do not
+-- rebuild these cards from live 3D models: a generic viewport camera silently destroys that visual
+-- contract whenever a mesh pivot, bounds, or import orientation changes.
+local function makePreviewImage(parent, name)
     local pane = Instance.new("Frame")
     pane.Name = name
     pane.Size = UDim2.fromScale(1, 1)
@@ -145,59 +91,35 @@ local function makeViewport(parent, name)
     pane.Parent = parent
     corner(pane, 10)
 
-    local viewport = Instance.new("ViewportFrame")
-    viewport.Name = "Preview"
-    viewport.Size = UDim2.fromScale(1, 1)
-    viewport.BackgroundColor3 = Color3.fromRGB(10, 14, 22)
-    viewport.BorderSizePixel = 0
-    viewport.Ambient = Color3.fromRGB(180, 190, 210)
-    viewport.LightColor = Color3.fromRGB(255, 236, 200)
-    viewport.LightDirection = Vector3.new(-0.4, -0.7, -0.6)
-    viewport.Parent = pane
-
-    local world = Instance.new("WorldModel")
-    world.Name = "PreviewWorld"
-    world.Parent = viewport
-
-    local camera = Instance.new("Camera")
-    camera.Name = "PreviewCamera"
-    camera.Parent = viewport
-    viewport.CurrentCamera = camera
+    local image = Instance.new("ImageLabel")
+    image.Name = "Preview"
+    image.Size = UDim2.fromScale(1, 1)
+    image.BackgroundTransparency = 1
+    image.BorderSizePixel = 0
+    image.ScaleType = Enum.ScaleType.Fit
+    image.ResampleMode = Enum.ResamplerMode.Default
+    image.Parent = pane
 
     return {
         pane = pane,
-        viewport = viewport,
-        world = world,
-        camera = camera,
+        image = image,
         key = "",
     }
 end
 
-local function showPreview(slot, familyId, tier)
-    local key = string.format("%s:%d", tostring(familyId or ""), tonumber(tier) or 0)
+local function showPreview(slot, family, tier)
+    local familyId = type(family) == "table" and family.id or nil
+    local resolvedTier = math.max(0, math.floor(tonumber(tier) or 0))
+    local previewIds = type(family) == "table" and family.previewAssetIds or nil
+    local assetId = type(previewIds) == "table" and previewIds[resolvedTier] or nil
+    local key = string.format("%s:%d:%s", tostring(familyId or ""), resolvedTier, tostring(assetId or ""))
     if key == slot.key then
         return
     end
     slot.key = key
-    local existing = slot.world:FindFirstChild("PreviewModel")
-    if existing then
-        existing:Destroy()
-    end
-    if familyId == nil or familyId == "" or (tonumber(tier) or 0) < 1 then
-        return
-    end
-    local model = MergeBulwarkModels.Clone(familyId, tier)
-    if not model then
-        return
-    end
-    model.Name = "PreviewModel"
-    model.Parent = slot.world
-    local pose = PREVIEW[string.lower(tostring(familyId or ""))]
-    if pose and pose.mode == "upright" then
-        fitOrbitCamera(slot.camera, standPreviewModel(model), pose.yaw, pose.elev)
-    else
-        fitStripCamera(slot.camera, frameStripPreview(model, pose and pose.yaw or 0))
-    end
+    slot.image.Image = if assetId and tostring(assetId) ~= ""
+        then string.format("rbxthumb://type=Asset&id=%s&w=420&h=420", tostring(assetId))
+        else ""
 end
 
 function MergeBulwarkMenu.new(parent, onAction)
@@ -278,7 +200,8 @@ function MergeBulwarkMenu.new(parent, onAction)
     walletSplit.Padding = UDim.new(0.04, 0)
     walletSplit.SortOrder = Enum.SortOrder.LayoutOrder
     walletSplit.Parent = walletFrame
-    local walletCaption = label(walletFrame, "WalletCaption", "WALLET", UDim2.new(0.42, 0, 0.7, 0), true)
+    local walletCaption =
+        label(walletFrame, "WalletCaption", "WALLET", UDim2.new(0.42, 0, 0.7, 0), true)
     walletCaption.LayoutOrder = 1
     walletCaption.TextXAlignment = Enum.TextXAlignment.Right
     walletCaption.TextColor3 = Color3.fromRGB(205, 220, 235)
@@ -324,10 +247,12 @@ function MergeBulwarkMenu.new(parent, onAction)
     headerSplit.Padding = UDim.new(0.014, 0)
     headerSplit.SortOrder = Enum.SortOrder.LayoutOrder
     headerSplit.Parent = selectedHeader
-    local selectedName = label(selectedHeader, "SelectedName", "CHOOSE A FAMILY", UDim2.new(0.58, 0, 1, 0), true)
+    local selectedName =
+        label(selectedHeader, "SelectedName", "CHOOSE A FAMILY", UDim2.new(0.58, 0, 1, 0), true)
     selectedName.LayoutOrder = 1
     textLimit(selectedName, 24)
-    local ownedBadge = label(selectedHeader, "OwnedBadge", "NOT OWNED", UDim2.new(0.24, 0, 0.78, 0), true)
+    local ownedBadge =
+        label(selectedHeader, "OwnedBadge", "NOT OWNED", UDim2.new(0.24, 0, 0.78, 0), true)
     ownedBadge.LayoutOrder = 2
     ownedBadge.BackgroundTransparency = 0
     ownedBadge.BackgroundColor3 = Color3.fromRGB(42, 51, 68)
@@ -401,12 +326,14 @@ function MergeBulwarkMenu.new(parent, onAction)
     ownedHeadSplit.Padding = UDim.new(0.02, 0)
     ownedHeadSplit.SortOrder = Enum.SortOrder.LayoutOrder
     ownedHeadSplit.Parent = ownedHead
-    local ownedTitle = label(ownedHead, "OwnedTitle", "CURRENTLY OWNED", UDim2.new(1, 0, 1, 0), true)
+    local ownedTitle =
+        label(ownedHead, "OwnedTitle", "CURRENTLY OWNED", UDim2.new(1, 0, 1, 0), true)
     ownedTitle.LayoutOrder = 1
     ownedTitle.TextColor3 = Color3.fromRGB(72, 196, 176)
     fill(ownedTitle)
     textLimit(ownedTitle, 16)
-    local installedBadge = label(ownedHead, "InstalledBadge", "INSTALLED", UDim2.new(0.28, 0, 0.9, 0), true)
+    local installedBadge =
+        label(ownedHead, "InstalledBadge", "INSTALLED", UDim2.new(0.28, 0, 0.9, 0), true)
     installedBadge.LayoutOrder = 2
     installedBadge.BackgroundTransparency = 0
     installedBadge.BackgroundColor3 = Color3.fromRGB(58, 68, 84)
@@ -414,12 +341,13 @@ function MergeBulwarkMenu.new(parent, onAction)
     corner(installedBadge, 10)
     textLimit(installedBadge, 13)
 
-    local ownedPreview = makeViewport(ownedPane, "OwnedPreview")
+    local ownedPreview = makePreviewImage(ownedPane, "OwnedPreview")
     ownedPreview.pane.Size = UDim2.new(1, 0, 0.52, 0)
     ownedPreview.pane.LayoutOrder = 2
     fill(ownedPreview.pane)
 
-    local ownedEmpty = label(ownedPreview.pane, "OwnedEmpty", "NOT OWNED YET", UDim2.fromScale(1, 1), true)
+    local ownedEmpty =
+        label(ownedPreview.pane, "OwnedEmpty", "NOT OWNED YET", UDim2.fromScale(1, 1), true)
     ownedEmpty.TextXAlignment = Enum.TextXAlignment.Center
     ownedEmpty.TextColor3 = Color3.fromRGB(132, 146, 164)
     textLimit(ownedEmpty, 18)
@@ -433,7 +361,8 @@ function MergeBulwarkMenu.new(parent, onAction)
     corner(selectedRole, 10)
     textLimit(selectedRole, 13)
 
-    local selectedDescription = label(ownedPane, "SelectedDescription", "", UDim2.new(1, 0, 0.18, 0), false)
+    local selectedDescription =
+        label(ownedPane, "SelectedDescription", "", UDim2.new(1, 0, 0.18, 0), false)
     selectedDescription.LayoutOrder = 4
     selectedDescription.TextColor3 = Color3.fromRGB(197, 208, 222)
     selectedDescription.TextYAlignment = Enum.TextYAlignment.Top
@@ -485,7 +414,8 @@ function MergeBulwarkMenu.new(parent, onAction)
     nextPreviewSplit.Padding = UDim.new(0.04, 0)
     nextPreviewSplit.SortOrder = Enum.SortOrder.LayoutOrder
     nextPreviewSplit.Parent = nextPreviewCol
-    local nextCaption = label(nextPreviewCol, "NextCaption", "TIER 2", UDim2.new(0.55, 0, 0.16, 0), true)
+    local nextCaption =
+        label(nextPreviewCol, "NextCaption", "TIER 2", UDim2.new(0.55, 0, 0.16, 0), true)
     nextCaption.LayoutOrder = 1
     nextCaption.BackgroundTransparency = 0
     nextCaption.BackgroundColor3 = Color3.fromRGB(236, 240, 246)
@@ -493,7 +423,7 @@ function MergeBulwarkMenu.new(parent, onAction)
     nextCaption.TextXAlignment = Enum.TextXAlignment.Center
     corner(nextCaption, 8)
     textLimit(nextCaption, 13)
-    local nextPreview = makeViewport(nextPreviewCol, "NextPreview")
+    local nextPreview = makePreviewImage(nextPreviewCol, "NextPreview")
     nextPreview.pane.Size = UDim2.new(1, 0, 0.8, 0)
     nextPreview.pane.LayoutOrder = 2
     fill(nextPreview.pane)
@@ -622,7 +552,8 @@ function MergeBulwarkMenu.new(parent, onAction)
         statusSplit.Padding = UDim.new(0.06, 0)
         statusSplit.SortOrder = Enum.SortOrder.LayoutOrder
         statusSplit.Parent = status
-        local statusText = label(status, "StatusText", "NOT OWNED", UDim2.new(0.72, 0, 0.7, 0), true)
+        local statusText =
+            label(status, "StatusText", "NOT OWNED", UDim2.new(0.72, 0, 0.7, 0), true)
         statusText.LayoutOrder = 1
         statusText.TextXAlignment = Enum.TextXAlignment.Right
         statusText.TextColor3 = Color3.fromRGB(175, 190, 208)
@@ -713,7 +644,8 @@ function MergeBulwarkMenu.new(parent, onAction)
         contents.verb.Text = verbText
         contents.verb.TextColor3 = ink
         contents.verb.Size = showPrice and UDim2.new(0.4, 0, 0.7, 0) or UDim2.new(0.8, 0, 0.7, 0)
-        contents.verb.TextXAlignment = showPrice and Enum.TextXAlignment.Right or Enum.TextXAlignment.Center
+        contents.verb.TextXAlignment = showPrice and Enum.TextXAlignment.Right
+            or Enum.TextXAlignment.Center
         contents.coin.Visible = showPrice
         contents.amount.Visible = showPrice
         contents.amount.Text = tostring(costAmount)
@@ -776,7 +708,8 @@ function MergeBulwarkMenu.new(parent, onAction)
     end)
 
     local function paintNotes(family, targetTier, atMaximum)
-        local notes = type(family.upgradeNotes) == "table" and family.upgradeNotes[targetTier] or nil
+        local notes = type(family.upgradeNotes) == "table" and family.upgradeNotes[targetTier]
+            or nil
         if atMaximum then
             bullets[1].Text = "Already at maximum."
             bullets[1].Visible = true
@@ -850,10 +783,7 @@ function MergeBulwarkMenu.new(parent, onAction)
                 card.button.BackgroundColor3 = chosen and Color3.fromRGB(42, 36, 20)
                     or Color3.fromRGB(28, 36, 51)
                 card.stroke.Color = chosen and Color3.fromRGB(255, 229, 110)
-                    or (
-                        current and Color3.fromRGB(190, 255, 205)
-                        or Color3.fromRGB(61, 75, 98)
-                    )
+                    or (current and Color3.fromRGB(190, 255, 205) or Color3.fromRGB(61, 75, 98))
             end
         end
         if selected == nil then
@@ -887,16 +817,17 @@ function MergeBulwarkMenu.new(parent, onAction)
             selectedRole.Text = string.upper(tostring(selected.role or ""))
             selectedDescription.Text = tostring(selected.description or "")
             if ownedTier > 0 then
-                showPreview(ownedPreview, selected.id, ownedTier)
+                showPreview(ownedPreview, selected, ownedTier)
                 ownedEmpty.Visible = false
             else
                 showPreview(ownedPreview, nil, 0)
                 ownedEmpty.Visible = true
             end
-            showPreview(nextPreview, selected.id, nextTier)
+            showPreview(nextPreview, selected, nextTier)
             nextCaption.Text = atMaximum and "MAX" or string.format("TIER %d", nextTier)
             nextCaption.Visible = true
-            nextTitle.Text = ownedTier == 0 and "UNLOCK" or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
+            nextTitle.Text = ownedTier == 0 and "UNLOCK"
+                or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
             paintNotes(selected, nextTier, atMaximum)
             controller.buyActive = unlocked and ownedTier == 0
             controller.upgradeActive = unlocked and ownedTier > 0 and not atMaximum
@@ -912,10 +843,7 @@ function MergeBulwarkMenu.new(parent, onAction)
             upgrade.Active = purchaseActive
             upgrade.AutoButtonColor = purchaseActive
             upgrade.BackgroundColor3 = atMaximum and Color3.fromRGB(68, 74, 86)
-                or (
-                    ownedTier > 0 and Color3.fromRGB(75, 175, 95)
-                    or Color3.fromRGB(225, 151, 22)
-                )
+                or (ownedTier > 0 and Color3.fromRGB(75, 175, 95) or Color3.fromRGB(225, 151, 22))
             upgradeStroke.Color = atMaximum and Color3.fromRGB(110, 118, 132)
                 or (
                     ownedTier > 0 and Color3.fromRGB(180, 255, 195)
