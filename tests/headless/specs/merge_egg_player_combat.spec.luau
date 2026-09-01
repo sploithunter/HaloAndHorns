@@ -91,6 +91,26 @@ return function()
             expect(state.bulwark_tier).to.equal(3)
             expect(state.bulwark_owned.concertina_line).to.equal(3)
             expect(state.bulwark_waycoins_spent).to.equal(7)
+            expect(state.egg_bulwark_family).to.equal(nil)
+            expect(state.bulwark_slots.lane.family).to.equal("concertina_line")
+
+            local both = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "saw_blade",
+                egg_bulwark_family = "wardstone_barrier",
+                egg_bulwark_tier = 2,
+                bulwark_owned = { saw_blade = 1, wardstone_barrier = 2 },
+            })
+            expect(both.bulwark_family).to.equal("saw_blade")
+            expect(both.egg_bulwark_family).to.equal("wardstone_barrier")
+            expect(both.egg_bulwark_tier).to.equal(2)
+            expect(both.bulwark_slots.egg.family).to.equal("wardstone_barrier")
+
+            local migrated = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "wardstone_barrier",
+                bulwark_tier = 2,
+            })
+            expect(migrated.bulwark_family).to.equal(nil)
+            expect(migrated.egg_bulwark_family).to.equal("wardstone_barrier")
 
             local invalid = PlayerCombat.normalizeOnboarding({
                 bulwark_family = "not_a_defense",

@@ -29,6 +29,12 @@ Status: current
 - Should authored maps be validated in CI, manually, or both?
 - Should visual gate/portal assets for automated travel tests be checked into the repo, imported into the creator inventory, or discovered from Creator Store asset IDs at test time?
 
+## Merge Defense
+
+- Should later bulwark lines use different talkable avatars (Colorado alts,
+  one person per line) or one Colorado plus a line-picker in the workshop?
+  Current path is one person per line and no menu change.
+
 ## Implementation
 
 - How strict should config validation be during early prototyping versus shipping?

@@ -73,11 +73,17 @@ the permanent map. A claimed bay currently grounds the current-art Repulsor at l
 `tier_scales` (0.40 / 0.50) and lofts a labeled sphere from each pad; the cannon aims
 along the launch tangent. Upgrades and role acquisition stay later.
 
-Merge bulwark defenses use ten invisible `BulwarkAnchor` parts per bay under
-`Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`. The anchors
-span 94 studs across the authored 96-stud `BulwarkLine`: each represents a 9.4-stud tile and leaves
-one stud of clearance at both retaining walls. Their Y position is the corresponding portable
-bay's authored `LandStrip` top, with `PlayFields` only as an authoring fallback. Runtime clones the
+`BulwarkLine` and `BreachLine` are combat planes, not install catalogs. Crossing
+the gold line opens pet combat; crossing the red line opens hatcher-egg attacks.
+Do not rename, reuse, or add a third meaning to those parts.
+
+Physical installs are separate hooks from `MergeBulwarkSlots`. Lane uses ten
+invisible `BulwarkAnchor` parts per bay under
+`Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`.
+Egg uses `EggBulwarkStations` / `EggBulwarkAnchor` stamped from `BreachLine`.
+Mid and front are reserved rows and stay dark until authored. Each line spans
+94 studs across a 96-stud marker with one-stud wall clearance. Y is the portable
+bay `LandStrip` top, with `PlayFields` as fallback. Runtime clones the
 selected family/tier through `MergeBulwarkModels`; maps must not retain visible review copies.
 All families share the same line-width anchor orientation. The model library owns any source-axis
 correction, so map authors must not rotate individual families differently.

@@ -673,12 +673,14 @@ function MergeBulwarkMenu.new(parent, onAction)
                 action = "bulwark",
                 bulwarkAction = "select",
                 family = controller.selectedFamily.id,
+                slot = controller.state and controller.state.slot,
             })
         elseif controller.upgradeActive then
             onAction({
                 action = "bulwark",
                 bulwarkAction = "upgrade",
                 family = controller.selectedFamily.id,
+                slot = controller.state and controller.state.slot,
             })
         end
     end)
@@ -703,6 +705,7 @@ function MergeBulwarkMenu.new(parent, onAction)
                 action = "bulwark",
                 bulwarkAction = "select",
                 family = controller.selectedFamily.id,
+                slot = controller.state and controller.state.slot,
             })
         end
     end)
@@ -756,11 +759,19 @@ function MergeBulwarkMenu.new(parent, onAction)
                 local current = installed and family.id == state.family
                 local chosen = controller.selectedId == family.id
                 local atMax = ownedTier >= maximumTier
+                local locked = family.canInstall == false
                 card.familyName.Text = string.upper(tostring(family.name or family.id))
                 card.role.Text = string.upper(tostring(family.role or ""))
                 card.swatch.BackgroundColor3 = FAMILY_COLORS[((index - 1) % #FAMILY_COLORS) + 1]
                 card.pointer.BackgroundTransparency = chosen and 0 or 1
-                if ownedTier == 0 then
+                if locked then
+                    card.statusText.Text = string.upper(tostring(family.installHint or "LOCKED LINE"))
+                    card.statusText.TextColor3 = Color3.fromRGB(196, 150, 255)
+                    card.statusIcon.Visible = false
+                    card.statusMark.Text = "!"
+                    card.statusMark.TextColor3 = Color3.fromRGB(196, 150, 255)
+                    card.statusMark.Visible = true
+                elseif ownedTier == 0 then
                     card.statusText.Text = "NOT OWNED"
                     card.statusText.TextColor3 = Color3.fromRGB(175, 190, 208)
                     card.statusIcon.Visible = true
@@ -829,9 +840,10 @@ function MergeBulwarkMenu.new(parent, onAction)
             nextTitle.Text = ownedTier == 0 and "UNLOCK"
                 or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
             paintNotes(selected, nextTier, atMaximum)
-            controller.buyActive = unlocked and ownedTier == 0
+            local canInstall = selected.canInstall ~= false
+            controller.buyActive = unlocked and ownedTier == 0 and canInstall
             controller.upgradeActive = unlocked and ownedTier > 0 and not atMaximum
-            controller.installActive = unlocked and ownedTier > 0 and not current
+            controller.installActive = unlocked and ownedTier > 0 and not current and canInstall
             local purchaseActive = controller.buyActive or controller.upgradeActive
             if atMaximum then
                 paintPriced(purchase, "MAXED", false, cost, Color3.fromRGB(213, 219, 227))

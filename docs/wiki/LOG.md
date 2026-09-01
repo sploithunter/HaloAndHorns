@@ -6552,3 +6552,141 @@ first-session cohort rates.
   MeshParts at scale 1 and cannot serialize MeshSize. Runtime therefore drew the 200-stud
   mesh — about 100× the original 2-stud import. Spawn now bakes each MeshPart through
   `AssetService:CreateMeshPartAsync` and keeps the authored tile Size.
+
+## 2026-09-01 — Land Shark hunt / grab / sink
+
+- Land Sharks had patrol, wander, and a visual bite-rise only. `combatEffect("land_shark")`
+  now returns `hunt_drag` (T1 36 dmg / 1.15s, 16-stud hunt, 7-stud grab, 8-stud sink).
+- Server tick claims one marcher per shark, leaves the wander, holds on grab, pulls
+  `MoveTarget` down, and bites through `CombatApplication`. Kill prefers `sink` plus
+  `DeathSinkStuds`. No pet-kill credit.
+- Client observer chases `MergeLandSharkHuntAim` / the live enemy, then dives with the
+  drag. Headless progression spec no longer expects a nil combat effect.
+- Play-confirmed: hold-to-sink reads. Damage left at T1 36/1.15s for a later balance pass.
+
+## 2026-09-01 — Land Shark count 4/5/6/7 plus T3 venom / T4 boss prefer
+
+- Patrol count is now tiered: T1=4, T2=5, T3=6, T4=7. Pack coverage comes from
+  more hunters, not a bite-number bump.
+- T3 venom ticks anyone close to a live shark (one cloud per marcher). T4
+  claims an unclaimed boss first and may peel off a chase, but not a drag.
+- T2 Ironjaw bite was only 52. Raised the bite ladder to 36/90/130/190 so T2
+  actually hits, and T3/T4 stay above it.
+- T2 cadence is 90 per 0.5s. T3/T4 periods are 0.42 / 0.35 so they stay faster
+  than Ironjaw.
+
+## 2026-09-01 — Impaler Palisade T3 contagion venom
+
+- Palisade stays per-marcher stop-shove. T3 bounce now stamps the shared
+  contagious DoT (12/0.7s, 4s, 3 hops). T4 is a stronger plague (18/0.55s, 5s,
+  4 hops), not a new effect. Hop distance uses live `MoveTarget` so merge
+  marchers spread on the lane, not at the portal spawn.
+
+## 2026-09-01 — Palisade venom is permanent; T4 plague is contagion
+
+- Split the coat: T3 is a permanent single-target venom DoT (12 / 0.7s, no hop).
+  T4 is a stronger permanent plague (18 / 0.55s) that contagion-hops (4 hops,
+  12 studs). `DotPermanent` skips expiry in the DoT and contagion passes.
+  Wave end clears the enemies, so the burn does not leak.
+
+## 2026-09-01 — Concertina Line is bleed plus slow
+
+- `combatEffect("concertina_line")` is `bleed_slow`: lane DoT + graded
+  `SlowFactor` while they walk the wire. T1 on-strip only. T2/T3 linger
+  (1.5s / 3.5s). T4 stacks (cap 4) and stays for the rest of the wave.
+- Authored march now honors root/hold and `SlowFactor`; without that the
+  strip slow would not read on merge marchers.
+- Combat still opens on the gold line. Not a stop wall and not palisade
+  contagion. Not Play-confirmed yet.
+
+## 2026-09-01 — Saw Blade is rapid shred plus chips
+
+- `combatEffect("saw_blade")` is `shred_line`: 16/24/30/42 at 0.16/0.13/0.10/
+  0.08s on the six-stud deck. No slow, linger, or stop. Combat still opens
+  on the gold line.
+- Contact audio now fires on a real shred tick, throttled to 0.28s.
+- Client sprays tiny local cubes (`MergeSawShredPulse`) colored from the
+  chewed model plus flesh chips. Not Play-confirmed yet.
+
+## 2026-09-01 — Saw rotors 2× speed and random start phase
+
+- Live spin is 2× the authored 180/360 deck speeds so the chew reads.
+- Each tile starts at a random rotor angle so a ten-saw line does not lockstep.
+
+## 2026-09-01 — Grasping Hedge is a temporary front-wave root
+
+- `combatEffect("grasping_hedge")` is `grab_root`. Front N marchers get
+  `RootedUntil` (hands free). The pile on the strip is slowed. One grab per
+  marcher, then `MergeHedgeGrabSpent` so they break through. Not a permanent
+  root and not `HeldUntil` — sharks already own the true hold.
+- T1–T4 grab 1/2/3/4 for 0.9/1.2/1.6/2.2s. T3/T4 stamp a timed venom, not
+  `DotPermanent`. Combat still opens on the gold line. Not Play-confirmed.
+
+## 2026-09-01 — Hedge re-roots on re-entry, not a lifetime counter
+
+- After the timed root expires they must leave the hedge (`MergeHedgeNeedsExit`)
+  before another grab. Walking back in roots them again. Not `MergeHedgeGrabSpent`.
+
+## 2026-09-01 — Hedge re-entry needs a march-axis buffer
+
+- Clearing `MergeHedgeNeedsExit` requires `leadingDistance` past the strip plus
+  6 studs. Lateral shuffle and a one-stud flicker do not count as leaving.
+
+## 2026-09-01 — Hedge debuff badge is the root disc
+
+- `grasping_hedge` is not a player power. `PetBadge.forPower` now resolves it
+  through `combat_source_badge` to the same `user_desk` root disc as Frost Bind
+  (earth/grass). Stops the CombatAuraController / StatusBadges nil-disc warn.
+
+## 2026-09-01 — Second Merge bulwark slot at the Breach Line
+
+- Install slots are a catalog, not a rename of the combat planes. `BulwarkLine`
+  still opens pet combat; `BreachLine` still opens egg attacks. Extra walls
+  (mid, then the same spacing out front) are later install rows only.
+- Lane persist stays `bulwark_family` / `bulwark_tier`. Egg is
+  `egg_bulwark_family` / `egg_bulwark_tier`. Ownership stays `bulwark_owned`.
+  `bulwark_slots` is the generic map so a third line does not need new aliases.
+- Wardstone Barrier is still `wardstone_barrier` and egg-only. The five lane
+  families may sit on any cataloged line, including both at once.
+- Egg anchors stamp from `BreachLine` without touching gold-line geometry.
+  Missing egg/mid/front hooks skip that slot; they do not invent a wall.
+- Two Manage prompts. Lane menu locks Wardstone with `ONLY AT THE EGGS`.
+- Lane-family combat on the egg slot uses `BreachLine` as the strip plane.
+  Palisade/hedge charges are per slot. Wardstone combat is still later.
+
+## 2026-09-01 — Breach-line bulwark is a talkable Colorado Plays
+
+- The workshop UI is unchanged. The red line no longer uses a floating E.
+  A Colorado Plays vendor (`user_id` 3200870803) stands on the hatcher
+  side of `BreachLine` and Talk opens the same menu for the egg slot.
+- Gold-line Left/Right Manage hosts stay. `BulwarkLine` / `BreachLine`
+  keep their combat-plane meanings.
+
+## 2026-09-01 — Second Colorado on the gold-line right
+
+- Same unchanged workshop. A second Colorado Plays stands on the
+  player-right end of `BulwarkLine` (facing the gate) and Talk opens
+  the lane slot. The red-line Colorado still opens the egg slot.
+- Posts are config rows (`slot` + `along`). Same avatar for now; a later
+  post can set its own `user_id` (alts) without a line-picker menu.
+
+## 2026-09-01 — Egg engineer left, grounded, labeled
+
+- Red-line vendor stands on the player-left so the nine eggs and later
+  cannons keep the middle. Gold-line vendor stays on the right.
+- Prompt / nametag is `Bulwark Engineer`. Workshop unchanged.
+- Stand height is HipHeight, not accessory AABB — hats were floating him.
+
+## 2026-09-01 — Shark ticks 2x; merge combat badges
+
+- Land Shark bite/venom periods are halved; per-tick damage is unchanged, so
+  DPS doubles. Hedge/palisade venom was not touched.
+- Missing merge combat badges now resolve: palisade root, concertina bleed,
+  saw chew, shark hold. Hedge already had one.
+
+## 2026-09-01 — Marchers cannot leave living hatcher eggs
+
+- Finish-line escape is blocked while any `HatcherEggObjective` is still up.
+  Breach and finish both rewrite the march destination and wipe the threat
+  table onto the assigned (else nearest) egg. After an egg dies, leftover
+  marchers retarget the rest; only then do they resume the back line.

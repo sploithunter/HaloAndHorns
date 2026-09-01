@@ -697,12 +697,23 @@ The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exi
 and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
 deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
 
+## Land Sharks Hunt One Marcher and Drag It Under (2026-09-01)
+
+Land Shark combat is a pet-like chase, not a lane DoT. Territory is the full
+strip width plus hunt range toward the gate. Count is 4/5/6/7 by tier. One
+shark claims one live target, leaves the wander, bites on cadence, holds the
+marcher, and pulls it down into the water. T3 venom is one proximity cloud per
+marcher. T4 prefers an unclaimed boss but will not drop a drag. Death prefers
+the `sink` style. Shark kills do not stamp `MergeEggPlayerPetKillUserId`.
+
 ## Impaler Palisade Stops, Then Breaches (2026-08-31)
 
-The Stop wall deals no damage. Each marcher is shoved toward the gate with the
-same displacement as tank Seismic, pinned briefly, and must leave the line
-before the next bounce. Tier is bounce count (1/2/3/4), not wall HP and not
-five-per-enemy on T1. Combat opens on the crossing after charges are spent.
+The Stop wall shove deals no damage. Each marcher is shoved toward the gate with
+the same displacement as tank Seismic, pinned briefly, and must leave the line
+before the next bounce. Tier is bounce count (1/2/3/4), per marcher, not wall HP.
+T3 stamps a permanent venom DoT on the bounce. T4 adds a permanent contagion
+plague that hops to nearby marchers. Wave fights end, so the burn dies with them.
+Combat opens on the crossing after charges are spent.
 
 ## Merge Combat IDs Establish Fronts but Do Not Strand Idle Teams (2026-08-27)
 

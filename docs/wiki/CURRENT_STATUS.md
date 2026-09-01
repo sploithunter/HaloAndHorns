@@ -2,6 +2,55 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge bulwark slots are independent of combat planes (2026-09-01)
+
+`BulwarkLine` still opens pet combat. `BreachLine` still opens egg
+attacks. Those two named parts keep those meanings. Physical installs
+are a separate catalog (`MergeBulwarkSlots`): lane sits on the gold
+plane, egg sits on the red plane, mid/front are reserved for halfway
+and the same spacing out past the gold line. Wardstone stays
+`wardstone_barrier` and egg-only. Lane-family combat on the egg slot
+uses the red strip plane. Talkable Bulwark Engineers stand on the
+red-line left and the gold-line right; each Talk opens the same
+unchanged workshop for that slot. Alts vs a line-picker is still
+open. No Wardstone combat this pass. Not Play-confirmed yet.
+
+## Grasping Hedge is a temporary front-wave root (2026-09-01)
+
+Fifth live bulwark combat. `combatEffect("grasping_hedge")` is `grab_root`:
+root the front of the wave (`RootedUntil`, hands free) and slow the pile.
+The root is timed and not refreshed, so they can walk off. Leaving the hedge
+and walking back in is a new grab — not a lifetime counter. They must clear
+the strip plus a 6-stud march-axis buffer before that re-entry counts.
+Never `HeldUntil` (sharks already own the true hold). T3/T4 add a timed
+venom. Combat still opens on the gold line. Not Play-confirmed yet.
+
+## Saw Blade is rapid shred plus chips (2026-09-01)
+
+Fourth live bulwark combat. `combatEffect("saw_blade")` is `shred_line`: high
+raw damage on the six-stud deck, no slow/linger/stop. Ticks are 0.16 / 0.13 /
+0.10 / 0.08s. Each tick pulses local tiny cubes colored from the chewed
+model plus a couple flesh chips. Contact audio plays at the struck combatant,
+throttled. Live spin is 2× the authored deck speeds, and each tile starts
+at a random rotor angle. Combat still opens on the gold line. Not
+Play-confirmed yet.
+
+## Concertina Line is bleed plus slow (2026-09-01)
+
+Third live bulwark combat. `combatEffect("concertina_line")` is `bleed_slow`:
+lane DoT while they walk the wire, plus a graded `SlowFactor` that now also
+applies on the authored march path. T1 is on-strip only. T2/T3 linger after
+they leave. T4 stacks (cap 4) and stays for the rest of the wave. Combat still
+opens on the gold line — this is not a stop wall. Not Play-confirmed yet.
+
+## Land Sharks hunt, grab, and sink (2026-09-01)
+
+Second live bulwark combat after Impaler Palisade. Play-confirmed: the hold
+pulls the marcher under and the sink death reads. `combatEffect("land_shark")`
+is `hunt_drag` — leave the wander, bite on a pet-like cadence, hold, drag under.
+One shark, one target. Count is 4/5/6/7 by tier. T3 adds proximity venom; T4
+prefers an unclaimed boss. No pet-kill credit.
+
 ## Pre-checkpoint overrun returns to Wave 1 (2026-08-31)
 
 A loss before Wave 10 had no checkpoint snapshot, so auto-restart never
@@ -11,7 +60,9 @@ Wave 1 again.
 ## Impaler Palisade is a no-damage stop wall (2026-08-31)
 
 First live bulwark combat: tank-style shove toward the gate plus a short
-root. No damage. Each marcher gets T1=1 / T2=2 / T3=3 / T4=4 bounces,
+root. The shove itself deals no damage. Each marcher gets T1=1 / T2=2 /
+T3=3 / T4=4 bounces. T3 adds a permanent venom DoT; T4 adds a permanent
+contagion plague.
 then walks through and combat opens. Five per enemy on T1 would farm-lock
 the wave.
 
@@ -48,7 +99,9 @@ family is on the strip.
 ## Merge bulwark menu is pick-then-act (2026-08-31)
 
 Draft roles (stop/bleed/hunt/shred/hold/ward) live on
-`MergeBulwarkProgression` until combat effects exist.
+`MergeBulwarkProgression`. Live combat so far: Impaler Palisade `stop_shove`,
+Concertina Line `bleed_slow`, Land Shark `hunt_drag`, Saw Blade `shred_line`,
+and Grasping Hedge `grab_root`. Wardstone Barrier is still visual-only.
 
 ## Merge cannon shots boom on landing (2026-08-31)
 

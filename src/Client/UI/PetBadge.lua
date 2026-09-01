@@ -271,6 +271,15 @@ function PetBadge.forPower(powerId)
     if type(powerId) == "string" and powerId:sub(1, 7) == "potion_" then
         return PetBadge.forPotion(powerId:sub(8))
     end
+    local source = POWER_ICONS.combat_source_badge and POWER_ICONS.combat_source_badge[powerId]
+    if source then
+        local targetKind = source.target or "enemy_aoe"
+        return {
+            element = POWER_ICONS.elementKey(source.element),
+            symbol = source.symbol,
+            ring = POWER_ICONS.targeting_ring[targetKind] or "aoe",
+        }
+    end
     local cfg = powersCfg()
     local def = cfg.powers and cfg.powers[powerId]
     if not def then

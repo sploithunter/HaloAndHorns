@@ -324,7 +324,7 @@ return {
     },
 
     -- Merge Saw Blade bulwark. The whirling loop belongs to the installed mechanism; the saw
-    -- contact cue is reserved for a real damage tick at the enemy's position (never fake ambience).
+    -- contact cue plays at the struck combatant on a real shred tick (throttled, never fake).
     merge_saw_idle = {
         id = "rbxassetid://104782229131004",
         volume = 0.24,

@@ -9,6 +9,7 @@
     remain server-authoritative.
 ]]
 
+local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -942,6 +943,115 @@ end
 local sawBladeRigs = {}
 local landSharkRigs = {}
 local sawBladeScanElapsed = 0
+local SAW_BLADE_SPIN_MULT = 2
+local sawShredSeen = {}
+local FLESH_CHIP_COLORS = {
+    Color3.fromRGB(196, 78, 72),
+    Color3.fromRGB(232, 176, 118),
+    Color3.fromRGB(240, 214, 186),
+}
+
+local function collectShredColors(model)
+    local colors = { FLESH_CHIP_COLORS[1], FLESH_CHIP_COLORS[2] }
+    for _, desc in ipairs(model:GetDescendants()) do
+        if desc:IsA("BasePart") and desc.Transparency < 0.85 then
+            colors[#colors + 1] = desc.Color
+        end
+    end
+    return colors
+end
+
+local function shredBitsFolder()
+    local folder = Workspace:FindFirstChild("MergeSawShredBits")
+    if folder then
+        return folder
+    end
+    folder = Instance.new("Folder")
+    folder.Name = "MergeSawShredBits"
+    folder.Parent = Workspace
+    return folder
+end
+
+-- Tiny local cubes, colored from the chewed model plus a couple flesh chips so a dark mesh
+-- still reads as body bits. Client-only so a rapid shred line does not replicate debris.
+local function spraySawShredChunks(model, count)
+    local origin = model:GetAttribute("MoveTarget")
+    if typeof(origin) ~= "Vector3" then
+        origin = model:GetPivot().Position
+    end
+    local colors = collectShredColors(model)
+    local folder = shredBitsFolder()
+    count = math.clamp(math.floor(tonumber(count) or 7), 4, 14)
+    for _ = 1, count do
+        local size = 0.14 + math.random() * 0.16
+        local bit = Instance.new("Part")
+        bit.Name = "MergeSawShredBit"
+        bit.Shape = Enum.PartType.Block
+        bit.Anchored = false
+        bit.CanCollide = false
+        bit.CanQuery = false
+        bit.CanTouch = false
+        bit.Massless = true
+        bit.CastShadow = false
+        bit.Material = Enum.Material.SmoothPlastic
+        bit.Color = colors[math.random(1, #colors)]
+        bit.Size = Vector3.new(size, size, size)
+        bit.CFrame = CFrame.new(
+            origin + Vector3.new((math.random() - 0.5) * 1.4, 0.55 + math.random() * 0.9, (math.random() - 0.5) * 1.4)
+        ) * CFrame.Angles(math.random() * math.pi, math.random() * math.pi, math.random() * math.pi)
+        bit.AssemblyLinearVelocity = Vector3.new(
+            (math.random() - 0.5) * 30,
+            12 + math.random() * 20,
+            (math.random() - 0.5) * 30
+        )
+        bit.AssemblyAngularVelocity = Vector3.new(
+            (math.random() - 0.5) * 26,
+            (math.random() - 0.5) * 26,
+            (math.random() - 0.5) * 26
+        )
+        bit.Parent = folder
+        Debris:AddItem(bit, 0.4 + math.random() * 0.22)
+    end
+end
+
+local function pulseSawShredModel(model)
+    if not (model and model:IsA("Model")) then
+        return
+    end
+    local pulse = tonumber(model:GetAttribute("MergeSawShredPulse")) or 0
+    local seen = sawShredSeen[model] or 0
+    if pulse > seen then
+        sawShredSeen[model] = pulse
+        spraySawShredChunks(model, model:GetAttribute("MergeSawShredChunks"))
+    elseif pulse <= 0 and seen > 0 then
+        sawShredSeen[model] = nil
+    end
+end
+
+local function updateSawShredChunks(observing)
+    if not observing then
+        for model in pairs(sawShredSeen) do
+            sawShredSeen[model] = nil
+        end
+        return
+    end
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    for _, model in ipairs(enemies and enemies:GetChildren() or {}) do
+        pulseSawShredModel(model)
+    end
+    -- Pets use the same pulse if they ever take a shred tick, so chips can be body bits of
+    -- either side without a second VFX path.
+    local pets = gameFolder and gameFolder:FindFirstChild("Pets")
+    for _, model in ipairs(pets and pets:GetChildren() or {}) do
+        pulseSawShredModel(model)
+    end
+    for model in pairs(sawShredSeen) do
+        if not model.Parent then
+            sawShredSeen[model] = nil
+        end
+    end
+end
 
 local function sawBladeRotation(axis, angle)
     if axis == "X" then
@@ -972,31 +1082,140 @@ local function registerSawBladeRig(model)
         end
     end
     if #blades > 0 then
+        -- Authored deck speeds stay 180 / 360 (T2 and T4 already twice T1 / T3). Presentation
+        -- is 2× that so the line actually reads as a chew. Each tile starts at a random
+        -- phase so ten identical rotors do not lockstep.
+        local startAngle = math.random() * math.pi * 2
+        local speedDegrees = math.max(
+            0,
+            tonumber(model:GetAttribute("SawBladeSpeedDegrees"))
+                or tonumber(model:GetAttribute("PreviewSpeedDegrees"))
+                or 180
+        ) * SAW_BLADE_SPIN_MULT
         sawBladeRigs[model] = {
             model = model,
             blades = blades,
-            angle = 0,
-            speedDegrees = math.max(
-                0,
-                tonumber(model:GetAttribute("SawBladeSpeedDegrees"))
-                    or tonumber(model:GetAttribute("PreviewSpeedDegrees"))
-                    or 180
-            ),
+            angle = startAngle,
+            speedDegrees = speedDegrees,
         }
+        for _, blade in ipairs(blades) do
+            if blade.part.Parent then
+                blade.part.CFrame = blade.startCFrame
+                    * sawBladeRotation(blade.axis, startAngle * blade.direction)
+            end
+        end
     end
 end
 
-local function registerLandSharkRig(model)
-    local direction = model:GetAttribute("MergeLandSharkTrackDirection")
-    if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.001 then
-        direction = Vector3.new(1, 0, 0)
-    else
-        direction = direction.Unit
+local function planarUnit(value, fallback)
+    if typeof(value) ~= "Vector3" then
+        return fallback
     end
+    local flat = Vector3.new(value.X, 0, value.Z)
+    if flat.Magnitude < 0.001 then
+        return fallback
+    end
+    return flat.Unit
+end
+
+local function inferLandSharkField(model, along)
+    local folder = model.Parent
+    local bay = folder and folder.Parent
+    if not (bay and along) then
+        return nil
+    end
+    local bayId = bay:GetAttribute("MergeEggBayId")
+    local roots = { bay }
+    local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local stations = map and map:FindFirstChild("BulwarkStations")
+    if stations then
+        roots[#roots + 1] = stations
+    end
+    local minDot, maxDot = math.huge, -math.huge
+    local acc = Vector3.zero
+    local count = 0
+    local look = nil
+    local tile = 9.4
+    for _, root in ipairs(roots) do
+        for _, descendant in ipairs(root:GetDescendants()) do
+            if
+                descendant:IsA("BasePart")
+                and string.match(descendant.Name, "^BulwarkAnchor_%d+$")
+                and (bayId == nil or descendant:GetAttribute("MergeEggBayId") == bayId)
+            then
+                local position = descendant.Position
+                local dot = position:Dot(along)
+                minDot = math.min(minDot, dot)
+                maxDot = math.max(maxDot, dot)
+                acc += Vector3.new(position.X, 0, position.Z)
+                count += 1
+                look = look
+                    or Vector3.new(descendant.CFrame.LookVector.X, 0, descendant.CFrame.LookVector.Z)
+                tile = tonumber(descendant:GetAttribute("MergeBulwarkTileLength")) or tile
+            end
+        end
+        if count >= 2 then
+            break
+        end
+    end
+    if count < 2 then
+        return nil
+    end
+    local depth = planarUnit(look, Vector3.new(-along.Z, 0, along.X))
+    depth = planarUnit(depth - along * depth:Dot(along), Vector3.new(-along.Z, 0, along.X))
+    return {
+        center = acc / count,
+        depth = depth,
+        width = math.max(24, (maxDot - minDot) + tile - 16),
+        depthStuds = 7,
+    }
+end
+
+local function landSharkWander(time, phase, seed)
+    local along = math.sin(time * 0.23 + phase * 6.1 + seed)
+        * 0.56
+        + math.sin(time * 0.39 + phase * 3.7 + seed * 1.8) * 0.29
+        + math.sin(time * 0.61 + phase * 2.2 + seed * 0.7) * 0.15
+    local depth = math.sin(time * 0.31 + phase * 5.4 + seed * 1.3) * 0.67
+        + math.sin(time * 0.54 + phase * 2.9 + seed * 0.4) * 0.33
+    return along, depth
+end
+
+local function registerLandSharkRig(model)
+    local direction = planarUnit(model:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
+    local field = inferLandSharkField(model, direction)
+    local center = model:GetAttribute("MergeLandSharkFieldCenter")
+    if typeof(center) ~= "Vector3" then
+        center = field and field.center or model:GetPivot().Position
+    end
+    local depth = planarUnit(
+        model:GetAttribute("MergeLandSharkDepthDirection"),
+        field and field.depth or Vector3.new(-direction.Z, 0, direction.X)
+    )
+    local pivotY = model:GetPivot().Position.Y
     landSharkRigs[model] = {
         model = model,
         baseCFrame = model:GetPivot(),
+        center = Vector3.new(center.X, pivotY, center.Z),
         direction = direction,
+        depth = depth,
+        halfWidth = math.max(
+            8,
+            (
+                tonumber(model:GetAttribute("MergeLandSharkFieldWidth"))
+                or (field and field.width)
+                or 78
+            ) * 0.5
+        ),
+        halfDepth = math.max(
+            1,
+            (
+                tonumber(model:GetAttribute("MergeLandSharkFieldDepth"))
+                or (field and field.depthStuds)
+                or 7
+            ) * 0.5
+        ),
+        seed = tonumber(model:GetAttribute("MergeLandSharkPatrolIndex")) or 1,
         trackStuds = math.max(4, tonumber(model:GetAttribute("MergeLandSharkTrackStuds")) or 28),
         speedStuds = math.max(1, tonumber(model:GetAttribute("MergeLandSharkSpeedStuds")) or 10),
         surfaceDistance = math.max(
@@ -1009,6 +1228,21 @@ local function registerLandSharkRig(model)
             tonumber(model:GetAttribute("MergeLandSharkBitePeriodSeconds")) or 1.4
         ),
         phase = tonumber(model:GetAttribute("MergeLandSharkPhase")) or 0,
+        breachPeriod = math.max(
+            3,
+            tonumber(model:GetAttribute("MergeLandSharkBreachPeriodSeconds")) or 7.5
+        ),
+        breachDuration = math.max(
+            0.6,
+            tonumber(model:GetAttribute("MergeLandSharkBreachDurationSeconds")) or 1.55
+        ),
+        breachRise = math.max(
+            0.5,
+            tonumber(model:GetAttribute("MergeLandSharkBreachRiseStuds")) or 2.3
+        ),
+        breachPitch = math.rad(
+            math.max(0, tonumber(model:GetAttribute("MergeLandSharkBreachPitchDegrees")) or 14)
+        ),
         surfaced = 0,
         proximityElapsed = 0,
         nearestEnemy = math.huge,
@@ -1030,34 +1264,119 @@ local function nearestEnemyDistance(position)
     return nearest
 end
 
+local function enemyByTargetId(targetId)
+    targetId = tonumber(targetId)
+    if not targetId then
+        return nil
+    end
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    for _, enemy in ipairs(enemies and enemies:GetChildren() or {}) do
+        local id = enemy:FindFirstChild("BreakableID")
+        if id and tonumber(id.Value) == targetId then
+            return enemy
+        end
+    end
+    return nil
+end
+
 local function updateLandSharkRigs(dt)
     local now = os.clock()
     for model, rig in pairs(landSharkRigs) do
         if not model.Parent then
             landSharkRigs[model] = nil
         else
-            local halfTrack = rig.trackStuds * 0.5
-            local angularSpeed = rig.speedStuds / math.max(1, halfTrack)
-            local phase = now * angularSpeed + rig.phase * math.pi * 2
-            local travel = math.sin(phase) * halfTrack
-            local forward = math.cos(phase) >= 0
-            local patrolCFrame = rig.baseCFrame + rig.direction * travel
-            if not forward then
-                patrolCFrame *= CFrame.Angles(0, math.pi, 0)
+            local tempo = rig.speedStuds / 10
+            local along, across = landSharkWander(now * tempo, rig.phase, rig.seed)
+            local nextAlong, nextAcross = landSharkWander(now * tempo + 0.12, rig.phase, rig.seed)
+            local patrolPosition = rig.center
+                + rig.direction * (along * rig.halfWidth)
+                + rig.depth * (across * rig.halfDepth)
+            local ahead = rig.center
+                + rig.direction * (nextAlong * rig.halfWidth)
+                + rig.depth * (nextAcross * rig.halfDepth)
+            local patrolHeading = ahead - patrolPosition
+            if patrolHeading.Magnitude < 0.05 then
+                patrolHeading = rig.lastHeading or rig.direction
+            else
+                patrolHeading = Vector3.new(patrolHeading.X, 0, patrolHeading.Z)
+                if patrolHeading.Magnitude < 0.001 then
+                    patrolHeading = rig.lastHeading or rig.direction
+                else
+                    patrolHeading = patrolHeading.Unit
+                    rig.lastHeading = patrolHeading
+                end
             end
+            local huntAim = model:GetAttribute("MergeLandSharkHuntAim")
+            local huntState = tostring(model:GetAttribute("MergeLandSharkHuntState") or "")
+            local huntEnemy = enemyByTargetId(model:GetAttribute("MergeLandSharkHuntTargetId"))
+            if huntEnemy then
+                huntAim = huntEnemy:GetPivot().Position
+            end
+            local hunting = typeof(huntAim) == "Vector3"
+            rig.huntBlend = rig.huntBlend or 0
+            rig.huntBlend += ((hunting and 1 or 0) - rig.huntBlend) * math.min(1, dt * 5)
+            if hunting then
+                if typeof(rig.huntPos) ~= "Vector3" then
+                    rig.huntPos = patrolPosition
+                end
+                local dest = Vector3.new(huntAim.X, rig.center.Y, huntAim.Z)
+                local chaseSpeed = if huntState == "drag" then 16 else 26
+                local to = dest - rig.huntPos
+                if to.Magnitude > 0.05 then
+                    rig.huntPos += to.Unit * math.min(to.Magnitude, chaseSpeed * dt)
+                    local huntHeading = Vector3.new(to.X, 0, to.Z)
+                    if huntHeading.Magnitude > 0.05 then
+                        rig.lastHeading = huntHeading.Unit
+                    end
+                end
+            elseif typeof(rig.huntPos) == "Vector3" then
+                local back = patrolPosition - rig.huntPos
+                if back.Magnitude <= 0.4 then
+                    rig.huntPos = nil
+                else
+                    rig.huntPos += back.Unit * math.min(back.Magnitude, 18 * dt)
+                end
+            end
+            local position = patrolPosition
+            local heading = patrolHeading
+            if (rig.huntBlend > 0.02) and typeof(rig.huntPos) == "Vector3" then
+                position = patrolPosition:Lerp(rig.huntPos, rig.huntBlend)
+                heading = rig.lastHeading or patrolHeading
+            end
+            local patrolCFrame = CFrame.lookAt(position, position + heading, Vector3.yAxis)
             rig.proximityElapsed -= dt
             if rig.proximityElapsed <= 0 then
                 rig.proximityElapsed = 0.1
                 rig.nearestEnemy = nearestEnemyDistance(patrolCFrame.Position)
             end
-            local wantsSurface = rig.nearestEnemy <= rig.surfaceDistance
-            -- A nearby enemy triggers a discrete rise-and-dive bite cycle. The shark never
-            -- idles above the deck: outside a bite, only its configured dorsal-fin exposure
-            -- remains visible.
+            local wantsSurface = (not hunting) and rig.nearestEnemy <= rig.surfaceDistance
+            -- Patrol bite-rise stays visual. A published hunt leaves the wander, then grab/drag
+            -- dives with the marcher the server is pulling under.
             local bitePhase = ((now / rig.bitePeriod) + rig.phase) % 1
-            local targetSurface = if wantsSurface then math.sin(math.pi * bitePhase) ^ 2 else 0
-            rig.surfaced += (targetSurface - rig.surfaced) * math.min(1, dt * 12)
-            model:PivotTo(patrolCFrame + Vector3.new(0, rig.surfaceRise * rig.surfaced, 0))
+            local bite = if wantsSurface then math.sin(math.pi * bitePhase) ^ 2 else 0
+            local breachClock = (now + rig.phase * rig.breachPeriod) % rig.breachPeriod
+            local breach = 0
+            local pitch = 0
+            if (not hunting) and breachClock < rig.breachDuration then
+                local t = breachClock / rig.breachDuration
+                breach = math.sin(math.pi * t)
+                pitch = rig.breachPitch * math.cos(math.pi * t)
+            elseif huntState == "chase" then
+                bite = 0.85
+                pitch = -0.18
+            elseif huntState == "drag" then
+                bite = 0.15
+                pitch = 0.55 + 0.12 * math.sin(now * 9)
+            end
+            local targetHeight = rig.surfaceRise * bite + rig.breachRise * breach
+            if huntState == "drag" and typeof(huntAim) == "Vector3" then
+                targetHeight = math.min(0, huntAim.Y - rig.center.Y)
+            end
+            rig.surfaced += (targetHeight - rig.surfaced) * math.min(1, dt * 10)
+            model:PivotTo(
+                (patrolCFrame * CFrame.Angles(-pitch, 0, 0)) + Vector3.new(0, rig.surfaced, 0)
+            )
         end
     end
 end
@@ -1124,6 +1443,7 @@ local function updateSawBladeRigs(dt, observing)
         end
     end
     updateLandSharkRigs(dt)
+    updateSawShredChunks(observing)
 end
 
 local function enemyName(targetId)

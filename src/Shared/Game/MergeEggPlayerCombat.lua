@@ -47,9 +47,12 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
             managementUpgrades[upgradeId] = math.max(0, math.floor(tonumber(level) or 0))
         end
     end
-    local bulwark = MergeBulwarkProgression.normalize({
+    local persisted = MergeBulwarkProgression.persistFields({
         family = raw.bulwark_family,
         tier = raw.bulwark_tier,
+        eggFamily = raw.egg_bulwark_family,
+        eggTier = raw.egg_bulwark_tier,
+        slots = raw.bulwark_slots,
         owned = raw.bulwark_owned,
     })
     return {
@@ -63,9 +66,16 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         rebirths = math.max(0, math.floor(tonumber(raw.rebirths) or 0)),
         management_upgrades = managementUpgrades,
         management_gems_spent = math.max(0, math.floor(tonumber(raw.management_gems_spent) or 0)),
-        bulwark_family = bulwark.family,
-        bulwark_tier = bulwark.tier,
-        bulwark_owned = bulwark.owned,
+        bulwark_family = persisted.bulwark_family,
+        bulwark_tier = persisted.bulwark_tier,
+        egg_bulwark_family = persisted.egg_bulwark_family,
+        egg_bulwark_tier = persisted.egg_bulwark_tier,
+        mid_bulwark_family = persisted.mid_bulwark_family,
+        mid_bulwark_tier = persisted.mid_bulwark_tier,
+        front_bulwark_family = persisted.front_bulwark_family,
+        front_bulwark_tier = persisted.front_bulwark_tier,
+        bulwark_slots = persisted.bulwark_slots,
+        bulwark_owned = persisted.bulwark_owned,
         bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),

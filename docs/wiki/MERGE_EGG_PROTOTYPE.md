@@ -502,7 +502,9 @@ team and queue model:
   wave. `BreachOverrun` begins when enemies beyond the red line reach the greater of four or one per
   active defender. `BreachOverrun` is now diagnostic/banner telemetry only; it never manufactures
   damage. Egg HP changes only through ordinary landed enemy attacks or the finish-line fallback.
-- Crossing the red line stamps that enemy as eligible to attack `MergeEggObjective` models. The
+- Crossing the red line stamps that enemy as eligible to attack `MergeEggObjective` models and
+  retargets their march onto a living egg. They cannot resolve as escaped while any hatcher
+  egg is still up; the finish line only opens after the last objective dies. The
   existing bulwark re-alert then seeds normal threat across the open defense, including installed
   eggs. Eggs publish explicit target threat but are not implicit-taunt tanks; real pet tanks retain
   their ordinary taunt authority and can pull an attacker away.
@@ -1077,7 +1079,15 @@ clean.
   is the first live effect: a no-damage stop shove toward the gate (same
   displacement as tank Seismic) plus a short root. Charges are per marcher,
   1–4 by tier; after the last bounce they walk through and the gold line
-  opens combat. Other families are still visual-only.
+  opens combat. Concertina Line is the bleed family: a lane DoT plus a graded
+  slow (T1 on-strip only, T2/T3 linger, T4 stacks and stays). Land Shark is
+  hunt/drag. Saw Blade is the shred line: rapid high damage on the deck plus
+  client-only cube chips. Grasping Hedge is a temporary front-wave root plus
+  pile slow. After the root expires they walk; walking back in roots them
+  again. Wardstone Barrier is still visual-only and egg-only. The five lane
+  families may sit on the gold line, the red line, or both. Mid/front slots are
+  cataloged but not authored yet. Crossing `BulwarkLine` still opens pet combat;
+  crossing `BreachLine` still opens egg attacks.
 - The first bulwark catalog has six four-tier visual families: Impaler Palisade, Concertina Line,
   Land Shark, Saw Blade, Grasping Hedge, and Wardstone Barrier. Every tier is distinct art rather
   than a resized copy. Their shared material progression is primitive, reinforced, elemental, and
@@ -1097,13 +1107,18 @@ clean.
   doing so discards the imported hierarchy and previously produced flattened proportions.
   Runtime uses uniform `Model:ScaleTo`, clears only the package's 90-degree PrimaryPart import-pivot
   rotation, and then applies the authored anchor yaw; it must never scale individual axes.
-- `scripts/studio/author_merge_bulwark_anchors.luau` authors 100 permanent hooks: ten per bay for
-  all five Heaven and five Hell bays. A 96-stud line uses a 94-stud defense strip (ten 9.4-stud
-  tiles) with one-stud wall clearance on each side. Anchors are grounded to `LandStrip`, not the
-  yellow marker's center. The edge prompt opens the six-family menu; Select buys Tier 1 or switches
-  to an owned family, and Upgrade advances the installed family through Tier 4. The temporary
-  playtest contract unlocks at Wave 1 and charges one Waycoin per acquisition/upgrade; production
-  remains configured for the Wave-20 intermission.
+- `scripts/studio/author_merge_bulwark_anchors.luau` authors placement hooks from
+  `MergeBulwarkSlots` without mutating `BulwarkLine` or `BreachLine`. Those two
+  parts stay the combat planes (pets open / eggs become attackable). Lane
+  anchors sit on the gold line; egg anchors sit on the red line. Mid and front
+  stay dark until helper lines exist. A 96-stud line uses a 94-stud defense
+  strip (ten 9.4-stud tiles) with one-stud wall clearance. Anchors ground to
+  `LandStrip`. Talkable Bulwark Engineer vendors (`user_id` 3200870803)
+  stand on the red-line left and the gold-line right so the egg row and
+  later cannons keep the middle. Each Talk opens the same unchanged
+  workshop for that slot. Wardstone is egg-only.
+  Select writes that slot; Upgrade still advances owned tier. Playtest unlock
+  remains Wave 1 / one Waycoin; production stays the Wave-20 intermission.
 - Every one of the 24 family/tier variants is presentation-audited against all ten Heaven/Hell bays.
   The five static families use uniform `0.94` scaling on ten 9.4-stud anchors; each line spans 94
   studs and retains the authored one-stud wall clearance. Land Sharks are audited separately as
@@ -1115,7 +1130,9 @@ clean.
   by `scripts/prebake/build_approved_merge_saw_blades.luau`; the Blender working sources remain under
   `assets/source/props/merge_bulwarks/saw_blade/`. Tier 1 uses the repaired brown rotor and wood hub,
   Tier 3 uses three repaired dark-metal rotors with the center rotor counter-rotating, and the
-  accepted Tier 2 / Tier 4 mechanisms run at twice the Tier 1 / Tier 3 speed. All scaling remains
+  accepted Tier 2 / Tier 4 mechanisms run at twice the Tier 1 / Tier 3 speed. Live spin is 2×
+  those authored degrees, and each tile starts at a random phase so the line does not lockstep.
+  All scaling remains
   uniform. The split/repaired MeshIds are 200-stud Roblox assets; Studio QA previews shrink them
   with Model.Scale `0.04` / `0.05`. The lune-assembled templates copy the 8–10 stud Size boxes
   without MeshSize, so spawn recreates each MeshPart through `CreateMeshPartAsync` and keeps the
@@ -1123,14 +1140,16 @@ clean.
   variants.
 - Saw rotors animate locally in `MergeEggPrototypeObserver`, scoped to the current bay's
   `MergeEggBulwarks` folder; the server never streams per-frame rotor CFrames. An installed line has
-  one spatial idle-whirl loop centered on the line. The separate circular-saw contact asset is
-  reserved for a real damage tick at the struck enemy and must not play while Saw Blade remains a
-  visual-only bulwark.
-- Land Sharks deploy as three independent client-animated patrols rather than a ten-model wall.
-  Each shark is sunk to a fixed one-stud dorsal silhouette, follows a staggered 28-stud lane track at
-  ten studs per second, turns at its track ends, and performs a 1.4-second rise-and-dive bite cycle
-  when an enemy is within eight studs. The presentation still does no damage; acquisition and upgrades remain under
-  the shared server-authoritative bulwark progression.
+  one spatial idle-whirl loop centered on the line. The circular-saw contact asset plays at the
+  struck combatant on a real shred tick, throttled so the long clip does not stack. Each tick
+  also pulses `MergeSawShredPulse` so the local observer sprays tiny colored cubes.
+- Land Sharks deploy as a tiered patrol (4/5/6/7) rather than a ten-model wall.
+  Idle motion is a shared-strip wander (full bay width, only a few studs of depth) with an occasional
+  porpoise. When a marcher enters the hunt strip, one shark leaves the wander, chases, grabs, and
+  drags it under while biting on a pet-like cadence. The kill uses the `sink` death and extra
+  `DeathSinkStuds` so the body disappears into the water. Combat is `hunt_drag` from
+  `MergeBulwarkProgression.combatEffect`; shark kills do not stamp pet-kill credit.
+  T3 adds a proximity venom cloud; T4 prefers an unclaimed boss and will not drop a drag.
 - Bulwark menu art is flat, authored transparent art, not a live model viewport. Impaler Palisade,
   Concertina Line, Saw Blade, Grasping Hedge, and Wardstone Barrier all use the same long
   side-to-side presentation; Land Shark is the sole special case. The 24 source PNGs live under

@@ -42,8 +42,10 @@ local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
+local MergeBulwarkSlots = require(ReplicatedStorage.Shared.Game.MergeBulwarkSlots)
 local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
 local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -61,6 +63,8 @@ local TOWER_FIRE_PROMPT_NAME = "MergeEggTowerFirePrompt"
 local TOWER_SIZE_LABEL_NAME = "MergeEggTowerSizeLabel"
 local BULWARK_MENU_PROMPT_NAME = "MergeEggBulwarkMenuPrompt"
 local BULWARK_MENU_HOST_PREFIX = "MergeEggBulwarkMenuHost_"
+local BULWARK_ENGINEER_NAME = "MergeBulwarkEngineer"
+local BULWARK_ENGINEER_IDLE = "rbxassetid://507766388"
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
     power = true,
@@ -3225,6 +3229,52 @@ function MergeEggPrototypeService:_edgeBulwarkConfig()
     return type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
 end
 
+function MergeEggPrototypeService:_bulwarkPersistInput(source)
+    source = type(source) == "table" and source or {}
+    local input = {
+        owned = source.bulwarkOwned or source.bulwark_owned or source.owned,
+        slots = source.slots or source.bulwark_slots,
+    }
+    for _, def in ipairs(MergeBulwarkSlots.all()) do
+        input[def.aliasFamily] = source[def.aliasFamily]
+            or source[def.recordFamily]
+            or source[def.persistFamily]
+        input[def.aliasTier] = source[def.aliasTier]
+            or source[def.recordTier]
+            or source[def.persistTier]
+    end
+    return input
+end
+
+function MergeEggPrototypeService:_normalizeBulwarkState(source)
+    return MergeBulwarkProgression.normalize(
+        self:_bulwarkPersistInput(source),
+        self:_edgeBulwarkConfig().maximum_tier
+    )
+end
+
+function MergeEggPrototypeService:_writeBulwarkState(record, progress, state)
+    local persisted = MergeBulwarkProgression.persistFields(state)
+    if record then
+        for _, def in ipairs(MergeBulwarkSlots.all()) do
+            local family, tier = MergeBulwarkProgression.slotFamily(state, def.id)
+            record[def.recordFamily] = family
+            record[def.recordTier] = tier
+        end
+        record.bulwarkOwned = table.clone(state.owned or {})
+        record.bulwarkSlots = table.clone(persisted.bulwark_slots or {})
+    end
+    if progress then
+        for key, value in pairs(persisted) do
+            progress[key] = value
+        end
+    end
+end
+
+function MergeEggPrototypeService:_bulwarkSlotSuffix(slot)
+    return MergeBulwarkSlots.attrSuffix(slot)
+end
+
 function MergeEggPrototypeService:_towerScaleForTier(tier)
     local towersCfg = self:_edgeTowerConfig()
     local index = math.max(1, math.floor(tonumber(tier) or 1))
@@ -3427,9 +3477,8 @@ function MergeEggPrototypeService:_playCannonImpact(position, parent)
     Debris:AddItem(emitter, math.max(2, (tonumber(def.duration_seconds) or 1.28) + 0.6))
 end
 
--- Saw contact is intentionally a separate positional cue from the mechanism's idle whir. This
--- helper is the damage-tick contract: call it at the struck enemy only when Saw Blade gameplay
--- actually applies damage. The present visual-only bulwark must not manufacture hit sounds.
+-- Saw contact is a separate positional cue from the mechanism's idle whir. Call it at the
+-- struck combatant only when a real shred tick lands, and throttle so the 5s clip does not stack.
 function MergeEggPrototypeService:_playSawBladeImpact(position, parent)
     local def = self:_cannonFireSoundDef("merge_saw_hit")
     if not (def and parent and typeof(position) == "Vector3") then
@@ -3460,21 +3509,21 @@ function MergeEggPrototypeService:_playSawBladeImpact(position, parent)
     Debris:AddItem(emitter, math.max(2, (tonumber(def.duration_seconds) or 5) + 0.6))
 end
 
-function MergeEggPrototypeService:_ensureSawBladeIdleSound(folder, family)
+function MergeEggPrototypeService:_ensureSawBladeIdleSound(folder, hasSaw)
     if not folder then
         return
     end
     local existing = nil
     for _, descendant in ipairs(folder:GetDescendants()) do
         if descendant:IsA("Sound") and descendant.Name == "MergeSawBladeIdleSound" then
-            if family == "saw_blade" and existing == nil then
+            if hasSaw == true and existing == nil then
                 existing = descendant
             else
                 descendant:Destroy()
             end
         end
     end
-    if family ~= "saw_blade" then
+    if hasSaw ~= true then
         return
     end
     if existing then
@@ -3850,31 +3899,13 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
     record.towersReady = true
 end
 
-function MergeEggPrototypeService:_ensureBayBulwarks(record)
-    local world = record and record.world
-    if not world or record.bulwarksReady == true then
-        return
-    end
-    local anchors = self:_authoredBayArtifact(world, "BulwarkStations", "BulwarkAnchors")
-    if not anchors then
-        return
-    end
-    local cfg = self:_edgeBulwarkConfig()
-    if cfg.enabled == false then
-        record.bulwarksReady = true
-        return
-    end
-    local state = MergeBulwarkProgression.normalize({
-        family = record.bulwarkFamily,
-        tier = record.bulwarkTier,
-        owned = record.bulwarkOwned,
-    }, cfg.maximum_tier)
-    local family = state.family
-    local tier = state.tier
-    local folder = self:_towerFolder(world, "MergeEggBulwarks")
+function MergeEggPrototypeService:_collectBulwarkAnchors(anchors, namePattern)
     local allAnchors = {}
+    if not anchors then
+        return allAnchors
+    end
     for _, anchor in ipairs(anchors:GetChildren()) do
-        if anchor:IsA("BasePart") and string.match(anchor.Name, "^BulwarkAnchor_%d+$") then
+        if anchor:IsA("BasePart") and string.match(anchor.Name, namePattern) then
             allAnchors[#allAnchors + 1] = anchor
         end
     end
@@ -3882,13 +3913,59 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
         return (tonumber(a:GetAttribute("MergeBulwarkTileIndex")) or 0)
             < (tonumber(b:GetAttribute("MergeBulwarkTileIndex")) or 0)
     end)
+    return allAnchors
+end
+
+function MergeEggPrototypeService:_spawnBulwarkSlot(record, folder, allAnchors, family, tier, slotDef)
+    local cfg = self:_edgeBulwarkConfig()
+    slotDef = slotDef or MergeBulwarkSlots.get(MergeBulwarkSlots.defaultId())
+    local slot = slotDef.id
+    local namePrefix = slotDef.modelPrefix or ""
+
+    local function planarUnit(value, fallback)
+        if typeof(value) ~= "Vector3" then
+            return fallback
+        end
+        local flat = Vector3.new(value.X, 0, value.Z)
+        if flat.Magnitude < 0.001 then
+            return fallback
+        end
+        return flat.Unit
+    end
+
+    local sharkField = nil
+    if family == "land_shark" and #allAnchors >= 2 then
+        local first, last = allAnchors[1], allAnchors[#allAnchors]
+        local span = Vector3.new(last.Position.X - first.Position.X, 0, last.Position.Z - first.Position.Z)
+        local along = planarUnit(span, nil)
+        if along then
+            local tile = tonumber(first:GetAttribute("MergeBulwarkTileLength")) or 9.4
+            local margin = math.max(4, tonumber(cfg.land_shark_field_margin_studs) or 8)
+            local depthDir = planarUnit(first.CFrame.LookVector, Vector3.new(-along.Z, 0, along.X))
+            depthDir = planarUnit(depthDir - along * depthDir:Dot(along), Vector3.new(-along.Z, 0, along.X))
+            sharkField = {
+                center = (first.Position + last.Position) * 0.5,
+                along = along,
+                depth = depthDir,
+                width = math.max(24, span.Magnitude + tile - margin * 2),
+                depthStuds = math.max(3, tonumber(cfg.land_shark_field_depth_studs) or 7),
+            }
+        end
+    end
 
     -- A Land Shark defense is a small patrol of independent moving hazards. It must never use the
     -- ten-tile wall presentation shared by Palisades, Wire, Hedges, Wardstones, and Saw rigs.
     local presentationAnchors = allAnchors
-    if family == "land_shark" and #allAnchors > 0 then
+    if not family then
         presentationAnchors = {}
-        local count = math.clamp(math.floor(tonumber(cfg.land_shark_count) or 3), 1, #allAnchors)
+    elseif family == "land_shark" and #allAnchors > 0 then
+        presentationAnchors = {}
+        local hunt = MergeBulwarkProgression.combatEffect(family, tier, cfg)
+        local count = math.clamp(
+            math.floor(tonumber(hunt and hunt.sharkCount) or 4),
+            1,
+            #allAnchors
+        )
         for patrolIndex = 1, count do
             local anchorIndex = math.clamp(
                 math.floor((patrolIndex * (#allAnchors + 1)) / (count + 1) + 0.5),
@@ -3903,14 +3980,16 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
     for patrolIndex, anchor in ipairs(presentationAnchors) do
         local tileIndex = tonumber(anchor:GetAttribute("MergeBulwarkTileIndex")) or patrolIndex
         local name = if family == "land_shark"
-            then string.format("LandShark_%02d", patrolIndex)
-            else string.format("BulwarkTile_%02d", tileIndex)
+            then string.format("%sLandShark_%02d", namePrefix, patrolIndex)
+            else string.format("%sBulwarkTile_%02d", namePrefix, tileIndex)
         desiredNames[name] = true
     end
     for _, child in ipairs(folder:GetChildren()) do
+        local childSlot = child:GetAttribute("MergeBulwarkSlot") or MergeBulwarkProgression.SLOT_LANE
         if
             child:IsA("Model")
             and child:GetAttribute("MergeBulwarkSpawned") == true
+            and childSlot == slot
             and not desiredNames[child.Name]
         then
             child:Destroy()
@@ -3921,14 +4000,14 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
     for patrolIndex, anchor in ipairs(presentationAnchors) do
         local index = tonumber(anchor:GetAttribute("MergeBulwarkTileIndex")) or patrolIndex
         local name = if family == "land_shark"
-            then string.format("LandShark_%02d", patrolIndex)
-            else string.format("BulwarkTile_%02d", index)
+            then string.format("%sLandShark_%02d", namePrefix, patrolIndex)
+            else string.format("%sBulwarkTile_%02d", namePrefix, index)
         local expectedScale = tonumber(anchor:GetAttribute("MergeBulwarkScale")) or 1
         local existing = folder:FindFirstChild(name)
         if
             existing
             and (
-                not family
+                existing:GetAttribute("MergeBulwarkSlot") ~= slot
                 or existing:GetAttribute("MergeBulwarkFamily") ~= family
                 or existing:GetAttribute("MergeBulwarkTier") ~= tier
                 or math.abs(
@@ -3947,6 +4026,7 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
             if model then
                 model.Name = name
                 model:SetAttribute("MergeBulwarkTileIndex", index)
+                model:SetAttribute("MergeBulwarkSlot", slot)
                 if family == "land_shark" then
                     -- Source sharks are authored across Z for menu/showcase use. Turn them down
                     -- the lane, submerge the body below the deck, and leave only the dorsal
@@ -3960,8 +4040,8 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                     )
                     local submergeDepth = math.max(0, boundsSize.Y - finExposure)
                     model:PivotTo(model:GetPivot() - Vector3.new(0, submergeDepth, 0))
-                    local direction =
-                        Vector3.new(anchor.CFrame.RightVector.X, 0, anchor.CFrame.RightVector.Z)
+                    local direction = sharkField and sharkField.along
+                        or Vector3.new(anchor.CFrame.RightVector.X, 0, anchor.CFrame.RightVector.Z)
                     if direction.Magnitude < 0.001 then
                         direction = Vector3.new(1, 0, 0)
                     else
@@ -3971,6 +4051,12 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                     model:SetAttribute("MergeLandSharkPatrolIndex", patrolIndex)
                     model:SetAttribute("MergeLandSharkPatrolCount", #presentationAnchors)
                     model:SetAttribute("MergeLandSharkTrackDirection", direction)
+                    if sharkField then
+                        model:SetAttribute("MergeLandSharkFieldCenter", sharkField.center)
+                        model:SetAttribute("MergeLandSharkDepthDirection", sharkField.depth)
+                        model:SetAttribute("MergeLandSharkFieldWidth", sharkField.width)
+                        model:SetAttribute("MergeLandSharkFieldDepth", sharkField.depthStuds)
+                    end
                     model:SetAttribute(
                         "MergeLandSharkTrackStuds",
                         math.max(4, tonumber(cfg.land_shark_track_studs) or 28)
@@ -3992,6 +4078,22 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                         "MergeLandSharkPhase",
                         (patrolIndex - 1) / math.max(1, #presentationAnchors)
                     )
+                    model:SetAttribute(
+                        "MergeLandSharkBreachPeriodSeconds",
+                        math.max(3, tonumber(cfg.land_shark_breach_period_seconds) or 7.5)
+                    )
+                    model:SetAttribute(
+                        "MergeLandSharkBreachDurationSeconds",
+                        math.max(0.6, tonumber(cfg.land_shark_breach_duration_seconds) or 1.55)
+                    )
+                    model:SetAttribute(
+                        "MergeLandSharkBreachRiseStuds",
+                        math.max(0.5, tonumber(cfg.land_shark_breach_rise_studs) or 2.3)
+                    )
+                    model:SetAttribute(
+                        "MergeLandSharkBreachPitchDegrees",
+                        math.max(0, tonumber(cfg.land_shark_breach_pitch_degrees) or 14)
+                    )
                 end
                 spawned += 1
             elseif record.bulwarkTemplateWarned ~= true then
@@ -3999,26 +4101,155 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                 self:_log("Warn", "Merge Egg bulwark template missing", {
                     family = family,
                     tier = tier,
+                    slot = slot,
                     reason = reason,
                 })
             end
-        else
+        elseif existing then
+            existing:SetAttribute("MergeBulwarkSlot", slot)
             spawned += 1
         end
     end
-    self:_ensureSawBladeIdleSound(folder, family)
-    self:_ensureBulwarkMenuPrompts(record, anchors, folder)
     local expected = family and #presentationAnchors or 0
-    record.bulwarksReady = spawned >= expected
+    return spawned >= expected
 end
 
-function MergeEggPrototypeService:_bulwarkMenuState(record)
+function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
+    if not (world and def) then
+        return nil
+    end
+    local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local laneLines = map and map:FindFirstChild("LaneLines")
+    local playFields = map and map:FindFirstChild("PlayFields")
+    if not (map and laneLines and playFields) then
+        return nil
+    end
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local column = tonumber(world:GetAttribute("MergeEggBayColumn"))
+    if (side ~= "heaven" and side ~= "hell") or not column then
+        return nil
+    end
+    local prefix = side == "hell" and "Hell" or "Heaven"
+    local lines = laneLines:FindFirstChild(string.format("%s_%02d_Lines", prefix, column))
+    local lineName = MergeBulwarkSlots.stripLineName(def, self._config.world)
+    local line = lines and lineName and lines:FindFirstChild(lineName)
+    local field = playFields:FindFirstChild(string.format("%s_%02d", prefix, column))
+    if not (line and line:IsA("BasePart") and field and field:IsA("BasePart")) then
+        return nil
+    end
+    local stations = map:FindFirstChild(def.stationsFolder)
+    if not (stations and stations:IsA("Folder")) then
+        stations = Instance.new("Folder")
+        stations.Name = def.stationsFolder
+        stations.Parent = map
+    end
+    local bayName = string.format(def.bayFolderFormat, prefix, column)
+    local existing = stations:FindFirstChild(bayName)
+    if existing then
+        return existing
+    end
+    local TILE_COUNT = 10
+    local WALL_INSET = 1
+    local CANONICAL_TILE_LENGTH = 10
+    local longIsX = line.Size.X >= line.Size.Z
+    local markerLength = longIsX and line.Size.X or line.Size.Z
+    local usableLength = markerLength - WALL_INSET * 2
+    if usableLength <= 0 then
+        return nil
+    end
+    local tileLength = usableLength / TILE_COUNT
+    local direction = longIsX and line.CFrame.RightVector or line.CFrame.LookVector
+    local bayId = string.format("%s_%02d", side, column)
+    local portableBays = Workspace:FindFirstChild("Maps")
+        and Workspace.Maps:FindFirstChild("MergeEggRealm")
+        and Workspace.Maps.MergeEggRealm:FindFirstChild("Bays")
+    local portableBay = portableBays and portableBays:FindFirstChild("MergeBay_" .. bayId)
+    local landStrip = portableBay and portableBay:FindFirstChild("LandStrip")
+    local floorTop = landStrip and landStrip.Position.Y + landStrip.Size.Y * 0.5
+        or field.Position.Y + field.Size.Y * 0.5
+    local bayFolder = Instance.new("Folder")
+    bayFolder.Name = bayName
+    bayFolder:SetAttribute("MergeEggBayId", bayId)
+    bayFolder:SetAttribute("MergeBulwarkSlot", def.id)
+    bayFolder.Parent = stations
+    for index = 1, TILE_COUNT do
+        local offset = -usableLength * 0.5 + tileLength * (index - 0.5)
+        local center = line.Position + direction * offset
+        local anchor = Instance.new("Part")
+        anchor.Name = string.format(def.anchorNameFormat, index)
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanTouch = false
+        anchor.CanQuery = false
+        anchor.CastShadow = false
+        anchor.Transparency = 1
+        anchor.Size = Vector3.new(0.5, 0.1, 0.5)
+        anchor.CFrame = CFrame.lookAt(
+            Vector3.new(center.X, floorTop, center.Z),
+            Vector3.new(center.X, floorTop, center.Z) + direction,
+            Vector3.yAxis
+        )
+        anchor:SetAttribute("MergeEggBayId", bayId)
+        anchor:SetAttribute("MergeBulwarkTileIndex", index)
+        anchor:SetAttribute("MergeBulwarkTileLength", tileLength)
+        anchor:SetAttribute("MergeBulwarkScale", tileLength / CANONICAL_TILE_LENGTH)
+        anchor:SetAttribute("MergeBulwarkSlot", def.id)
+        anchor.Parent = bayFolder
+    end
+    return bayFolder
+end
+
+function MergeEggPrototypeService:_ensureBayBulwarks(record)
+    local world = record and record.world
+    if not world or record.bulwarksReady == true then
+        return
+    end
     local cfg = self:_edgeBulwarkConfig()
-    local state = MergeBulwarkProgression.normalize({
-        family = record and record.bulwarkFamily,
-        tier = record and record.bulwarkTier,
-        owned = record and record.bulwarkOwned,
-    }, cfg.maximum_tier)
+    if cfg.enabled == false then
+        record.bulwarksReady = true
+        return
+    end
+    local state = self:_normalizeBulwarkState(record)
+    local folder = self:_towerFolder(world, "MergeEggBulwarks")
+    local ready = true
+    local hasSaw = false
+    self:_clearBulwarkMenuPrompts(folder)
+    for _, def in ipairs(MergeBulwarkSlots.all()) do
+        local stations = self:_authoredBayArtifact(world, def.stationsFolder, def.anchorsSuffix)
+            or self:_authorSlotAnchorsFromStrip(world, def)
+        if not stations then
+            if def.required == true then
+                return
+            end
+            local warnedKey = "bulwarkAnchorWarned_" .. def.id
+            if record[warnedKey] ~= true then
+                record[warnedKey] = true
+                self:_log("Warn", "Merge Egg bulwark anchors missing; skip slot", {
+                    player = record.player and record.player.Name,
+                    bay = world:GetAttribute("MergeEggBayId"),
+                    slot = def.id,
+                    stations = def.stationsFolder,
+                })
+            end
+        else
+            local family, tier = MergeBulwarkProgression.slotFamily(state, def.id)
+            local slotAnchors = self:_collectBulwarkAnchors(stations, def.anchorNamePattern)
+            ready = self:_spawnBulwarkSlot(record, folder, slotAnchors, family, tier, def)
+                and ready
+            hasSaw = hasSaw or family == "saw_blade"
+            self:_stampBulwarkMenuPrompts(record, slotAnchors, folder, def)
+        end
+    end
+    self:_ensureBulwarkEngineer(record, folder)
+    self:_ensureSawBladeIdleSound(folder, hasSaw)
+    record.bulwarksReady = ready
+end
+
+function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
+    local cfg = self:_edgeBulwarkConfig()
+    local state = self:_normalizeBulwarkState(record)
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    local family, tier = MergeBulwarkProgression.slotFamily(state, slot)
     local price = MergeBulwarkProgression.actionCost(cfg)
     local currentWave = record and math.max(1, math.floor(tonumber(record.waveIndex) or 0)) or 1
     local wallet = record
@@ -4026,12 +4257,13 @@ function MergeEggPrototypeService:_bulwarkMenuState(record)
             and self._economyService:GetCurrency(record.player, price.currency)
         or 0
     return {
-        family = state.family,
-        tier = state.tier,
+        slot = slot,
+        family = family,
+        tier = tier,
         owned = state.owned,
-        installed = state.family ~= nil,
+        installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
-        families = MergeBulwarkProgression.families(),
+        families = MergeBulwarkProgression.familiesForSlot(slot),
         unlocked = MergeBulwarkProgression.isUnlocked(currentWave, cfg),
         unlockWave = MergeBulwarkProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 20)),
@@ -4047,48 +4279,133 @@ function MergeEggPrototypeService:_bulwarkMenuState(record)
     }
 end
 
-function MergeEggPrototypeService:_canUseBulwarkMenu(player)
+function MergeEggPrototypeService:_engineerConfig()
+    local cfg = self:_edgeBulwarkConfig()
+    return type(cfg.engineer) == "table" and cfg.engineer or {}
+end
+
+function MergeEggPrototypeService:_engineerPosts()
+    local engineer = self:_engineerConfig()
+    if engineer.enabled ~= true then
+        return {}
+    end
+    local posts = {}
+    local rows = type(engineer.posts) == "table" and engineer.posts or nil
+    if rows and #rows > 0 then
+        for _, row in ipairs(rows) do
+            if type(row) == "table" then
+                posts[#posts + 1] = {
+                    slot = MergeBulwarkProgression.normalizeSlot(row.slot or engineer.slot or "egg"),
+                    along = string.lower(tostring(row.along or "center")),
+                    user_id = tonumber(row.user_id) or tonumber(engineer.user_id),
+                    display_name = row.display_name or engineer.display_name,
+                    object_text = row.object_text or engineer.object_text,
+                    action_text = row.action_text or engineer.action_text,
+                    max_distance = tonumber(row.max_distance) or tonumber(engineer.max_distance) or 16,
+                }
+            end
+        end
+    else
+        posts[1] = {
+            slot = MergeBulwarkProgression.normalizeSlot(engineer.slot or "egg"),
+            along = string.lower(tostring(engineer.along or "center")),
+            user_id = tonumber(engineer.user_id),
+            display_name = engineer.display_name,
+            object_text = engineer.object_text,
+            action_text = engineer.action_text,
+            max_distance = tonumber(engineer.max_distance) or 16,
+        }
+    end
+    return posts
+end
+
+function MergeEggPrototypeService:_engineerOpensSlot(slot)
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    for _, post in ipairs(self:_engineerPosts()) do
+        if post.slot == slot then
+            return true
+        end
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_engineerModelName(slot)
+    return BULWARK_ENGINEER_NAME .. "_" .. MergeBulwarkProgression.normalizeSlot(slot)
+end
+
+function MergeEggPrototypeService:_canUseBulwarkMenu(player, slot)
     local record = self:_recordFor(player)
     local root = characterRoot(player)
     local folder = record and record.world and record.world:FindFirstChild("MergeEggBulwarks")
     if not (record and root and folder) then
         return false, "bulwark_station_unavailable"
     end
+    local wanted = slot and MergeBulwarkProgression.normalizeSlot(slot) or nil
     local closest = math.huge
+    local cfg = self:_edgeBulwarkConfig()
+    local engineer = self:_engineerConfig()
     for _, child in ipairs(folder:GetChildren()) do
         if
             child:IsA("BasePart")
             and child.Name:sub(1, #BULWARK_MENU_HOST_PREFIX) == BULWARK_MENU_HOST_PREFIX
         then
-            closest = math.min(closest, (root.Position - child.Position).Magnitude)
+            local hostSlot = child:GetAttribute("MergeBulwarkSlot")
+                or MergeBulwarkProgression.SLOT_LANE
+            if wanted == nil or hostSlot == wanted then
+                closest = math.min(closest, (root.Position - child.Position).Magnitude)
+            end
+        elseif
+            child.Name == BULWARK_ENGINEER_NAME
+            or string.sub(child.Name, 1, #BULWARK_ENGINEER_NAME) == BULWARK_ENGINEER_NAME
+            or child:GetAttribute("MergeBulwarkEngineer") == true
+        then
+            local hostSlot = child:GetAttribute("MergeBulwarkSlot")
+                or MergeBulwarkProgression.normalizeSlot(engineer.slot or "egg")
+            if wanted == nil or hostSlot == wanted then
+                local part = firstBasePart(child)
+                if part then
+                    closest = math.min(closest, (root.Position - part.Position).Magnitude)
+                end
+            end
         end
     end
-    local maximum = math.max(4, tonumber(self:_edgeBulwarkConfig().prompt_distance) or 14) + 4
+    local maximum = math.max(4, tonumber(cfg.prompt_distance) or 14) + 4
+    if wanted and self:_engineerOpensSlot(wanted) then
+        local postDistance = tonumber(engineer.max_distance) or 16
+        for _, post in ipairs(self:_engineerPosts()) do
+            if post.slot == wanted then
+                postDistance = tonumber(post.max_distance) or postDistance
+                break
+            end
+        end
+        maximum = math.max(4, postDistance) + 4
+    end
     if closest > maximum then
         return false, "bulwark_station_too_far"
     end
     return true, nil, closest
 end
 
-function MergeEggPrototypeService:_openBulwarkMenu(player)
+function MergeEggPrototypeService:_openBulwarkMenu(player, slot)
     local record = self:_recordFor(player)
     if not (record and record.player == player and record.terminal ~= true) then
         return false, "not_active_encounter"
     end
-    local accessOk, accessReason = self:_canUseBulwarkMenu(player)
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    local accessOk, accessReason = self:_canUseBulwarkMenu(player, slot)
     if not accessOk then
         return false, accessReason
     end
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
         action = "open_bulwark_menu",
-        value = self:_bulwarkMenuState(record),
+        value = self:_bulwarkMenuState(record, slot),
     })
     return true
 end
 
-function MergeEggPrototypeService:_ensureBulwarkMenuPrompts(record, anchors, folder)
-    if not (record and anchors and folder) then
+function MergeEggPrototypeService:_clearBulwarkMenuPrompts(folder)
+    if not folder then
         return
     end
     for _, child in ipairs(folder:GetChildren()) do
@@ -4099,22 +4416,30 @@ function MergeEggPrototypeService:_ensureBulwarkMenuPrompts(record, anchors, fol
             child:Destroy()
         end
     end
-    local endpoints = {}
-    for _, anchor in ipairs(anchors:GetChildren()) do
-        if anchor:IsA("BasePart") and string.match(anchor.Name, "^BulwarkAnchor_%d+$") then
-            endpoints[#endpoints + 1] = anchor
-        end
+end
+
+function MergeEggPrototypeService:_stampBulwarkMenuPrompts(record, anchors, folder, slotDef)
+    if not (record and folder) then
+        return
     end
-    table.sort(endpoints, function(a, b)
-        return (tonumber(a:GetAttribute("MergeBulwarkTileIndex")) or 0)
-            < (tonumber(b:GetAttribute("MergeBulwarkTileIndex")) or 0)
-    end)
+    slotDef = slotDef or MergeBulwarkSlots.get(MergeBulwarkSlots.defaultId())
+    local slot = slotDef.id
+    local namePrefix = tostring(slotDef.promptPrefix or "")
+    local endpoints = {}
+    if typeof(anchors) == "Instance" then
+        endpoints = self:_collectBulwarkAnchors(anchors, slotDef.anchorNamePattern)
+    elseif type(anchors) == "table" then
+        endpoints = anchors
+    end
     if #endpoints == 0 then
         return
     end
+    if self:_engineerOpensSlot(slot) then
+        return
+    end
     local rows = {
-        { suffix = "Left", anchor = endpoints[1] },
-        { suffix = "Right", anchor = endpoints[#endpoints] },
+        { suffix = namePrefix .. "Left", anchor = endpoints[1] },
+        { suffix = namePrefix .. "Right", anchor = endpoints[#endpoints] },
     }
     local cfg = self:_edgeBulwarkConfig()
     for _, row in ipairs(rows) do
@@ -4127,20 +4452,237 @@ function MergeEggPrototypeService:_ensureBulwarkMenuPrompts(record, anchors, fol
         host.CanTouch = false
         host.CanQuery = false
         host.Transparency = 1
+        host:SetAttribute("MergeBulwarkSlot", slot)
         host.Parent = folder
         local prompt = self:_attachPrompt(
             host,
             BULWARK_MENU_PROMPT_NAME,
             "Manage",
-            "Bulwark",
+            slotDef.promptObject or "Bulwark",
             function(player)
-                self:_openBulwarkMenu(player)
+                self:_openBulwarkMenu(player, slot)
             end
         )
         if prompt then
             prompt.HoldDuration = 0
             prompt.MaxActivationDistance = math.max(4, tonumber(cfg.prompt_distance) or 14)
         end
+    end
+end
+
+function MergeEggPrototypeService:_clearBulwarkEngineer(folder)
+    if not folder then
+        return
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if child.Name == BULWARK_ENGINEER_NAME or child:GetAttribute("MergeBulwarkEngineer") == true then
+            child:Destroy()
+        end
+    end
+end
+
+function MergeEggPrototypeService:_clearSlotMenuHosts(folder, slot)
+    if not folder then
+        return
+    end
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    for _, child in ipairs(folder:GetChildren()) do
+        if
+            child:IsA("BasePart")
+            and child.Name:sub(1, #BULWARK_MENU_HOST_PREFIX) == BULWARK_MENU_HOST_PREFIX
+            and child:GetAttribute("MergeBulwarkSlot") == slot
+        then
+            child:Destroy()
+        end
+    end
+end
+
+function MergeEggPrototypeService:_engineerStandCFrame(world, slot, along)
+    if not world then
+        return nil
+    end
+    local slotDef = MergeBulwarkSlots.get(slot)
+    local lineName = MergeBulwarkSlots.stripLineName(slotDef, self._config and self._config.world)
+    local line = lineName and findNamedPart(world, lineName)
+    if not line and slot == "egg" then
+        line = self:_ensureBreachLine(world)
+    end
+    if not line then
+        return nil
+    end
+    local landStrip = world:FindFirstChild("LandStrip")
+    local floorTop = landStrip and landStrip.Position.Y + landStrip.Size.Y * 0.5 or line.Position.Y
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local incoming = side == "hell" and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+    local rightDir = Vector3.yAxis:Cross(incoming)
+    if rightDir.Magnitude <= 0 then
+        rightDir = Vector3.new(0, 0, -1)
+    else
+        rightDir = rightDir.Unit
+    end
+    local longLen = math.max(line.Size.X, line.Size.Z)
+    local half = longLen * 0.5 - 1
+    local alongKey = string.lower(tostring(along or "center"))
+    local alongOff = 0
+    if alongKey == "right" then
+        alongOff = half - 4.7
+    elseif alongKey == "left" then
+        alongOff = -(half - 4.7)
+    end
+    local stand = Vector3.new(line.Position.X, floorTop, line.Position.Z)
+        + rightDir * alongOff
+        - incoming * 4
+    return CFrame.lookAt(stand, stand + incoming, Vector3.yAxis), floorTop
+end
+
+function MergeEggPrototypeService:_groundEngineerOnFloor(model, stand)
+    if not (model and stand) then
+        return
+    end
+    local root = model:FindFirstChild("HumanoidRootPart")
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local hip = humanoid and tonumber(humanoid.HipHeight) or 2
+    local rootHalf = root and root.Size.Y * 0.5 or 1
+    local pos = stand.Position + Vector3.new(0, hip + rootHalf, 0)
+    model:PivotTo(CFrame.lookAt(pos, pos + stand.LookVector, Vector3.yAxis))
+end
+
+function MergeEggPrototypeService:_setEngineerPassthrough(model)
+    if not model then
+        return
+    end
+    local function apply(instance)
+        if instance:IsA("BasePart") then
+            instance.CanCollide = false
+            instance.CanTouch = false
+        end
+    end
+    apply(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        apply(descendant)
+    end
+    model.DescendantAdded:Connect(apply)
+end
+
+function MergeEggPrototypeService:_findBulwarkEngineer(folder, slot)
+    if not folder then
+        return nil
+    end
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    local named = folder:FindFirstChild(self:_engineerModelName(slot))
+    if named then
+        return named
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if
+            (child.Name == BULWARK_ENGINEER_NAME or child:GetAttribute("MergeBulwarkEngineer") == true)
+            and child:GetAttribute("MergeBulwarkSlot") == slot
+        then
+            return child
+        end
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_ensureBulwarkEngineer(record, folder)
+    if not (record and folder) then
+        return
+    end
+    for _, post in ipairs(self:_engineerPosts()) do
+        self:_clearSlotMenuHosts(folder, post.slot)
+        if not self:_findBulwarkEngineer(folder, post.slot) then
+            local captured = post
+            task.spawn(function()
+                self:_spawnBulwarkEngineer(record, folder, captured)
+            end)
+        end
+    end
+end
+
+function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
+    if not (record and folder and folder.Parent and post) then
+        return
+    end
+    local slot = MergeBulwarkProgression.normalizeSlot(post.slot)
+    if self:_findBulwarkEngineer(folder, slot) then
+        return
+    end
+    local stand = self:_engineerStandCFrame(record.world, slot, post.along)
+    if not stand then
+        self:_log("Warn", "Merge Egg bulwark engineer has no stand pose", {
+            player = record.player and record.player.Name,
+            slot = slot,
+            along = post.along,
+        })
+        return
+    end
+    local userId = tonumber(post.user_id)
+    local model
+    if userId then
+        local ok, desc = pcall(function()
+            return Players:GetHumanoidDescriptionFromUserId(userId)
+        end)
+        if ok and desc then
+            local ok2, rig = pcall(function()
+                return Players:CreateHumanoidModelFromDescription(desc, Enum.HumanoidRigType.R15)
+            end)
+            if ok2 then
+                model = rig
+            end
+        end
+    end
+    if not model then
+        self:_log("Warn", "Merge Egg bulwark engineer avatar failed", {
+            userId = userId,
+            slot = slot,
+        })
+        return
+    end
+    model.Name = self:_engineerModelName(slot)
+    model:SetAttribute("MergeBulwarkEngineer", true)
+    model:SetAttribute("MergeBulwarkSlot", slot)
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.DisplayName = post.display_name or "Bulwark Engineer"
+        humanoid.WalkSpeed = 0
+        humanoid.JumpPower = 0
+        humanoid.AutoJumpEnabled = false
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+        animator.Parent = humanoid
+        local idle = Instance.new("Animation")
+        idle.AnimationId = BULWARK_ENGINEER_IDLE
+        local ok, track = pcall(function()
+            return animator:LoadAnimation(idle)
+        end)
+        if ok and track then
+            track.Looped = true
+            track:Play()
+        end
+    end
+    self:_groundEngineerOnFloor(model, stand)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Anchored = true
+        pcall(function()
+            root:SetNetworkOwner(nil)
+        end)
+    end
+    model.Parent = folder
+    self:_setEngineerPassthrough(model)
+    self:_clearSlotMenuHosts(folder, slot)
+    local promptHost = root or firstBasePart(model)
+    local prompt = self:_attachPrompt(
+        promptHost,
+        BULWARK_MENU_PROMPT_NAME,
+        post.action_text or "Talk",
+        post.object_text or post.display_name or "Bulwark Engineer",
+        function(player)
+            self:_openBulwarkMenu(player, slot)
+        end
+    )
+    if prompt then
+        prompt.HoldDuration = 0
+        prompt.MaxActivationDistance = math.max(4, tonumber(post.max_distance) or 16)
     end
 end
 
@@ -4412,18 +4954,27 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
     end
     local _, shot = self:_edgeTowerConfig()
     local interval = math.max(0.4, tonumber(shot.interval) or 2.4)
+    local jitter = math.max(0, tonumber(shot.interval_jitter) or 0.05)
+    local rng = record.random or Random.new()
+    local function fireDelay()
+        if jitter <= 0 then
+            return interval
+        end
+        return math.max(0.4, interval + rng:NextNumber(-jitter, jitter))
+    end
     local index = 0
     for _, cannon in ipairs(folder:GetChildren()) do
         if cannon:IsA("Model") and cannon:GetAttribute("MergeTowerSpawned") == true then
             index += 1
             local nextAt = tonumber(cannon:GetAttribute("MergeTowerNextFireAt"))
-            if nextAt == nil then
-                nextAt = now + (index - 1) * (interval * 0.5)
+            -- Spawn stamps 0 on both pads, which used to skip the stagger and fire in lockstep.
+            if nextAt == nil or nextAt <= 0 then
+                nextAt = now + (index - 1) * (interval * 0.5) + rng:NextNumber(0, jitter)
                 cannon:SetAttribute("MergeTowerNextFireAt", nextAt)
             end
             if now >= nextAt then
                 if self:_fireTowerShot(record, cannon, now) then
-                    cannon:SetAttribute("MergeTowerNextFireAt", now + interval)
+                    cannon:SetAttribute("MergeTowerNextFireAt", now + fireDelay())
                 end
             end
         end
@@ -5355,15 +5906,27 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesCrossedBreachLine", record and record.breached or 0)
     world:SetAttribute("EnemiesPastBulwark", record and record.enemiesPastBulwark or 0)
     world:SetAttribute("PeakEnemiesPastBulwark", record and record.peakEnemiesPastBulwark or 0)
-    local bulwarkState = self:_bulwarkMenuState(record)
-    world:SetAttribute("MergeBulwarkInstalled", bulwarkState.installed)
-    world:SetAttribute("MergeBulwarkFamily", bulwarkState.family)
-    world:SetAttribute("MergeBulwarkTier", bulwarkState.tier)
-    world:SetAttribute("MergeBulwarkUnlocked", bulwarkState.unlocked)
-    world:SetAttribute("MergeBulwarkUnlockWave", bulwarkState.unlockWave)
-    world:SetAttribute("MergeBulwarkProductionUnlockWave", bulwarkState.productionUnlockWave)
-    world:SetAttribute("MergeBulwarkActionCost", bulwarkState.actionCost)
-    world:SetAttribute("MergeBulwarkCurrency", bulwarkState.currency)
+    local bulwarkState = self:_normalizeBulwarkState(record)
+    local laneMenu = self:_bulwarkMenuState(record, MergeBulwarkSlots.defaultId())
+    world:SetAttribute("MergeBulwarkInstalled", laneMenu.installed)
+    world:SetAttribute("MergeBulwarkFamily", laneMenu.family)
+    world:SetAttribute("MergeBulwarkTier", laneMenu.tier)
+    world:SetAttribute("MergeBulwarkUnlocked", laneMenu.unlocked)
+    for _, def in ipairs(MergeBulwarkSlots.all()) do
+        local family, tier = MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+        world:SetAttribute("MergeBulwark_" .. def.id .. "_Installed", family ~= nil)
+        world:SetAttribute("MergeBulwark_" .. def.id .. "_Family", family)
+        world:SetAttribute("MergeBulwark_" .. def.id .. "_Tier", tier)
+        if def.id == "egg" then
+            world:SetAttribute("MergeEggBulwarkInstalled", family ~= nil)
+            world:SetAttribute("MergeEggBulwarkFamily", family)
+            world:SetAttribute("MergeEggBulwarkTier", tier)
+        end
+    end
+    world:SetAttribute("MergeBulwarkUnlockWave", laneMenu.unlockWave)
+    world:SetAttribute("MergeBulwarkProductionUnlockWave", laneMenu.productionUnlockWave)
+    world:SetAttribute("MergeBulwarkActionCost", laneMenu.actionCost)
+    world:SetAttribute("MergeBulwarkCurrency", laneMenu.currency)
     world:SetAttribute("EnemiesPastBreachLine", record and record.enemiesPastBreachLine or 0)
     world:SetAttribute(
         "PeakEnemiesPastBreachLine",
@@ -6761,6 +7324,7 @@ function MergeEggPrototypeService:_destroyInstalledHatcherEgg(record, team, caus
         cause = tostring(cause or "unknown"),
         rebuildCost = self:_eggTierCost(1, record).amount,
     })
+    self:_retargetBreachMarchers(record)
     return true
 end
 
@@ -7753,7 +8317,14 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         managementUpgradeInProgress = false,
         bulwarkFamily = mergeDefenseProgress.bulwark_family,
         bulwarkTier = mergeDefenseProgress.bulwark_tier,
+        eggBulwarkFamily = mergeDefenseProgress.egg_bulwark_family,
+        eggBulwarkTier = mergeDefenseProgress.egg_bulwark_tier,
+        midBulwarkFamily = mergeDefenseProgress.mid_bulwark_family,
+        midBulwarkTier = mergeDefenseProgress.mid_bulwark_tier,
+        frontBulwarkFamily = mergeDefenseProgress.front_bulwark_family,
+        frontBulwarkTier = mergeDefenseProgress.front_bulwark_tier,
         bulwarkOwned = table.clone(mergeDefenseProgress.bulwark_owned or {}),
+        bulwarkSlots = table.clone(mergeDefenseProgress.bulwark_slots or {}),
         bulwarkActionInProgress = false,
         bulwarkWaycoinsSpent = math.max(
             0,
@@ -8180,11 +8751,153 @@ function MergeEggPrototypeService:_onEnemyDefeated(record, defeat)
     self:_resolveEnemy(record, "defeated", defeat and defeat.targetId)
 end
 
+function MergeEggPrototypeService:_livingHatcherEggs(record)
+    local eggs = {}
+    for _, team in ipairs(record and record.teams or {}) do
+        local model = team.eggObjective
+        if
+            model
+            and model.Parent
+            and team.eggObjectiveArmed == true
+            and math.floor(tonumber(team.eggTier) or 0) > 0
+        then
+            eggs[#eggs + 1] = {
+                team = team,
+                model = model,
+                position = model:GetPivot().Position,
+            }
+        end
+    end
+    return eggs
+end
+
+function MergeEggPrototypeService:_pickHatcherEggForEnemy(record, enemy, fromPos, eggs)
+    eggs = eggs or self:_livingHatcherEggs(record)
+    if #eggs == 0 then
+        return nil
+    end
+    local assignedId = enemy and enemy.teamId
+    if assignedId ~= nil then
+        for _, egg in ipairs(eggs) do
+            if egg.team and egg.team.id == assignedId then
+                return egg
+            end
+        end
+    end
+    local origin = fromPos
+    if typeof(origin) ~= "Vector3" then
+        origin = enemy and enemy.model and enemy.model:GetPivot().Position
+    end
+    if typeof(origin) ~= "Vector3" then
+        return eggs[1]
+    end
+    table.sort(eggs, function(a, b)
+        local da = (a.position - origin).Magnitude
+        local db = (b.position - origin).Magnitude
+        if da == db then
+            return (a.team and a.team.id or 0) < (b.team and b.team.id or 0)
+        end
+        return da < db
+    end)
+    return eggs[1]
+end
+
+function MergeEggPrototypeService:_resumeEnemyToFinish(record, enemy)
+    if not (record and enemy and enemy.model and enemy.model.Parent and self._enemyService) then
+        return false
+    end
+    local dest = enemy.finishDestination
+    if typeof(dest) ~= "Vector3" then
+        local worldCfg = self._config.world or {}
+        local finish = findNamedPart(record.world, worldCfg.enemy_finish_line or "EnemyFinishLine")
+        dest = finish and finish.Position
+    end
+    if typeof(dest) ~= "Vector3" then
+        return false
+    end
+    local cfg = self._config.enemy or {}
+    return self._enemyService:RedirectMarchGoal(enemy.targetId, {
+        destination = dest,
+        speed = math.max(1, tonumber(cfg.march_speed) or 22),
+        arriveDistance = math.max(0, tonumber(cfg.finish_distance) or 2),
+        onReached = function(arrival)
+            self:_onEnemyReachedFinish(record, arrival)
+        end,
+    })
+end
+
+function MergeEggPrototypeService:_retargetEnemyToEggs(record, enemy, fromPos)
+    if not (record and enemy and enemy.model and enemy.model.Parent and self._enemyService) then
+        return false
+    end
+    local eggs = self:_livingHatcherEggs(record)
+    local pick = self:_pickHatcherEggForEnemy(record, enemy, fromPos, eggs)
+    if not pick then
+        return false
+    end
+    local model = enemy.model
+    model:SetAttribute("MergeEggCanAttackObjective", true)
+    model:SetAttribute("CombatTargetOpen", true)
+    local origin = fromPos
+    if typeof(origin) ~= "Vector3" then
+        origin = model:GetPivot().Position
+    end
+    local cfg = self._config.enemy or {}
+    local arrive = math.max(3, tonumber(cfg.egg_arrive_distance) or 6)
+    local planar = Vector3.new(pick.position.X - origin.X, 0, pick.position.Z - origin.Z)
+    if planar.Magnitude > arrive + 2 then
+        self._enemyService:RedirectMarchGoal(enemy.targetId, {
+            destination = pick.position,
+            speed = math.max(1, tonumber(cfg.march_speed) or 22),
+            arriveDistance = arrive,
+            onReached = function(arrival)
+                self:_onEnemyReachedEggObjective(record, arrival)
+            end,
+        })
+    end
+    self._enemyService:ForceAttackTarget(enemy.targetId, pick.model, {
+        threat = 10000,
+        ownerName = record.player and record.player.Name,
+    })
+    return true
+end
+
+function MergeEggPrototypeService:_retargetBreachMarchers(record)
+    if not record then
+        return
+    end
+    local eggs = self:_livingHatcherEggs(record)
+    for _, enemy in pairs(record.enemyByTargetId or {}) do
+        local model = enemy.model
+        if model and model.Parent and model:GetAttribute("MergeEggCanAttackObjective") == true then
+            if #eggs > 0 then
+                self:_retargetEnemyToEggs(record, enemy)
+            else
+                self:_resumeEnemyToFinish(record, enemy)
+            end
+        end
+    end
+end
+
+function MergeEggPrototypeService:_onEnemyReachedEggObjective(record, arrival)
+    if not self:_isRecordActive(record) or not arrival then
+        return
+    end
+    local enemy = record.enemyByTargetId[arrival.targetId]
+    if not self:_retargetEnemyToEggs(record, enemy, arrival.position) then
+        self:_resumeEnemyToFinish(record, enemy)
+    end
+end
+
 function MergeEggPrototypeService:_onEnemyReachedFinish(record, arrival)
     if not self:_isRecordActive(record) or not arrival then
         return
     end
-    self:_damageInstalledHatcherEgg(record, record.enemyByTargetId[arrival.targetId])
+    local enemy = record.enemyByTargetId[arrival.targetId]
+    if self:_retargetEnemyToEggs(record, enemy, arrival.position) then
+        return
+    end
+    self:_damageInstalledHatcherEgg(record, enemy)
     self._enemyService:DespawnModel(arrival.model)
     self:_resolveEnemy(record, "escaped", arrival.targetId)
 end
@@ -8274,6 +8987,7 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
         )
     )
     result.teamId = team.id
+    result.finishDestination = destination
     record.enemies[#record.enemies + 1] = result
     record.enemyByTargetId[result.targetId] = result
     record.aliveEnemies += 1
@@ -8910,33 +9624,614 @@ function MergeEggPrototypeService:_alertTeamsToBulwarkTarget(record, enemy)
     return reserveTeams, alertedPets, alertedPlayerPets
 end
 
+local function planarUnit(value, fallback)
+    if typeof(value) ~= "Vector3" then
+        return fallback
+    end
+    local flat = Vector3.new(value.X, 0, value.Z)
+    if flat.Magnitude < 0.001 then
+        return fallback
+    end
+    return flat.Unit
+end
+
+local function landSharkWander(time, phase, seed)
+    local along = math.sin(time * 0.23 + phase * 6.1 + seed)
+        * 0.56
+        + math.sin(time * 0.39 + phase * 3.7 + seed * 1.8) * 0.29
+        + math.sin(time * 0.61 + phase * 2.2 + seed * 0.7) * 0.15
+    local depth = math.sin(time * 0.31 + phase * 5.4 + seed * 1.3) * 0.67
+        + math.sin(time * 0.54 + phase * 2.9 + seed * 0.4) * 0.33
+    return along, depth
+end
+
+local function landSharkWanderPosition(shark, along, depth, center, halfWidth, halfDepth)
+    local speed = math.max(1, tonumber(shark:GetAttribute("MergeLandSharkSpeedStuds")) or 10)
+    local phase = tonumber(shark:GetAttribute("MergeLandSharkPhase")) or 0
+    local seed = tonumber(shark:GetAttribute("MergeLandSharkPatrolIndex")) or 1
+    local origin = typeof(center) == "Vector3" and center or shark:GetPivot().Position
+    local alongN, depthN = landSharkWander(os.clock() * (speed / 10), phase, seed)
+    return Vector3.new(origin.X, origin.Y, origin.Z)
+        + along * (alongN * halfWidth)
+        + depth * (depthN * halfDepth)
+end
+
+local function landSharkPreyRank(item)
+    return string.lower(tostring(item.model and item.model:GetAttribute("MergeEggRank") or "trash"))
+end
+
+local function landSharkPickPrey(prey, claimed, from, preferBosses)
+    local best, bestRank, bestDist = nil, nil, nil
+    for _, item in ipairs(prey) do
+        local id = tonumber(item.enemy.targetId)
+        if id and claimed[id] == nil then
+            local offset = item.position - from
+            local dist = Vector3.new(offset.X, 0, offset.Z).Magnitude
+            local rank = (preferBosses and landSharkPreyRank(item) == "boss") and 0 or 1
+            if best == nil or rank < bestRank or (rank == bestRank and dist < bestDist) then
+                best = item
+                bestRank = rank
+                bestDist = dist
+            end
+        end
+    end
+    return best
+end
+
+function MergeEggPrototypeService:_clearLandSharkHunt(shark)
+    if not shark then
+        return
+    end
+    shark:SetAttribute("MergeLandSharkHuntTargetId", nil)
+    shark:SetAttribute("MergeLandSharkHuntState", nil)
+    shark:SetAttribute("MergeLandSharkHuntAim", nil)
+    shark:SetAttribute("MergeLandSharkHuntPos", nil)
+    shark:SetAttribute("MergeLandSharkGrabStartedAt", nil)
+    shark:SetAttribute("MergeLandSharkHuntTickAt", nil)
+end
+
+function MergeEggPrototypeService:_tickLandSharkHunt(record, towardGate, family, tier, slot)
+    if not (record and record.world and family == "land_shark") then
+        return
+    end
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    local suffix = self:_bulwarkSlotSuffix(slot)
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    if not (effect and effect.kind == "hunt_drag") then
+        return
+    end
+    local folder = record.world:FindFirstChild("MergeEggBulwarks")
+    if not folder then
+        return
+    end
+    local sharks = {}
+    for _, child in ipairs(folder:GetChildren()) do
+        local childSlot = child:GetAttribute("MergeBulwarkSlot") or MergeBulwarkProgression.SLOT_LANE
+        if
+            child:IsA("Model")
+            and child:GetAttribute("MergeBulwarkFamily") == "land_shark"
+            and child:GetAttribute("MergeLandSharkPatrol") == true
+            and childSlot == slot
+        then
+            sharks[#sharks + 1] = child
+        end
+    end
+    if #sharks == 0 then
+        return
+    end
+    local sample = sharks[1]
+    local along = planarUnit(sample:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
+    local depth = planarUnit(
+        sample:GetAttribute("MergeLandSharkDepthDirection"),
+        Vector3.new(-along.Z, 0, along.X)
+    )
+    local center = sample:GetAttribute("MergeLandSharkFieldCenter")
+    if typeof(center) ~= "Vector3" then
+        center = sample:GetPivot().Position
+    end
+    local halfWidth = math.max(8, (tonumber(sample:GetAttribute("MergeLandSharkFieldWidth")) or 78) * 0.5)
+    local halfDepth = math.max(1, (tonumber(sample:GetAttribute("MergeLandSharkFieldDepth")) or 7) * 0.5)
+    local toward = planarUnit(towardGate, nil)
+    local depthSign = 1
+    if toward and toward:Dot(depth) < 0 then
+        depthSign = -1
+    end
+    local now = os.clock()
+    local claimed = {}
+    local prey = {}
+    for _, enemy in ipairs(record.enemies or {}) do
+        local model = enemy.model
+        if
+            model
+            and model.Parent
+            and (tonumber(model:GetAttribute("HP")) or 0) > 0
+            and model:GetAttribute("Dying") ~= true
+        then
+            local position = typeof(model:GetAttribute("MoveTarget")) == "Vector3"
+                    and model:GetAttribute("MoveTarget")
+                or model:GetPivot().Position
+            local rel = position - center
+            local alongDot = rel:Dot(along)
+            local depthDot = rel:Dot(depth) * depthSign
+            if
+                math.abs(alongDot) <= halfWidth + 6
+                and depthDot >= -halfDepth
+                and depthDot <= effect.huntRangeStuds
+            then
+                prey[#prey + 1] = {
+                    enemy = enemy,
+                    model = model,
+                    position = position,
+                    alongDot = alongDot,
+                    depthDot = depthDot,
+                }
+            end
+        end
+    end
+    for _, shark in ipairs(sharks) do
+        local targetId = tonumber(shark:GetAttribute("MergeLandSharkHuntTargetId"))
+        local still = false
+        if targetId then
+            for _, item in ipairs(prey) do
+                if tonumber(item.enemy.targetId) == targetId then
+                    claimed[targetId] = shark
+                    still = true
+                    break
+                end
+            end
+        end
+        if not still then
+            self:_clearLandSharkHunt(shark)
+        end
+    end
+    table.sort(sharks, function(a, b)
+        return (tonumber(a:GetAttribute("MergeLandSharkPatrolIndex")) or 0)
+            < (tonumber(b:GetAttribute("MergeLandSharkPatrolIndex")) or 0)
+    end)
+    for _, shark in ipairs(sharks) do
+        local targetId = tonumber(shark:GetAttribute("MergeLandSharkHuntTargetId"))
+        if not targetId then
+            local from = shark:GetAttribute("MergeLandSharkHuntPos")
+            if typeof(from) ~= "Vector3" then
+                from = landSharkWanderPosition(shark, along, depth, center, halfWidth, halfDepth)
+            end
+            local best = landSharkPickPrey(prey, claimed, from, effect.preferBosses)
+            if best then
+                targetId = tonumber(best.enemy.targetId)
+                claimed[targetId] = shark
+                shark:SetAttribute("MergeLandSharkHuntTargetId", targetId)
+                shark:SetAttribute("MergeLandSharkHuntState", "chase")
+                shark:SetAttribute("MergeLandSharkNextBiteAt", now)
+                if typeof(shark:GetAttribute("MergeLandSharkHuntPos")) ~= "Vector3" then
+                    shark:SetAttribute(
+                        "MergeLandSharkHuntPos",
+                        landSharkWanderPosition(shark, along, depth, center, halfWidth, halfDepth)
+                    )
+                end
+            end
+        end
+        if targetId then
+            local item
+            for _, candidate in ipairs(prey) do
+                if tonumber(candidate.enemy.targetId) == targetId then
+                    item = candidate
+                    break
+                end
+            end
+            if item then
+                local lastTick = tonumber(shark:GetAttribute("MergeLandSharkHuntTickAt"))
+                local dt = lastTick and math.clamp(now - lastTick, 0.016, 0.25) or 0.05
+                shark:SetAttribute("MergeLandSharkHuntTickAt", now)
+                local sharkPos = shark:GetAttribute("MergeLandSharkHuntPos")
+                if typeof(sharkPos) ~= "Vector3" then
+                    sharkPos = landSharkWanderPosition(
+                        shark,
+                        along,
+                        depth,
+                        center,
+                        halfWidth,
+                        halfDepth
+                    )
+                end
+                local state = tostring(shark:GetAttribute("MergeLandSharkHuntState") or "chase")
+                if
+                    effect.preferBosses
+                    and state ~= "drag"
+                    and landSharkPreyRank(item) ~= "boss"
+                then
+                    local boss = landSharkPickPrey(prey, claimed, sharkPos, true)
+                    if boss and landSharkPreyRank(boss) == "boss" then
+                        claimed[targetId] = nil
+                        targetId = tonumber(boss.enemy.targetId)
+                        claimed[targetId] = shark
+                        item = boss
+                        shark:SetAttribute("MergeLandSharkHuntTargetId", targetId)
+                        shark:SetAttribute("MergeLandSharkHuntState", "chase")
+                        state = "chase"
+                    end
+                end
+                local planar = Vector3.new(item.position.X - sharkPos.X, 0, item.position.Z - sharkPos.Z)
+                if planar.Magnitude <= effect.grabRangeStuds then
+                    state = "drag"
+                elseif state ~= "drag" then
+                    state = "chase"
+                end
+                shark:SetAttribute("MergeLandSharkHuntState", state)
+                local sink = 0
+                local startY = tonumber(item.model:GetAttribute("MergeLandSharkGrabStartY"))
+                if state == "drag" then
+                    if startY == nil then
+                        startY = item.position.Y
+                        item.model:SetAttribute("MergeLandSharkGrabStartY", startY)
+                        shark:SetAttribute("MergeLandSharkGrabStartedAt", now)
+                        shark:SetAttribute("MergeLandSharkNextBiteAt", now)
+                    end
+                    sink = math.min(
+                        effect.sinkStuds,
+                        (now - (tonumber(shark:GetAttribute("MergeLandSharkGrabStartedAt")) or now))
+                            * 3.5
+                    )
+                    item.model:SetAttribute("DeathStylePreferred", "sink")
+                    item.model:SetAttribute(
+                        "DeathSinkStuds",
+                        math.max(4, effect.sinkStuds - sink + 4)
+                    )
+                    item.model:SetAttribute("MergeLandSharkGrabbedBy", shark.Name)
+                    local pull = item.position
+                    if planar.Magnitude > 1 then
+                        pull = item.position - planar.Unit * math.min(planar.Magnitude, 4)
+                    end
+                    pull = Vector3.new(pull.X, startY - sink, pull.Z)
+                    if self._enemyService and self._enemyService.SetScriptedMove then
+                        self._enemyService:SetScriptedMove(item.model, pull, {
+                            face = sharkPos,
+                            holdSeconds = 1.25,
+                        })
+                    end
+                    local nextBite = tonumber(shark:GetAttribute("MergeLandSharkNextBiteAt")) or 0
+                    if now >= nextBite then
+                        CombatApplication.ApplyDamage(item.model, effect.biteDamage, {
+                            kind = "land_shark_bite",
+                            powerId = "land_shark",
+                            source = shark,
+                            sourcePlayer = record.player,
+                        })
+                        shark:SetAttribute("MergeLandSharkNextBiteAt", now + effect.bitePeriod)
+                    end
+                    item.position = pull
+                else
+                    shark:SetAttribute("MergeLandSharkGrabStartedAt", nil)
+                    item.model:SetAttribute("MergeLandSharkGrabStartY", nil)
+                end
+                local dest = Vector3.new(item.position.X, item.position.Y, item.position.Z)
+                local to = dest - sharkPos
+                local speed = if state == "drag" then 16 else 26
+                if to.Magnitude > 0.05 then
+                    sharkPos = sharkPos + to.Unit * math.min(to.Magnitude, speed * dt)
+                end
+                shark:SetAttribute("MergeLandSharkHuntPos", sharkPos)
+                shark:SetAttribute("MergeLandSharkHuntAim", dest)
+            end
+        end
+    end
+    for _, shark in ipairs(sharks) do
+        if not tonumber(shark:GetAttribute("MergeLandSharkHuntTargetId")) then
+            self:_clearLandSharkHunt(shark)
+        end
+    end
+    if effect.venomDamage > 0 and effect.venomRangeStuds > 0 then
+        local positions = {}
+        for _, shark in ipairs(sharks) do
+            local pos = shark:GetAttribute("MergeLandSharkHuntPos")
+            if typeof(pos) ~= "Vector3" then
+                pos = landSharkWanderPosition(shark, along, depth, center, halfWidth, halfDepth)
+            end
+            positions[#positions + 1] = pos
+        end
+        for _, enemy in ipairs(record.enemies or {}) do
+            local model = enemy.model
+            if
+                model
+                and model.Parent
+                and (tonumber(model:GetAttribute("HP")) or 0) > 0
+                and model:GetAttribute("Dying") ~= true
+            then
+                local position = typeof(model:GetAttribute("MoveTarget")) == "Vector3"
+                        and model:GetAttribute("MoveTarget")
+                    or model:GetPivot().Position
+                local near = false
+                for _, pos in ipairs(positions) do
+                    if Vector3.new(position.X - pos.X, 0, position.Z - pos.Z).Magnitude
+                        <= effect.venomRangeStuds
+                    then
+                        near = true
+                        break
+                    end
+                end
+                if near then
+                    local nextAt = tonumber(model:GetAttribute("MergeLandSharkVenomNextAt" .. suffix)) or 0
+                    if now >= nextAt then
+                        CombatApplication.ApplyDamage(model, effect.venomDamage, {
+                            kind = "land_shark_venom",
+                            powerId = "land_shark",
+                            source = sharks[1],
+                            sourcePlayer = record.player,
+                        })
+                        model:SetAttribute("MergeLandSharkVenomNextAt" .. suffix, now + effect.venomPeriod)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Concertina Line is a lane DoT plus a graded slow. T1 is on-strip only; later tiers linger
+-- after they walk off. T4 stacks while they stay on the wire and does not wear off this wave.
+-- Combat still opens on the gold line — this is bleed, not a stop wall.
+function MergeEggPrototypeService:_tickConcertinaBleed(record, enemy, leadingDistance, now, family, tier, slot)
+    local model = enemy and enemy.model
+    if not (model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0) then
+        return
+    end
+    local suffix = self:_bulwarkSlotSuffix(slot)
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    if not (effect and effect.kind == "bleed_slow") then
+        return
+    end
+    now = tonumber(now) or os.clock()
+    local onStrip = math.abs(tonumber(leadingDistance) or 1e9) <= effect.stripDepthStuds
+    if onStrip then
+        local linger = effect.bleedPermanent == true and 3600 or effect.lingerSeconds
+        model:SetAttribute("MergeConcertinaLingerUntil" .. suffix, now + linger)
+        model:SetAttribute("MergeConcertinaOnStrip" .. suffix, true)
+    else
+        model:SetAttribute("MergeConcertinaOnStrip" .. suffix, false)
+    end
+    local lingerUntil = tonumber(model:GetAttribute("MergeConcertinaLingerUntil" .. suffix)) or 0
+    local active = onStrip or now < lingerUntil
+    if not active then
+        model:SetAttribute("MergeConcertinaBleedStacks" .. suffix, nil)
+        model:SetAttribute("MergeConcertinaNextBleedAt" .. suffix, nil)
+        return
+    end
+
+    local wallClock = os.time()
+    local slowHold = effect.bleedPermanent == true and 30
+        or math.max(1, math.ceil(math.max(effect.lingerSeconds, 1.25)))
+    local slowUntil = wallClock + slowHold
+    local slowLive = (tonumber(model:GetAttribute("SlowUntil")) or 0) > wallClock
+    local currentFactor = slowLive and (tonumber(model:GetAttribute("SlowFactor")) or 1) or 1
+    model:SetAttribute("SlowFactor", math.min(currentFactor, effect.slowFactor))
+    model:SetAttribute(
+        "SlowUntil",
+        math.max(tonumber(model:GetAttribute("SlowUntil")) or 0, slowUntil)
+    )
+    model:SetAttribute(
+        "DebuffUntil",
+        math.max(tonumber(model:GetAttribute("DebuffUntil")) or 0, slowUntil)
+    )
+    model:SetAttribute("DebuffPowerId", "concertina_line")
+
+    local nextBleed = tonumber(model:GetAttribute("MergeConcertinaNextBleedAt" .. suffix)) or 0
+    if now < nextBleed then
+        return
+    end
+    local stacks = 1
+    if effect.bleedStacks then
+        local held = math.max(1, tonumber(model:GetAttribute("MergeConcertinaBleedStacks" .. suffix)) or 1)
+        if onStrip then
+            local previous = tonumber(model:GetAttribute("MergeConcertinaBleedStacks" .. suffix))
+            stacks = math.min(effect.stackCap, (previous or 0) + 1)
+        else
+            stacks = held
+        end
+        model:SetAttribute("MergeConcertinaBleedStacks" .. suffix, stacks)
+    end
+    CombatApplication.ApplyDamage(model, effect.bleedDamage * stacks, {
+        kind = "concertina_bleed",
+        powerId = "concertina_line",
+        sourcePlayer = record.player,
+        playerPetKillUserId = nil,
+    })
+    model:SetAttribute("MergeConcertinaNextBleedAt" .. suffix, now + effect.bleedPeriod)
+    model:SetAttribute("BurnElement", "lava")
+    model:SetAttribute("BurnFxUntil", wallClock + math.max(2, math.ceil(effect.bleedPeriod + 1)))
+end
+
+-- Saw Blade is pure shred: rapid high damage on the deck, no slow, no linger, no stop.
+-- Combat still opens on the gold line. Each tick pulses the client cube spray.
+function MergeEggPrototypeService:_tickSawBladeShred(record, enemy, leadingDistance, now, family, tier, slot)
+    local model = enemy and enemy.model
+    if not (model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0) then
+        return
+    end
+    local suffix = self:_bulwarkSlotSuffix(slot)
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    if not (effect and effect.kind == "shred_line") then
+        return
+    end
+    now = tonumber(now) or os.clock()
+    local onStrip = math.abs(tonumber(leadingDistance) or 1e9) <= effect.stripDepthStuds
+    if not onStrip then
+        model:SetAttribute("MergeSawNextShredAt" .. suffix, nil)
+        return
+    end
+    local nextShred = tonumber(model:GetAttribute("MergeSawNextShredAt" .. suffix)) or 0
+    if now < nextShred then
+        return
+    end
+    CombatApplication.ApplyDamage(model, effect.shredDamage, {
+        kind = "saw_blade_shred",
+        powerId = "saw_blade",
+        sourcePlayer = record.player,
+        playerPetKillUserId = nil,
+    })
+    model:SetAttribute("MergeSawNextShredAt" .. suffix, now + effect.shredPeriod)
+    model:SetAttribute("MergeSawShredChunks", effect.chunkCount)
+    model:SetAttribute(
+        "MergeSawShredPulse",
+        (tonumber(model:GetAttribute("MergeSawShredPulse")) or 0) + 1
+    )
+    if now >= (record.nextSawHitSoundAt or 0) then
+        local position = model:GetAttribute("MoveTarget")
+        if typeof(position) ~= "Vector3" then
+            position = model:GetPivot().Position
+        end
+        self:_playSawBladeImpact(position, record.world)
+        record.nextSawHitSoundAt = now + 0.28
+    end
+end
+
+-- Grasping Hedge roots the front of the wave (feet stuck, hands free) and slows the pile.
+-- The root is timed, never refreshed, never HeldUntil. After it expires they must leave
+-- the hedge before another grab — walking back in roots them again. Not a lifetime counter.
+function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, leadAttr, slot)
+    if not (record and family == "grasping_hedge") then
+        return
+    end
+    local suffix = self:_bulwarkSlotSuffix(slot)
+    local grabbedAttr = "MergeHedgeGrabbed" .. suffix
+    local exitAttr = "MergeHedgeNeedsExit" .. suffix
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    if not (effect and effect.kind == "grab_root") then
+        return
+    end
+    now = tonumber(now) or os.clock()
+    local wallClock = os.time()
+    local onStrip = {}
+    for _, enemy in ipairs(record.enemies or {}) do
+        local model = enemy.model
+        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
+            local lead = tonumber(model:GetAttribute(leadAttr or "MergeEggBulwarkLeadingDistance"))
+            local depth = math.abs(lead or 1e9)
+            local inside = lead ~= nil and depth <= effect.stripDepthStuds
+            -- Exit is march-axis only (leadingDistance). They must clear the strip plus a
+            -- buffer so a lateral shuffle or one-stud flicker is not a new grab.
+            local trulyOut = lead ~= nil and depth > effect.stripDepthStuds + effect.exitBufferStuds
+            if trulyOut then
+                model:SetAttribute(exitAttr, nil)
+                if
+                    model:GetAttribute(grabbedAttr) == true
+                    and (tonumber(model:GetAttribute("RootedUntil")) or 0) <= wallClock
+                then
+                    model:SetAttribute(grabbedAttr, false)
+                end
+            elseif inside then
+                onStrip[#onStrip + 1] = { model = model, lead = lead }
+            elseif
+                model:GetAttribute(grabbedAttr) == true
+                and (tonumber(model:GetAttribute("RootedUntil")) or 0) <= wallClock
+            then
+                model:SetAttribute(grabbedAttr, false)
+                model:SetAttribute(exitAttr, true)
+            end
+        end
+    end
+    table.sort(onStrip, function(a, b)
+        return a.lead > b.lead
+    end)
+
+    local slowUntil = wallClock + math.max(1, math.ceil(effect.slowSeconds))
+    for _, item in ipairs(onStrip) do
+        local model = item.model
+        local slowLive = (tonumber(model:GetAttribute("SlowUntil")) or 0) > wallClock
+        local current = slowLive and (tonumber(model:GetAttribute("SlowFactor")) or 1) or 1
+        model:SetAttribute("SlowFactor", math.min(current, effect.slowFactor))
+        model:SetAttribute(
+            "SlowUntil",
+            math.max(tonumber(model:GetAttribute("SlowUntil")) or 0, slowUntil)
+        )
+        if model:GetAttribute("DebuffPowerId") ~= "grasping_hedge" then
+            model:SetAttribute("DebuffPowerId", "grasping_hedge")
+        end
+        model:SetAttribute(
+            "DebuffUntil",
+            math.max(tonumber(model:GetAttribute("DebuffUntil")) or 0, slowUntil)
+        )
+    end
+
+    local held = 0
+    for _, item in ipairs(onStrip) do
+        local model = item.model
+        if model:GetAttribute(grabbedAttr) == true then
+            if (tonumber(model:GetAttribute("RootedUntil")) or 0) <= wallClock then
+                model:SetAttribute(grabbedAttr, false)
+                model:SetAttribute(exitAttr, true)
+            else
+                held += 1
+            end
+        end
+    end
+
+    for _, item in ipairs(onStrip) do
+        if held >= effect.grabCount then
+            break
+        end
+        local model = item.model
+        if model:GetAttribute(exitAttr) == true or model:GetAttribute(grabbedAttr) == true then
+            continue
+        end
+        local untilTime = wallClock + effect.rootSeconds
+        model:SetAttribute("RootedUntil", untilTime)
+        model:SetAttribute(grabbedAttr, true)
+        model:SetAttribute(exitAttr, nil)
+        model:SetAttribute("DebuffUntil", math.max(tonumber(model:GetAttribute("DebuffUntil")) or 0, untilTime))
+        model:SetAttribute("DebuffPowerId", "grasping_hedge")
+        if effect.venomDamage > 0 and effect.venomDuration > 0 then
+            local clk = now
+            model:SetAttribute(
+                "DotPerTick",
+                math.max(tonumber(model:GetAttribute("DotPerTick")) or 0, effect.venomDamage)
+            )
+            model:SetAttribute("DotInterval", effect.venomPeriod)
+            model:SetAttribute("DotNextTick", clk + effect.venomPeriod)
+            model:SetAttribute("DotPermanent", false)
+            model:SetAttribute("DotExpireAt", clk + effect.venomDuration)
+            model:SetAttribute("DotDuration", effect.venomDuration)
+            model:SetAttribute("BurnFxUntil", wallClock + math.ceil(effect.venomDuration))
+            local player = record.player
+            if player then
+                model:SetAttribute("DotSourceUserId", player.UserId)
+            end
+            model:SetAttribute("DotPlayerPetKillUserId", nil)
+            model:SetAttribute("BurnElement", "grass")
+        end
+        held += 1
+    end
+end
+
 -- Impaler Palisade spends one no-damage shove before the marcher may cross. Combat stays closed
 -- until the last bounce is used so the wall is a stop, not a damage farm.
-function MergeEggPrototypeService:_tryPalisadeStop(record, enemy, towardGate)
+function MergeEggPrototypeService:_tryPalisadeStop(record, enemy, towardGate, family, tier, slot)
     local model = enemy and enemy.model
     if not (model and model.Parent and towardGate and towardGate.Magnitude > 0.05) then
         return false
     end
-    if model:GetAttribute("MergeEggBulwarkBreached") == true then
+    slot = MergeBulwarkProgression.normalizeSlot(slot)
+    local slotDef = MergeBulwarkSlots.get(slot)
+    if
+        slotDef
+        and slotDef.combatPlane == "bulwark"
+        and model:GetAttribute("MergeEggBulwarkBreached") == true
+    then
         return false
     end
-    local effect = MergeBulwarkProgression.combatEffect(
-        record.bulwarkFamily,
-        record.bulwarkTier,
-        self:_edgeBulwarkConfig()
-    )
+    local suffix = self:_bulwarkSlotSuffix(slot)
+    local chargesAttr = "MergeEggPalisadeCharges" .. suffix
+    local exitAttr = "MergeEggPalisadeNeedsExit" .. suffix
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
     if not (effect and effect.kind == "stop_shove") then
         return false
     end
     -- A successful bounce leaves them overlapping the plane for a few frames. Hold the
     -- breach open until they walk back off the line (cleared in the approach tick).
-    if model:GetAttribute("MergeEggPalisadeNeedsExit") == true then
+    if model:GetAttribute(exitAttr) == true then
         return true
     end
-    local remaining = tonumber(model:GetAttribute("MergeEggPalisadeCharges"))
+    local remaining = tonumber(model:GetAttribute(chargesAttr))
     if remaining == nil then
         remaining = effect.charges
-        model:SetAttribute("MergeEggPalisadeCharges", remaining)
+        model:SetAttribute(chargesAttr, remaining)
     end
     if remaining <= 0 then
         return false
@@ -8947,17 +10242,54 @@ function MergeEggPrototypeService:_tryPalisadeStop(record, enemy, towardGate)
             == true
     end
     if not shoved then
-        model:SetAttribute("MergeEggPalisadeCharges", 0)
+        model:SetAttribute(chargesAttr, 0)
         return false
     end
     remaining -= 1
-    model:SetAttribute("MergeEggPalisadeCharges", remaining)
-    model:SetAttribute("MergeEggPalisadeNeedsExit", true)
+    model:SetAttribute(chargesAttr, remaining)
+    model:SetAttribute(exitAttr, true)
     if effect.rootSeconds > 0 then
         local untilTime = os.time() + effect.rootSeconds
         model:SetAttribute("RootedUntil", untilTime)
         model:SetAttribute("DebuffUntil", untilTime)
         model:SetAttribute("DebuffPowerId", "impaler_palisade")
+    end
+    if effect.venomDamage > 0 then
+        local clk = os.clock()
+        local permanent = effect.venomPermanent == true
+        model:SetAttribute(
+            "DotPerTick",
+            math.max(tonumber(model:GetAttribute("DotPerTick")) or 0, effect.venomDamage)
+        )
+        model:SetAttribute("DotInterval", effect.venomPeriod)
+        model:SetAttribute("DotNextTick", clk + effect.venomPeriod)
+        model:SetAttribute("DotPermanent", permanent)
+        if permanent then
+            model:SetAttribute("DotExpireAt", 0)
+            model:SetAttribute("DotDuration", 0)
+            model:SetAttribute("BurnFxUntil", os.time() + 30)
+        else
+            local duration = math.max(0.5, tonumber(effect.venomDuration) or 4)
+            model:SetAttribute("DotExpireAt", clk + duration)
+            model:SetAttribute("DotDuration", duration)
+            model:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration))
+        end
+        local player = record and record.player
+        if player then
+            model:SetAttribute("DotSourceUserId", player.UserId)
+        end
+        model:SetAttribute("DotPlayerPetKillUserId", nil)
+        model:SetAttribute("BurnElement", "grass")
+        if
+            effect.contagionHops > 0
+            and (tonumber(model:GetAttribute("ContagionSpreadAt")) or 0) <= 0
+        then
+            model:SetAttribute("ContagionSpreadAt", clk + effect.contagionInterval)
+            model:SetAttribute("ContagionLeft", effect.contagionHops)
+            model:SetAttribute("ContagionRadius", effect.contagionRadius)
+            model:SetAttribute("ContagionInterval", effect.contagionInterval)
+            model:SetAttribute("ContagionMax", effect.contagionHops)
+        end
     end
     -- This contact was spent as a bounce. Combat opens on the next crossing, not this one.
     return true
@@ -9073,17 +10405,32 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     if not finishLine then
         return
     end
-    local bulwarkLine =
-        findNamedPart(record.world, (self._config.world or {}).bulwark_line or "BulwarkLine")
-    local breachLine =
-        findNamedPart(record.world, (self._config.world or {}).breach_line or "BreachLine")
-    local towardFinish = bulwarkLine
+    local worldCfg = self._config.world or {}
+    local combatPlanes = {}
+    local marchLine = nil
+    for _, plane in ipairs(MergeBulwarkSlots.combatPlanes()) do
+        local line = findNamedPart(record.world, worldCfg[plane.lineConfigKey] or plane.lineDefault)
+        combatPlanes[plane.id] = {
+            def = plane,
+            line = line,
+        }
+        if plane.id == "bulwark" then
+            marchLine = line
+        end
+    end
+    local slotLines = {}
+    for _, def in ipairs(MergeBulwarkSlots.all()) do
+        local name = MergeBulwarkSlots.stripLineName(def, worldCfg)
+        slotLines[def.id] = name and findNamedPart(record.world, name) or nil
+    end
+    local towardFinish = marchLine
             and Vector3.new(
-                finishLine.Position.X - bulwarkLine.Position.X,
+                finishLine.Position.X - marchLine.Position.X,
                 0,
-                finishLine.Position.Z - bulwarkLine.Position.Z
+                finishLine.Position.Z - marchLine.Position.Z
             )
         or Vector3.zero
+    local bulwarkState = self:_normalizeBulwarkState(record)
     local alertDistance = math.max(1, tonumber(cfg.engagement_distance) or 260)
     local alertThreat = math.max(1, tonumber(cfg.engagement_threat) or 250)
     local reengageSeconds = math.max(0.25, tonumber(cfg.reengage_seconds) or 1)
@@ -9141,79 +10488,145 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     end
                 end
             end
-            if bulwarkLine and towardFinish.Magnitude > 0 then
+            if marchLine and towardFinish.Magnitude > 0 then
                 local direction = towardFinish.Unit
                 local pivotPosition = model:GetPivot().Position
                 local movementPosition = typeof(position) == "Vector3" and position or pivotPosition
                 local leadingPosition, boundsExtent =
                     leadingBoundsPoint(model, movementPosition, direction)
                 leadingPosition = leadingPosition or movementPosition
-                local fromBulwark = Vector3.new(
-                    leadingPosition.X - bulwarkLine.Position.X,
-                    0,
-                    leadingPosition.Z - bulwarkLine.Position.Z
-                )
-                local leadingDistance = fromBulwark:Dot(direction)
-                local pivotDistance = Vector3.new(
-                    pivotPosition.X - bulwarkLine.Position.X,
-                    0,
-                    pivotPosition.Z - bulwarkLine.Position.Z
-                ):Dot(direction)
-                local movementDistance = Vector3.new(
-                    movementPosition.X - bulwarkLine.Position.X,
-                    0,
-                    movementPosition.Z - bulwarkLine.Position.Z
-                ):Dot(direction)
-                model:SetAttribute("MergeEggBulwarkLeadingDistance", leadingDistance)
-                model:SetAttribute("MergeEggBulwarkMovementDistance", movementDistance)
-                model:SetAttribute("MergeEggBulwarkPivotDistance", pivotDistance)
-                model:SetAttribute("MergeEggBulwarkBoundsExtent", boundsExtent)
                 local contactPadding = math.max(0, tonumber(cfg.bulwark_contact_padding) or 1)
-                local pastBulwark = leadingDistance + contactPadding >= 0
-                if pastBulwark then
-                    enemiesPastBulwark += 1
-                elseif model:GetAttribute("MergeEggPalisadeNeedsExit") == true then
-                    model:SetAttribute("MergeEggPalisadeNeedsExit", nil)
+                local planeDistance = {}
+                for _, plane in ipairs(MergeBulwarkSlots.combatPlanes()) do
+                    local entry = combatPlanes[plane.id]
+                    if entry and entry.line then
+                        local distance = Vector3.new(
+                            leadingPosition.X - entry.line.Position.X,
+                            0,
+                            leadingPosition.Z - entry.line.Position.Z
+                        ):Dot(direction)
+                        planeDistance[plane.id] = distance
+                        model:SetAttribute(plane.distanceAttr, distance)
+                        if plane.writeApproachDebug == true then
+                            model:SetAttribute(
+                                "MergeEggBulwarkMovementDistance",
+                                Vector3.new(
+                                    movementPosition.X - entry.line.Position.X,
+                                    0,
+                                    movementPosition.Z - entry.line.Position.Z
+                                ):Dot(direction)
+                            )
+                            model:SetAttribute(
+                                "MergeEggBulwarkPivotDistance",
+                                Vector3.new(
+                                    pivotPosition.X - entry.line.Position.X,
+                                    0,
+                                    pivotPosition.Z - entry.line.Position.Z
+                                ):Dot(direction)
+                            )
+                            model:SetAttribute("MergeEggBulwarkBoundsExtent", boundsExtent)
+                        end
+                    end
                 end
-                if pastBulwark and model:GetAttribute("MergeEggBulwarkBreached") ~= true then
-                    local towardGate = -direction
-                    if not self:_tryPalisadeStop(record, enemy, towardGate) then
+                local stoppedOnPlane = {}
+                for _, def in ipairs(MergeBulwarkSlots.all()) do
+                    local line = slotLines[def.id]
+                    if line then
+                        local distance = Vector3.new(
+                            leadingPosition.X - line.Position.X,
+                            0,
+                            leadingPosition.Z - line.Position.Z
+                        ):Dot(direction)
+                        local stripAttr = MergeBulwarkSlots.stripDistanceAttr(def)
+                        if stripAttr and planeDistance[def.combatPlane] == nil then
+                            model:SetAttribute(stripAttr, distance)
+                        end
+                        local family, tier = MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+                        self:_tickConcertinaBleed(
+                            record,
+                            enemy,
+                            distance,
+                            now,
+                            family,
+                            tier,
+                            def.id
+                        )
+                        self:_tickSawBladeShred(record, enemy, distance, now, family, tier, def.id)
+                        local past = distance + contactPadding >= 0
+                        local exitAttr = "MergeEggPalisadeNeedsExit"
+                            .. self:_bulwarkSlotSuffix(def.id)
+                        local stopped = false
+                        if past then
+                            stopped = self:_tryPalisadeStop(
+                                record,
+                                enemy,
+                                -direction,
+                                family,
+                                tier,
+                                def.id
+                            ) == true
+                        elseif model:GetAttribute(exitAttr) == true then
+                            model:SetAttribute(exitAttr, nil)
+                        end
+                        if stopped and def.combatPlane then
+                            stoppedOnPlane[def.combatPlane] = true
+                        end
+                    end
+                end
+                local bulwarkDist = planeDistance.bulwark
+                if bulwarkDist ~= nil then
+                    local pastBulwark = bulwarkDist + contactPadding >= 0
+                    if pastBulwark then
+                        enemiesPastBulwark += 1
+                    end
+                    if
+                        pastBulwark
+                        and not stoppedOnPlane.bulwark
+                        and model:GetAttribute("MergeEggBulwarkBreached") ~= true
+                    then
                         self:_openBulwarkTarget(record, enemy, now)
                     end
                 end
-                if breachLine then
-                    local breachDistance = Vector3.new(
-                        leadingPosition.X - breachLine.Position.X,
-                        0,
-                        leadingPosition.Z - breachLine.Position.Z
-                    ):Dot(direction)
-                    model:SetAttribute("MergeEggBreachLineDistance", breachDistance)
-                    local pastBreachLine = breachDistance + contactPadding >= 0
+                local breachDist = planeDistance.breach
+                if breachDist ~= nil then
+                    local pastBreachLine = breachDist + contactPadding >= 0
+                        and not stoppedOnPlane.breach
                     if pastBreachLine then
                         enemiesPastBreachLine += 1
                         model:SetAttribute("MergeEggCanAttackObjective", true)
-                    end
-                    if
-                        pastBreachLine
-                        and model:GetAttribute("MergeEggBreachLineCrossed") ~= true
-                    then
-                        model:SetAttribute("MergeEggBreachLineCrossed", true)
-                        record.breached = (record.breached or 0) + 1
-                        record.firstBreachWave = record.firstBreachWave or record.waveIndex
-                        self:_triggerAllEggHealDenial(record, "breach", now)
-                        self:_log("Info", "Merge Egg prototype breach line crossed", {
-                            player = record.player.Name,
-                            wave = record.waveIndex,
-                            enemy = model.Name,
-                            assignedTeam = enemy.teamId,
-                            distance = breachDistance,
-                        })
+                        if model:GetAttribute("MergeEggBreachLineCrossed") ~= true then
+                            model:SetAttribute("MergeEggBreachLineCrossed", true)
+                            record.breached = (record.breached or 0) + 1
+                            record.firstBreachWave = record.firstBreachWave or record.waveIndex
+                            self:_triggerAllEggHealDenial(record, "breach", now)
+                            self:_retargetEnemyToEggs(record, enemy)
+                            self:_log("Info", "Merge Egg prototype breach line crossed", {
+                                player = record.player.Name,
+                                wave = record.waveIndex,
+                                enemy = model.Name,
+                                assignedTeam = enemy.teamId,
+                                distance = breachDist,
+                            })
+                        end
                     end
                 end
             end
             self:_sustainBulwarkTarget(record, enemy, now)
             self:_traceBulwarkAggro(record, enemy, now)
         end
+    end
+    local towardGate = towardFinish.Magnitude > 0 and -towardFinish.Unit or nil
+    for _, def in ipairs(MergeBulwarkSlots.all()) do
+        local family, tier = MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+        self:_tickLandSharkHunt(record, towardGate, family, tier, def.id)
+        self:_tickGraspingHedge(
+            record,
+            now,
+            family,
+            tier,
+            MergeBulwarkSlots.stripDistanceAttr(def),
+            def.id
+        )
     end
     self:_reinforceIdleTeams(record, now)
     local overrunMinimum = math.max(1, math.floor(tonumber(cfg.breach_overrun_minimum) or 4))
@@ -10276,11 +11689,7 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
         end
     end
 
-    local bulwarkState = MergeBulwarkProgression.normalize({
-        family = progress and progress.bulwark_family,
-        tier = progress and progress.bulwark_tier,
-        owned = progress and progress.bulwark_owned,
-    }, self:_edgeBulwarkConfig().maximum_tier)
+    local bulwarkState = self:_normalizeBulwarkState(progress)
     local spawnedBulwarks = 0
     local bulwarkFolder = world and world:FindFirstChild("MergeEggBulwarks")
     for _, child in ipairs(bulwarkFolder and bulwarkFolder:GetChildren() or {}) do
@@ -10326,6 +11735,9 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
             bulwarkInstalled = bulwarkState.family ~= nil,
             bulwarkFamily = bulwarkState.family,
             bulwarkTier = bulwarkState.tier,
+            eggBulwarkInstalled = bulwarkState.eggFamily ~= nil,
+            eggBulwarkFamily = bulwarkState.eggFamily,
+            eggBulwarkTier = bulwarkState.eggTier,
             bulwarkVisuals = spawnedBulwarks,
         }
 end
@@ -11023,24 +12435,22 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     if record.bulwarkActionInProgress == true then
         return false, "bulwark_action_in_progress"
     end
-    local accessOk, accessReason = self:_canUseBulwarkMenu(player)
+    local request = type(request) == "table" and request or {}
+    local slot = MergeBulwarkProgression.normalizeSlot(request.slot)
+    local accessOk, accessReason = self:_canUseBulwarkMenu(player, slot)
     if not accessOk then
         return false, accessReason
     end
-    request = type(request) == "table" and request or {}
     local cfg = self:_edgeBulwarkConfig()
     local requestedAction = tostring(request.bulwarkAction or "")
-    local before = MergeBulwarkProgression.normalize({
-        family = record.bulwarkFamily,
-        tier = record.bulwarkTier,
-        owned = record.bulwarkOwned,
-    }, cfg.maximum_tier)
+    local before = self:_normalizeBulwarkState(record)
     local nextState, progressionReason = MergeBulwarkProgression.apply(
         before,
         requestedAction,
         request.family,
         record.waveIndex,
-        cfg
+        cfg,
+        slot
     )
     if not nextState then
         return false, progressionReason
@@ -11052,11 +12462,7 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     if not progress then
         return false, "profile_unavailable"
     end
-    local durableBefore = MergeBulwarkProgression.normalize({
-        family = progress.bulwark_family,
-        tier = progress.bulwark_tier,
-        owned = progress.bulwark_owned,
-    }, cfg.maximum_tier)
+    local durableBefore = self:_normalizeBulwarkState(progress)
     if
         MergeBulwarkProgression.signature(durableBefore)
         ~= MergeBulwarkProgression.signature(before)
@@ -11077,28 +12483,16 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
             if
                 not self:_isRecordActive(record)
                 or record.terminal == true
-                or MergeBulwarkProgression.signature({
-                    family = record.bulwarkFamily,
-                    tier = record.bulwarkTier,
-                    owned = record.bulwarkOwned,
-                }) ~= MergeBulwarkProgression.signature(before)
-                or MergeBulwarkProgression.signature({
-                        family = progress.bulwark_family,
-                        tier = progress.bulwark_tier,
-                        owned = progress.bulwark_owned,
-                    })
+                or MergeBulwarkProgression.signature(self:_bulwarkPersistInput(record))
+                    ~= MergeBulwarkProgression.signature(before)
+                or MergeBulwarkProgression.signature(self:_bulwarkPersistInput(progress))
                     ~= MergeBulwarkProgression.signature(durableBefore)
             then
                 commitFailure = "bulwark_state_changed"
                 return false
             end
-            record.bulwarkFamily = nextState.family
-            record.bulwarkTier = nextState.tier
-            record.bulwarkOwned = table.clone(nextState.owned or {})
+            self:_writeBulwarkState(record, progress, nextState)
             record.bulwarkWaycoinsSpent = (record.bulwarkWaycoinsSpent or 0) + charged
-            progress.bulwark_family = nextState.family
-            progress.bulwark_tier = nextState.tier
-            progress.bulwark_owned = table.clone(nextState.owned or {})
             progress.bulwark_waycoins_spent = math.max(
                 0,
                 math.floor(tonumber(progress.bulwark_waycoins_spent) or 0)
@@ -11126,11 +12520,13 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     self:_log("Info", "Merge Egg bulwark changed", {
         player = player.Name,
         operation = nextState.operation,
+        slot = slot,
         family = nextState.family,
+        eggFamily = nextState.eggFamily,
         tier = nextState.tier,
         cost = charged,
     })
-    local menuState = self:_bulwarkMenuState(record)
+    local menuState = self:_bulwarkMenuState(record, slot)
     menuState.operation = nextState.operation
     return true, menuState
 end
