@@ -434,6 +434,66 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
     return nil
 end
 
+local POWER_FIELDS = { "venomDamage", "bleedDamage", "biteDamage", "shredDamage" }
+local RADIUS_FIELDS = {
+    "contagionRadius",
+    "stripDepthStuds",
+    "huntRangeStuds",
+    "grabRangeStuds",
+    "venomRangeStuds",
+    "exitBufferStuds",
+}
+local CADENCE_FIELDS = {
+    "venomPeriod",
+    "contagionInterval",
+    "bleedPeriod",
+    "bitePeriod",
+    "shredPeriod",
+}
+local DURATION_FIELDS = { "rootSeconds", "lingerSeconds", "slowSeconds", "venomDuration" }
+local CAPACITY_FIELDS = {
+    "charges",
+    "contagionHops",
+    "stackCap",
+    "sharkCount",
+    "chunkCount",
+    "grabCount",
+}
+local CONTROL_FIELDS = { "shoveStuds", "sinkStuds" }
+
+local function scaleFields(result, keys, multiplier, inverse, wholeNumbers)
+    multiplier = tonumber(multiplier) or 1
+    multiplier = inverse and math.max(0.001, multiplier) or math.max(0, multiplier)
+    for _, key in ipairs(keys) do
+        local value = tonumber(result[key])
+        if value ~= nil then
+            local scaled = inverse and value / multiplier or value * multiplier
+            result[key] = wholeNumbers and math.max(0, math.floor(scaled + 0.5)) or scaled
+        end
+    end
+end
+
+-- Apply rebirth axes after tier tuning. Every numeric combat output belongs to an explicit axis;
+-- callers can grow damage without accidentally widening fields or accelerating control loops.
+function MergeBulwarkProgression.scaleCombatEffect(effect, multipliers)
+    if type(effect) ~= "table" then
+        return effect
+    end
+    multipliers = type(multipliers) == "table" and multipliers or {}
+    local result = table.clone(effect)
+    scaleFields(result, POWER_FIELDS, multipliers.power, false, false)
+    scaleFields(result, RADIUS_FIELDS, multipliers.radius, false, false)
+    scaleFields(result, CADENCE_FIELDS, multipliers.cadence, true, false)
+    scaleFields(result, DURATION_FIELDS, multipliers.duration, false, false)
+    scaleFields(result, CAPACITY_FIELDS, multipliers.capacity, false, true)
+    scaleFields(result, CONTROL_FIELDS, multipliers.control, false, false)
+    if tonumber(result.slowFactor) ~= nil then
+        local control = math.max(0, tonumber(multipliers.control) or 1)
+        result.slowFactor = math.clamp(1 - (1 - result.slowFactor) * control, 0, 1)
+    end
+    return result
+end
+
 local function withInstalls(owned, installs, extra)
     extra = type(extra) == "table" and extra or {}
     local state = decorateState(owned, installs)

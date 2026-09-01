@@ -6887,3 +6887,14 @@ first-session cohort rates.
 - Added source hashes, an alpha contact sheet, config/headless coverage, and a CI registry check so a
   missing PNG, wrong dimensions/color type, changed hash, duplicate ID, or stale generated config
   fails the gate.
+
+## 2026-09-01 — Rebirth scales defenses and enemy payouts from config
+
+- Replaced the pet-only rebirth knob with `rebirth.per_rebirth_factors`, an additive config map for
+  pets, cannons, bulwarks, Waycoins, and Gems. Rank 2/3 now resolve to 2x/3x pet power, cannon heal
+  power, bulwark damage, enemy Waycoin amounts, and enemy Gem amounts.
+- Cannon and bulwark radii are explicitly fixed at 1x. Cannon cadence, bulwark cadence/duration/
+  capacity/control, and Gem drop chance also start at 1x so the first rollout grows output without
+  silently widening fields or creating control-lock and drop-rate inflation.
+- Runtime world attributes expose every live multiplier, and pure headless coverage locks the
+  additive factor semantics plus the no-radius-growth policy.

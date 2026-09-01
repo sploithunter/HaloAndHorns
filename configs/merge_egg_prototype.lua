@@ -1643,9 +1643,11 @@ return {
     -- Rank 4 price yet. A future pass may add
     -- minimum deployed-egg tiers per rank through the empty requirements list below. Rebirth keeps
     -- permanent player progression and Gem upgrades, resets the active Merge run and wallet, and
-    -- adds +100% of base allied Merge damage per rank without compounding. Rebirth percentage and
-    -- the Gem damage-upgrade percentage share one additive pool (for example +100% and +45% =
-    -- 2.45x total), scoped strictly to Merge Defense.
+    -- scales pets, defenses, and enemy currency payouts without compounding. A factor of 2 means
+    -- 2x at Rank 2 and 3x at Rank 3; a factor of 1 is an explicit no-change policy. Cannon and
+    -- bulwark radii begin at 1x because increasing spatial coverage at every rebirth would get out
+    -- of hand quickly. Rebirth pet power and the Gem damage-upgrade percentage share one additive
+    -- pool (for example +100% and +45% = 2.45x total), scoped strictly to Merge Defense.
     rebirth = {
         enabled = true,
         scope = "merge_defense_only",
@@ -1658,9 +1660,34 @@ return {
             minimum_deployed_egg_tier_by_rank = {},
         },
         cost_multiplier_per_rebirth = 1,
-        allied_damage_bonus_per_rebirth = 1,
         damage_stacking = "additive",
         management_damage_stacking = "additive",
+        per_rebirth_factors = {
+            stacking = "additive",
+            pets = {
+                power = 2,
+            },
+            cannons = {
+                power = 2,
+                radius = 1,
+                cadence = 1,
+            },
+            bulwarks = {
+                power = 2,
+                radius = 1,
+                cadence = 1,
+                duration = 1,
+                capacity = 1,
+                control = 1,
+            },
+            coins = {
+                amount = 2,
+            },
+            gems = {
+                amount = 2,
+                chance = 1,
+            },
+        },
         minimum_cost = 1,
         minimum_drop = 1,
         resets = { "wave", "checkpoint", "board", "deployed_eggs", "merge_wallet" },

@@ -719,12 +719,26 @@ function MergeEggPrototypeService:_rebirthStatus(record)
     local price = MergeEggRebirth.nextCost(config, count)
     local requirementMet, minimumTier =
         MergeEggRebirth.requirementMet(config, count, self:_lowestDeployedEggTier(record))
+    local scaling = {}
+    for _, definition in ipairs({
+        { key = "cannonPower", system = "cannons", axis = "power" },
+        { key = "cannonRadius", system = "cannons", axis = "radius" },
+        { key = "bulwarkPower", system = "bulwarks", axis = "power" },
+        { key = "bulwarkRadius", system = "bulwarks", axis = "radius" },
+        { key = "coinAmount", system = "coins", axis = "amount" },
+        { key = "gemAmount", system = "gems", axis = "amount" },
+        { key = "gemChance", system = "gems", axis = "chance" },
+    }) do
+        scaling[definition.key] =
+            MergeEggRebirth.scalingMultiplier(config, count, definition.system, definition.axis)
+    end
     return {
         count = count,
         rank = MergeEggRebirth.rankForCount(count),
         price = price,
         maxed = price == nil,
         damageMultiplier = MergeEggRebirth.damageMultiplier(config, count),
+        scaling = scaling,
         requirementMet = requirementMet,
         minimumDeployedTier = minimumTier,
     }
@@ -3249,6 +3263,27 @@ function MergeEggPrototypeService:_edgeBulwarkConfig()
     return type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
 end
 
+function MergeEggPrototypeService:_rebirthScalingMultiplier(record, system, axis)
+    return MergeEggRebirth.scalingMultiplier(
+        self._config.rebirth,
+        record and record.rebirthCount,
+        system,
+        axis
+    )
+end
+
+function MergeEggPrototypeService:_bulwarkCombatEffect(record, family, tier)
+    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    return MergeBulwarkProgression.scaleCombatEffect(effect, {
+        power = self:_rebirthScalingMultiplier(record, "bulwarks", "power"),
+        radius = self:_rebirthScalingMultiplier(record, "bulwarks", "radius"),
+        cadence = self:_rebirthScalingMultiplier(record, "bulwarks", "cadence"),
+        duration = self:_rebirthScalingMultiplier(record, "bulwarks", "duration"),
+        capacity = self:_rebirthScalingMultiplier(record, "bulwarks", "capacity"),
+        control = self:_rebirthScalingMultiplier(record, "bulwarks", "control"),
+    })
+end
+
 function MergeEggPrototypeService:_normalizeBulwarkState(source)
     return MergeBulwarkPersist.read(source, self:_edgeBulwarkConfig())
 end
@@ -3480,26 +3515,29 @@ function MergeEggPrototypeService:_towerListedNumber(list, tier, fallback)
     return value
 end
 
-function MergeEggPrototypeService:_towerFireInterval(cannon, shot)
+function MergeEggPrototypeService:_towerFireInterval(record, cannon, shot)
     shot = type(shot) == "table" and shot or {}
     local role = string.lower(tostring(cannon and cannon:GetAttribute("MergeTowerRole") or ""))
     local spec = type(shot.landing) == "table" and shot.landing[role] or nil
     local interval =
         self:_towerListedNumber(spec and spec.interval, self:_towerTierIndex(cannon), shot.interval)
     return requiredConfigNumber(interval, "team.edge_towers.shot interval")
+        / self:_rebirthScalingMultiplier(record, "cannons", "cadence")
 end
 
-function MergeEggPrototypeService:_towerHealMagnitude(cannon)
+function MergeEggPrototypeService:_towerHealMagnitude(record, cannon)
     local spec, _ = self:_towerLandingSpec("heal")
     local listed =
         self:_towerListedNumber(spec and spec.magnitude, self:_towerTierIndex(cannon), nil)
     return requiredConfigNumber(listed, "team.edge_towers.shot.landing.heal.magnitude")
+        * self:_rebirthScalingMultiplier(record, "cannons", "power")
 end
 
-function MergeEggPrototypeService:_towerRageRadius(cannon)
+function MergeEggPrototypeService:_towerRageRadius(record, cannon)
     local spec = self:_towerLandingSpec("rage")
     local listed = self:_towerListedNumber(spec and spec.radius, self:_towerTierIndex(cannon), nil)
     return requiredConfigNumber(listed, "team.edge_towers.shot.landing.rage.radius")
+        * self:_rebirthScalingMultiplier(record, "cannons", "radius")
 end
 
 function MergeEggPrototypeService:_towerPetReady(pet)
@@ -3779,7 +3817,7 @@ function MergeEggPrototypeService:_castTowerHealingField(flight, position)
     -- per-tick magnitude; hot_tick stays on the power. Do not rebuild ticks.
     self._powerService:PlaceHealingField(record and record.player, position, {
         floor_y = floorY,
-        magnitude = self:_towerHealMagnitude(flight and flight.cannon),
+        magnitude = self:_towerHealMagnitude(record, flight and flight.cannon),
     })
 end
 
@@ -3791,7 +3829,7 @@ function MergeEggPrototypeService:_castTowerBerserkCircle(flight, position)
     local world = record and record.world
     local floor = findNamedPart(world, "LandStrip")
     local floorY = floor and (floor.Position.Y + floor.Size.Y * 0.5) or nil
-    local radius = self:_towerRageRadius(flight and flight.cannon)
+    local radius = self:_towerRageRadius(record, flight and flight.cannon)
     local extras = {}
     self:_towerEachAllyPet(record, function(pet)
         local petPos = self:_towerPetLivePosition(pet)
@@ -4435,7 +4473,7 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
         presentationAnchors = {}
     elseif family == "land_shark" and #allAnchors > 0 then
         presentationAnchors = {}
-        local hunt = MergeBulwarkProgression.combatEffect(family, tier, cfg)
+        local hunt = self:_bulwarkCombatEffect(record, family, tier)
         local count = math.clamp(math.floor(hunt.sharkCount), 1, #allAnchors)
         for patrolIndex = 1, count do
             local anchorIndex = math.clamp(
@@ -4630,10 +4668,8 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
         return existing
     end
     local tileCount = requiredConfigNumber(cfg.tile_count, "team.edge_bulwarks.tile_count")
-    local wallInset = requiredConfigNumber(
-        cfg.wall_inset_studs,
-        "team.edge_bulwarks.wall_inset_studs"
-    )
+    local wallInset =
+        requiredConfigNumber(cfg.wall_inset_studs, "team.edge_bulwarks.wall_inset_studs")
     local canonicalTileLength = requiredConfigNumber(
         cfg.canonical_tile_length_studs,
         "team.edge_bulwarks.canonical_tile_length_studs"
@@ -5701,7 +5737,7 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
         requiredConfigNumber(shot.interval_jitter, "team.edge_towers.shot.interval_jitter")
     local rng = record.random or Random.new()
     local function fireDelay(cannon)
-        local interval = self:_towerFireInterval(cannon, shot)
+        local interval = self:_towerFireInterval(record, cannon, shot)
         if jitter <= 0 then
             return interval
         end
@@ -5711,7 +5747,7 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
     for _, cannon in ipairs(folder:GetChildren()) do
         if cannon:IsA("Model") and cannon:GetAttribute("MergeTowerSpawned") == true then
             index += 1
-            local interval = self:_towerFireInterval(cannon, shot)
+            local interval = self:_towerFireInterval(record, cannon, shot)
             local nextAt = tonumber(cannon:GetAttribute("MergeTowerNextFireAt"))
             -- Spawn stamps 0 on both pads, which used to skip the stagger and fire in lockstep.
             if nextAt == nil or nextAt <= 0 then
@@ -6552,6 +6588,13 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
     world:SetAttribute("MergeDefenseNextRebirthDamageMultiplier", nextRebirthDamage)
     world:SetAttribute("MergeDefenseNextAlliedDamageMultiplier", nextAlliedDamage)
+    world:SetAttribute("MergeDefenseRebirthCannonPowerMultiplier", rebirth.scaling.cannonPower)
+    world:SetAttribute("MergeDefenseRebirthCannonRadiusMultiplier", rebirth.scaling.cannonRadius)
+    world:SetAttribute("MergeDefenseRebirthBulwarkPowerMultiplier", rebirth.scaling.bulwarkPower)
+    world:SetAttribute("MergeDefenseRebirthBulwarkRadiusMultiplier", rebirth.scaling.bulwarkRadius)
+    world:SetAttribute("MergeDefenseRebirthCoinMultiplier", rebirth.scaling.coinAmount)
+    world:SetAttribute("MergeDefenseRebirthGemMultiplier", rebirth.scaling.gemAmount)
+    world:SetAttribute("MergeDefenseRebirthGemChanceMultiplier", rebirth.scaling.gemChance)
     world:SetAttribute("MergeDefenseRebirthMaxed", rebirth.maxed)
     world:SetAttribute("MergeDefenseRebirthCost", rebirth.price and rebirth.price.amount or nil)
     world:SetAttribute(
@@ -9405,6 +9448,7 @@ function MergeEggPrototypeService:_dropEnemyCoins(record, defeat)
         math.floor(
             (tonumber(model and model:GetAttribute("MergeEggCoinReward")) or 0)
                     * self:_managementUpgradeMultiplier(record, "coin_value")
+                    * self:_rebirthScalingMultiplier(record, "coins", "amount")
                 + 0.5
         )
     )
@@ -9463,12 +9507,20 @@ function MergeEggPrototypeService:_dropEnemyGems(record, defeat)
         0,
         1
     )
+    chance = math.clamp(chance * self:_rebirthScalingMultiplier(record, "gems", "chance"), 0, 1)
     local roll = record.lootRandom and record.lootRandom:NextNumber() or math.random()
     if roll >= chance then
         return false
     end
 
-    local amount = math.max(1, math.floor(tonumber(gemCfg.amount) or 1))
+    local amount = math.max(
+        1,
+        math.floor(
+            (tonumber(gemCfg.amount) or 1)
+                    * self:_rebirthScalingMultiplier(record, "gems", "amount")
+                + 0.5
+        )
+    )
     local currency = tostring(gemCfg.currency or "gems")
     local options = self:_prototypeCoinDropOptions(record)
     options.source = "merge_egg_prototype_gem"
@@ -10491,7 +10543,7 @@ function MergeEggPrototypeService:_tickLandSharkHunt(record, towardGate, family,
     end
     slot = MergeBulwarkProgression.normalizeSlot(slot)
     local suffix = self:_bulwarkSlotSuffix(slot)
-    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    local effect = self:_bulwarkCombatEffect(record, family, tier)
     if not (effect and effect.kind == "hunt_drag") then
         return
     end
@@ -10782,7 +10834,7 @@ function MergeEggPrototypeService:_tickConcertinaBleed(
         return
     end
     local suffix = self:_bulwarkSlotSuffix(slot)
-    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    local effect = self:_bulwarkCombatEffect(record, family, tier)
     if not (effect and effect.kind == "bleed_slow") then
         return
     end
@@ -10863,7 +10915,7 @@ function MergeEggPrototypeService:_tickSawBladeShred(
         return
     end
     local suffix = self:_bulwarkSlotSuffix(slot)
-    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    local effect = self:_bulwarkCombatEffect(record, family, tier)
     if not (effect and effect.kind == "shred_line") then
         return
     end
@@ -10909,7 +10961,7 @@ function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, 
     local suffix = self:_bulwarkSlotSuffix(slot)
     local grabbedAttr = "MergeHedgeGrabbed" .. suffix
     local exitAttr = "MergeHedgeNeedsExit" .. suffix
-    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    local effect = self:_bulwarkCombatEffect(record, family, tier)
     if not (effect and effect.kind == "grab_root") then
         return
     end
@@ -11039,7 +11091,7 @@ function MergeEggPrototypeService:_tryPalisadeStop(record, enemy, towardGate, fa
     local suffix = self:_bulwarkSlotSuffix(slot)
     local chargesAttr = "MergeEggPalisadeCharges" .. suffix
     local exitAttr = "MergeEggPalisadeNeedsExit" .. suffix
-    local effect = MergeBulwarkProgression.combatEffect(family, tier, self:_edgeBulwarkConfig())
+    local effect = self:_bulwarkCombatEffect(record, family, tier)
     if not (effect and effect.kind == "stop_shove") then
         return false
     end
@@ -13654,6 +13706,12 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
             self._config.rebirth,
             record.rebirthCount
         ),
+        cannonPowerMultiplier = self:_rebirthScalingMultiplier(record, "cannons", "power"),
+        cannonRadiusMultiplier = self:_rebirthScalingMultiplier(record, "cannons", "radius"),
+        bulwarkPowerMultiplier = self:_rebirthScalingMultiplier(record, "bulwarks", "power"),
+        bulwarkRadiusMultiplier = self:_rebirthScalingMultiplier(record, "bulwarks", "radius"),
+        coinMultiplier = self:_rebirthScalingMultiplier(record, "coins", "amount"),
+        gemMultiplier = self:_rebirthScalingMultiplier(record, "gems", "amount"),
         stationDistance = stationDistance,
     })
     return true, MergeEggRebirth.rankForCount(record.rebirthCount)
