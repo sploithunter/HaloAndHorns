@@ -41,6 +41,17 @@ return function()
             expect(math.abs(ux * rx + uy * ry + uz * rz)).to.be.near(0, 1e-6)
         end)
 
+        it("rejects a target on the egg side of the breach", function()
+            -- Heaven: gate +X, eggs -X from a breach at X=180.
+            expect(Ballistics.gateSideDistance(200, 0, 180, 0, 1, 0)).to.be.near(20, 1e-9)
+            expect(Ballistics.onGateSide(200, 0, 180, 0, 1, 0, 2)).to.equal(true)
+            expect(Ballistics.onGateSide(170, 0, 180, 0, 1, 0, 2)).to.equal(false)
+            expect(Ballistics.onGateSide(179, 0, 180, 0, 1, 0, 2)).to.equal(true)
+            local mx, mz = Ballistics.midpoint(180, -200, 200, -200)
+            expect(mx).to.equal(190)
+            expect(mz).to.equal(-200)
+        end)
+
         it("flattens turret yaw so the chassis never pitches", function()
             local x, y, z = Ballistics.planarYaw(12, 40, -5)
             expect(y).to.equal(0)

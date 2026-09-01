@@ -121,6 +121,39 @@ return function()
             expect(invalid.bulwark_waycoins_spent).to.equal(0)
         end)
 
+        it("preserves and sanitizes the durable Merge cannon selection", function()
+            local state = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "repulsor",
+                left_tower_tier = 2.8,
+                tower_waycoins_spent = 4.2,
+            })
+            expect(state.left_tower_family).to.equal("repulsor")
+            expect(state.left_tower_tier).to.equal(2)
+            expect(state.tower_owned.repulsor).to.equal(2)
+            expect(state.tower_waycoins_spent).to.equal(4)
+            expect(state.right_tower_family).to.equal(nil)
+            expect(state.tower_slots.left.family).to.equal("repulsor")
+
+            local both = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "heal",
+                right_tower_family = "rage",
+                right_tower_tier = 3,
+                tower_owned = { heal = 1, rage = 3 },
+            })
+            expect(both.left_tower_family).to.equal("heal")
+            expect(both.right_tower_family).to.equal("rage")
+            expect(both.right_tower_tier).to.equal(3)
+            expect(both.tower_slots.right.family).to.equal("rage")
+
+            local invalid = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "not_a_cannon",
+                left_tower_tier = 4,
+            })
+            expect(invalid.left_tower_family).to.equal(nil)
+            expect(invalid.left_tower_tier).to.equal(0)
+            expect(invalid.tower_waycoins_spent).to.equal(0)
+        end)
+
         it("lets a formerly locked player switch to Full exactly once", function()
             local state = PlayerCombat.recordEntry(nil, false)
             local switched, mode, accepted = PlayerCombat.applyNoticeResponse(state, "switch_full")

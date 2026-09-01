@@ -1051,13 +1051,16 @@ clean.
   same art at 85% size. `src/Shared/Game/MergeTowerModels.lua` clones a requested role/tier and
   grounds it on a pad's `TowerAnchor`. Tier 3 and Tier 4 remain future distinct art passes.
 - Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
-  and one immediately outside position 9. The pads live under
+  and one immediately outside position 9, pulled one 8.4-stud pad-width back
+  from the egg-stand depth so they are not on top of the red-line engineer.
+  The pads live under
   `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`, expose `MergeTowerPadSlot`,
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
-  The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Runtime
-  now clones the current-art Repulsor onto both pads at playtest-locked `tier_scales`
-  (0.40 starter, 0.50 for tiers 2–4), raycast-seats the chassis on the pad, and
+  The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Pads
+  start empty. Runtime clones an installed role at playtest-locked `tier_scales`
+  (0.40 starter, 0.50 for tiers 2–4) on the current-art mesh; distinct
+  per-tier models wait. Seats the chassis on the pad, and
   lofts a fireball along a parabolic arc toward the nearest enemy on the gate
   side of the lane. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
   the model pivot (that CFrame stays at the portal spawn). Range reaches
@@ -1067,7 +1070,20 @@ clean.
   Auto-fire requires a live incoming enemy. Each shot plays the group-owned
   `cannon_fire` clip from the cannon and `cannon_impact` at the landing
   (`configs/sounds.lua`), same pair for every role. The test E Fire prompt
-  is gone (E will later cycle type or upgrade). Hits do not deal damage yet.
+  is gone. Talk the Artillery Commander behind that pad instead: the
+  workshop is the same pick-then-act panel as the bulwark menu, but the
+  list is the six cannon roles and that commander only writes his pad.
+  Buy owns a role forever; Install deploys the owned tier onto that pad;
+  Upgrade advances the owned tier. The visual pass owns the six roles so
+  each chassis can be installed and judged before powers. Catalog
+  ownership is applied on every workshop read so Install does not
+  require a Buy. Board-action toasts use DisplayOrder 130 so they
+  sit in front of the workshop (120), not behind it. Heal aims injured pets (`CombatDamageTaken`) and
+  places the existing Healing Field at impact; rage still reuses the Rage rune look.
+  Hard rule: no shot at a target on the egg side of BreachLine. Heal
+  uses that same floor (`heal_fire_line`, also `bulwark` or `mid`).
+  New landing effects wait. Playtest unlock is Wave 1 / one Waycoin;
+  production stays the Wave-10 intermission. Hits do not deal damage yet.
 
 ## Bulwark defense art set
 

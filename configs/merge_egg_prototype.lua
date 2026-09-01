@@ -457,16 +457,24 @@ return {
             },
         },
         edge_towers = {
-            -- Permanent cadence: award the first tower during the Wave-10 intermission. The
-            -- existing spawned cannons remain enabled while their mechanics are prototyped.
+            -- Permanent cadence: award the first tower during the Wave-10 intermission.
+            -- Pads start empty; the Artillery Commander installs a chassis.
             unlock_wave = 10,
             tutorial_intermission_wave = 10,
-            playtest_spawn_enabled = true,
+            playtest_spawn_enabled = false,
+            -- Visual pass: own every role so each chassis can be installed
+            -- without a dummy starter. Combat powers stay later.
+            visual_catalog_owned = true,
+            playtest_unlock_enabled = true,
+            playtest_unlock_wave = 1,
+            action_cost = 1,
+            currency = "hall_coins",
+            maximum_tier = 4,
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
             current_art_tier = 2,
-            -- Playtest-locked chassis sizes on the current-art mesh. Tier 1 is the starter;
-            -- tiers 2–4 share 0.50 until those upgrade models exist.
+            -- Playtest-locked chassis sizes on the current-art mesh. Live with
+            -- scale-only tiers until distinct T1–T4 models are actually uploaded.
             tier_1_scale = 0.40,
             tier_scales = { 0.40, 0.50, 0.50, 0.50 },
             available_roles = {
@@ -477,9 +485,8 @@ return {
                 "repulsor",
                 "nullifier",
             },
-            -- First combat slice: spawn the starter-scale chassis on both authored pads and loft a
-            -- sphere toward the nearest in-lane enemy, or a gate-side landing point if the lane is
-            -- empty. The cannon yaws/pitches along the launch tangent. Upgrades stay unwired.
+            -- First combat slice: an installed chassis lofts a sphere toward the nearest
+            -- in-lane enemy. Pads stay empty until Buy/Install. Upgrades stay unwired.
             starter_role = "repulsor",
             starter_tier = 1,
             -- Size-preview cycle is locked; E now fires a cannonball. Keep the scale list so
@@ -496,6 +503,46 @@ return {
                 range = 90,
                 diameter = 1.2,
                 land_seconds = 0.55,
+                -- Heal landing casts the real Healing Field at impact (same
+                -- kind numbers, no Focus/cooldown). Rage landing is still a look.
+                -- Hard floor: never shoot a target on the egg side of BreachLine.
+                -- Heal aims injured pets (CombatDamageTaken). heal_fire_line can
+                -- tighten to "bulwark" or "mid" later; breach is the live floor.
+                fire_line = "breach",
+                fire_line_epsilon = 2,
+                heal_target = "injured_pets",
+                heal_fire_line = "breach",
+                landing = {
+                    -- Tiers only change magnitude (existing per-tick heal) and
+                    -- fire interval. hot_tick stays 2s on Healing Field.
+                    heal = {
+                        cast = "healing_field",
+                        magnitude = { 110, 110, 110, 110 },
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                    },
+                    rage = { visual = "rage" },
+                },
+                role_colors = {
+                    heal = { 85, 255, 130 },
+                    rage = { 235, 80, 60 },
+                    debuff = { 174, 100, 235 },
+                    gravity = { 76, 165, 245 },
+                    repulsor = { 255, 148, 36 },
+                    nullifier = { 196, 150, 255 },
+                },
+            },
+            -- Talkable vendor behind each pad cannon. Same workshop as
+            -- the Bulwark Engineer, but the list is cannons and each
+            -- commander opens only that pad.
+            commander = {
+                enabled = true,
+                user_id = 864785140,
+                name = "sploithunter",
+                display_name = "Artillery Commander",
+                action_text = "Talk",
+                object_text = "Artillery Commander",
+                max_distance = 16,
+                stand_behind_studs = 7,
             },
         },
         edge_bulwarks = {

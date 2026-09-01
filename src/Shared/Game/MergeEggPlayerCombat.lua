@@ -9,6 +9,7 @@ local MergeEggPlayerCombat = {}
 local MergeEggCheckpoint = require(script.Parent.MergeEggCheckpoint)
 local MergeEggPlaystate = require(script.Parent.MergeEggPlaystate)
 local MergeBulwarkProgression = require(script.Parent.MergeBulwarkProgression)
+local MergeTowerProgression = require(script.Parent.MergeTowerProgression)
 
 local VALID_MODES = {
     simple = true,
@@ -55,6 +56,14 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         slots = raw.bulwark_slots,
         owned = raw.bulwark_owned,
     })
+    local towers = MergeTowerProgression.persistFields({
+        leftFamily = raw.left_tower_family,
+        leftTier = raw.left_tower_tier,
+        rightFamily = raw.right_tower_family,
+        rightTier = raw.right_tower_tier,
+        slots = raw.tower_slots,
+        owned = raw.tower_owned,
+    })
     return {
         version = 6,
         visited = raw.visited == true,
@@ -76,6 +85,13 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         front_bulwark_tier = persisted.front_bulwark_tier,
         bulwark_slots = persisted.bulwark_slots,
         bulwark_owned = persisted.bulwark_owned,
+        left_tower_family = towers.left_tower_family,
+        left_tower_tier = towers.left_tower_tier,
+        right_tower_family = towers.right_tower_family,
+        right_tower_tier = towers.right_tower_tier,
+        tower_slots = towers.tower_slots,
+        tower_owned = towers.tower_owned,
+        tower_waycoins_spent = math.max(0, math.floor(tonumber(raw.tower_waycoins_spent) or 0)),
         bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),

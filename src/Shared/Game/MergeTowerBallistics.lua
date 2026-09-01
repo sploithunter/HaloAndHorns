@@ -50,6 +50,25 @@ end
 -- The authored cannon mesh is longest on local +X, so the barrel is RightVector,
 -- not LookVector. Returns right, up, look as nine numbers for a CFrame.fromMatrix.
 -- Callers that want a flat turret pass a planar yaw; the fireball arc carries loft.
+-- Planar signed distance from a cutoff plane toward the gate. Positive is the
+-- combat/gate side. Negative is the egg/hatcher side ("behind the breach").
+function MergeTowerBallistics.gateSideDistance(px, pz, lx, lz, gx, gz)
+    return ((tonumber(px) or 0) - (tonumber(lx) or 0)) * (tonumber(gx) or 0)
+        + ((tonumber(pz) or 0) - (tonumber(lz) or 0)) * (tonumber(gz) or 0)
+end
+
+-- Hard fire rule: a target behind the cutoff toward the eggs is illegal.
+-- `epsilon` lets a body sitting on the plane still count (pets on the gold line).
+function MergeTowerBallistics.onGateSide(px, pz, lx, lz, gx, gz, epsilon)
+    return MergeTowerBallistics.gateSideDistance(px, pz, lx, lz, gx, gz)
+        >= -(math.max(0, tonumber(epsilon) or 2))
+end
+
+function MergeTowerBallistics.midpoint(ax, az, bx, bz)
+    return ((tonumber(ax) or 0) + (tonumber(bx) or 0)) * 0.5,
+        ((tonumber(az) or 0) + (tonumber(bz) or 0)) * 0.5
+end
+
 function MergeTowerBallistics.barrelBasis(dx, dy, dz)
     local rx, ry, rz = unitOrNil(dx, dy, dz)
     if not rx then

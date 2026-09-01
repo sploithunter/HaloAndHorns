@@ -697,6 +697,40 @@ The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exi
 and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
 deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
 
+## Heal Cannon Tiers Are Magnitude And Fire Rate (2026-09-01)
+
+Do not change Healing Field ticks (`hot_tick` stays 2s). A heal tier
+only edits two numbers: the existing per-tick `magnitude`, and that
+pad's shot `interval`. Overlapping fields still stack. Tuning is
+config (`shot.landing.heal.magnitude` / `interval`); T1 starts at the
+authored field (110) and the shared 2.4s cadence.
+
+## Reuse Existing Powers — Do Not Rebuild Them (2026-09-01)
+
+If a power already exists, cast that power. Do not pull its
+visualization out, restamp a decoy rune, and rebuild ticks beside it.
+Healing Field was the exception to "visuals first": it already had a
+look and a combat loop, so the heal cannon lands by placing that same
+`_healZone` at impact. New cannon roles may still wait on missing
+telegraphs. This does not spend Focus or start the player cooldown.
+
+## Cannon Tiers Stay Scale-Only Until Distinct Meshes Land (2026-09-01)
+
+Each role has one current-art mesh (`current_art_tier = 2`). Playtest
+tiers change size only: `tier_scales` 0.40 / 0.50 / 0.50 / 0.50. Do not
+hunt for T3/T4 (or a unique T1) Heal meshes in this pass — they are not
+in the catalog or group inventory. Distinct per-tier models are a later
+art drop after that work is actually finished.
+
+## Cannons Never Fire Behind the Breach (2026-09-01)
+
+A pad cannon may not aim at a target on the egg/hatcher side of
+`BreachLine`. That plane stays the unique overrun line; this is only a
+shot filter. Heal aims injured pets via `CombatDamageTaken` and uses
+the same breach floor until a tighter `heal_fire_line` is proven.
+Mid is the computed halfway between the two existing planes — do not
+author a third combat part for it.
+
 ## Land Sharks Hunt One Marcher and Drag It Under (2026-09-01)
 
 Land Shark combat is a pet-like chase, not a lane DoT. Territory is the full

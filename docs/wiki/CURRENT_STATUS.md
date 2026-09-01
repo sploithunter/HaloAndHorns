@@ -2,6 +2,22 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Artillery Commander workshop (2026-09-01)
+
+SploitHunter stands behind each pad. Talk opens an artillery workshop
+that matches the bulwark panel (six roles, buy / upgrade / install).
+Ownership is global; each commander installs only that pad. Pads start
+empty. The visual pass owns the six chassis so Install does not need
+a Buy. Tiers are scale-only on the current-art mesh until distinct
+models land later. Board-action toasts sit above the workshop
+(DisplayOrder 130).
+Heal aims injured pets (`CombatDamageTaken` or `HP`/`MaxHP`,
+including the player's real pets) and places the existing Healing
+Field at impact (same rune and ticks; no rebuilt visual). Heal tiers
+only change magnitude and fire interval; `hot_tick` stays 2s. Cannons never fire at a target on the egg side
+of BreachLine. Heal uses that same floor for now; bulwark/mid stay
+tunable. Not Play-confirmed yet.
+
 ## Merge bulwark slots are independent of combat planes (2026-09-01)
 
 `BulwarkLine` still opens pet combat. `BreachLine` still opens egg

@@ -6690,3 +6690,80 @@ first-session cohort rates.
   Breach and finish both rewrite the march destination and wipe the threat
   table onto the assigned (else nearest) egg. After an egg dies, leftover
   marchers retarget the rest; only then do they resume the back line.
+
+## 2026-09-01 — Cannon pads sit one footprint behind the eggs
+
+- Tower pads stay outside egg positions 1 and 9, then step one 8.4-stud
+  pad-width back along the march axis (egg-stand X). That clears the
+  red-line Bulwark Engineer. Artillery Commanders follow the chassis.
+
+## 2026-09-01 — Artillery Commander workshop
+
+- SploitHunter (`user_id` 864785140) stands behind each pad cannon as
+  Artillery Commander. Talk opens an artillery workshop that matches the
+  bulwark panel: six cannon roles, buy / upgrade / install, one Waycoin
+  per change. Ownership is global; each commander writes only that pad
+  (left or right). Pads start empty until Buy/Install. An unpaid dummy
+  starter is cleared. Shot damage is still later. Not Play-confirmed yet.
+
+## 2026-09-01 — Heal cannon used the wrong injury signal
+
+- Pets have no HP/MaxHP; injury is `CombatDamageTaken`. The heal
+  chassis never found a target. Heal now accepts either
+  `CombatDamageTaken` or `HP`/`MaxHP` and scans merge squads plus the
+  player's real pets. Fire prevention uses the breach→gate axis and
+  fails open if the plane is missing. Heal cutoff is BreachLine until a
+  tighter band is proven.
+
+## 2026-09-01 — Cannon fire stays gate-side of the breach
+
+- Hard rule: no chassis fires at a target on the egg/hatcher side of
+  BreachLine. Heal aims injured pets and starts its cutoff at
+  BulwarkLine (`heal_fire_line`; also `mid` or `breach`). Catalog
+  ownership is now applied on every workshop read so Install does not
+  require a Buy.
+
+## 2026-09-01 — Cannon visual pass before powers
+
+- Same order as bulwarks: place every chassis, check fire/landing reads,
+  then wire powers. The playtest catalog owns all six roles so a pad
+  can Install each mesh. Heal landing reuses the existing Healing Field
+  ground rune; rage landing reuses the existing Rage rune. No combat
+  ticks. Other roles keep the shared fireball until a real telegraph
+  already exists.
+
+## 2026-09-01 — Cannon pads start empty
+
+- The playtest no longer seeds Repulsor T1. Talk the commander, then
+  Buy/Install to put a chassis on that pad. Unpaid dummy installs are
+  wiped on the next hydrate.
+
+## 2026-09-01 — Workshop toast sits above the menu
+
+- Board-action feedback lived on the observer HUD (DisplayOrder 41)
+  while the cannon/bulwark workshops are 120, so Install/Upgrade
+  refusals hid behind the panel. The toast now has its own ScreenGui
+  at 130. Catalog-owned cannon commits also compare the workshop
+  snapshot, not the raw persist table — a grant-only owned set was
+  returning CANNON STATE CHANGED on Install.
+
+## 2026-09-01 — Cannon tiers stay scale-only for now
+
+- Live catalog and group inventory have one mesh per role. T1–T4
+  keep the 0.40 / 0.50 / 0.50 / 0.50 size steps. Distinct per-tier
+  models wait until that art pass is actually done. Do not swap
+  meshes in this session.
+
+## 2026-09-01 — Heal landing casts the existing Healing Field
+
+- Do not rebuild a power that already exists. The decoy rune was the
+  wrong path. Impact now calls `PowerService:PlaceHealingField`, which
+  is `_healZone` at that point (110 / 2s / 8s / 28 studs). No Focus,
+  no player cooldown, no extra cannon-only tick list.
+
+## 2026-09-01 — Heal tiers are magnitude and fire rate
+
+- Do not change Healing Field ticks. Per-tier knobs are
+  `shot.landing.heal.magnitude` and `interval` (both start at 110 /
+  2.4). Strength is the existing per-tick number; overlapping fields
+  still stack.

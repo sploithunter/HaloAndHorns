@@ -20,6 +20,7 @@ local HudCard = require(script.Parent.Parent.UI.HudCard)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
+local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMenu)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
@@ -126,6 +127,12 @@ local BOARD_ACTION_FAILURE_COPY = {
     bulwark_already_selected = "THAT BULWARK IS ALREADY INSTALLED",
     bulwark_not_installed = "INSTALL A BULWARK FIRST",
     bulwark_maxed = "BULWARK IS ALREADY MAXIMUM TIER",
+    cannon_locked = "ARTILLERY UNLOCKED AT ITS WAVE MILESTONE",
+    cannon_station_too_far = "MOVE CLOSER TO THE ARTILLERY COMMANDER",
+    cannon_already_selected = "THAT CANNON IS ALREADY INSTALLED",
+    cannon_state_changed = "CANNON STATE CHANGED — TRY AGAIN",
+    cannon_not_owned = "BUY THAT CANNON FIRST",
+    cannon_maxed = "CANNON IS ALREADY MAXIMUM TIER",
     automation_owns_upgrades = "AUTOMATION IS USING UPGRADES",
     automation_running = "AUTOMATION IS RUNNING",
     not_active_encounter = "CONTROL UNAVAILABLE RIGHT NOW",
@@ -791,6 +798,17 @@ local function boardActionResultCopy(result)
                 return string.format("BULWARK UPGRADED TO TIER %d", tonumber(value.tier) or 1)
             end
             return "BULWARK UPDATED"
+        elseif action == "cannon" then
+            local value = type(result.value) == "table" and result.value or {}
+            if value.operation == "installed" or value.operation == "equipped" then
+                return "CANNON INSTALLED"
+            elseif value.operation == "upgraded" then
+                return string.format(
+                    "CANNON UPGRADED TO TIER %d",
+                    tonumber(value.leftTier or value.tier) or 1
+                )
+            end
+            return "CANNON UPDATED"
         end
         return "ACTION COMPLETE"
     end
@@ -3328,10 +3346,22 @@ function MergeEggPrototypeObserver.start()
     waveGui.DisplayOrder = 90
     waveGui.Enabled = false
     waveGui.Parent = pg
-    local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(gui)
+    -- Workshop menus are their own ScreenGui at DisplayOrder 120. Keep this
+    -- toast above that layer so Install/Upgrade refusals are readable.
+    local feedbackGui = Instance.new("ScreenGui")
+    feedbackGui.Name = "MergeEggBoardFeedback"
+    feedbackGui.ResetOnSpawn = false
+    feedbackGui.IgnoreGuiInset = true
+    feedbackGui.DisplayOrder = 130
+    feedbackGui.Enabled = false
+    feedbackGui.Parent = pg
+    local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(feedbackGui)
     local tutorialCard = createTutorialCard(gui)
     local boardActionFeedbackUntil = 0
     local bulwarkMenu = MergeBulwarkMenu.new(gui, function(action)
+        Signals.MergeEggPrototypeBoardAction:FireServer(action)
+    end)
+    local cannonMenu = MergeCannonMenu.new(gui, function(action)
         Signals.MergeEggPrototypeBoardAction:FireServer(action)
     end)
     Signals.MergeEggPrototypeBoardResult.OnClientEvent:Connect(function(result)
@@ -3340,12 +3370,21 @@ function MergeEggPrototypeObserver.start()
         end
         local action = tostring(result.action or "")
         if action == "open_bulwark_menu" and result.ok == true then
+            cannonMenu:hide()
             bulwarkMenu:show(result.value)
+            return
+        end
+        if action == "open_cannon_menu" and result.ok == true then
+            bulwarkMenu:hide()
+            cannonMenu:show(result.value)
             return
         end
         local success = result.ok == true
         if action == "bulwark" and success and type(result.value) == "table" then
             bulwarkMenu:show(result.value)
+        end
+        if action == "cannon" and success and type(result.value) == "table" then
+            cannonMenu:show(result.value)
         end
         boardActionFeedback.Text = boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
@@ -3358,6 +3397,8 @@ function MergeEggPrototypeObserver.start()
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
             bulwarkMenu:hide()
+            cannonMenu:hide()
+            boardActionFeedback.Visible = false
         end
     end)
     Signals.MergeEggPrototypePlayerHatch.OnClientEvent:Connect(function(result)
@@ -3454,11 +3495,13 @@ function MergeEggPrototypeObserver.start()
 
         gui.Enabled = observing
         waveGui.Enabled = observing
+        feedbackGui.Enabled = observing
         if not boardWallControls or not boardWallControls.world.Parent then
             boardWallControls = createBoardWallControls()
         end
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
+            boardActionFeedback.Visible = false
             updateTutorialCard(tutorialCard, nil, false)
             clearTutorialClickCue()
             waveMeter.frame.Visible = false

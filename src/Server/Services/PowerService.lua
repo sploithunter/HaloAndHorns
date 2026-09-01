@@ -1424,12 +1424,16 @@ end
 -- perTick + totalSeconds are the EFFECTIVE (enhancement-scaled) magnitude + duration from the cast,
 -- so a `health`/`healing` enhancement raises the per-tick heal and (if ever slotted) duration extends
 -- the zone — the same numbers the ENHANCE preview shows.
-function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        return
+function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId, opts)
+    opts = type(opts) == "table" and opts or {}
+    local center = opts.center
+    if typeof(center) ~= "Vector3" then
+        local hrp = player and player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then
+            return
+        end
+        center = hrp.Position
     end
-    local center = hrp.Position
     local radius = tonumber(kind.field_radius) or 28
     perTick = tonumber(perTick) or 0
     local tickSeconds = tonumber(kind.hot_tick) or 2
@@ -1445,6 +1449,7 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
         fade_in = 0.35,
         hold = math.max(0.1, totalSeconds - 0.95),
         fade_out = 0.6,
+        floor_y = opts.floor_y,
     })
 
     task.spawn(function()
@@ -1453,7 +1458,7 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
         while elapsed < totalSeconds do
             task.wait(tickSeconds)
             elapsed += tickSeconds
-            if not player.Parent then
+            if player and not player.Parent then
                 return
             end
             -- BATTLEFIELD PRINCIPLE (Jason, CoH-style): once placed, the field is a battlefield
@@ -1478,6 +1483,32 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
             end
         end
     end)
+end
+
+-- The existing Healing Field, at a world point. Same kind, rune, and tick
+-- loop as a player cast. The only difference is the anchor: impact instead
+-- of the caster's feet. No Focus, no cooldown, no rebuilt visual.
+function PowerService:PlaceHealingField(player, center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local kinds = self._powersConfig and self._powersConfig.effect_kinds or {}
+    local kind = kinds.healing_field
+    if type(kind) ~= "table" or kind.field ~= true then
+        return nil, "healing_field_missing"
+    end
+    return self:_healZone(
+        player,
+        kind,
+        tonumber(opts.magnitude) or tonumber(kind.magnitude) or 110,
+        tonumber(kind.duration) or 8,
+        "healing_field",
+        {
+            center = center,
+            floor_y = opts.floor_y,
+        }
+    )
 end
 
 function PowerService:_healOverTime(player, perTick, tickSeconds, totalSeconds)
