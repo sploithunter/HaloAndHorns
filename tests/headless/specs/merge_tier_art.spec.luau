@@ -61,8 +61,41 @@ return function()
             expect(runtimeProof:find('"status": "COMPLETE"', 1, true)).to.be.ok()
             expect(runtimeProof:find('"runtimeConfig": "configs/merge_tier_art.lua"', 1, true)).to.be.ok()
             expect(runtimeProof:find('"cannonTierMappings": 24', 1, true)).to.be.ok()
+            expect(runtimeProof:find('"cannonPreviewMappings": 24', 1, true)).to.be.ok()
             expect(runtimeProof:find('"bulwarkTierMappings": 24', 1, true)).to.be.ok()
             expect(runtimeProof:find('"distinctModelAssets": 48', 1, true)).to.be.ok()
+        end)
+
+        it("maps all 24 cannon menu previews to distinct uploaded decals", function()
+            local previewManifest = readFile("scripts/merge_cannon_preview_ids.json")
+            local sourceManifest = readFile("scripts/merge_cannon_preview_sources.json")
+            local families = { "heal", "rage", "debuff", "gravity", "repulsor", "nullifier" }
+            local seen = {}
+            local previewCount = 0
+
+            for _, family in ipairs(families) do
+                local ids = MergeTierArt.previewAssetIds(tierArtConfig, "cannon", family)
+                expect(#ids).to.equal(4)
+                for tier, id in ipairs(ids) do
+                    expect(seen[id]).to.equal(nil)
+                    seen[id] = true
+                    expect(previewManifest:find('"decalId": "' .. tostring(id) .. '"', 1, true)).to.be.ok()
+                    expect(
+                        sourceManifest:find(
+                            '"file": "assets/ui/merge_cannons/'
+                                .. family
+                                .. "_tier"
+                                .. tostring(tier)
+                                .. '.png"',
+                            1,
+                            true
+                        )
+                    ).to.be.ok()
+                    previewCount += 1
+                end
+            end
+
+            expect(previewCount).to.equal(24)
         end)
 
         it("maps all 24 bulwark menu previews to distinct committed decals", function()

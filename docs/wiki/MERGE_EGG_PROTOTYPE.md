@@ -1051,9 +1051,12 @@ clean.
   `assets/concepts/merge_cannons/prompts.json`.
 - Runtime identity is config-owned: `scripts/sync_merge_tier_art.js` deterministically generates
   `configs/merge_tier_art.lua` and `scripts/merge_tier_runtime_manifest.json` from the cannon,
-  bulwark-model, and bulwark-preview manifests. Workshop cards and world spawns consume that same
-  table. A cached instance is replaced when its Model/Mesh/Texture identity or cannon scale differs
-  from the selected family/tier, even if its tier attributes look current.
+  cannon-preview, bulwark-model, and bulwark-preview manifests. Workshop cards and world spawns
+  consume that same table. The 24 cannon preview PNGs under `assets/ui/merge_cannons/` are normalized
+  to 256×256 RGBA with a 78% maximum silhouette footprint; group-owned Decal/Image pairs live in
+  `scripts/merge_cannon_preview_ids.json`. Cannon cards use the verified Decal IDs through `rbxthumb`
+  and do not create ViewportFrames. A cached world instance is replaced when its Model/Mesh/Texture identity or cannon
+  scale differs from the selected family/tier, even if its tier attributes look current.
 - Cannon visuals are repo-owned spawnable assets under
   `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose

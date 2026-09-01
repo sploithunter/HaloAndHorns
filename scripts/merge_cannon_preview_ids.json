@@ -1,0 +1,45 @@
+{
+  "_note": "Group-owned 256x256 transparent artillery-workshop previews. ImageLabel uses the decalId through rbxthumb because all 24 wrappers preload successfully; direct rbxassetid imageId delivery currently fails. imageId is retained as resolved provenance.",
+  "creatorGroupId": "15872767",
+  "sourceManifest": "scripts/merge_cannon_preview_sources.json",
+  "dimensions": [256, 256],
+  "subjectFill": 0.78,
+  "families": {
+    "heal": [
+      { "tier": 1, "decalId": "131061350502690", "imageId": "140470596443446" },
+      { "tier": 2, "decalId": "114736202970945", "imageId": "101347557630147" },
+      { "tier": 3, "decalId": "114114786954664", "imageId": "130804958725300" },
+      { "tier": 4, "decalId": "136190859893905", "imageId": "93797387348569" }
+    ],
+    "rage": [
+      { "tier": 1, "decalId": "97703672352082", "imageId": "127273182350287" },
+      { "tier": 2, "decalId": "138723455258305", "imageId": "98436573644082" },
+      { "tier": 3, "decalId": "89228120329929", "imageId": "86997315038840" },
+      { "tier": 4, "decalId": "74085786829884", "imageId": "84740258362932" }
+    ],
+    "debuff": [
+      { "tier": 1, "decalId": "116137872026567", "imageId": "114989526639600" },
+      { "tier": 2, "decalId": "119239112022466", "imageId": "97068048523128" },
+      { "tier": 3, "decalId": "84073912433216", "imageId": "110123445517380" },
+      { "tier": 4, "decalId": "84323457769191", "imageId": "97949253508090" }
+    ],
+    "gravity": [
+      { "tier": 1, "decalId": "76934851415383", "imageId": "124941263204546" },
+      { "tier": 2, "decalId": "93180997121651", "imageId": "129706592743167" },
+      { "tier": 3, "decalId": "74368196545695", "imageId": "140423611144518" },
+      { "tier": 4, "decalId": "126101045930615", "imageId": "133845870981548" }
+    ],
+    "repulsor": [
+      { "tier": 1, "decalId": "75567338164063", "imageId": "78664132786778" },
+      { "tier": 2, "decalId": "82777233908254", "imageId": "93960838518804" },
+      { "tier": 3, "decalId": "139456211593147", "imageId": "137846028304578" },
+      { "tier": 4, "decalId": "121947038866815", "imageId": "98525459206885" }
+    ],
+    "nullifier": [
+      { "tier": 1, "decalId": "114731624008606", "imageId": "71926315712224" },
+      { "tier": 2, "decalId": "104079595660601", "imageId": "139249289854894" },
+      { "tier": 3, "decalId": "110943468496381", "imageId": "118241568011792" },
+      { "tier": 4, "decalId": "112219060751717", "imageId": "112661243422932" }
+    ]
+  }
+}

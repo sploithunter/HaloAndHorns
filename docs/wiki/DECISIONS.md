@@ -54,6 +54,20 @@ those numbers were hardcoded in code. That is a defect. If a value is
 missing from config, add the config key; do not paste `rbxassetid://…`
 into the caller. See `.cursor/rules/configuration-as-code.mdc`.
 
+## Merge Workshop Previews Are Flat Assets (2026-09-01)
+
+Cannon and bulwark workshop cards use uploaded transparent PNGs, not live
+`ViewportFrame` models or Roblox model thumbnails. A card is a selection surface,
+not a second 3D scene: live models add render work, inherit unstable import pivots,
+and let larger ornate tiers crowd the surrounding UI.
+
+Cannon preview sources are the accepted Meshy retexture alpha renders. The build
+step normalizes all 24 variants onto a 256×256 RGBA canvas with a maximum 78%
+silhouette footprint. Decal and underlying Image IDs live in the generated tier-art
+configuration. `ImageLabel` consumes the Decal through `rbxthumb`: Studio verification
+loaded all 24 wrapper URLs while direct `rbxassetid` delivery of their underlying Image
+IDs failed. Model/Mesh/Texture IDs remain independently authoritative for world spawning.
+
 ## Rojo And Studio Boundary
 
 Rojo owns scripts, configs, UI logic, networking, validation, and service behavior. Studio/world builders own the physical map, art direction, terrain, decorations, and invisible gameplay markers. Systems bind to the map through tags, attributes, and contracted child-marker names.
