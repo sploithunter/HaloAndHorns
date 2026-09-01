@@ -45,6 +45,7 @@ local MergeBulwarkPersist = require(ReplicatedStorage.Shared.Game.MergeBulwarkPe
 local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
 local MergeBulwarkSlots = require(ReplicatedStorage.Shared.Game.MergeBulwarkSlots)
 local MergeCannonPersist = require(ReplicatedStorage.Shared.Game.MergeCannonPersist)
+local MergeTierArt = require(ReplicatedStorage.Shared.Game.MergeTierArt)
 local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
 local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
 local MergeTowerProgression = require(ReplicatedStorage.Shared.Game.MergeTowerProgression)
@@ -3468,6 +3469,46 @@ function MergeEggPrototypeService:_towerLandingSpec(role)
     return type(spec) == "table" and spec or nil, shot
 end
 
+function MergeEggPrototypeService:_towerFloorY(world)
+    local floor = findNamedPart(world, "LandStrip")
+    if floor then
+        return floor.Position.Y + floor.Size.Y * 0.5
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_towerGroundPoint(world, position)
+    if typeof(position) ~= "Vector3" then
+        return nil
+    end
+    local floorY = self:_towerFloorY(world)
+    if floorY == nil then
+        return Vector3.new(position.X, position.Y, position.Z)
+    end
+    return Vector3.new(position.X, floorY, position.Z)
+end
+
+function MergeEggPrototypeService:_towerLandsOnGround(role)
+    local spec, shot = self:_towerLandingSpec(role)
+    local landAt = spec and spec.land_at or (shot and shot.land_at)
+    if landAt == "body" then
+        return false
+    end
+    if spec and (spec.cast or spec.visual) then
+        return true
+    end
+    return tostring(landAt or "") == "ground"
+end
+
+function MergeEggPrototypeService:_towerImpactKind(role)
+    local spec, shot = self:_towerLandingSpec(role)
+    local listed = spec and spec.impact or (shot and shot.ability_impact)
+    if spec and (spec.cast or spec.visual) then
+        return string.lower(tostring(listed or "bloom"))
+    end
+    return string.lower(tostring(listed or "linger"))
+end
+
 function MergeEggPrototypeService:_towerTierIndex(cannon)
     return math.max(1, math.floor(tonumber(cannon and cannon:GetAttribute("MergeTowerTier")) or 1))
 end
@@ -3773,8 +3814,7 @@ function MergeEggPrototypeService:_castTowerHealingField(flight, position)
     end
     local record = flight and flight.record
     local world = record and record.world
-    local floor = findNamedPart(world, "LandStrip")
-    local floorY = floor and (floor.Position.Y + floor.Size.Y * 0.5) or nil
+    local floorY = self:_towerFloorY(world)
     -- The authored Healing Field, at the impact. Strength is the existing
     -- per-tick magnitude; hot_tick stays on the power. Do not rebuild ticks.
     self._powerService:PlaceHealingField(record and record.player, position, {
@@ -3789,13 +3829,16 @@ function MergeEggPrototypeService:_castTowerBerserkCircle(flight, position)
     end
     local record = flight and flight.record
     local world = record and record.world
-    local floor = findNamedPart(world, "LandStrip")
-    local floorY = floor and (floor.Position.Y + floor.Size.Y * 0.5) or nil
+    local floorY = self:_towerFloorY(world)
     local radius = self:_towerRageRadius(flight and flight.cannon)
     local extras = {}
     self:_towerEachAllyPet(record, function(pet)
         local petPos = self:_towerPetLivePosition(pet)
-        if petPos and (petPos - position).Magnitude <= radius then
+        if not petPos then
+            return
+        end
+        local offset = Vector3.new(petPos.X - position.X, 0, petPos.Z - position.Z)
+        if offset.Magnitude <= radius then
             extras[#extras + 1] = pet
         end
     end)
@@ -3964,6 +4007,32 @@ function MergeEggPrototypeService:_playCannonFire(cannon)
     Debris:AddItem(shot, math.max(2, (tonumber(def and def.duration_seconds) or 2) + 0.6))
 end
 
+function MergeEggPrototypeService:_towerArtNumber(cannon, field)
+    local entry = MergeTierArt.entry(
+        self._config and self._config.tier_art,
+        "cannon",
+        cannon and cannon:GetAttribute("MergeTowerRole"),
+        cannon and cannon:GetAttribute("MergeTowerTier")
+    )
+    return tonumber(entry and entry[field]) or 0
+end
+
+function MergeEggPrototypeService:_towerBarrelYawDegrees(cannon)
+    return self:_towerArtNumber(cannon, "barrelYawDegrees")
+end
+
+function MergeEggPrototypeService:_towerSeatOffsetY(cannon)
+    return self:_towerArtNumber(cannon, "seatOffsetY")
+end
+
+function MergeEggPrototypeService:_towerPlanarAim(from, toward)
+    if typeof(from) ~= "Vector3" or typeof(toward) ~= "Vector3" then
+        return nil
+    end
+    local x, _, z = MergeTowerBallistics.planarYaw(toward.X - from.X, 0, toward.Z - from.Z)
+    return Vector3.new(x, 0, z)
+end
+
 function MergeEggPrototypeService:_towerMuzzle(cannon, look)
     if not cannon then
         return nil
@@ -3974,25 +4043,35 @@ function MergeEggPrototypeService:_towerMuzzle(cannon, look)
     end
     local box, size = cannon:GetBoundingBox()
     local aim = look
-    if not aim or aim.Magnitude < 0.001 then
-        -- Authored mesh barrel is local +X.
-        aim = cannon:GetPivot().RightVector
+    if not (aim and aim.Magnitude > 0.001) then
+        -- Shot direction, not mesh +X. A barrelYawDegrees mesh is 90° off RightVector.
+        local world = self:_worldForCannon(cannon)
+        aim = self:_towerGateLook(world, cannon:GetPivot().Position)
     end
-    if aim.Magnitude < 0.001 then
+    if not aim or aim.Magnitude < 0.001 then
         aim = Vector3.new(1, 0, 0)
     else
-        aim = aim.Unit
+        aim = Vector3.new(aim.X, 0, aim.Z)
+        if aim.Magnitude < 0.001 then
+            aim = Vector3.new(1, 0, 0)
+        else
+            aim = aim.Unit
+        end
     end
     local along = math.max(size.X, size.Z) * 0.38
     return box.Position + aim * along
 end
 
-function MergeEggPrototypeService:_barrelCFrame(position, tangent)
+function MergeEggPrototypeService:_barrelCFrame(position, tangent, cannon)
     -- Always flatten. Loft belongs on the fireball, never the chassis.
+    -- barrelYawDegrees rotates the authored mesh so its visual barrel
+    -- matches this +X fire basis. Default 0. Rage T1 is 270 in config.
     local yawX, yawY, yawZ =
         MergeTowerBallistics.planarYaw(tangent and tangent.X or 1, 0, tangent and tangent.Z or 0)
     local rx, ry, rz, ux, uy, uz = MergeTowerBallistics.barrelBasis(yawX, yawY, yawZ)
+    local extra = math.rad(self:_towerBarrelYawDegrees(cannon))
     return CFrame.fromMatrix(position, Vector3.new(rx, ry, rz), Vector3.new(ux, uy, uz))
+        * CFrame.Angles(0, extra, 0)
 end
 
 function MergeEggPrototypeService:_cannonPad(cannon, world)
@@ -4085,8 +4164,9 @@ function MergeEggPrototypeService:_groundCannon(cannon)
     end
     local box, size = cannon:GetBoundingBox()
     local bottom = box.Position.Y - size.Y * 0.5
-    if math.abs(padTop - bottom) > 1e-3 then
-        cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, padTop - bottom, 0))
+    local target = padTop + self:_towerSeatOffsetY(cannon)
+    if math.abs(target - bottom) > 1e-3 then
+        cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, target - bottom, 0))
     end
 end
 
@@ -4095,7 +4175,7 @@ function MergeEggPrototypeService:_faceCannonDownLane(cannon, world)
         return
     end
     local look = self:_towerGateLook(world, cannon:GetPivot().Position)
-    cannon:PivotTo(self:_barrelCFrame(cannon:GetPivot().Position, look))
+    cannon:PivotTo(self:_barrelCFrame(cannon:GetPivot().Position, look, cannon))
     self:_groundCannon(cannon)
     cannon:SetAttribute("MergeTowerRestCFrame", cannon:GetPivot())
 end
@@ -4114,7 +4194,7 @@ function MergeEggPrototypeService:_aimTowerCannon(cannon, origin, target, _apexH
     -- Flat turret: yaw only. The fireball parabola carries any loft.
     local yawX, yawY, yawZ =
         MergeTowerBallistics.planarYaw(target.X - origin.X, 0, target.Z - origin.Z)
-    cannon:PivotTo(self:_barrelCFrame(rest.Position, Vector3.new(yawX, yawY, yawZ)))
+    cannon:PivotTo(self:_barrelCFrame(rest.Position, Vector3.new(yawX, yawY, yawZ), cannon))
     self:_groundCannon(cannon)
 end
 
@@ -4175,7 +4255,7 @@ function MergeEggPrototypeService:_towerCandidateAimable(origin, look, position,
     return nil
 end
 
-function MergeEggPrototypeService:_towerEnemyTarget(record, origin, look)
+function MergeEggPrototypeService:_towerEnemyTarget(record, origin, look, role)
     local range = self:_towerLaneRange(record, origin)
     local world = record and record.world
     local best
@@ -4184,10 +4264,14 @@ function MergeEggPrototypeService:_towerEnemyTarget(record, origin, look)
         local model = enemy.model
         if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
             local position = self:_enemyLivePosition(enemy)
-            if self:_towerAllowsFireAt(world, position, "repulsor") then
+            if self:_towerAllowsFireAt(world, position, role or "repulsor") then
                 local distance = self:_towerCandidateAimable(origin, look, position, range)
                 if distance and distance < bestDistance then
-                    best = Vector3.new(position.X, position.Y + 1.4, position.Z)
+                    if self:_towerLandsOnGround(role) then
+                        best = self:_towerGroundPoint(world, position)
+                    else
+                        best = Vector3.new(position.X, position.Y + 1.4, position.Z)
+                    end
                     bestDistance = distance
                 end
             end
@@ -4211,7 +4295,7 @@ function MergeEggPrototypeService:_towerHealTarget(record, origin, look)
         end
         local distance = self:_towerCandidateAimable(origin, look, position, range)
         if distance and distance < bestDistance then
-            best = Vector3.new(position.X, position.Y + 1.2, position.Z)
+            best = self:_towerGroundPoint(world, position)
             bestDistance = distance
         end
     end)
@@ -4233,7 +4317,7 @@ function MergeEggPrototypeService:_towerRageTarget(record, origin, look)
         end
         local distance = self:_towerCandidateAimable(origin, look, position, range)
         if distance and distance < bestDistance then
-            best = Vector3.new(position.X, position.Y + 1.2, position.Z)
+            best = self:_towerGroundPoint(world, position)
             bestDistance = distance
         end
     end)
@@ -4248,7 +4332,7 @@ function MergeEggPrototypeService:_towerShotTarget(record, origin, look, role)
     if id == "rage" then
         return self:_towerRageTarget(record, origin, look)
     end
-    return self:_towerEnemyTarget(record, origin, look)
+    return self:_towerEnemyTarget(record, origin, look, id)
 end
 
 function MergeEggPrototypeService:_towerAimTarget(record, origin, look, role)
@@ -4290,7 +4374,12 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                             family,
                             gameplayTier,
                             nil,
-                            self._config.tier_art
+                            self._config.tier_art,
+                            MergeTowerModels.entryWorldScale(
+                                self._config.tier_art,
+                                family,
+                                gameplayTier
+                            )
                         )
                     )
                 then
@@ -5482,30 +5571,76 @@ function MergeEggPrototypeService:_clearTowerTestPrompts(cannon)
     end
 end
 
-function MergeEggPrototypeService:_aimCannonAtLaneTarget(record, cannon)
-    local world = (record and record.world) or self:_worldForCannon(cannon)
-    if not (world and cannon) then
-        return nil
-    end
+function MergeEggPrototypeService:_towerRecoilSpec()
     local _, shot = self:_edgeTowerConfig()
-    local origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector)
-    if not origin then
-        return nil
-    end
-    local look = self:_towerGateLook(world, origin)
-    local role = string.lower(tostring(cannon:GetAttribute("MergeTowerRole") or ""))
-    local target = self:_towerAimTarget(record, origin, look, role)
-    local apex = requiredConfigNumber(shot.apex_height, "team.edge_towers.shot.apex_height")
-    if target then
-        self:_aimTowerCannon(cannon, origin, target, apex)
-        origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
-    else
-        self:_faceCannonDownLane(cannon, world)
-    end
-    return world, origin, target, apex
+    local recoil = type(shot.recoil) == "table" and shot.recoil or {}
+    return {
+        duration = requiredConfigNumber(recoil.duration, "team.edge_towers.shot.recoil.duration"),
+        height = requiredConfigNumber(recoil.height, "team.edge_towers.shot.recoil.height"),
+        peakAt = requiredConfigNumber(recoil.peak_at, "team.edge_towers.shot.recoil.peak_at"),
+        shake = requiredConfigNumber(recoil.shake, "team.edge_towers.shot.recoil.shake"),
+    }
 end
 
-function MergeEggPrototypeService:_stepTowerAim(record)
+function MergeEggPrototypeService:_towerRecoilUntil(cannon)
+    return tonumber(cannon and cannon:GetAttribute("MergeTowerRecoilUntil"))
+end
+
+function MergeEggPrototypeService:_towerRecoilActive(cannon, now)
+    local untilAt = self:_towerRecoilUntil(cannon)
+    return untilAt ~= nil and now < untilAt
+end
+
+function MergeEggPrototypeService:_beginTowerRecoil(cannon, now)
+    if not cannon then
+        return
+    end
+    local recoil = self:_towerRecoilSpec()
+    if recoil.duration <= 0 then
+        return
+    end
+    cannon:SetAttribute("MergeTowerRecoilRestCFrame", cannon:GetPivot())
+    cannon:SetAttribute("MergeTowerRecoilStartedAt", now)
+    cannon:SetAttribute("MergeTowerRecoilUntil", now + recoil.duration)
+end
+
+function MergeEggPrototypeService:_clearTowerRecoil(cannon)
+    if not cannon then
+        return
+    end
+    local rest = cannon:GetAttribute("MergeTowerRecoilRestCFrame")
+    if typeof(rest) == "CFrame" then
+        cannon:PivotTo(rest)
+    end
+    cannon:SetAttribute("MergeTowerRecoilRestCFrame", nil)
+    cannon:SetAttribute("MergeTowerRecoilStartedAt", nil)
+    cannon:SetAttribute("MergeTowerRecoilUntil", nil)
+end
+
+function MergeEggPrototypeService:_stepOneTowerRecoil(cannon, now)
+    if not (cannon and cannon:IsA("Model")) then
+        return
+    end
+    local untilAt = self:_towerRecoilUntil(cannon)
+    if untilAt == nil then
+        return
+    end
+    local rest = cannon:GetAttribute("MergeTowerRecoilRestCFrame")
+    if typeof(rest) ~= "CFrame" or now >= untilAt then
+        self:_clearTowerRecoil(cannon)
+        return
+    end
+    local started = tonumber(cannon:GetAttribute("MergeTowerRecoilStartedAt")) or now
+    local recoil = self:_towerRecoilSpec()
+    local alpha = 0
+    if recoil.duration > 0 then
+        alpha = (now - started) / recoil.duration
+    end
+    local lift = MergeTowerBallistics.recoilHeight(alpha, recoil.height, recoil.peakAt, recoil.shake)
+    cannon:PivotTo(rest + Vector3.new(0, lift, 0))
+end
+
+function MergeEggPrototypeService:_stepTowerRecoil(record, now)
     local world = record and record.world
     local folder = world and world:FindFirstChild("MergeEggTowers")
     if not folder then
@@ -5513,6 +5648,49 @@ function MergeEggPrototypeService:_stepTowerAim(record)
     end
     for _, cannon in ipairs(folder:GetChildren()) do
         if cannon:IsA("Model") and cannon:GetAttribute("MergeTowerSpawned") == true then
+            self:_stepOneTowerRecoil(cannon, now)
+        end
+    end
+end
+
+function MergeEggPrototypeService:_aimCannonAtLaneTarget(record, cannon)
+    local world = (record and record.world) or self:_worldForCannon(cannon)
+    if not (world and cannon) then
+        return nil
+    end
+    local _, shot = self:_edgeTowerConfig()
+    local look = self:_towerGateLook(world, cannon:GetPivot().Position)
+    local origin = self:_towerMuzzle(cannon, look)
+    if not origin then
+        return nil
+    end
+    look = self:_towerGateLook(world, origin) or look
+    local role = string.lower(tostring(cannon:GetAttribute("MergeTowerRole") or ""))
+    local target = self:_towerAimTarget(record, origin, look, role)
+    local apex = requiredConfigNumber(shot.apex_height, "team.edge_towers.shot.apex_height")
+    if target then
+        local fire = self:_towerPlanarAim(origin, target) or look
+        self:_aimTowerCannon(cannon, origin, target, apex)
+        origin = self:_towerMuzzle(cannon, fire) or origin
+    else
+        self:_faceCannonDownLane(cannon, world)
+    end
+    return world, origin, target, apex
+end
+
+function MergeEggPrototypeService:_stepTowerAim(record, now)
+    local world = record and record.world
+    local folder = world and world:FindFirstChild("MergeEggTowers")
+    if not folder then
+        return
+    end
+    now = tonumber(now) or os.clock()
+    for _, cannon in ipairs(folder:GetChildren()) do
+        if
+            cannon:IsA("Model")
+            and cannon:GetAttribute("MergeTowerSpawned") == true
+            and not self:_towerRecoilActive(cannon, now)
+        then
             self:_aimCannonAtLaneTarget(record, cannon)
         end
     end
@@ -5565,9 +5743,6 @@ function MergeEggPrototypeService:_playHealMuzzleFlame(cannon, origin, look, col
     host.Size = Vector3.new(0.35, 0.35, 0.35)
     local aim = look
     if not aim or aim.Magnitude < 0.001 then
-        aim = cannon:GetPivot().RightVector
-    end
-    if aim.Magnitude < 0.001 then
         aim = Vector3.new(1, 0, 0)
     else
         aim = Vector3.new(aim.X, 0, aim.Z)
@@ -5619,11 +5794,12 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         return false
     end
     local _, shot = self:_edgeTowerConfig()
-    local origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector)
+    local look = self:_towerGateLook(world, cannon:GetPivot().Position)
+    local origin = self:_towerMuzzle(cannon, look)
     if not origin then
         return false
     end
-    local look = self:_towerGateLook(world, origin)
+    look = self:_towerGateLook(world, origin) or look
     local role = string.lower(tostring(cannon:GetAttribute("MergeTowerRole") or ""))
     local target = self:_towerShotTarget(record, origin, look, role)
     if not target then
@@ -5638,8 +5814,9 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
     end
     cannon:SetAttribute("MergeTowerSkipReason", "")
     local apex = requiredConfigNumber(shot.apex_height, "team.edge_towers.shot.apex_height")
+    local fire = self:_towerPlanarAim(origin, target) or look
     self:_aimTowerCannon(cannon, origin, target, apex)
-    origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
+    origin = self:_towerMuzzle(cannon, fire) or origin
     local folder = self:_towerFolder(world, "MergeEggTowerShots")
     local diameter = requiredConfigNumber(shot.diameter, "team.edge_towers.shot.diameter")
     local part = Instance.new("Part")
@@ -5679,6 +5856,9 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
             "team.edge_towers.shot.flight_seconds"
         ),
         landSeconds = requiredConfigNumber(shot.land_seconds, "team.edge_towers.shot.land_seconds"),
+        impact = self:_towerImpactKind(role),
+        bloomScale = requiredConfigNumber(shot.bloom_scale, "team.edge_towers.shot.bloom_scale"),
+        startDiameter = diameter,
     }
     self._towerShots = self._towerShots or {}
     self._towerShots[#self._towerShots + 1] = flight
@@ -5687,6 +5867,7 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         record.towerShots[#record.towerShots + 1] = flight
     end
     self:_playCannonFire(cannon)
+    self:_beginTowerRecoil(cannon, now)
     return true
 end
 
@@ -5727,12 +5908,72 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
     end
 end
 
+function MergeEggPrototypeService:_stripTowerShotFlame(part)
+    if not part then
+        return
+    end
+    for _, child in ipairs(part:GetChildren()) do
+        if child.Name == "FireballFlame" or child:IsA("Fire") or child:IsA("ParticleEmitter") then
+            child:Destroy()
+        end
+    end
+end
+
+function MergeEggPrototypeService:_beginTowerShotImpact(flight, now)
+    local part = flight and flight.part
+    if not (part and part.Parent) then
+        return false
+    end
+    local kind = tostring(flight.impact or "linger")
+    if kind == "vanish" then
+        part:Destroy()
+        flight.part = nil
+        return false
+    end
+    if kind == "bloom" then
+        local _, shot = self:_edgeTowerConfig()
+        flight.landSeconds =
+            requiredConfigNumber(shot.bloom_seconds, "team.edge_towers.shot.bloom_seconds")
+        flight.startDiameter = tonumber(flight.startDiameter) or part.Size.X
+        self:_stripTowerShotFlame(part)
+        if flight.landSeconds <= 0 then
+            part:Destroy()
+            flight.part = nil
+            return false
+        end
+        self:_stepTowerShotBloom(flight, now)
+        return true
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_stepTowerShotBloom(flight, now)
+    local part = flight and flight.part
+    if not (part and part.Parent and flight.landedAt) then
+        return
+    end
+    local duration = math.max(1e-3, tonumber(flight.landSeconds) or 0.16)
+    local alpha = (now - flight.landedAt) / duration
+    local diameter = MergeTowerBallistics.bloomScale(alpha, flight.startDiameter, flight.bloomScale)
+    local fade = MergeTowerBallistics.bloomFade(alpha)
+    part.Size = Vector3.new(diameter, diameter, diameter)
+    part.Transparency = fade
+    local light = part:FindFirstChild("FireballLight")
+    if light and light:IsA("PointLight") then
+        light.Brightness = 2.8 * (1 - fade)
+        light.Range = 18 * (1 - fade * 0.45)
+    end
+end
+
 function MergeEggPrototypeService:_stepTowerShots(now)
     local remaining = {}
     for _, flight in ipairs(self._towerShots or {}) do
         local part = flight.part
         if part and part.Parent then
             if flight.landedAt then
+                if flight.impact == "bloom" then
+                    self:_stepTowerShotBloom(flight, now)
+                end
                 if now < flight.landedAt + flight.landSeconds then
                     remaining[#remaining + 1] = flight
                 else
@@ -5748,7 +5989,9 @@ function MergeEggPrototypeService:_stepTowerShots(now)
                     flight.landedAt = now
                     self:_playCannonImpact(target, part.Parent)
                     self:_playTowerLandingVisual(flight, target)
-                    remaining[#remaining + 1] = flight
+                    if self:_beginTowerShotImpact(flight, now) then
+                        remaining[#remaining + 1] = flight
+                    end
                 else
                     local x, y, z = MergeTowerBallistics.point(
                         origin.X,
@@ -11480,10 +11723,11 @@ function MergeEggPrototypeService:_stepRecord(record, now)
     self:_updateTutorial(record, now, false)
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
-    self:_stepTowerAim(record)
+    self:_stepTowerAim(record, now)
     if record.terminal ~= true then
         self:_stepTowerFire(record, now)
     end
+    self:_stepTowerRecoil(record, now)
     if
         record
         and record.terminal == true

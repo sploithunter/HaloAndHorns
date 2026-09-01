@@ -55,7 +55,20 @@ function MergeTowerModels.GetTemplate(role, tier, rootOverride)
     return nil
 end
 
-function MergeTowerModels.MatchesTemplate(model, role, tier, rootOverride, tierArt)
+function MergeTowerModels.worldScale(scale)
+    local resolved = tonumber(scale)
+    if resolved == nil then
+        return 1
+    end
+    return math.max(0.1, resolved)
+end
+
+function MergeTowerModels.entryWorldScale(tierArt, role, tier)
+    local art = MergeTierArt.entry(tierArt, "cannon", role, tier)
+    return MergeTowerModels.worldScale(art and art.worldScale)
+end
+
+function MergeTowerModels.MatchesTemplate(model, role, tier, rootOverride, tierArt, worldScale)
     if not (model and model:IsA("Model")) then
         return false
     end
@@ -64,7 +77,7 @@ function MergeTowerModels.MatchesTemplate(model, role, tier, rootOverride, tierA
     if not (expected and template) then
         return false
     end
-    if math.abs(model:GetScale() - 1) > 1e-3 then
+    if math.abs(model:GetScale() - MergeTowerModels.worldScale(worldScale)) > 1e-3 then
         return false
     end
     if contentId(model:GetAttribute("RobloxModelAssetId")) ~= expected.modelAssetId then
@@ -132,13 +145,20 @@ function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride, tierArt)
     if not model then
         return nil, reason
     end
+    local worldScale = MergeTowerModels.entryWorldScale(tierArt, role, tier)
+    if math.abs(worldScale - 1) > 1e-3 then
+        model:ScaleTo(worldScale)
+    end
     model.Parent = parent or pad.Parent
     model:PivotTo(anchor.CFrame)
     local boundsCFrame, boundsSize = model:GetBoundingBox()
     local bottomY = boundsCFrame.Position.Y - boundsSize.Y * 0.5
     model:PivotTo(model:GetPivot() + Vector3.new(0, anchor.Position.Y - bottomY, 0))
     model:SetAttribute("MergeTowerSpawned", true)
-    model:SetAttribute("MergeTowerSpawnScale", 1)
+    model:SetAttribute("MergeTowerSpawnScale", worldScale)
+    local art = MergeTierArt.entry(tierArt, "cannon", role, tier)
+    model:SetAttribute("MergeTowerBarrelYawDegrees", tonumber(art and art.barrelYawDegrees) or 0)
+    model:SetAttribute("MergeTowerSeatOffsetY", tonumber(art and art.seatOffsetY) or 0)
     model:SetAttribute("MergeTowerPadSlot", pad:GetAttribute("MergeTowerPadSlot"))
     model:SetAttribute("MergeEggBayId", pad:GetAttribute("MergeEggBayId"))
     return model

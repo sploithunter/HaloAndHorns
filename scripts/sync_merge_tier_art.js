@@ -61,6 +61,9 @@ function collect() {
       meshId: String(entry.roblox.meshId),
       textureId: String(entry.roblox.textureId),
       templateScale: Number(entry.runtime.templateScale),
+      barrelYawDegrees: Number(entry.runtime.barrelYawDegrees || 0),
+      worldScale: Number(entry.runtime.worldScale || 1),
+      seatOffsetY: Number(entry.runtime.seatOffsetY || 0),
     }));
     assert(
       cannons[family].every((entry) => entry.templateScale === 1),
@@ -102,6 +105,15 @@ function renderRegistry(name, families, familyOrder, fields) {
       lines.push(`            tier = ${entry.tier},`);
       for (const field of fields) {
         lines.push(`            ${field} = ${quote(entry[field])},`);
+      }
+      if (Number.isFinite(entry.barrelYawDegrees) && Number(entry.barrelYawDegrees) !== 0) {
+        lines.push(`            barrelYawDegrees = ${Number(entry.barrelYawDegrees)},`);
+      }
+      if (Number.isFinite(entry.worldScale)) {
+        lines.push(`            worldScale = ${Number(entry.worldScale)},`);
+      }
+      if (Number.isFinite(entry.seatOffsetY) && Number(entry.seatOffsetY) !== 0) {
+        lines.push(`            seatOffsetY = ${Number(entry.seatOffsetY)},`);
       }
       lines.push("        },");
     }

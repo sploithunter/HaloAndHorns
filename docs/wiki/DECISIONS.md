@@ -782,8 +782,29 @@ Supersedes the temporary scale-only decision. Heal, Rage, Debuff, Gravity,
 Repulsor, and Nullifier each ship four distinct tier meshes. Runtime must request
 the gameplay tier directly and must not substitute `current_art_tier`, apply a
 `tier_scales` table, or derive one tier by resizing another. Templates keep scale
-1 and normalize to the shared 7.953594-stud reference width. The proof manifest
+1 and normalize to the shared 7.953594-stud reference width. Presentation size
+is per-tier `worldScale` on `configs/merge_tier_art.lua` (every Tier 1 is
+0.375, matching the tuned Rage T1; Tiers 2–4 stay 0.5).
+Barrel facing is per-tier `barrelYawDegrees` (Rage T1 is 270; others 0).
+Pad sit is per-tier `seatOffsetY`, scaled with `worldScale` (0.55 at
+0.375, 0.733 at 0.5). Do not
+hardcode those numbers in the spawn/aim path. The proof manifest
 must retain 24 distinct concept hashes, Model IDs, Mesh IDs, and Texture IDs.
+
+## Ability Cannons Land On The Floor (2026-09-01)
+
+Heal, Rage, and other power-laying shots place the projectile on the
+ground under the target (`land_at = "ground"`), matching the ring.
+The ball blooms out (`ability_impact = "bloom"`) instead of lingering
+at chest height. Keep it quiet; do not add a second explosion.
+
+## Cannon Fire Recoil Never Owns Cadence (2026-09-01)
+
+A shot freezes aim and plays a short vertical lurch from
+`team.edge_towers.shot.recoil`. That window must stay shorter than the
+fire interval and must not write `MergeTowerNextFireAt`. If a later
+interval is shorter than the kick, the next shot wins and starts a new
+kick from the fresh aim pose.
 
 ## Cannons Never Fire Behind the Breach (2026-09-01)
 

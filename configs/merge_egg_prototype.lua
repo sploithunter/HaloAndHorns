@@ -476,6 +476,7 @@ return {
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
             -- All six families ship distinct Tier 1–4 meshes at a uniform template scale.
+            -- Per-tier presentation size lives on merge_tier_art.worldScale.
             distinct_art_tiers = true,
             available_roles = {
                 "heal",
@@ -498,6 +499,20 @@ return {
                 range_gate_padding = 16,
                 diameter = 1.2,
                 land_seconds = 0.55,
+                -- Ability shots land on the floor under the target (the ring
+                -- plane). The ball blooms out quietly instead of lingering.
+                land_at = "ground",
+                ability_impact = "bloom",
+                bloom_seconds = 0.16,
+                bloom_scale = 2.0,
+                -- Fire kick. Aim freezes for this window, then resumes.
+                -- Keep shorter than any shot interval so it never owns cadence.
+                recoil = {
+                    duration = 0.18,
+                    height = 0.2,
+                    peak_at = 0.32,
+                    shake = 0.03,
+                },
                 heal_fire_texture = "83142936306716",
                 -- Heal landing casts the real Healing Field at impact (same
                 -- kind numbers, no Focus/cooldown). Rage landing is a one-time
@@ -520,15 +535,21 @@ return {
                     -- fire interval. hot_tick stays 2s on Healing Field.
                     heal = {
                         cast = "healing_field",
+                        land_at = "ground",
+                        impact = "bloom",
                         magnitude = { 110, 110, 110, 110 },
                         interval = { 2.4, 2.4, 2.4, 2.4 },
                     },
                     -- Tiers only change fire interval and circle size.
                     -- Sip size stays Berserk Brew's sip_fraction.
+                    -- One radius is both the MagicCircle and who gets sipped
+                    -- (same ground-rune path as Healing Field / Rage).
                     rage = {
                         cast = "berserk_brew",
+                        land_at = "ground",
+                        impact = "bloom",
                         interval = { 2.4, 2.4, 2.4, 2.4 },
-                        radius = { 28, 28, 28, 28 },
+                        radius = { 7, 28, 28, 28 },
                     },
                 },
                 role_colors = {

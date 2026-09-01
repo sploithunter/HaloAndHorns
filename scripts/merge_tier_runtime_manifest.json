@@ -28,7 +28,10 @@
       "modelAssetId": "83384749432985",
       "meshId": "114650833232709",
       "textureId": "139686347540585",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "heal",
@@ -36,7 +39,10 @@
       "modelAssetId": "139934426250291",
       "meshId": "101416290536855",
       "textureId": "125180760410565",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "heal",
@@ -44,7 +50,10 @@
       "modelAssetId": "108940380608596",
       "meshId": "70463710680411",
       "textureId": "111446641271808",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "heal",
@@ -52,7 +61,10 @@
       "modelAssetId": "124634979760401",
       "meshId": "100407635866251",
       "textureId": "84388175252193",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -60,7 +72,10 @@
       "modelAssetId": "74085555919304",
       "meshId": "140445830725136",
       "textureId": "120457257412811",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 270,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "rage",
@@ -68,7 +83,10 @@
       "modelAssetId": "100102545353592",
       "meshId": "122743079797635",
       "textureId": "112130547119678",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -76,7 +94,10 @@
       "modelAssetId": "102457421153837",
       "meshId": "138331655618830",
       "textureId": "123219933125620",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -84,7 +105,10 @@
       "modelAssetId": "87762252278760",
       "meshId": "127623585613419",
       "textureId": "78472306743043",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -92,7 +116,10 @@
       "modelAssetId": "90303291334041",
       "meshId": "101528155910040",
       "textureId": "100157293936396",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "debuff",
@@ -100,7 +127,10 @@
       "modelAssetId": "98058587937305",
       "meshId": "79845338311693",
       "textureId": "122268989880172",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -108,7 +138,10 @@
       "modelAssetId": "108380777646775",
       "meshId": "119280408890657",
       "textureId": "111095034109245",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -116,7 +149,10 @@
       "modelAssetId": "88248287711565",
       "meshId": "122588599717914",
       "textureId": "138671610283207",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -124,7 +160,10 @@
       "modelAssetId": "77152402298985",
       "meshId": "127753732493357",
       "textureId": "86492725259912",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "gravity",
@@ -132,7 +171,10 @@
       "modelAssetId": "117227343235730",
       "meshId": "84216404542389",
       "textureId": "125199654859868",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -140,7 +182,10 @@
       "modelAssetId": "122229990932951",
       "meshId": "103722578550022",
       "textureId": "109547694123216",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -148,7 +193,10 @@
       "modelAssetId": "74242056171109",
       "meshId": "75538738354253",
       "textureId": "106500478108571",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -156,7 +204,10 @@
       "modelAssetId": "97936800984221",
       "meshId": "86200070009329",
       "textureId": "114202274285615",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "repulsor",
@@ -164,7 +215,10 @@
       "modelAssetId": "121632029834795",
       "meshId": "123147846691160",
       "textureId": "80442912867791",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -172,7 +226,10 @@
       "modelAssetId": "85711564245566",
       "meshId": "130732092642003",
       "textureId": "99120964974996",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -180,7 +237,10 @@
       "modelAssetId": "81406275628540",
       "meshId": "82000379884068",
       "textureId": "113912676709629",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -188,7 +248,10 @@
       "modelAssetId": "79964691038207",
       "meshId": "112018017672665",
       "textureId": "92158246124108",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "nullifier",
@@ -196,7 +259,10 @@
       "modelAssetId": "97270924486976",
       "meshId": "125200316700851",
       "textureId": "98389823322538",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -204,7 +270,10 @@
       "modelAssetId": "73215093759999",
       "meshId": "84856296327141",
       "textureId": "80720189474681",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -212,7 +281,10 @@
       "modelAssetId": "74540150269159",
       "meshId": "95125160919558",
       "textureId": "92959528373062",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     }
   ],
   "bulwarks": [

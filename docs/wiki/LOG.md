@@ -6874,3 +6874,55 @@ first-session cohort rates.
 - The full tracked `src/` audit found 138 runtime asset/content literals across 36 files and 1,642
   numeric tuning fallbacks across 239 files. CI now ratchets the complete inventory; remediation is
   tracked in issue #343.
+
+## 2026-09-01 — Cannon size and Rage T1 barrel yaw are per-tier config
+
+- All 24 cannon runtimes now have `worldScale = 0.5`. Spawn reads that
+  entry; templates stay scale 1. Rage T1 has `barrelYawDegrees = 90`
+  (T2 does not). Aim uses the shot tangent, not mesh +X, so a yaw
+  offset does not fire sideways. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 barrel yaw is 180
+
+- Play showed Rage T1 firing exactly backwards at 90. Config-only
+  change: Rage T1 `barrelYawDegrees = 180`. T2–T4 and the other five
+  families stay 0. Aim now reads that value from config, not the
+  stamped attribute on an already-spawned chassis. Rage T1 landing
+  radius is 7 (was 28: 75% smaller). The MagicCircle and the sip
+  use that same number via PlaceBerserkCircle. T2–T4 stay 28.
+  Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 barrel yaw is 270, not 180-from-90
+
+- `barrelYawDegrees` is an absolute extra yaw on the fire basis,
+  not a delta. Replacing 90 with 180 only turned the backwards
+  shot another quarter turn (left). Play wanted 90+180, so Rage
+  T1 is now 270. T2 stays 0. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 chassis is 25% smaller than the shared half-size
+
+- Rage T1 `worldScale` is 0.375 (0.5 × 0.75). The other 23 cannons
+  stay 0.5. Existing T1 fails MatchesTemplate and respawns after Play
+  restart. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 wheels sit on the pad
+
+- Rage T1 mesh hangs below its AABB, so bbox-to-deck seating buried
+  the wheels. `seatOffsetY` is now on all 24 chassis, scaled with
+  `worldScale` (0.55 at T1 / 0.375, 0.733 at T2–4 / 0.5). Every
+  Tier 1 uses Rage T1's tuned size 0.375. Not Play-confirmed.
+
+## 2026-09-01 — Cannons kick on fire without changing cadence
+
+- After a shot the chassis stops aiming for 0.18s, lurches up 0.2
+  studs with a light shake, then settles and tracks again. Tunables
+  are `team.edge_towers.shot.recoil`. The fire interval is unchanged.
+  Applies to every role; test on Rage T1. Not Play-confirmed.
+
+## 2026-09-01 — Ability shots land on the floor and bloom out
+
+- Heal/Rage (and any landing with a cast, or `land_at = "ground"`)
+  aim the LandStrip under the target. The ball no longer sits at
+  chest height for 0.55s; it blooms to 2× and fades in 0.16s.
+  Extra Rage sips use planar distance so the floor landing does not
+  shrink the circle. Not Play-confirmed.

@@ -1058,9 +1058,14 @@ clean.
   `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
   Workspace review lineup is removed; maps own mounts, not cannon visuals. Every tier is normalized
-  to the corrected 7.953594-stud reference width at template scale 1.
-  `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier and grounds it on a
-  pad's `TowerAnchor`; no current-art substitution or resize fallback remains.
+  to the corrected 7.953594-stud reference width at template scale 1. Presentation
+  size is per-tier `worldScale` on `configs/merge_tier_art.lua` (every
+  Tier 1 is 0.375; Tiers 2–4 stay 0.5). Every chassis sets
+  `seatOffsetY` so wheels sit on the pad. Rage T1 also sets
+  `barrelYawDegrees = 270`.
+  `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier,
+  applies that entry's `worldScale`, and grounds it on a pad's `TowerAnchor`;
+  no current-art substitution or shared edge-tower scale remains.
 - Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
   and one immediately outside position 9, pulled one 8.4-stud pad-width back
   from the egg-stand depth so they are not on top of the red-line engineer.
@@ -1069,11 +1074,15 @@ clean.
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Pads
-  start empty. Runtime clones the installed role's distinct gameplay-tier template at scale 1,
-  seats the chassis on the pad, and
-  lofts a fireball along a parabolic arc toward the nearest enemy on the gate
-  side of the lane. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
-  the model pivot (that CFrame stays at the portal spawn). Range reaches
+  start empty. Runtime clones the installed role's distinct gameplay-tier
+  template, applies that tier's `worldScale`, seats the chassis on the pad, and
+  lofts a fireball along a parabolic arc. Power-laying roles (Heal, Rage,
+  and any `cast` landing) aim the floor under the target — the same
+  LandStrip plane the ring uses — and the ball blooms out instead of
+  lingering. Other roles still use the gate-side lane target. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
+  the model pivot (that CFrame stays at the portal spawn). Each shot
+  freezes aim for a short config recoil (lurch up, settle) that never
+  owns the fire interval, then tracking resumes. Range reaches
   `OuterSpawnGate` on the dedicated Merge place (the old `EnemyPortalVisual`
   hook is absent there), so they track from the gate rather than only the last
   90 studs. The chassis stays flat and only yaws; loft is in the projectile.

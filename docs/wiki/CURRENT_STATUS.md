@@ -18,8 +18,13 @@ SploitHunter stands behind each pad. Talk opens an artillery workshop
 that matches the bulwark panel (six roles, buy / upgrade / install).
 Ownership is global; each commander installs only that pad. Pads start
 empty. The visual pass owns the six chassis so Install does not need
-a Buy. All six families use distinct Tier 1–4 models at uniform runtime
-scale; gameplay tier selects the matching prebaked template directly.
+a Buy. All six families use distinct Tier 1–4 models. Each of the 24
+cannon entries has its own `worldScale` (0.375 on every Tier 1,
+0.5 on Tiers 2–4). Every chassis uses `seatOffsetY` so wheels sit
+on the pad (0.55 at T1, 0.733 at T2–4). Rage T1 also has
+`barrelYawDegrees = 270`. Gameplay
+tier selects the matching
+prebaked template, then spawn applies that entry's presentation.
 Board-action toasts sit above the workshop
 (DisplayOrder 130). Install writes `MergeCannonPersist` only — no
 wave/MergeDefense signature compare. The `CANNON STATE CHANGED`
@@ -40,7 +45,8 @@ idle-pet or empty-lane shot. Pets outside the circle are not buffed. Flask
 drink still broadcasts from the player. Floor cards read the pet
 stamp (`damage_potion_pet`); CombatAura watches the pet Until. Not
 Play-confirmed. Rage tiers only change fire interval and circle
-size. Cannons never fire at a target on the egg side
+size. Rage T1 circle is 7 studs (T2–T4 stay 28); the rune and
+the sip share that radius. Cannons never fire at a target on the egg side
 of BreachLine. Heal and Rage use that same floor for now; bulwark/mid stay
 tunable. Not Play-confirmed yet.
 
@@ -153,6 +159,14 @@ Draft roles (stop/bleed/hunt/shred/hold/ward) live on
 Concertina Line `bleed_slow`, Land Shark `hunt_drag`, Saw Blade `shred_line`,
 and Grasping Hedge `grab_root`. Wardstone Barrier is still visual-only.
 
+## Ability cannon shots land on the floor (2026-09-01)
+
+Heal, Rage, and other power-laying shots aim the floor under the
+target — the same LandStrip plane the ring uses — then the ball
+blooms out in 0.16s instead of lingering. Not dramatic. Config:
+`land_at`, `ability_impact`, `bloom_seconds`, `bloom_scale`. Not
+Play-confirmed.
+
 ## Merge cannon shots boom on landing (2026-08-31)
 
 Fireballs play group-owned `cannon_impact` (`rbxassetid://105126690616608`,
@@ -172,6 +186,13 @@ was stuck at 90, so cannons only woke when pets entered the last third
 of the lane. Aim and range now use the gate (or the old portal visual
 when that world is present), plus live `MoveTarget` / `GetLivePosition`.
 Still no shot damage.
+
+## Merge cannons kick on fire (2026-09-01)
+
+On each shot the chassis stops aiming for 0.18s, lurches up 0.2 studs
+with a light shake, then settles and resumes tracking. Config lives on
+`team.edge_towers.shot.recoil`. It does not change the fire interval.
+Not Play-confirmed.
 
 ## Merge cannons aim the barrel and spit fireballs (2026-08-31)
 
