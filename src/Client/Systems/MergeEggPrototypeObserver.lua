@@ -25,6 +25,7 @@ local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMe
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
+local MergeEggBoardTapPolicy = require(script.Parent.MergeEggBoardTapPolicy)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -160,14 +161,18 @@ local function createTutorialCard(parent)
     local frame = Instance.new("Frame")
     frame.Name = "MergeEggTutorial"
     frame.AnchorPoint = Vector2.new(0, 0.5)
-    frame.Position = UDim2.new(0, 24, 0.5, -40)
-    frame.Size = UDim2.fromOffset(430, 126)
+    frame.Position = UDim2.new(0, 18, 0.5, -40)
+    frame.Size = UDim2.new(0.86, 0, 0, 126)
     frame.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
     frame.BackgroundTransparency = 0.04
     frame.BorderSizePixel = 0
     frame.Visible = false
     frame.ZIndex = 30
     frame.Parent = parent
+    local sizeConstraint = Instance.new("UISizeConstraint")
+    sizeConstraint.MinSize = Vector2.new(270, 126)
+    sizeConstraint.MaxSize = Vector2.new(430, 126)
+    sizeConstraint.Parent = frame
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = frame
@@ -737,7 +742,7 @@ local function createBoardActionFeedback(parent)
     label.Name = "BoardActionFeedback"
     label.AnchorPoint = Vector2.new(0.5, 0.5)
     label.Position = UDim2.fromScale(0.5, 0.72)
-    label.Size = UDim2.fromOffset(520, 64)
+    label.Size = UDim2.new(0.9, 0, 0, 64)
     label.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
     label.BackgroundTransparency = 0.08
     label.BorderSizePixel = 0
@@ -749,6 +754,10 @@ local function createBoardActionFeedback(parent)
     label.Visible = false
     label.ZIndex = 50
     label.Parent = parent
+    local sizeConstraint = Instance.new("UISizeConstraint")
+    sizeConstraint.MinSize = Vector2.new(240, 56)
+    sizeConstraint.MaxSize = Vector2.new(520, 64)
+    sizeConstraint.Parent = label
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = label
@@ -2931,6 +2940,48 @@ local function deploymentPadForTeam(teamId)
     return nil
 end
 
+local function deploymentTargetAtScreenPoint(screenPoint)
+    local world = prototypeWorld()
+    local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
+    local includedPads = {}
+    for _, pad in ipairs(pads and pads:GetChildren() or {}) do
+        if
+            pad:IsA("BasePart")
+            and pad:GetAttribute("MergeEggDeploymentAvailable") == true
+        then
+            includedPads[#includedPads + 1] = pad
+        end
+    end
+    local instance = includedInstanceAtScreenPoint(screenPoint, includedPads)
+    local teamId = deploymentTeamFromInstance(instance)
+    local pad = teamId and deploymentPadForTeam(teamId) or nil
+    if not pad then
+        return nil
+    end
+    return {
+        kind = "deployment",
+        adornee = pad,
+        teamId = teamId,
+        deployedTier = math.max(
+            0,
+            math.floor(tonumber(pad:GetAttribute("MergeEggDeploymentTier")) or 0)
+        ),
+    }
+end
+
+local function tapTargetAtScreenPoint(screenPoint)
+    local egg = boardEggAtScreenPoint(screenPoint, nil)
+    if egg then
+        return {
+            kind = "board_egg",
+            model = egg,
+            slot = tonumber(egg:GetAttribute("MergeEggBoardSlot")),
+            tier = tonumber(egg:GetAttribute("MergeEggSourceTier")),
+        }
+    end
+    return deploymentTargetAtScreenPoint(screenPoint)
+end
+
 local function createCompatibleDeploymentSquares(sourceTier)
     local world = prototypeWorld()
     local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
@@ -3224,7 +3275,7 @@ end
 local function updateBoardDrag()
     local drag = boardDrag
     local camera = Workspace.CurrentCamera
-    if not (drag and drag.model and drag.model.Parent and camera) then
+    if not (drag and drag.mode == "drag" and drag.model and drag.model.Parent and camera) then
         return
     end
     local screenPoint = dragScreenPoint(drag)
@@ -3299,6 +3350,7 @@ local function beginBoardDrag(input)
         dropTargets[#dropTargets + 1] = target
     end
     boardDrag = {
+        mode = "drag",
         input = input,
         model = model,
         sourceSlot = sourceSlot,
@@ -3316,9 +3368,43 @@ local function beginBoardDrag(input)
     setDragTarget(boardDrag, nil)
 end
 
+local function handleBoardTap(input)
+    if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
+        return
+    end
+    local interaction = boardDrag
+    if interaction and interaction.mode ~= "tap" then
+        return
+    end
+    local target = tapTargetAtScreenPoint(input.Position)
+    local selection = interaction and {
+        sourceSlot = interaction.sourceSlot,
+        sourceTier = interaction.sourceTier,
+    } or nil
+    local result = MergeEggBoardTapPolicy.resolve(selection, target)
+    if interaction then
+        destroyBoardDrag(interaction, true)
+        boardDrag = nil
+    end
+    if result.kind == "select" and target and target.model then
+        beginBoardDrag(input)
+        if boardDrag then
+            boardDrag.mode = "tap"
+            boardDrag.input = nil
+        end
+    elseif result.request then
+        Signals.MergeEggPrototypeBoardAction:FireServer(result.request)
+    end
+end
+
 local function finishBoardDrag(input)
     local drag = boardDrag
-    if not drag or drag.input.UserInputType ~= input.UserInputType then
+    if
+        not drag
+        or drag.mode ~= "drag"
+        or not drag.input
+        or drag.input.UserInputType ~= input.UserInputType
+    then
         return
     end
     local screenPoint = dragScreenPoint(drag)
@@ -3442,23 +3528,59 @@ function MergeEggPrototypeObserver.start()
     local teamDisplayFolder = nil
     local teamDisplayOwnedSlots = 0
     local boardWallControls = createBoardWallControls()
+    local touchCfg = (((CONFIG.team or {}).merge_board or {}).touch_input or {})
+    local maximumTapMovement = assert(
+        tonumber(touchCfg.max_movement_pixels),
+        "merge_egg_prototype.team.merge_board.touch_input.max_movement_pixels is required"
+    )
+    local maximumTapDuration = assert(
+        tonumber(touchCfg.max_duration_seconds),
+        "merge_egg_prototype.team.merge_board.touch_input.max_duration_seconds is required"
+    )
+    local activeTouchCount = 0
+    local boardTouchCandidate = nil
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            activeTouchCount += 1
+            if activeTouchCount == 1 and not gameProcessed then
+                boardTouchCandidate = {
+                    input = input,
+                    position = Vector2.new(input.Position.X, input.Position.Y),
+                    beganAt = os.clock(),
+                    cancelled = false,
+                }
+            elseif boardTouchCandidate then
+                boardTouchCandidate.cancelled = true
+            end
+            return
+        end
         if gameProcessed then
             return
         end
-        if
-            input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch
-        then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             beginBoardDrag(input)
         end
     end)
     UserInputService.InputEnded:Connect(function(input)
-        if
-            input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch
-        then
+        if input.UserInputType == Enum.UserInputType.Touch then
+            local candidate = boardTouchCandidate
+            local matches = candidate and candidate.input == input
+            if matches then
+                boardTouchCandidate = nil
+            end
+            activeTouchCount = math.max(0, activeTouchCount - 1)
+            if matches and candidate.cancelled ~= true and activeTouchCount == 0 then
+                local releasedAt = Vector2.new(input.Position.X, input.Position.Y)
+                local movement = (releasedAt - candidate.position).Magnitude
+                local duration = os.clock() - candidate.beganAt
+                if movement <= maximumTapMovement and duration <= maximumTapDuration then
+                    handleBoardTap(input)
+                end
+            end
+            return
+        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             finishBoardDrag(input)
         end
     end)
@@ -3496,10 +3618,18 @@ function MergeEggPrototypeObserver.start()
         if boardActionFeedback.Visible and os.clock() >= boardActionFeedbackUntil then
             boardActionFeedback.Visible = false
         end
-        if observing and boardDrag then
-            updateBoardDrag()
+        if observing and boardDrag and boardDrag.model and boardDrag.model.Parent then
+            if boardDrag.mode == "drag" then
+                updateBoardDrag()
+            else
+                updateEggFocusVisual(boardDrag.sourceFocus, boardDrag.model)
+                setDragTarget(boardDrag, nil)
+            end
         elseif not observing and boardDrag then
             destroyBoardDrag(boardDrag, true)
+            boardDrag = nil
+        elseif boardDrag then
+            destroyBoardDrag(boardDrag, false)
             boardDrag = nil
         end
         rotationElapsed += dt

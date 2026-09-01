@@ -582,7 +582,14 @@ team and queue model:
   every installed hatcher below the new tier one-for-one. Healthy deployed pets remain in place;
   newly granted positions are filled and future replacements use the promoted source.
 - Auto-Combine immediately resolves every available pair and repeats that cascade after each new
-  base egg. Manual drag-to-merge remains available independently.
+  base egg. Desktop keeps direct drag-and-drop. Touch devices use a sequential two-tap contract:
+  the first tap selects a board egg and highlights compatible board/deployment destinations; the
+  second tap merges with an equal board egg, deploys into an empty hatcher, or advances an
+  equal-tier deployed egg. A second tap on the same source, a tier mismatch, or any other invalid
+  world target clears selection without sending a mutation. Camera pans and multi-touch gestures
+  are rejected by configured movement/duration thresholds. The server remains authoritative for
+  distance, inventory, and live destination tier. The tutorial and result cards use viewport-width
+  sizing with desktop caps so those cues stay on-screen on phones and tablets.
 - The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,

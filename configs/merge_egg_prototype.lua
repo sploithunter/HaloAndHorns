@@ -331,12 +331,12 @@ return {
             },
             combine_once = {
                 title = "COMBINE TWO MATCHING EGGS",
-                body = "Merge them on the board or drag one onto a deployed matching egg.",
+                body = "Select one egg, then select a matching board or deployed egg.",
                 target = "board_egg",
             },
             deploy_one = {
                 title = "DEPLOY AN EGG",
-                body = "Drag an egg to any open frontline slot, or press EQUIP BEST.",
+                body = "Select an egg, then select an open frontline slot, or press EQUIP BEST.",
                 target = "board_egg",
             },
         },
@@ -439,6 +439,12 @@ return {
             anchor_to_start_platform_back_edge = true,
             egg_height = 4.8,
             rotate_degrees_per_second = 28,
+            touch_input = {
+                -- A short stationary touch is a board tap. Camera pans and multi-touch gestures
+                -- do not select, combine, deploy, or clear eggs accidentally.
+                max_movement_pixels = 24,
+                max_duration_seconds = 0.65,
+            },
             empty_slot_color = { 45, 52, 64 },
             empty_slot_transparency = 0.08,
             egg_sign_size = 4.8,

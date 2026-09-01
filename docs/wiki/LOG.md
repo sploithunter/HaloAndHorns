@@ -6898,3 +6898,15 @@ first-session cohort rates.
   silently widening fields or creating control-lock and drop-rate inflation.
 - Runtime world attributes expose every live multiplier, and pure headless coverage locks the
   additive factor semantics plus the no-radius-growth policy.
+
+## 2026-09-01 — Merge playboard gains phone/tablet two-tap input
+
+- Kept desktop drag-and-drop and added a touch-only sequential selection contract: tap a board egg,
+  then tap an equal board egg to combine, an empty hatcher to deploy, or an equal-tier deployed egg
+  to advance it. Tapping the source twice, a mismatched tier, or any other invalid world target
+  clears the selection without sending a server request.
+- The touch recognizer rejects camera pans, long presses, and multi-touch gestures through
+  config-owned movement/duration thresholds. The existing server paths still validate distance,
+  inventory, and live tiers; the client only emits intent.
+- Added pure policy coverage for every selection/action/cancellation branch and made the Merge
+  tutorial/result cards fit phone widths while retaining their desktop size caps.
