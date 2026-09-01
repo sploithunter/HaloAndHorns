@@ -173,6 +173,7 @@ function PowerService:BindPeerServices(services)
     self._playerProgressionService = services.PlayerProgressionService
     self._hotbarService = services.HotbarService
     self._worldTravelService = services.WorldTravelService
+    self._potionService = services.PotionService
 end
 
 -- Families whose `passive = true` powers apply permanently by OWNERSHIP. Each maps to its single
@@ -1424,12 +1425,18 @@ end
 -- perTick + totalSeconds are the EFFECTIVE (enhancement-scaled) magnitude + duration from the cast,
 -- so a `health`/`healing` enhancement raises the per-tick heal and (if ever slotted) duration extends
 -- the zone — the same numbers the ENHANCE preview shows.
-function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        return
+function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId, opts)
+    opts = type(opts) == "table" and opts or {}
+    local center = opts.center
+    if typeof(center) ~= "Vector3" then
+        local hrp = player
+            and player.Character
+            and player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then
+            return
+        end
+        center = hrp.Position
     end
-    local center = hrp.Position
     local radius = tonumber(kind.field_radius) or 28
     perTick = tonumber(perTick) or 0
     local tickSeconds = tonumber(kind.hot_tick) or 2
@@ -1445,6 +1452,7 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
         fade_in = 0.35,
         hold = math.max(0.1, totalSeconds - 0.95),
         fade_out = 0.6,
+        floor_y = opts.floor_y,
     })
 
     task.spawn(function()
@@ -1453,7 +1461,7 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
         while elapsed < totalSeconds do
             task.wait(tickSeconds)
             elapsed += tickSeconds
-            if not player.Parent then
+            if player and not player.Parent then
                 return
             end
             -- BATTLEFIELD PRINCIPLE (Jason, CoH-style): once placed, the field is a battlefield
@@ -1478,6 +1486,114 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
             end
         end
     end)
+end
+
+-- The existing Healing Field, at a world point. Same kind, rune, and tick
+-- loop as a player cast. The only difference is the anchor: impact instead
+-- of the caster's feet. No Focus, no cooldown, no rebuilt visual.
+function PowerService:PlaceHealingField(player, center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local kinds = self._powersConfig and self._powersConfig.effect_kinds or {}
+    local kind = kinds.healing_field
+    if type(kind) ~= "table" or kind.field ~= true then
+        return nil, "healing_field_missing"
+    end
+    return self:_healZone(
+        player,
+        kind,
+        tonumber(opts.magnitude) or tonumber(kind.magnitude) or 110,
+        tonumber(kind.duration) or 8,
+        "healing_field",
+        {
+            center = center,
+            floor_y = opts.floor_y,
+        }
+    )
+end
+
+-- One-time Berserk circle. Same MagicCircle art as Healing Field, tinted
+-- ruddy red. No tick loop: each unique player with a pet (or themselves)
+-- in the radius gets one no-consume Berserk sip. Stacking is BrewMeter.
+local BERSERK_CIRCLE_COLOR = Color3.fromRGB(168, 36, 32)
+
+function PowerService:PlaceBerserkCircle(center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local color = opts.color
+    if typeof(color) ~= "Color3" then
+        color = BERSERK_CIRCLE_COLOR
+    end
+    self:_spawnGroundRune(center, radius, color, {
+        name = opts.name or "BerserkCircle",
+        fade_in = 0.18,
+        hold = 1.35,
+        fade_out = 0.55,
+        bright = 0,
+        spin = true,
+        spin_deg = 90,
+        floor_y = opts.floor_y,
+    })
+
+    local potions = self._potionService
+    if not (potions and potions.SipBrewOn) then
+        return nil, "potion_service_missing"
+    end
+
+    -- Stamp each unit in the radius. Do not SipBrew the owner: that writes
+    -- player PetDamageBuffPotion and every pet inherits it.
+    local seen = {}
+    local sipped = 0
+    local function sipUnit(pet)
+        if
+            not (pet and pet:IsA("Model") and pet.Parent)
+            or seen[pet]
+            or pet:GetAttribute("CombatDowned")
+            or pet:GetAttribute("MergeEggObjective") == true
+        then
+            return
+        end
+        seen[pet] = true
+        local result = potions:SipBrewOn(pet, "berserk_brew")
+        if result and result.ok then
+            sipped += 1
+        end
+    end
+
+    local pfs = self._petFollowService
+    local function unitInCircle(pet)
+        if not (pet and pet:IsA("Model")) then
+            return false
+        end
+        local reported = pfs and pfs.GetReportedPosition and pfs:GetReportedPosition(pet)
+        local pos = (reported and reported.Position) or pet:GetPivot().Position
+        return (pos - center).Magnitude <= radius
+    end
+
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    for _, folder in ipairs(pp and pp:GetChildren() or {}) do
+        for _, pet in ipairs(folder:GetChildren()) do
+            if unitInCircle(pet) then
+                sipUnit(pet)
+            end
+        end
+    end
+
+    -- extras are already the aimed pet plus anyone the caster measured
+    -- inside the radius (live positions). Do not re-filter on pivot;
+    -- hatcher ghosts can sit away from their last rendered pivot.
+    if type(opts.extra_pets) == "table" then
+        for _, pet in ipairs(opts.extra_pets) do
+            sipUnit(pet)
+        end
+    end
+
+    return { ok = true, sipped = sipped, radius = radius }
 end
 
 function PowerService:_healOverTime(player, perTick, tickSeconds, totalSeconds)

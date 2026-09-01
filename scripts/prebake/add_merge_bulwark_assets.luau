@@ -2,7 +2,8 @@
 
 -- Add the six four-tier Merge bulwark families to the Rojo-served Models.rbxm library.
 -- Maps own only placement anchors; gameplay clones these local templates and never loads the
--- provenance Model assets at runtime.
+-- provenance Model assets at runtime. The native Roblox Model snapshots are intentional: rebuilding
+-- only a MeshPart from MeshId/TextureId loses the imported package pivot and internal orientation.
 --
 -- Usage:
 --   lune run scripts/prebake/add_merge_bulwark_assets.luau \
@@ -18,6 +19,7 @@ local outputPath = process.args[2]
 assert(inputPath and outputPath, "usage: add_merge_bulwark_assets.luau <Models.rbxm> <output.rbxm>")
 
 local manifest = serde.decode("json", fs.readFile("scripts/merge_bulwark_model_ids.json"))
+local nativeRoot = "assets/source/props/merge_bulwarks/roblox_originals"
 local roots = roblox.deserializeModel(fs.readFile(inputPath))
 assert(#roots == 1, "expected Models.rbxm to contain exactly one root")
 local root = roots[1]
@@ -58,7 +60,13 @@ for _, familyId in ipairs(familyOrder) do
     familyFolder.Parent = bulwarkRoot
 
     for _, entry in ipairs(family.tiers) do
-        local model = roblox.Instance.new("Model")
+        local nativePath = entry.approvedNativeSource
+            or string.format("%s/%s/tier%d/model.rbxm", nativeRoot, familyId, entry.tier)
+        assert(fs.isFile(nativePath), "missing native Roblox bulwark snapshot " .. nativePath)
+        local nativeRoots = roblox.deserializeModel(fs.readFile(nativePath))
+        assert(#nativeRoots == 1, "expected one root in " .. nativePath)
+        local model = nativeRoots[1]
+        assert(model:IsA("Model"), "expected Model root in " .. nativePath)
         model.Name = "Tier" .. tostring(entry.tier)
         model:SetAttribute("MergeBulwarkFamily", familyId)
         model:SetAttribute("MergeBulwarkTier", entry.tier)
@@ -66,28 +74,36 @@ for _, familyId in ipairs(familyOrder) do
         model:SetAttribute("RobloxModelAssetId", entry.modelAssetId)
         model:SetAttribute("RobloxMeshAssetId", entry.meshId)
         model:SetAttribute("RobloxTextureAssetId", entry.textureId)
+        model:SetAttribute("MergeBulwarkNativePackage", true)
+        model:SetAttribute(
+            "MergeBulwarkSourceUniformScale",
+            manifest.tileReferenceLength
+                / math.max(entry.rawRobloxSize[1], entry.rawRobloxSize[2], entry.rawRobloxSize[3])
+        )
         if family.animationClass then
             model:SetAttribute("MergeBulwarkAnimationClass", family.animationClass)
         end
+        if entry.speedDegrees then
+            model:SetAttribute("SawBladeSpeedDegrees", entry.speedDegrees)
+            model:SetAttribute("PreviewSpeedDegrees", entry.speedDegrees)
+        end
+        if entry.robloxRotationAxis then
+            model:SetAttribute("RotationAxis", entry.robloxRotationAxis)
+        end
+        if entry.idleSoundKey then
+            model:SetAttribute("MergeBulwarkIdleSoundKey", entry.idleSoundKey)
+        end
+        if entry.impactSoundKey then
+            model:SetAttribute("MergeBulwarkImpactSoundKey", entry.impactSoundKey)
+        end
+        -- Keep the lossless PackageLink in the source snapshot, but detach the runtime template so
+        -- Studio cannot update the served library behind the prebake's back.
+        for _, descendant in ipairs(model:GetDescendants()) do
+            if descendant:IsA("PackageLink") then
+                descendant:Destroy()
+            end
+        end
         model.Parent = familyFolder
-
-        local visual = roblox.Instance.new("MeshPart")
-        visual.Name = "Visual"
-        visual.MeshId = "rbxassetid://" .. tostring(entry.meshId)
-        visual.TextureID = "rbxassetid://" .. tostring(entry.textureId)
-        visual.Size = roblox.Vector3.new(
-            entry.canonicalSize[1],
-            entry.canonicalSize[2],
-            entry.canonicalSize[3]
-        )
-        visual.Anchored = true
-        visual.CanCollide = false
-        visual.CanTouch = false
-        visual.CanQuery = false
-        visual.CastShadow = true
-        visual.Massless = true
-        visual.Parent = model
-        model.PrimaryPart = visual
         added += 1
     end
 end

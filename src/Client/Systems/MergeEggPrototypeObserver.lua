@@ -9,6 +9,7 @@
     remain server-authoritative.
 ]]
 
+local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -17,9 +18,13 @@ local Workspace = game:GetService("Workspace")
 
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
+local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
+local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
+local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMenu)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
+local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -51,6 +56,9 @@ local tutorialClickChevron
 local tutorialClickCueTarget
 local tutorialClickCue
 local PANEL_WIDTH = 214
+local STATUS_BADGE_GUTTER = 40
+local STATUS_BADGE_BLINK_LEAD = tonumber((COMBAT.status_badges or {}).blink_lead_seconds) or 5
+local STATUS_BADGE_BLINK_PERIOD = tonumber((COMBAT.status_badges or {}).blink_period_seconds) or 0.5
 local GROUND_PANEL_GAP_BEHIND_EGG = 1
 local PANEL_HEADER_HEIGHT = 61
 local PANEL_CARD_HEIGHT = 44
@@ -118,6 +126,17 @@ local BOARD_ACTION_FAILURE_COPY = {
     egg_tier_mismatch = "THOSE EGGS DO NOT MATCH",
     automation_owns_board = "AUTOMATION IS USING THE BOARD",
     automation_owns_hatchers = "AUTOMATION IS USING THE HATCHERS",
+    bulwark_locked = "BULWARK UNLOCKED AT ITS WAVE MILESTONE",
+    bulwark_station_too_far = "MOVE CLOSER TO A BULWARK EDGE",
+    bulwark_already_selected = "THAT BULWARK IS ALREADY INSTALLED",
+    bulwark_not_installed = "INSTALL A BULWARK FIRST",
+    bulwark_maxed = "BULWARK IS ALREADY MAXIMUM TIER",
+    cannon_locked = "ARTILLERY UNLOCKED AT ITS WAVE MILESTONE",
+    cannon_station_too_far = "MOVE CLOSER TO THE ARTILLERY COMMANDER",
+    cannon_already_selected = "THAT CANNON IS ALREADY INSTALLED",
+    cannon_state_changed = "CANNON STATE CHANGED — TRY AGAIN",
+    cannon_not_owned = "BUY THAT CANNON FIRST",
+    cannon_maxed = "CANNON IS ALREADY MAXIMUM TIER",
     automation_owns_upgrades = "AUTOMATION IS USING UPGRADES",
     automation_running = "AUTOMATION IS RUNNING",
     not_active_encounter = "CONTROL UNAVAILABLE RIGHT NOW",
@@ -773,6 +792,27 @@ local function boardActionResultCopy(result)
             return "EGG DEPLOYED"
         elseif action == "rebirth" then
             return string.format("REBIRTH %d ACTIVE", math.max(0, tonumber(result.value) or 0))
+        elseif action == "bulwark" then
+            local value = type(result.value) == "table" and result.value or {}
+            if value.operation == "installed" then
+                return "BULWARK INSTALLED"
+            elseif value.operation == "replaced" then
+                return "BULWARK REPLACED AT TIER 1"
+            elseif value.operation == "upgraded" then
+                return string.format("BULWARK UPGRADED TO TIER %d", tonumber(value.tier) or 1)
+            end
+            return "BULWARK UPDATED"
+        elseif action == "cannon" then
+            local value = type(result.value) == "table" and result.value or {}
+            if value.operation == "installed" or value.operation == "equipped" then
+                return "CANNON INSTALLED"
+            elseif value.operation == "upgraded" then
+                return string.format(
+                    "CANNON UPGRADED TO TIER %d",
+                    tonumber(value.leftTier or value.tier) or 1
+                )
+            end
+            return "CANNON UPDATED"
         end
         return "ACTION COMPLETE"
     end
@@ -917,6 +957,529 @@ prototypeWorld = function()
         end
     end
     return maps:FindFirstChild((CONFIG.world or {}).model_name or "MergeEggPrototype")
+end
+
+-- Saw Blade bulwarks are anchored presentation rigs. Animate their independently pivoted rotors
+-- locally so a ten-tile line never spends server replication budget on sixty-per-second CFrames.
+-- Only the active player's bay is scanned; no Workspace-wide mechanism loop is allowed here.
+local sawBladeRigs = {}
+local landSharkRigs = {}
+local sawBladeScanElapsed = 0
+local SAW_BLADE_SPIN_MULT = 2
+local sawShredSeen = {}
+local FLESH_CHIP_COLORS = {
+    Color3.fromRGB(196, 78, 72),
+    Color3.fromRGB(232, 176, 118),
+    Color3.fromRGB(240, 214, 186),
+}
+
+local function collectShredColors(model)
+    local colors = { FLESH_CHIP_COLORS[1], FLESH_CHIP_COLORS[2] }
+    for _, desc in ipairs(model:GetDescendants()) do
+        if desc:IsA("BasePart") and desc.Transparency < 0.85 then
+            colors[#colors + 1] = desc.Color
+        end
+    end
+    return colors
+end
+
+local function shredBitsFolder()
+    local folder = Workspace:FindFirstChild("MergeSawShredBits")
+    if folder then
+        return folder
+    end
+    folder = Instance.new("Folder")
+    folder.Name = "MergeSawShredBits"
+    folder.Parent = Workspace
+    return folder
+end
+
+-- Tiny local cubes, colored from the chewed model plus a couple flesh chips so a dark mesh
+-- still reads as body bits. Client-only so a rapid shred line does not replicate debris.
+local function spraySawShredChunks(model, count)
+    local origin = model:GetAttribute("MoveTarget")
+    if typeof(origin) ~= "Vector3" then
+        origin = model:GetPivot().Position
+    end
+    local colors = collectShredColors(model)
+    local folder = shredBitsFolder()
+    count = math.clamp(math.floor(tonumber(count) or 7), 4, 14)
+    for _ = 1, count do
+        local size = 0.14 + math.random() * 0.16
+        local bit = Instance.new("Part")
+        bit.Name = "MergeSawShredBit"
+        bit.Shape = Enum.PartType.Block
+        bit.Anchored = false
+        bit.CanCollide = false
+        bit.CanQuery = false
+        bit.CanTouch = false
+        bit.Massless = true
+        bit.CastShadow = false
+        bit.Material = Enum.Material.SmoothPlastic
+        bit.Color = colors[math.random(1, #colors)]
+        bit.Size = Vector3.new(size, size, size)
+        bit.CFrame = CFrame.new(
+            origin
+                + Vector3.new(
+                    (math.random() - 0.5) * 1.4,
+                    0.55 + math.random() * 0.9,
+                    (math.random() - 0.5) * 1.4
+                )
+        ) * CFrame.Angles(
+            math.random() * math.pi,
+            math.random() * math.pi,
+            math.random() * math.pi
+        )
+        bit.AssemblyLinearVelocity = Vector3.new(
+            (math.random() - 0.5) * 30,
+            12 + math.random() * 20,
+            (math.random() - 0.5) * 30
+        )
+        bit.AssemblyAngularVelocity = Vector3.new(
+            (math.random() - 0.5) * 26,
+            (math.random() - 0.5) * 26,
+            (math.random() - 0.5) * 26
+        )
+        bit.Parent = folder
+        Debris:AddItem(bit, 0.4 + math.random() * 0.22)
+    end
+end
+
+local function pulseSawShredModel(model)
+    if not (model and model:IsA("Model")) then
+        return
+    end
+    local pulse = tonumber(model:GetAttribute("MergeSawShredPulse")) or 0
+    local seen = sawShredSeen[model] or 0
+    if pulse > seen then
+        sawShredSeen[model] = pulse
+        spraySawShredChunks(model, model:GetAttribute("MergeSawShredChunks"))
+    elseif pulse <= 0 and seen > 0 then
+        sawShredSeen[model] = nil
+    end
+end
+
+local function updateSawShredChunks(observing)
+    if not observing then
+        for model in pairs(sawShredSeen) do
+            sawShredSeen[model] = nil
+        end
+        return
+    end
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    for _, model in ipairs(enemies and enemies:GetChildren() or {}) do
+        pulseSawShredModel(model)
+    end
+    -- Pets use the same pulse if they ever take a shred tick, so chips can be body bits of
+    -- either side without a second VFX path.
+    local pets = gameFolder and gameFolder:FindFirstChild("Pets")
+    for _, model in ipairs(pets and pets:GetChildren() or {}) do
+        pulseSawShredModel(model)
+    end
+    for model in pairs(sawShredSeen) do
+        if not model.Parent then
+            sawShredSeen[model] = nil
+        end
+    end
+end
+
+local function sawBladeRotation(axis, angle)
+    if axis == "X" then
+        return CFrame.Angles(angle, 0, 0)
+    elseif axis == "Y" then
+        return CFrame.Angles(0, angle, 0)
+    end
+    return CFrame.Angles(0, 0, angle)
+end
+
+local function registerSawBladeRig(model)
+    -- Fit before capturing startCFrame. Import-scale meshes render ~100× until this lands;
+    -- fitting after register makes rotors orbit the oversized frame.
+    MergeBulwarkModels.ApplySawBladeImportScale(model)
+    local blades = {}
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") and string.match(descendant.Name, "^Blade%d+$") then
+            blades[#blades + 1] = {
+                part = descendant,
+                startCFrame = descendant.CFrame,
+                axis = tostring(
+                    descendant:GetAttribute("RotationAxis")
+                        or model:GetAttribute("RotationAxis")
+                        or "Z"
+                ),
+                direction = tonumber(descendant:GetAttribute("RotationDirection")) or 1,
+            }
+        end
+    end
+    if #blades > 0 then
+        -- Authored deck speeds stay 180 / 360 (T2 and T4 already twice T1 / T3). Presentation
+        -- is 2× that so the line actually reads as a chew. Each tile starts at a random
+        -- phase so ten identical rotors do not lockstep.
+        local startAngle = math.random() * math.pi * 2
+        local speedDegrees = math.max(
+            0,
+            tonumber(model:GetAttribute("SawBladeSpeedDegrees"))
+                or tonumber(model:GetAttribute("PreviewSpeedDegrees"))
+                or 180
+        ) * SAW_BLADE_SPIN_MULT
+        sawBladeRigs[model] = {
+            model = model,
+            blades = blades,
+            angle = startAngle,
+            speedDegrees = speedDegrees,
+        }
+        for _, blade in ipairs(blades) do
+            if blade.part.Parent then
+                blade.part.CFrame = blade.startCFrame
+                    * sawBladeRotation(blade.axis, startAngle * blade.direction)
+            end
+        end
+    end
+end
+
+local function planarUnit(value, fallback)
+    if typeof(value) ~= "Vector3" then
+        return fallback
+    end
+    local flat = Vector3.new(value.X, 0, value.Z)
+    if flat.Magnitude < 0.001 then
+        return fallback
+    end
+    return flat.Unit
+end
+
+local function inferLandSharkField(model, along)
+    local folder = model.Parent
+    local bay = folder and folder.Parent
+    if not (bay and along) then
+        return nil
+    end
+    local bayId = bay:GetAttribute("MergeEggBayId")
+    local roots = { bay }
+    local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local stations = map and map:FindFirstChild("BulwarkStations")
+    if stations then
+        roots[#roots + 1] = stations
+    end
+    local minDot, maxDot = math.huge, -math.huge
+    local acc = Vector3.zero
+    local count = 0
+    local look = nil
+    local tile = 9.4
+    for _, root in ipairs(roots) do
+        for _, descendant in ipairs(root:GetDescendants()) do
+            if
+                descendant:IsA("BasePart")
+                and string.match(descendant.Name, "^BulwarkAnchor_%d+$")
+                and (bayId == nil or descendant:GetAttribute("MergeEggBayId") == bayId)
+            then
+                local position = descendant.Position
+                local dot = position:Dot(along)
+                minDot = math.min(minDot, dot)
+                maxDot = math.max(maxDot, dot)
+                acc += Vector3.new(position.X, 0, position.Z)
+                count += 1
+                look = look
+                    or Vector3.new(
+                        descendant.CFrame.LookVector.X,
+                        0,
+                        descendant.CFrame.LookVector.Z
+                    )
+                tile = tonumber(descendant:GetAttribute("MergeBulwarkTileLength")) or tile
+            end
+        end
+        if count >= 2 then
+            break
+        end
+    end
+    if count < 2 then
+        return nil
+    end
+    local depth = planarUnit(look, Vector3.new(-along.Z, 0, along.X))
+    depth = planarUnit(depth - along * depth:Dot(along), Vector3.new(-along.Z, 0, along.X))
+    return {
+        center = acc / count,
+        depth = depth,
+        width = math.max(24, (maxDot - minDot) + tile - 16),
+        depthStuds = 7,
+    }
+end
+
+local function landSharkWander(time, phase, seed)
+    local along = math.sin(time * 0.23 + phase * 6.1 + seed) * 0.56
+        + math.sin(time * 0.39 + phase * 3.7 + seed * 1.8) * 0.29
+        + math.sin(time * 0.61 + phase * 2.2 + seed * 0.7) * 0.15
+    local depth = math.sin(time * 0.31 + phase * 5.4 + seed * 1.3) * 0.67
+        + math.sin(time * 0.54 + phase * 2.9 + seed * 0.4) * 0.33
+    return along, depth
+end
+
+local function registerLandSharkRig(model)
+    local direction =
+        planarUnit(model:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
+    local field = inferLandSharkField(model, direction)
+    local center = model:GetAttribute("MergeLandSharkFieldCenter")
+    if typeof(center) ~= "Vector3" then
+        center = field and field.center or model:GetPivot().Position
+    end
+    local depth = planarUnit(
+        model:GetAttribute("MergeLandSharkDepthDirection"),
+        field and field.depth or Vector3.new(-direction.Z, 0, direction.X)
+    )
+    local pivotY = model:GetPivot().Position.Y
+    landSharkRigs[model] = {
+        model = model,
+        baseCFrame = model:GetPivot(),
+        center = Vector3.new(center.X, pivotY, center.Z),
+        direction = direction,
+        depth = depth,
+        halfWidth = math.max(
+            8,
+            (
+                tonumber(model:GetAttribute("MergeLandSharkFieldWidth"))
+                or (field and field.width)
+                or 78
+            ) * 0.5
+        ),
+        halfDepth = math.max(
+            1,
+            (
+                tonumber(model:GetAttribute("MergeLandSharkFieldDepth"))
+                or (field and field.depthStuds)
+                or 7
+            ) * 0.5
+        ),
+        seed = tonumber(model:GetAttribute("MergeLandSharkPatrolIndex")) or 1,
+        trackStuds = math.max(4, tonumber(model:GetAttribute("MergeLandSharkTrackStuds")) or 28),
+        speedStuds = math.max(1, tonumber(model:GetAttribute("MergeLandSharkSpeedStuds")) or 10),
+        surfaceDistance = math.max(
+            2,
+            tonumber(model:GetAttribute("MergeLandSharkSurfaceDistance")) or 8
+        ),
+        surfaceRise = math.max(0, tonumber(model:GetAttribute("MergeLandSharkSurfaceRise")) or 2),
+        bitePeriod = math.max(
+            0.5,
+            tonumber(model:GetAttribute("MergeLandSharkBitePeriodSeconds")) or 1.4
+        ),
+        phase = tonumber(model:GetAttribute("MergeLandSharkPhase")) or 0,
+        breachPeriod = math.max(
+            3,
+            tonumber(model:GetAttribute("MergeLandSharkBreachPeriodSeconds")) or 7.5
+        ),
+        breachDuration = math.max(
+            0.6,
+            tonumber(model:GetAttribute("MergeLandSharkBreachDurationSeconds")) or 1.55
+        ),
+        breachRise = math.max(
+            0.5,
+            tonumber(model:GetAttribute("MergeLandSharkBreachRiseStuds")) or 2.3
+        ),
+        breachPitch = math.rad(
+            math.max(0, tonumber(model:GetAttribute("MergeLandSharkBreachPitchDegrees")) or 14)
+        ),
+        surfaced = 0,
+        proximityElapsed = 0,
+        nearestEnemy = math.huge,
+    }
+end
+
+local function nearestEnemyDistance(position)
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    local nearest = math.huge
+    for _, enemy in ipairs(enemies and enemies:GetChildren() or {}) do
+        if enemy:IsA("Model") then
+            local enemyPosition = enemy:GetPivot().Position
+            local planar =
+                Vector3.new(enemyPosition.X - position.X, 0, enemyPosition.Z - position.Z)
+            nearest = math.min(nearest, planar.Magnitude)
+        end
+    end
+    return nearest
+end
+
+local function enemyByTargetId(targetId)
+    targetId = tonumber(targetId)
+    if not targetId then
+        return nil
+    end
+    local gameFolder = Workspace:FindFirstChild("Game")
+    local enemies = gameFolder and gameFolder:FindFirstChild("Enemies")
+    for _, enemy in ipairs(enemies and enemies:GetChildren() or {}) do
+        local id = enemy:FindFirstChild("BreakableID")
+        if id and tonumber(id.Value) == targetId then
+            return enemy
+        end
+    end
+    return nil
+end
+
+local function updateLandSharkRigs(dt)
+    local now = os.clock()
+    for model, rig in pairs(landSharkRigs) do
+        if not model.Parent then
+            landSharkRigs[model] = nil
+        else
+            local tempo = rig.speedStuds / 10
+            local along, across = landSharkWander(now * tempo, rig.phase, rig.seed)
+            local nextAlong, nextAcross = landSharkWander(now * tempo + 0.12, rig.phase, rig.seed)
+            local patrolPosition = rig.center
+                + rig.direction * (along * rig.halfWidth)
+                + rig.depth * (across * rig.halfDepth)
+            local ahead = rig.center
+                + rig.direction * (nextAlong * rig.halfWidth)
+                + rig.depth * (nextAcross * rig.halfDepth)
+            local patrolHeading = ahead - patrolPosition
+            if patrolHeading.Magnitude < 0.05 then
+                patrolHeading = rig.lastHeading or rig.direction
+            else
+                patrolHeading = Vector3.new(patrolHeading.X, 0, patrolHeading.Z)
+                if patrolHeading.Magnitude < 0.001 then
+                    patrolHeading = rig.lastHeading or rig.direction
+                else
+                    patrolHeading = patrolHeading.Unit
+                    rig.lastHeading = patrolHeading
+                end
+            end
+            local huntAim = model:GetAttribute("MergeLandSharkHuntAim")
+            local huntState = tostring(model:GetAttribute("MergeLandSharkHuntState") or "")
+            local huntEnemy = enemyByTargetId(model:GetAttribute("MergeLandSharkHuntTargetId"))
+            if huntEnemy then
+                huntAim = huntEnemy:GetPivot().Position
+            end
+            local hunting = typeof(huntAim) == "Vector3"
+            rig.huntBlend = rig.huntBlend or 0
+            rig.huntBlend += ((hunting and 1 or 0) - rig.huntBlend) * math.min(1, dt * 5)
+            if hunting then
+                if typeof(rig.huntPos) ~= "Vector3" then
+                    rig.huntPos = patrolPosition
+                end
+                local dest = Vector3.new(huntAim.X, rig.center.Y, huntAim.Z)
+                local chaseSpeed = if huntState == "drag" then 16 else 26
+                local to = dest - rig.huntPos
+                if to.Magnitude > 0.05 then
+                    rig.huntPos += to.Unit * math.min(to.Magnitude, chaseSpeed * dt)
+                    local huntHeading = Vector3.new(to.X, 0, to.Z)
+                    if huntHeading.Magnitude > 0.05 then
+                        rig.lastHeading = huntHeading.Unit
+                    end
+                end
+            elseif typeof(rig.huntPos) == "Vector3" then
+                local back = patrolPosition - rig.huntPos
+                if back.Magnitude <= 0.4 then
+                    rig.huntPos = nil
+                else
+                    rig.huntPos += back.Unit * math.min(back.Magnitude, 18 * dt)
+                end
+            end
+            local position = patrolPosition
+            local heading = patrolHeading
+            if (rig.huntBlend > 0.02) and typeof(rig.huntPos) == "Vector3" then
+                position = patrolPosition:Lerp(rig.huntPos, rig.huntBlend)
+                heading = rig.lastHeading or patrolHeading
+            end
+            local patrolCFrame = CFrame.lookAt(position, position + heading, Vector3.yAxis)
+            rig.proximityElapsed -= dt
+            if rig.proximityElapsed <= 0 then
+                rig.proximityElapsed = 0.1
+                rig.nearestEnemy = nearestEnemyDistance(patrolCFrame.Position)
+            end
+            local wantsSurface = (not hunting) and rig.nearestEnemy <= rig.surfaceDistance
+            -- Patrol bite-rise stays visual. A published hunt leaves the wander, then grab/drag
+            -- dives with the marcher the server is pulling under.
+            local bitePhase = ((now / rig.bitePeriod) + rig.phase) % 1
+            local bite = if wantsSurface then math.sin(math.pi * bitePhase) ^ 2 else 0
+            local breachClock = (now + rig.phase * rig.breachPeriod) % rig.breachPeriod
+            local breach = 0
+            local pitch = 0
+            if (not hunting) and breachClock < rig.breachDuration then
+                local t = breachClock / rig.breachDuration
+                breach = math.sin(math.pi * t)
+                pitch = rig.breachPitch * math.cos(math.pi * t)
+            elseif huntState == "chase" then
+                bite = 0.85
+                pitch = -0.18
+            elseif huntState == "drag" then
+                bite = 0.15
+                pitch = 0.55 + 0.12 * math.sin(now * 9)
+            end
+            local targetHeight = rig.surfaceRise * bite + rig.breachRise * breach
+            if huntState == "drag" and typeof(huntAim) == "Vector3" then
+                targetHeight = math.min(0, huntAim.Y - rig.center.Y)
+            end
+            rig.surfaced += (targetHeight - rig.surfaced) * math.min(1, dt * 10)
+            model:PivotTo(
+                (patrolCFrame * CFrame.Angles(-pitch, 0, 0)) + Vector3.new(0, rig.surfaced, 0)
+            )
+        end
+    end
+end
+
+local function updateSawBladeRigs(dt, observing)
+    if not observing then
+        return
+    end
+    local world = prototypeWorld()
+    local folder = world and world:FindFirstChild("MergeEggBulwarks")
+    sawBladeScanElapsed += dt
+    if sawBladeScanElapsed >= 0.25 then
+        sawBladeScanElapsed = 0
+        for model in pairs(sawBladeRigs) do
+            if not (folder and model.Parent and model:IsDescendantOf(folder)) then
+                sawBladeRigs[model] = nil
+            end
+        end
+        for model in pairs(landSharkRigs) do
+            if not (folder and model.Parent and model:IsDescendantOf(folder)) then
+                landSharkRigs[model] = nil
+            end
+        end
+        for _, child in ipairs(folder and folder:GetChildren() or {}) do
+            if
+                child:IsA("Model")
+                and child:GetAttribute("MergeBulwarkSpawned") == true
+                and child:GetAttribute("MergeBulwarkFamily") == "saw_blade"
+            then
+                if sawBladeRigs[child] == nil then
+                    registerSawBladeRig(child)
+                else
+                    local _, size = child:GetBoundingBox()
+                    local longest = math.max(size.X, size.Y, size.Z)
+                    local target = 10
+                        * (tonumber(child:GetAttribute("MergeBulwarkSpawnScale")) or 1)
+                    if longest > target * 1.5 then
+                        sawBladeRigs[child] = nil
+                        registerSawBladeRig(child)
+                    end
+                end
+            end
+            if
+                child:IsA("Model")
+                and child:GetAttribute("MergeBulwarkSpawned") == true
+                and child:GetAttribute("MergeBulwarkFamily") == "land_shark"
+                and child:GetAttribute("MergeLandSharkPatrol") == true
+                and landSharkRigs[child] == nil
+            then
+                registerLandSharkRig(child)
+            end
+        end
+    end
+    for model, rig in pairs(sawBladeRigs) do
+        if not model.Parent then
+            sawBladeRigs[model] = nil
+        else
+            rig.angle = (rig.angle + math.rad(rig.speedDegrees) * dt) % (math.pi * 2)
+            for _, blade in ipairs(rig.blades) do
+                if blade.part.Parent then
+                    blade.part.CFrame = blade.startCFrame
+                        * sawBladeRotation(blade.axis, rig.angle * blade.direction)
+                end
+            end
+        end
+    end
+    updateLandSharkRigs(dt)
+    updateSawShredChunks(observing)
 end
 
 local function enemyName(targetId)
@@ -1332,7 +1895,8 @@ local function createGroundTeamPanels()
         surface.Name = "TeamSurface"
         surface.Face = Enum.NormalId.Top
         surface.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-        surface.CanvasSize = Vector2.new(PANEL_WIDTH, logicalHeight)
+        surface.CanvasSize = Vector2.new(PANEL_WIDTH + STATUS_BADGE_GUTTER, logicalHeight)
+        surface.ClipsDescendants = false
         surface.LightInfluence = 0
         surface.AlwaysOnTop = false
         surface.ZOffset = 0
@@ -1344,6 +1908,8 @@ local function createGroundTeamPanels()
         root.BackgroundTransparency = 1
         root.Parent = surface
         local panel = createPanel(root, teamCfg, order)
+        panel.frame.Position = UDim2.fromOffset(STATUS_BADGE_GUTTER, 0)
+        panel.frame.ClipsDescendants = false
         panels[panel.id] = panel
     end
     return panels, displayFolder
@@ -1398,6 +1964,7 @@ local function cardFor(panel, slot)
     })
     card.frame.Active = false
     card.frame.Selectable = false
+    card.frame.ClipsDescendants = false
     HudCard.applyFunctionMark(card, nil)
     HudCard.applyHighlight(card, nil)
     panel.cards[slot] = card
@@ -1471,6 +2038,13 @@ local function updatePetCard(card, pet, authored, factor, queued, noEgg)
         card.fill.BackgroundColor3 = queued and Color3.fromRGB(225, 145, 65) or HudCard.HP_RED
         card.note.Text = queued and "QUEUED" or "DEFEATED"
     end
+    -- Same player/pet brew vocabulary as SquadHud. Flask Berserk comes from
+    -- the owner; a Rage cannon circle stamps only the pet models it hits.
+    StatusBadges.update(
+        card,
+        pet and StatusBadges.resolve("pet", { pet = pet, player = localPlayer }, os.time()) or {},
+        STATUS_BADGE_BLINK_LEAD
+    )
 end
 
 local function updatePanel(panel, folder, wave, waveCount, factor)
@@ -2128,11 +2702,26 @@ local function updateBoardWallControls(controls, observing)
         local prefix = "Management" .. data.attribute
         local step = math.max(0, tonumber(world:GetAttribute(prefix .. "Step")) or 0)
         local stepPercent = math.floor(step * 100 + 0.5)
+        local currentPercent =
+            math.max(0, math.floor(tonumber(world:GetAttribute(prefix .. "Percent")) or 100))
+        local nextPercent = math.max(
+            currentPercent,
+            math.floor(
+                tonumber(world:GetAttribute(prefix .. "NextPercent"))
+                    or (currentPercent + stepPercent)
+            )
+        )
         local cost = world:GetAttribute(prefix .. "Cost")
         local maxed = world:GetAttribute(prefix .. "Maxed") == true
         setManagementCard(card, observing, {
-            title = data.title,
-            detail = string.format("+%d%s", stepPercent, data.suffix),
+            title = string.format("%s %d%s", data.title, currentPercent, data.suffix),
+            detail = maxed and "MAX" or string.format(
+                "+%d%s → %d%s",
+                stepPercent,
+                data.suffix,
+                nextPercent,
+                data.suffix
+            ),
             available = not maxed,
             currency = "gems",
             pillText = maxed and "MAX" or MergeEggCostFormat.format(cost),
@@ -2247,9 +2836,10 @@ local function updateBoardWallControls(controls, observing)
         })
     elseif not rebirthRequirementMet then
         setManagementCard(rebirthCard, observing, {
-            title = string.format("REBIRTH R%d", rebirthRank + 1),
+            title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "ALL EGGS NEED TIER %d",
+                "NEXT R%d · ALL EGGS NEED TIER %d",
+                rebirthRank + 1,
                 math.max(1, math.floor(tonumber(rebirthMinimumTier) or 1))
             ),
             available = false,
@@ -2267,9 +2857,10 @@ local function updateBoardWallControls(controls, observing)
         })
     else
         setManagementCard(rebirthCard, observing, {
-            title = string.format("REBIRTH R%d", rebirthRank + 1),
+            title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "%s TOTAL DAMAGE",
+                "NEXT R%d · %s DAMAGE",
+                rebirthRank + 1,
                 formatDamageMultiplier(nextAlliedDamageMultiplier)
             ),
             available = rebirthAvailable,
@@ -2784,14 +3375,46 @@ function MergeEggPrototypeObserver.start()
     waveGui.DisplayOrder = 90
     waveGui.Enabled = false
     waveGui.Parent = pg
-    local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(gui)
+    -- Workshop menus are their own ScreenGui at DisplayOrder 120. Keep this
+    -- toast above that layer so Install/Upgrade refusals are readable.
+    local feedbackGui = Instance.new("ScreenGui")
+    feedbackGui.Name = "MergeEggBoardFeedback"
+    feedbackGui.ResetOnSpawn = false
+    feedbackGui.IgnoreGuiInset = true
+    feedbackGui.DisplayOrder = 130
+    feedbackGui.Enabled = false
+    feedbackGui.Parent = pg
+    local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(feedbackGui)
     local tutorialCard = createTutorialCard(gui)
     local boardActionFeedbackUntil = 0
+    local bulwarkMenu = MergeBulwarkMenu.new(gui, function(action)
+        Signals.MergeEggPrototypeBoardAction:FireServer(action)
+    end)
+    local cannonMenu = MergeCannonMenu.new(gui, function(action)
+        Signals.MergeEggPrototypeBoardAction:FireServer(action)
+    end)
     Signals.MergeEggPrototypeBoardResult.OnClientEvent:Connect(function(result)
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true or type(result) ~= "table" then
             return
         end
+        local action = tostring(result.action or "")
+        if action == "open_bulwark_menu" and result.ok == true then
+            cannonMenu:hide()
+            bulwarkMenu:show(result.value)
+            return
+        end
+        if action == "open_cannon_menu" and result.ok == true then
+            bulwarkMenu:hide()
+            cannonMenu:show(result.value)
+            return
+        end
         local success = result.ok == true
+        if action == "bulwark" and success and type(result.value) == "table" then
+            bulwarkMenu:show(result.value)
+        end
+        if action == "cannon" and success and type(result.value) == "table" then
+            cannonMenu:show(result.value)
+        end
         boardActionFeedback.Text = boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
             or Color3.fromRGB(255, 205, 105)
@@ -2799,6 +3422,13 @@ function MergeEggPrototypeObserver.start()
             or Color3.fromRGB(245, 170, 60)
         boardActionFeedback.Visible = true
         boardActionFeedbackUntil = os.clock() + 2.5
+    end)
+    localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
+        if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
+            bulwarkMenu:hide()
+            cannonMenu:hide()
+            boardActionFeedback.Visible = false
+        end
     end)
     Signals.MergeEggPrototypePlayerHatch.OnClientEvent:Connect(function(result)
         if
@@ -2854,6 +3484,12 @@ function MergeEggPrototypeObserver.start()
     local rotationElapsed = 0
     RunService.RenderStepped:Connect(function(dt)
         local observing = localPlayer:GetAttribute("InMergeEggPrototype") == true
+        if observing then
+            for _, panel in pairs(panels) do
+                StatusBadges.applyBlink(panel.cards, STATUS_BADGE_BLINK_PERIOD)
+            end
+        end
+        updateSawBladeRigs(dt, observing)
         if observing and tutorialPathTarget then
             updateTutorialPath(tutorialPathTarget)
         end
@@ -2893,11 +3529,13 @@ function MergeEggPrototypeObserver.start()
 
         gui.Enabled = observing
         waveGui.Enabled = observing
+        feedbackGui.Enabled = observing
         if not boardWallControls or not boardWallControls.world.Parent then
             boardWallControls = createBoardWallControls()
         end
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
+            boardActionFeedback.Visible = false
             updateTutorialCard(tutorialCard, nil, false)
             clearTutorialClickCue()
             waveMeter.frame.Visible = false

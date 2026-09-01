@@ -9,6 +9,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local StarterPetChoice = require(ReplicatedStorage.Shared.Game.StarterPetChoice)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
@@ -23,8 +24,13 @@ function StarterPetService:Init()
     self._inventoryService = self._modules.InventoryService
     self._petGrantService = self._modules.PetGrantService
     self._config = self._configLoader:LoadConfig("starter_pets")
+    self._placesConfig = self._configLoader:LoadConfig("places")
     self._choosing = {}
     self._shown = {}
+end
+
+function StarterPetService:_isAvailableHere()
+    return PlaceRuntime.isRole(game.PlaceId, self._placesConfig, "main")
 end
 
 function StarterPetService:Start()
@@ -61,6 +67,15 @@ function StarterPetService:_reconcile(player, data)
 end
 
 function StarterPetService:_push(player, extra)
+    if not self:_isAvailableHere() then
+        -- Starter choice belongs to Farm & Fight onboarding. Explicitly close a stale chooser
+        -- after cross-place travel instead of letting the dedicated Merge place offer or grant it.
+        Signals.StarterPetState:FireClient(player, {
+            eligible = false,
+            choices = {},
+        })
+        return
+    end
     if not self._dataService:IsDataLoaded(player) then
         task.spawn(function()
             if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
@@ -152,6 +167,10 @@ local function firstFreeSlot(equipped)
 end
 
 function StarterPetService:_choose(player, request)
+    if not self:_isAvailableHere() then
+        self:_push(player)
+        return
+    end
     if self._choosing[player] then
         return
     end

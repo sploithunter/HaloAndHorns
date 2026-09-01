@@ -76,7 +76,32 @@ coverage/
 /assets/source/pets/
 /assets/source/references/pets/
 /assets/source/eggs/
-/assets/source/props/
+/assets/source/props/*
+# The native Roblox package snapshots are the authoritative, lossless source for Merge bulwarks.
+# Keep these small RBXM files even though the larger generated prop source tree stays ignored.
+!/assets/source/props/merge_bulwarks/
+/assets/source/props/merge_bulwarks/*
+!/assets/source/props/merge_bulwarks/roblox_originals/
+!/assets/source/props/merge_bulwarks/roblox_originals/**/
+!/assets/source/props/merge_bulwarks/roblox_originals/**/*.rbxm
+!/assets/source/props/merge_bulwarks/roblox_originals/**/*.json
+!/assets/source/props/merge_bulwarks/roblox_approved/
+!/assets/source/props/merge_bulwarks/roblox_approved/**/
+!/assets/source/props/merge_bulwarks/roblox_approved/**/*.rbxm
+# Saw Blade is the first animated Merge bulwark. Preserve both the exact
+# accepted textured input and the editable split-rig source; generated FBX/GLB
+# exports and previews remain reproducible from the Blender script.
+!/assets/source/props/merge_bulwarks/saw_blade/
+/assets/source/props/merge_bulwarks/saw_blade/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/
+/assets/source/props/merge_bulwarks/saw_blade/tier*/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/
+/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/*
+/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/*
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/textured/model.glb
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/model.blend
+!/assets/source/props/merge_bulwarks/saw_blade/tier*/rigged/report.json
 /assets/source/hoverboards/
 /assets/source/rocketboards/
 /assets/source/surfboards/

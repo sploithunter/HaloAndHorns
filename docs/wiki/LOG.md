@@ -6265,6 +6265,102 @@ first-session cohort rates.
   Land Shark and Saw Blade animation behavior remains deliberately unwired pending their rigging
   and part-separation pass.
 
+## 2026-08-31 — Nearby flora rustle
+
+- Client-only sine tilt around each plant's base. `configs/flora.lua` `sway`
+  keeps it inside 80 studs; rocks and hard dressing do not move.
+- `FloraService` stamps `FloraSway` on soft clones so Home/Heaven/Hell
+  anchors and Merge `RealmDecor_` / authored plants can share one observer.
+
+## 2026-08-31 — Prop Effects setting
+
+- Settings → Graphics now has Prop Effects (default on). It persists in
+  `Settings.ClientPrefs.propEffects` and pauses the client rustle without
+  a Play restart.
+
+## 2026-08-31 — Merge cannons sit on the authored pad deck
+
+- The downward raycast missed the pad plates (`CanQuery=false`) and hit the
+  marble floor, so the chassis sat sunk through the mount. Seating now uses
+  the highest opaque pad part (TopPlate / MountingPlate), not a world ray.
+
+## 2026-08-31 — Merge cannons sit on the pad and track the gate
+
+- Raycast-seat each chassis on the pad top (+0.08) instead of the bbox-bottom
+  guess that left them sunk.
+- Aim and auto-fire use the enemy portal as the lane forward. The player is
+  not a track target. The test E Fire prompt is stripped.
+
+## 2026-08-31 — Merge cannons yaw flat and fire only with a target
+
+- Turrets stay level: `planarYaw` plus the fireball parabola. No pitch.
+- They track a live target (enemy, or the player walking the lane). Auto and
+  E fire only when `_towerEnemyTarget` finds an in-range enemy; empty-lane
+  gate shots are gone, and the cooldown does not tick on a dry fire.
+
+## 2026-08-31 — Merge cannons track and fire fireballs
+
+- Authored cannon meshes are longest on local +X. Aim now builds a CFrame from
+  `barrelBasis` so RightVector follows the shot instead of laying the gun on
+  its side with `CFrame.lookAt`.
+- Cannons track the nearest in-lane enemy between shots. The projectile is a
+  neon fireball (`Fire` + point light). No hit damage yet.
+
+## 2026-08-31 — Merge bulwark menu uses the pick-then-act layout
+
+- Replaced the 3×2 overlapping-model grid with a selected preview, role,
+  and description plus a family list. Install fires only from the footer.
+- Draft family copy lives on `MergeBulwarkProgression` until combat effects
+  are specified.
+
+## 2026-08-31 — Merge cannon fireballs play a muffled bomb on impact
+
+- Uploaded `EXPLDsgn-big_fire_bomb_explos-Elevenlabs.mp3` as group-owned
+  `cannon_impact` (`rbxassetid://105126690616608`).
+- `_stepTowerShots` plays it at the landing point on a short-lived emitter
+  so destroying the fireball does not mute the clip.
+
+## 2026-08-31 — Merge cannons play the siege fire clip
+
+- Uploaded `WEAPSiege-Three_powerful_pirat-Elevenlabs.mp3` as group-owned
+  `cannon_fire` (`rbxassetid://77523296675224`).
+- Every spawned pad cannon gets `MergeTowerFireSound`; `_fireTowerShot`
+  plays it positionally on the effects bus.
+
+## 2026-08-31 — Merge cannons range to OuterSpawnGate
+
+- After the live-position fix, cannons still waited until pets walked
+  inside 90 studs. Dedicated bays have no `EnemyPortalVisual`; the
+  authored hook is `OuterSpawnGate` at ~X=370 (~200 studs from the pads).
+- `_towerGatePosition` now prefers that gate (then the old portal visual)
+  so look and range cover the whole march.
+
+## 2026-08-31 — Merge cannons aim at live pet positions
+
+- Pad cannons were reading `model:GetPivot()`, which is the portal spawn:
+  EnemyService never re-pivots anchored wave models; combat uses `entry.pos`
+  / `MoveTarget`.
+- `_towerEnemyTarget` now prefers `EnemyService:GetLivePosition`, then
+  `MoveTarget`, and ranges to the gate so they track the whole march.
+
+## 2026-08-31 — Merge admin reset now restarts the first visit
+
+- Reset to Beginning was only wiping currencies. The live Wave 14 encounter,
+  board eggs, and durable checkpoint survived, so the tutorial never re-armed.
+- Dedicated Merge now ends the session without a Home stream, wipes
+  `MergeDefense`, force-clears the bay HUD/board/hatchers, and re-enters with
+  `ignoreCheckpoint` + `forceTutorial`.
+
+## 2026-08-31 — Merge admin reset no longer runs the Farm prologue
+
+- Reset to Beginning on the dedicated Merge place was replaying `PrologueService`
+  and warping to a missing Home mezzanine, which dropped the player in the mall
+  river at the end of the cutscene. It also re-armed the Farm tutorial card on
+  top of the wave meter.
+- Merge now skips that Replay, re-seats via `ResumeDedicatedEntry` → `_begin`
+  (hatcher pad), and hides the Farm tutorial capsule whenever the place is Merge
+  or `InMergeEggPrototype` is set.
+
 ## 2026-08-31 — Authored Merge bulwark placement
 
 - Measured the dedicated Merge bay in Studio and locked each 96-stud `BulwarkLine` to ten
@@ -6275,3 +6371,482 @@ first-session cohort rates.
   `MergeBulwarkModels` so every family consumes the same anchor orientation.
 - Placement-audited all four tiers of the four stationary families; all 16 variants passed width,
   clearance, centering, and grounding checks. Land Shark and Saw Blade await their motion pass.
+
+## 2026-08-31 — Lossless Merge bulwark model recovery
+
+- Recovered the exact 24 group-owned Roblox Model packages from Studio's asset cache and saved them
+  under `assets/source/props/merge_bulwarks/roblox_originals/` as durable source assets.
+- Replaced the lossy MeshId/TextureId-only prebake with native package embedding so hierarchy,
+  bones, proportions, and import metadata survive `Models.rbxm` generation.
+- Runtime now scales every model uniformly and removes only the duplicated 90-degree import-pivot
+  rotation before applying the map anchor; the corrected Tier 1 preview matches the known-good
+  reference dimensions and floor contact exactly.
+
+## 2026-08-31 — Bulwark workshop preview is the next buy
+
+- One picture, not current-plus-upgrade. Browsing a family shows Tier 1 (install/replace).
+  Looking at the installed family shows the next upgrade tier. At Tier 4 the current model
+  stays and a MAXIMUM stamp covers it. A TIER N caption labels similar meshes.
+
+## 2026-08-31 — Bulwark families stay owned
+
+- Replacing a family no longer wipes its tier. `bulwark_owned` persists each family's
+  highest purchased rank; `bulwark_family` / `bulwark_tier` are only what is on the strip.
+- Select on an unowned family buys Tier 1. Select on an owned family equips that rank for
+  free. Upgrade charges the selected family, not whichever one happens to be installed.
+
+## 2026-08-31 — Bulwark workshop owned vs next
+
+- Workshop layout is now two ViewportFrames: Currently Owned (owned tier) and
+  Next Upgrade (next purchase). Footer Install only deploys; Buy/Upgrade sits
+  in the next card with three `upgradeNotes` bullets per family/tier.
+- Notes describe the authored art step (primitive → reinforced → elemental →
+  soul/void) and the draft role, not fake strip length. Combat numbers still
+  do not exist.
+
+## 2026-08-31 — Pre-checkpoint overrun rewinds to Wave 1
+
+- Auto-restart required a banked Wave-10 snapshot. Wave 4 overrun therefore sat
+  on DefenseOverrun. Wave 0 is now the opening boundary: keep the live egg/board
+  and roll Wave 1 again. The Wave-0 snapshot is not persisted.
+
+## 2026-08-31 — Impaler Palisade stop shove (no damage)
+
+- First Merge bulwark combat effect. Contact uses the tank Seismic shove
+  (`ApplyDirectedKnockback` toward the gate) plus a short `RootedUntil` pin.
+  No damage. Per-marcher charges: 1/2/3/4 by tier. They must walk back off
+  the line between bounces; the last crossing opens combat as before.
+- Five bounces on T1 would lock the wave for a pet farm. T1 is one bounce.
+
+## 2026-08-31 — Merge tutorial reset re-lays the 600-Waycoin stacks
+
+- Durable-wallet entry plus `hall_coins.defaultAmount = 100` saved a coins-only
+  Wave-0 playstate. The next join resumed it, started `collect_setup`, and
+  skipped the five 120 stacks. Wallet read 100 with nothing on the ground.
+- Fresh Wave-1 now zeros the opening wallet before spawn. Incomplete-tutorial
+  empty boards do not resume. `collect_setup` re-arms the stacks if the wallet
+  is below 600. Admin Reset on Merge writes `hall_coins` to 0 after profile defaults.
+
+## 2026-08-31 — Shark CAM 225, wardstone CAM 180
+
+- Preview tumbling (bbox-align + pitch 90) made every shark and wardstone
+  pose wrong. They now stand like strip spawn, then the camera orbits.
+- Locked angles from the Edit GUI: Land Shark yaw 225, Wardstone yaw 180
+  (runes facing the camera). Other families still use the strip pitch.
+
+## 2026-08-31 — Merge logout preserves exact possessions
+
+- Added a durable Merge playstate independent of the Wave-10 checkpoint. Normal exit preserves the
+  live Waycoin wallet, board eggs, base egg tier, and deployed egg tiers; only the wave rewinds to
+  the prior base-10 boundary, including a valid Wave 0 state.
+- Tutorial completion critically saves its completion flag and current playstate immediately.
+  Profile release snapshots run for both PlayerRemoving and server shutdown before ProfileStore
+  ends the session.
+- Removed the old entry/exit wallet swap that zeroed Merge money on entry and restored a pre-session
+  balance on exit. Admin Reset explicitly discards both playstate/checkpoint and now re-enters the
+  dedicated Merge session on the next scheduler turn without requiring a Studio reboot.
+
+## 2026-08-31 — Admin Reset to Beginning is a same-Play clean slate
+
+- `🔄 Reset to Beginning (keeps ALL unique pets)` still keeps unique/huge pets only.
+  On dedicated Merge it must land pre-Wave 1, empty board, zero Waycoins, tutorial
+  again, without a Studio restart.
+- Same-Play failures were leftover `HatcherEggObjective` models plus
+  CharacterAdded / session-end persist rewriting the wiped playstate.
+- Reset now sets `MergeEggIgnorePlaystate`, wipes `MergeDefense`, destroys leftover
+  hatcher eggs / Merge units on every bay, and `ResumeDedicatedEntry` re-enters
+  with `ignoreCheckpoint` + `forceTutorial`. Persist no-ops while the flag is set.
+
+## 2026-08-31 — Saw Blade tiers split into independent rotors
+
+- Recovered and preserved the exact accepted textured GLB for all four Saw Blade tiers, then split
+  each in Blender without remeshing, decimation, normalization, or non-uniform scaling.
+- Packed editable sources now contain `Base` plus independently pivoted rotors: one blade in Tier 1,
+  two in Tier 2, three in Tier 3, and four in Tier 4. Tiers 1–3 rotate on local Y; Tier 4 rotates on
+  local X. Every rotor origin is at its own axle and every part scale is `(1, 1, 1)`.
+- Source/output triangle accounting is exact at 4,058 / 5,968 / 5,968 / 4,028 triangles. The
+  reproducible splitter and per-tier reports are checked in with the packed `.blend` sources.
+
+## 2026-08-31 — Admin Reset rewinds the live Merge session
+
+- Same-Play Reset to Beginning restarted the tutorial but kept three board eggs
+  and looked like the Gem wall / Rebirth R2 had not reset. Ending the session
+  raced persist; the live record was never zeroed.
+- Dedicated Merge now rewinds the live record in place: empty board, rebirth 0,
+  no Gem upgrades, no bulwarks, Earth spawn, opening stacks, first-visit lesson.
+- Wall cards now print the current value so a reset is readable: Coin Value 100%
+  / +5% → 105%, Rebirth R1 / Next R2. Players start at free Rank 1; the first
+  paid rebirth is Rank 2 at 50,000 Waycoins.
+
+## 2026-08-31 — Reverted live Admin Reset / datastore wipe
+
+- The same-Play live-session reset and `MergeEggIgnorePlaystate` persist block
+  left leftover eggs and hid Waycoins. Those reset/datastore changes are
+  reverted. Wall-card current-value copy stays.
+
+## 2026-08-31 — Saw Blade Tier 1 / Tier 3 symmetric rotor candidates
+
+- Rebuilt the unusable hidden spindles for the single-blade brown saw and the
+  triple-blade black/orange saw as complete symmetric low-poly rotors. Tier 1's
+  orphan teeth are now part of its rotor; Tier 3 has three independent complete
+  disks, hubs, collars, and axle covers.
+- Source `.blend`, FBX, GLB, render, and repair report are preserved per tier.
+  Studio comparison models use uniform `0.04` scale (eight studs wide), are
+  grounded beside the ten-stud originals, and spin around Roblox local Z.
+
+## 2026-08-31 — Approved Saw Blade rigs saved to runtime models
+
+- Replaced the runtime Saw Blade family with the four visually approved split rigs. Tier 1 and 3
+  use the repaired symmetric rotors, Tier 3's middle disk counter-rotates, and Tier 2 / 4 spin at
+  twice the Tier 1 / 3 speed. Approved Roblox snapshots are preserved under
+  `assets/source/props/merge_bulwarks/roblox_approved/` and prebaked into `Models.rbxm`.
+- Runtime rotor motion is client-local and scoped to the active bay. A single positional idle-whirl
+  loop represents the whole installed line; the separate circular-saw contact sound is catalogued
+  for a future real saw damage tick at the enemy position and is not used as fake ambient audio.
+
+## 2026-08-31 — Merge reset lifecycle and 24-variant bulwark audit
+
+- Dedicated Merge Admin Reset now produces the same exact clean state both inside the current Play
+  session and after Stop→Play: Wave 0, zero Waycoins, five owner-only 120-Waycoin opening piles, no
+  board/deployed eggs, no hatcher or bulwark visuals, and no replay of an already-completed Merge
+  tutorial. The repeatable Studio lifecycle test walks the avatar through real pickups, buys five
+  eggs, merges, uses Equip Best, advances combat, installs a bulwark, resets, and asserts the result.
+- Mechanically spawned all six bulwark families at all four tiers across all ten authored bays.
+  Every line uses ten uniformly scaled `0.94` models on 9.4-stud centers, spans the exact 94-stud
+  inset, and clears both walls. A checked-in Studio geometry audit now reproduces all 2,400
+  placement checks without saving its temporary clones.
+
+## 2026-08-31 — Corrected bulwark presentation contracts
+
+- Removed all preview-only model pitching. The six-family menu now uses the production spawn path
+  unchanged and fits each complete deployed bounding box into the actual viewport aspect ratio with
+  camera movement only. A live client projection audit kept every family inside 81% of its card.
+- Land Sharks now deploy as three independent submerged patrols with staggered 28-stud tracks, a
+  fixed one-stud fin silhouette, and a proximity-triggered bite rise. They are not a tiled wall.
+- Replaced the obsolete ten-tiles-for-every-family geometry check with a presentation-aware audit.
+  The new pass checks 2,120 placements across ten bays and all 24 variants, enforces three sharks per
+  bay, fixed shark exposure, static wall clearance, and six-stud Saw Blade depth/height limits.
+
+## 2026-08-31 — Restored authored side-to-side bulwark menu art
+
+- Removed the live `ViewportFrame`/camera reconstruction from the bulwark workshop. Recovered the
+  exact 24 transparent thumbnails from the accepted Meshy tasks, preserved them under
+  `assets/ui/merge_bulwarks/`, uploaded group-owned Roblox assets, and recorded source plus asset-ID
+  manifests under `scripts/`.
+- Locked the presentation contract to one rule: Impaler Palisade, Concertina Line, Saw Blade,
+  Grasping Hedge, and Wardstone Barrier use the same long side-to-side art; Land Shark is the sole
+  exception. Runtime deployment transforms were not changed and retain the matching generalized
+  five-static-family rule.
+- Added headless guards against reintroducing live preview models or accidentally using runtime
+  Model IDs as menu artwork. Live Studio verification loaded both visible flat previews through
+  their Decal `rbxthumb` assets.
+
+## 2026-09-01 — Saw Blade natural size vs lune assembly
+
+- Checked the uploaded Roblox assets directly. The original unsplit catalog model
+  (`135106892647800`) is 2 studs. The repaired/split MeshIds used by the approved rigs are
+  200-stud natives (Base MeshSize 200×57×78, Blade01 83×83×32). Studio QA previews in
+  `ServerStorage._QA.SawBladeRigPreviews` are those same meshes at Model.Scale `0.04` (T1/T3)
+  or `0.05` (T2/T4), which is how they read as 8–10 stud tiles.
+- `build_approved_merge_saw_blades.luau` copied the post-scale Size numbers onto new lune
+  MeshParts at scale 1 and cannot serialize MeshSize. Runtime therefore drew the 200-stud
+  mesh — about 100× the original 2-stud import. Spawn now bakes each MeshPart through
+  `AssetService:CreateMeshPartAsync` and keeps the authored tile Size.
+
+## 2026-09-01 — Land Shark hunt / grab / sink
+
+- Land Sharks had patrol, wander, and a visual bite-rise only. `combatEffect("land_shark")`
+  now returns `hunt_drag` (T1 36 dmg / 1.15s, 16-stud hunt, 7-stud grab, 8-stud sink).
+- Server tick claims one marcher per shark, leaves the wander, holds on grab, pulls
+  `MoveTarget` down, and bites through `CombatApplication`. Kill prefers `sink` plus
+  `DeathSinkStuds`. No pet-kill credit.
+- Client observer chases `MergeLandSharkHuntAim` / the live enemy, then dives with the
+  drag. Headless progression spec no longer expects a nil combat effect.
+- Play-confirmed: hold-to-sink reads. Damage left at T1 36/1.15s for a later balance pass.
+
+## 2026-09-01 — Land Shark count 4/5/6/7 plus T3 venom / T4 boss prefer
+
+- Patrol count is now tiered: T1=4, T2=5, T3=6, T4=7. Pack coverage comes from
+  more hunters, not a bite-number bump.
+- T3 venom ticks anyone close to a live shark (one cloud per marcher). T4
+  claims an unclaimed boss first and may peel off a chase, but not a drag.
+- T2 Ironjaw bite was only 52. Raised the bite ladder to 36/90/130/190 so T2
+  actually hits, and T3/T4 stay above it.
+- T2 cadence is 90 per 0.5s. T3/T4 periods are 0.42 / 0.35 so they stay faster
+  than Ironjaw.
+
+## 2026-09-01 — Impaler Palisade T3 contagion venom
+
+- Palisade stays per-marcher stop-shove. T3 bounce now stamps the shared
+  contagious DoT (12/0.7s, 4s, 3 hops). T4 is a stronger plague (18/0.55s, 5s,
+  4 hops), not a new effect. Hop distance uses live `MoveTarget` so merge
+  marchers spread on the lane, not at the portal spawn.
+
+## 2026-09-01 — Palisade venom is permanent; T4 plague is contagion
+
+- Split the coat: T3 is a permanent single-target venom DoT (12 / 0.7s, no hop).
+  T4 is a stronger permanent plague (18 / 0.55s) that contagion-hops (4 hops,
+  12 studs). `DotPermanent` skips expiry in the DoT and contagion passes.
+  Wave end clears the enemies, so the burn does not leak.
+
+## 2026-09-01 — Concertina Line is bleed plus slow
+
+- `combatEffect("concertina_line")` is `bleed_slow`: lane DoT + graded
+  `SlowFactor` while they walk the wire. T1 on-strip only. T2/T3 linger
+  (1.5s / 3.5s). T4 stacks (cap 4) and stays for the rest of the wave.
+- Authored march now honors root/hold and `SlowFactor`; without that the
+  strip slow would not read on merge marchers.
+- Combat still opens on the gold line. Not a stop wall and not palisade
+  contagion. Not Play-confirmed yet.
+
+## 2026-09-01 — Saw Blade is rapid shred plus chips
+
+- `combatEffect("saw_blade")` is `shred_line`: 16/24/30/42 at 0.16/0.13/0.10/
+  0.08s on the six-stud deck. No slow, linger, or stop. Combat still opens
+  on the gold line.
+- Contact audio now fires on a real shred tick, throttled to 0.28s.
+- Client sprays tiny local cubes (`MergeSawShredPulse`) colored from the
+  chewed model plus flesh chips. Not Play-confirmed yet.
+
+## 2026-09-01 — Saw rotors 2× speed and random start phase
+
+- Live spin is 2× the authored 180/360 deck speeds so the chew reads.
+- Each tile starts at a random rotor angle so a ten-saw line does not lockstep.
+
+## 2026-09-01 — Grasping Hedge is a temporary front-wave root
+
+- `combatEffect("grasping_hedge")` is `grab_root`. Front N marchers get
+  `RootedUntil` (hands free). The pile on the strip is slowed. One grab per
+  marcher, then `MergeHedgeGrabSpent` so they break through. Not a permanent
+  root and not `HeldUntil` — sharks already own the true hold.
+- T1–T4 grab 1/2/3/4 for 0.9/1.2/1.6/2.2s. T3/T4 stamp a timed venom, not
+  `DotPermanent`. Combat still opens on the gold line. Not Play-confirmed.
+
+## 2026-09-01 — Hedge re-roots on re-entry, not a lifetime counter
+
+- After the timed root expires they must leave the hedge (`MergeHedgeNeedsExit`)
+  before another grab. Walking back in roots them again. Not `MergeHedgeGrabSpent`.
+
+## 2026-09-01 — Hedge re-entry needs a march-axis buffer
+
+- Clearing `MergeHedgeNeedsExit` requires `leadingDistance` past the strip plus
+  6 studs. Lateral shuffle and a one-stud flicker do not count as leaving.
+
+## 2026-09-01 — Hedge debuff badge is the root disc
+
+- `grasping_hedge` is not a player power. `PetBadge.forPower` now resolves it
+  through `combat_source_badge` to the same `user_desk` root disc as Frost Bind
+  (earth/grass). Stops the CombatAuraController / StatusBadges nil-disc warn.
+
+## 2026-09-01 — Second Merge bulwark slot at the Breach Line
+
+- Install slots are a catalog, not a rename of the combat planes. `BulwarkLine`
+  still opens pet combat; `BreachLine` still opens egg attacks. Extra walls
+  (mid, then the same spacing out front) are later install rows only.
+- Lane persist stays `bulwark_family` / `bulwark_tier`. Egg is
+  `egg_bulwark_family` / `egg_bulwark_tier`. Ownership stays `bulwark_owned`.
+  `bulwark_slots` is the generic map so a third line does not need new aliases.
+- Wardstone Barrier is still `wardstone_barrier` and egg-only. The five lane
+  families may sit on any cataloged line, including both at once.
+- Egg anchors stamp from `BreachLine` without touching gold-line geometry.
+  Missing egg/mid/front hooks skip that slot; they do not invent a wall.
+- Two Manage prompts. Lane menu locks Wardstone with `ONLY AT THE EGGS`.
+- Lane-family combat on the egg slot uses `BreachLine` as the strip plane.
+  Palisade/hedge charges are per slot. Wardstone combat is still later.
+
+## 2026-09-01 — Breach-line bulwark is a talkable Colorado Plays
+
+- The workshop UI is unchanged. The red line no longer uses a floating E.
+  A Colorado Plays vendor (`user_id` 3200870803) stands on the hatcher
+  side of `BreachLine` and Talk opens the same menu for the egg slot.
+- Gold-line Left/Right Manage hosts stay. `BulwarkLine` / `BreachLine`
+  keep their combat-plane meanings.
+
+## 2026-09-01 — Second Colorado on the gold-line right
+
+- Same unchanged workshop. A second Colorado Plays stands on the
+  player-right end of `BulwarkLine` (facing the gate) and Talk opens
+  the lane slot. The red-line Colorado still opens the egg slot.
+- Posts are config rows (`slot` + `along`). Same avatar for now; a later
+  post can set its own `user_id` (alts) without a line-picker menu.
+
+## 2026-09-01 — Egg engineer left, grounded, labeled
+
+- Red-line vendor stands on the player-left so the nine eggs and later
+  cannons keep the middle. Gold-line vendor stays on the right.
+- Prompt / nametag is `Bulwark Engineer`. Workshop unchanged.
+- Stand height is HipHeight, not accessory AABB — hats were floating him.
+
+## 2026-09-01 — Shark ticks 2x; merge combat badges
+
+- Land Shark bite/venom periods are halved; per-tick damage is unchanged, so
+  DPS doubles. Hedge/palisade venom was not touched.
+- Missing merge combat badges now resolve: palisade root, concertina bleed,
+  saw chew, shark hold. Hedge already had one.
+
+## 2026-09-01 — Marchers cannot leave living hatcher eggs
+
+- Finish-line escape is blocked while any `HatcherEggObjective` is still up.
+  Breach and finish both rewrite the march destination and wipe the threat
+  table onto the assigned (else nearest) egg. After an egg dies, leftover
+  marchers retarget the rest; only then do they resume the back line.
+
+## 2026-09-01 — Cannon pads sit one footprint behind the eggs
+
+- Tower pads stay outside egg positions 1 and 9, then step one 8.4-stud
+  pad-width back along the march axis (egg-stand X). That clears the
+  red-line Bulwark Engineer. Artillery Commanders follow the chassis.
+
+## 2026-09-01 — Artillery Commander workshop
+
+- SploitHunter (`user_id` 864785140) stands behind each pad cannon as
+  Artillery Commander. Talk opens an artillery workshop that matches the
+  bulwark panel: six cannon roles, buy / upgrade / install, one Waycoin
+  per change. Ownership is global; each commander writes only that pad
+  (left or right). Pads start empty until Buy/Install. An unpaid dummy
+  starter is cleared. Shot damage is still later. Not Play-confirmed yet.
+
+## 2026-09-01 — Heal cannon used the wrong injury signal
+
+- Pets have no HP/MaxHP; injury is `CombatDamageTaken`. The heal
+  chassis never found a target. Heal now accepts either
+  `CombatDamageTaken` or `HP`/`MaxHP` and scans merge squads plus the
+  player's real pets. Fire prevention uses the breach→gate axis and
+  fails open if the plane is missing. Heal cutoff is BreachLine until a
+  tighter band is proven.
+
+## 2026-09-01 — Cannon fire stays gate-side of the breach
+
+- Hard rule: no chassis fires at a target on the egg/hatcher side of
+  BreachLine. Heal aims injured pets and starts its cutoff at
+  BulwarkLine (`heal_fire_line`; also `mid` or `breach`). Catalog
+  ownership is now applied on every workshop read so Install does not
+  require a Buy.
+
+## 2026-09-01 — Cannon visual pass before powers
+
+- Same order as bulwarks: place every chassis, check fire/landing reads,
+  then wire powers. The playtest catalog owns all six roles so a pad
+  can Install each mesh. Heal landing reuses the existing Healing Field
+  ground rune; rage landing reuses the existing Rage rune. No combat
+  ticks. Other roles keep the shared fireball until a real telegraph
+  already exists.
+
+## 2026-09-01 — Cannon pads start empty
+
+- The playtest no longer seeds Repulsor T1. Talk the commander, then
+  Buy/Install to put a chassis on that pad. Unpaid dummy installs are
+  wiped on the next hydrate.
+
+## 2026-09-01 — Workshop toast sits above the menu
+
+- Board-action feedback lived on the observer HUD (DisplayOrder 41)
+  while the cannon/bulwark workshops are 120, so Install/Upgrade
+  refusals hid behind the panel. The toast now has its own ScreenGui
+  at 130. Catalog-owned cannon commits also compare the workshop
+  snapshot, not the raw persist table — a grant-only owned set was
+  returning CANNON STATE CHANGED on Install.
+
+## 2026-09-01 — Cannon tiers stay scale-only for now
+
+- Live catalog and group inventory have one mesh per role. T1–T4
+  keep the 0.40 / 0.50 / 0.50 / 0.50 size steps. Distinct per-tier
+  models wait until that art pass is actually done. Do not swap
+  meshes in this session.
+
+## 2026-09-01 — Heal landing casts the existing Healing Field
+
+- Do not rebuild a power that already exists. The decoy rune was the
+  wrong path. Impact now calls `PowerService:PlaceHealingField`, which
+  is `_healZone` at that point (110 / 2s / 8s / 28 studs). No Focus,
+  no player cooldown, no extra cannon-only tick list.
+
+## 2026-09-01 — Heal tiers are magnitude and fire rate
+
+- Do not change Healing Field ticks. Per-tier knobs are
+  `shot.landing.heal.magnitude` and `interval` (both start at 110 /
+  2.4). Strength is the existing per-tick number; overlapping fields
+  still stack.
+
+## 2026-09-01 — Rage landing is a one-time Berserk circle
+
+- Not the tank Rage power. Impact stamps the Healing Field
+  MagicCircle in ruddy red and sips Berserk once per unique player
+  in the radius (`PotionService:SipBrew`, no flask). No tick loop.
+  Stacking is the brew's diminishing sip. Tier knobs are
+  `shot.landing.rage.interval` and `radius` (both start at 2.4 / 28).
+
+## 2026-09-01 — Dead hatcher egg must retarget marchers and pets
+
+- Wave 14 traces: after one egg died, enemies 273/275/277 loitered at
+  the gate (~170 studs out, `current=0` with a 250 seed). Pets briefly
+  locked then dropped. March was skipped when "close" off a stale
+  pivot, and only `CanAttackObjective` marchers were rewritten.
+  Egg death now always marches leftovers to a living egg from live
+  position, re-alerts every hatcher folder (lost team included,
+  CombatTargetOpen), and keeps one idle reserve. Finish stays last.
+
+## 2026-09-01 — All 24 Merge cannon art tiers completed and uploaded
+
+- Preserved the supplied Heal, Red/Rage, and Purple/Debuff Tier 1–4 concepts verbatim and created
+  distinct Tier 1, 3, and 4 concepts for Gravity, Repulsor, and Nullifier. The 24-way textured
+  contact sheet is `assets/qa/merge_cannons/mesh_validation_contact_sheet.png`.
+- Ran every tier through Meshy Smart Topology, Blender voxel repair, a strict zero-boundary /
+  zero-non-manifold gate, 2K concept-guided retexture, and embedded-texture FBX export. All models
+  stay below 9,500 triangles; the manifest records 24 geometry and 24 retexture task IDs plus
+  checksums and integrity reports.
+- Uploaded 24 distinct Model/Mesh/Image triples to Open Simulator Group (15872767). Studio
+  `MarketplaceService:GetProductInfo` verified all 72 components and their types/ownership.
+  `scripts/merge_cannon_model_ids.json` is COMPLETE, and
+  `node scripts/merge_cannon_pipeline.js audit` passes.
+- Rebuilt `assets/place/Models.rbxm` with all six families × four tiers. Runtime now requests the
+  gameplay tier directly at template scale 1; `current_art_tier`, `tier_scales`, and model resizing
+  are removed. Both the Lune prebake checker and live Studio Edit-datamodel inspection confirmed 24
+  templates with 24 distinct Mesh IDs and 24 distinct Texture IDs.
+
+## 2026-09-01 — Cannon persist leaves the wave machine
+
+- Install was failing with `cannon_state_changed` because
+  `PurchaseCannonAction` compared the bay record to a rebuilt
+  `MergeDefense` blob. Cannons do not share state with waves or
+  each other. `MergeCannonPersist` now owns tower keys only; apply
+  uses the authored unlock wave; write mutates the live profile
+  table. No signature compare. Hydrate no longer wipes a free
+  catalog Install when spent is 0. Not Play-confirmed.
+
+## 2026-09-01 — Bulwark persist leaves the wave machine
+
+- Same shop lock as cannons: `PurchaseBulwarkAction` compared the bay
+  record to a rebuilt MergeDefense blob and passed `waveIndex` into
+  apply. `MergeBulwarkPersist` now owns wall keys only. Egg
+  create/merge already mutated the board without that compare. Waves
+  stay start → result → optional pause (`gap_after` /
+  checkpoint intermission) → start. Targeting may read other
+  systems; actions do not wait on them. Not Play-confirmed.
+
+## 2026-09-01 — Hatcher pets show the owner's Berserk
+
+- SipBrew still writes the player. Merged hatcher units were not
+  on `PlayerPets/<player>`, so CombatAura never refreshed and the
+  floor roster never called StatusBadges. Floor cards now resolve
+  the same pet/player vocabulary as SquadHud. CombatAura follows
+  `NpcOwner` and draws the existing PetBadge disc over those
+  models. Damage already used the owner principal. Not
+  Play-confirmed.
+
+## 2026-09-01 — Rage circle stamps each unit, not the owner
+
+- Owner `SipBrew` wrote player `PetDamageBuffPotion`, so every pet
+  inherited Berserk and the circle did not limit anyone. Rage also
+  refused to fire without an ally aim. Circle now `SipBrewOn` each
+  model in the radius (same brew sip, charge on the pet). Rage
+  fires a lane land point toward the gate. Flask drink still
+  broadcasts from the player. Not Play-confirmed.
+
+## 2026-09-01 — Rage aims an ally again
+
+- Lane-only land made the barrel ignore pets. Locked rule: fire at
+  one ally already in combat (`TargetType` Enemy or
+  `AggroTargetRef`); that pet and any other ally in the landing
+  circle each get `SipBrewOn`. No idle-pet or empty-lane shot. Not
+  Play-confirmed.

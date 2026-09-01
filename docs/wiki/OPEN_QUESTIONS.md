@@ -29,6 +29,22 @@ Status: current
 - Should authored maps be validated in CI, manually, or both?
 - Should visual gate/portal assets for automated travel tests be checked into the repo, imported into the creator inventory, or discovered from Creator Store asset IDs at test time?
 
+## Merge Defense
+
+- Should later bulwark lines use different talkable avatars (Colorado alts,
+  one person per line) or one Colorado plus a line-picker in the workshop?
+  Current path is one person per line and no menu change.
+- Cannon powers stay after the visual pass except Heal and Rage.
+  Heal places the existing Healing Field. Rage is a one-time Berserk
+  sip on one in-combat pet plus anyone else inside a ruddy
+  MagicCircle (no ticks, no owner broadcast, no idle-pet aim).
+  Which of debuff /
+  gravity / repulsor / nullifier can borrow an existing telegraph
+  versus needing a new effect later?
+- Heal fire line is BreachLine (same hard floor as other chassis).
+  Tighten to the gold line or the computed mid plane only after live
+  shots prove pets sit in a band we do not want to heal?
+
 ## Implementation
 
 - How strict should config validation be during early prototyping versus shipping?

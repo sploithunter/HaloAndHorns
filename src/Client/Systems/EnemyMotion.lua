@@ -363,6 +363,10 @@ function EnemyMotion.start()
                     local dur = math.max(0.35, tonumber(model:GetAttribute("DeathSeconds")) or 0.85)
                     local t = math.clamp((Workspace:GetServerTimeNow() - started) / dur, 0, 1)
                     local pose = CombatDeath.sample(model:GetAttribute("DeathStyle") or "flop", t)
+                    local extraSink = tonumber(model:GetAttribute("DeathSinkStuds"))
+                    if extraSink and extraSink > 0 then
+                        pose.y = (pose.y or 0) - extraSink * t
+                    end
                     local cf, scale, fade = CombatDeath.applyPose(st.base, pose)
                     if model.ScaleTo and math.abs(scale - (st.deathScale or 1)) > 0.02 then
                         pcall(function()

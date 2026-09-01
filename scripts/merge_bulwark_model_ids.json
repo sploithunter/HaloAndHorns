@@ -407,19 +407,40 @@
           "textureId": "84458906695568",
           "triangles": 4058,
           "rawRobloxSize": [
-            2,
-            0.9023439884185791,
-            0.7773439884185791
+            8,
+            3.679956,
+            3.1093762
           ],
           "canonicalSize": [
             10.0,
-            4.51172,
-            3.88672
+            4.599945,
+            3.8867202
           ],
+          "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier1/model.rbxm",
+          "speedDegrees": 180,
+          "idleSoundKey": "merge_saw_idle",
+          "impactSoundKey": "merge_saw_hit",
           "concept": "assets/concepts/merge_bulwarks/saw_blade/tier1.png",
           "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier1/geometry/model_repaired.glb",
           "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier1/textured/model.glb",
           "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier1/merge_saw_blade_tier1.fbx",
+          "riggedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier1/rigged/model.blend",
+          "riggedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier1/rigged/model.fbx",
+          "rigReport": "assets/source/props/merge_bulwarks/saw_blade/tier1/rigged/report.json",
+          "riggedModelAssetId": "115166034334505",
+          "repairedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier1/repaired/model.blend",
+          "repairedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier1/repaired/model.fbx",
+          "repairReport": "assets/source/props/merge_bulwarks/saw_blade/tier1/repaired/report.json",
+          "repairedModelAssetId": "121568625455310",
+          "repairedBladePaletteTextureId": "119739177729307",
+          "repairedPreviewWidthStuds": 8,
+          "bladeCount": 1,
+          "rotationAxis": "Y",
+          "robloxRotationAxis": "Z",
+          "partNames": [
+            "Base",
+            "Blade01"
+          ],
           "geometryTaskId": "01a0537c-172f-74cd-85de-8471ebc3af78",
           "retextureTaskId": "01a0538d-43cf-714f-8fb8-77fa86e77c64"
         },
@@ -430,19 +451,35 @@
           "textureId": "140701611784496",
           "triangles": 5968,
           "rawRobloxSize": [
-            2,
-            0.6526899933815002,
-            0.8275120258331299
+            10,
+            3.26345,
+            4.1375604
           ],
           "canonicalSize": [
             10.0,
             3.26345,
             4.13756
           ],
+          "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier2/model.rbxm",
+          "speedDegrees": 360,
+          "idleSoundKey": "merge_saw_idle",
+          "impactSoundKey": "merge_saw_hit",
           "concept": "assets/concepts/merge_bulwarks/saw_blade/tier2.png",
           "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier2/geometry/model_manifold.glb",
           "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier2/textured/model.glb",
           "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier2/merge_saw_blade_tier2.fbx",
+          "riggedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier2/rigged/model.blend",
+          "riggedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier2/rigged/model.fbx",
+          "rigReport": "assets/source/props/merge_bulwarks/saw_blade/tier2/rigged/report.json",
+          "riggedModelAssetId": "131433748114341",
+          "bladeCount": 2,
+          "rotationAxis": "Y",
+          "robloxRotationAxis": "Z",
+          "partNames": [
+            "Base",
+            "Blade01",
+            "Blade02"
+          ],
           "geometryTaskId": "01a0537c-1b71-7772-9322-584d13c1deae",
           "retextureTaskId": "01a0538d-4844-713f-8c4d-5022d8b65ec2"
         },
@@ -453,19 +490,42 @@
           "textureId": "98100761815658",
           "triangles": 5968,
           "rawRobloxSize": [
-            2,
-            0.7127258777618408,
-            1.0270040035247803
+            8,
+            2.55133,
+            4.1080155
           ],
           "canonicalSize": [
             10.0,
-            3.563629,
-            5.13502
+            3.1891625,
+            5.1350194
           ],
+          "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier3/model.rbxm",
+          "speedDegrees": 180,
+          "idleSoundKey": "merge_saw_idle",
+          "impactSoundKey": "merge_saw_hit",
           "concept": "assets/concepts/merge_bulwarks/saw_blade/tier3.png",
           "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier3/geometry/model_manifold.glb",
           "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier3/textured/model.glb",
           "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier3/merge_saw_blade_tier3.fbx",
+          "riggedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier3/rigged/model.blend",
+          "riggedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier3/rigged/model.fbx",
+          "rigReport": "assets/source/props/merge_bulwarks/saw_blade/tier3/rigged/report.json",
+          "riggedModelAssetId": "125522368081647",
+          "repairedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier3/repaired/model.blend",
+          "repairedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier3/repaired/model.fbx",
+          "repairReport": "assets/source/props/merge_bulwarks/saw_blade/tier3/repaired/report.json",
+          "repairedModelAssetId": "73723353825785",
+          "repairedBladePaletteTextureId": "88616928585061",
+          "repairedPreviewWidthStuds": 8,
+          "bladeCount": 3,
+          "rotationAxis": "Y",
+          "robloxRotationAxis": "Z",
+          "partNames": [
+            "Base",
+            "Blade01",
+            "Blade02",
+            "Blade03"
+          ],
           "geometryTaskId": "01a0537c-1f5c-77fd-8152-4203626a1940",
           "retextureTaskId": "01a0538d-4cfd-71ab-86bb-ac8f70b5f2e3"
         },
@@ -476,19 +536,37 @@
           "textureId": "131957368405481",
           "triangles": 4028,
           "rawRobloxSize": [
-            2,
-            0.7070320248603821,
-            1.0390620231628418
+            10,
+            3.5351601,
+            5.1953101
           ],
           "canonicalSize": [
             10.0,
             3.53516,
             5.19531
           ],
+          "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier4/model.rbxm",
+          "speedDegrees": 360,
+          "idleSoundKey": "merge_saw_idle",
+          "impactSoundKey": "merge_saw_hit",
           "concept": "assets/concepts/merge_bulwarks/saw_blade/tier4.png",
           "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier4/geometry/model_repaired.glb",
           "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier4/textured/model.glb",
           "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier4/merge_saw_blade_tier4.fbx",
+          "riggedBlend": "assets/source/props/merge_bulwarks/saw_blade/tier4/rigged/model.blend",
+          "riggedFbx": "assets/source/props/merge_bulwarks/saw_blade/tier4/rigged/model.fbx",
+          "rigReport": "assets/source/props/merge_bulwarks/saw_blade/tier4/rigged/report.json",
+          "riggedModelAssetId": "87312760924674",
+          "bladeCount": 4,
+          "rotationAxis": "X",
+          "robloxRotationAxis": "X",
+          "partNames": [
+            "Base",
+            "Blade01",
+            "Blade02",
+            "Blade03",
+            "Blade04"
+          ],
           "geometryTaskId": "01a0537c-23b9-750a-9522-480868dad9dd",
           "retextureTaskId": "01a0538d-51bb-745e-b432-ca2501892c14"
         }

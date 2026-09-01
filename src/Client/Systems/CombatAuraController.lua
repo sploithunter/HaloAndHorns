@@ -9,6 +9,8 @@
       pet  HealFxUntil           -> heal aura for the remaining duration                 [heal]
       player PetDamageBuffUntil / PetDamageBuffPotionUntil
                                  -> damage buff aura on every owned pet                   [buff]
+      pet    PetDamageBuffPotionUntil
+                                 -> circle Berserk on that pet only (rage cannon)         [buff]
       enemy VulnerableUntil      -> debuff aura while vulnerable                          [vulnerable]
       enemy RootedUntil          -> debuff aura while rooted                              [root]
 
@@ -45,6 +47,7 @@ local started = false
 local handles = setmetatable({}, { __mode = "k" })
 local conns = setmetatable({}, { __mode = "k" })
 local armorIcons = setmetatable({}, { __mode = "k" }) -- pet -> { gui, powerId }
+local hideDamageBuffIcon
 local armorTokens = setmetatable({}, { __mode = "k" }) -- pet -> token, for the badge self-expire
 local armorTok = 0
 
@@ -294,6 +297,9 @@ end
 
 -- Seconds remaining on an absolute os.time() "until" attribute (0 if absent/expired).
 local function remaining(entity, attr)
+    if not entity then
+        return 0
+    end
     local untilT = entity:GetAttribute(attr) or 0
     return untilT - os.time()
 end
@@ -512,6 +518,8 @@ local function refreshAuraField(pet)
     end
 end
 
+local refreshPetDamageBuff
+
 local function hookPet(pet)
     if conns[pet] or not pet:IsA("Model") then
         return
@@ -554,10 +562,14 @@ local function hookPet(pet)
     list[#list + 1] = pet:GetAttributeChangedSignal("AuraFieldUntil"):Connect(function()
         refreshAuraField(pet)
     end)
+    list[#list + 1] = pet:GetAttributeChangedSignal("PetDamageBuffPotionUntil"):Connect(function()
+        refreshPetDamageBuff(pet, pet.Parent)
+    end)
     -- catch any already-active state at hook time
     refreshArmor(pet)
     refreshTimedAura(pet, "HealFxUntil", "heal", "heal")
     refreshAuraField(pet)
+    refreshPetDamageBuff(pet, pet.Parent)
 end
 
 local function unhook(entity)
@@ -576,33 +588,123 @@ local function unhook(entity)
         handles[entity] = nil
     end
     hideArmorIcon(entity)
+    hideDamageBuffIcon(entity)
     hideHealSuppressionIcon(entity)
 end
 
--- Player-level damage buff -> a buff aura on every owned pet for the remaining duration.
+-- Hatcher / creator folders are named for the NPC, not the player. NpcOwner
+-- is the real brew holder.
+local function folderBuffOwner(folder)
+    if not folder then
+        return nil
+    end
+    local named = Players:FindFirstChild(folder.Name)
+    if named then
+        return named
+    end
+    local npcOwner = folder:GetAttribute("NpcOwner")
+    if type(npcOwner) == "string" and npcOwner ~= "" then
+        return Players:FindFirstChild(npcOwner)
+    end
+    return nil
+end
+
+local damageBuffIcons = setmetatable({}, { __mode = "k" })
+
+hideDamageBuffIcon = function(pet)
+    local record = damageBuffIcons[pet]
+    if record then
+        damageBuffIcons[pet] = nil
+        pcall(function()
+            record.gui:Destroy()
+        end)
+    end
+end
+
+-- Same PetBadge disc the squad card / player brew uses. Sits beside the pet so
+-- hatcher units read Berserk without a player nametag.
+local function showDamageBuffIcon(pet, owner)
+    local now = os.time()
+    local petPotion = (tonumber(pet:GetAttribute("PetDamageBuffPotionUntil")) or 0) > now
+    local ownerPotion = (tonumber(owner and owner:GetAttribute("PetDamageBuffPotionUntil")) or 0)
+        > now
+    local powerLive = (tonumber(owner and owner:GetAttribute("PetDamageBuffUntil")) or 0) > now
+    local powerId = (petPotion and pet:GetAttribute("PetDamageBuffPotionPowerId"))
+        or (ownerPotion and owner:GetAttribute("PetDamageBuffPotionPowerId"))
+        or (powerLive and owner:GetAttribute("PetDamageBuffPowerId"))
+    if not powerId or (not petPotion and not ownerPotion and not powerLive) then
+        hideDamageBuffIcon(pet)
+        return
+    end
+    local current = damageBuffIcons[pet]
+    if current and current.gui.Parent and current.powerId == powerId then
+        return
+    end
+    hideDamageBuffIcon(pet)
+    local pp = pet.PrimaryPart or pet:FindFirstChildWhichIsA("BasePart")
+    if not pp then
+        return
+    end
+    local up = 4
+    local okE, ext = pcall(function()
+        return pet:GetExtentsSize()
+    end)
+    if okE and ext then
+        up = ext.Y * 0.5 + 2
+    end
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "DamageBuffIcon"
+    bb.AlwaysOnTop = true
+    bb.Size = UDim2.fromOffset(34, 34)
+    bb.StudsOffset = Vector3.new(-1.6, up, 0)
+    bb.Adornee = pp
+    local badge = PetBadge.forPower(powerId)
+    if badge then
+        PetBadge.create(bb, { element = badge.element, symbol = badge.symbol, ring = badge.ring })
+    else
+        local img = Instance.new("ImageLabel")
+        img.BackgroundTransparency = 1
+        img.Size = UDim2.fromScale(1, 1)
+        img.Image = (PowerIcons.status and PowerIcons.status.damage) or ""
+        img.ImageColor3 = Color3.fromRGB(235, 90, 90)
+        img.Parent = bb
+    end
+    bb.Parent = pp
+    damageBuffIcons[pet] = { gui = bb, powerId = powerId }
+end
+
+refreshPetDamageBuff = function(pet, petsFolder)
+    if not (pet and pet:IsA("Model")) then
+        return
+    end
+    local owner = petsFolder and folderBuffOwner(petsFolder)
+    local secs = math.max(
+        remaining(pet, "PetDamageBuffPotionUntil"),
+        remaining(owner, "PetDamageBuffUntil"),
+        remaining(owner, "PetDamageBuffPotionUntil")
+    )
+    if secs > 0.05 then
+        setSlot(
+            pet,
+            "dmgbuff",
+            { category = "buff", element = elementForPet(pet), duration = secs }
+        )
+        showDamageBuffIcon(pet, owner)
+    else
+        stopSlot(pet, "dmgbuff")
+        hideDamageBuffIcon(pet)
+    end
+end
+
+-- Player flask still paints every pet in the folder. Circle Berserk is
+-- per-pet (PetDamageBuffPotionUntil on the model) and must not require
+-- an owner stamp.
 local function refreshPlayerDamageBuff(petsFolder)
     if not petsFolder then
         return
     end
-    -- The buff channel lives on the pets' OWNER — resolve them from the folder name so the
-    -- aura renders identically for every player's squad (entity-state = attributes, any pet).
-    local owner = Players:FindFirstChild(petsFolder.Name) or localPlayer
-    local secs = math.max(
-        remaining(owner, "PetDamageBuffUntil"),
-        remaining(owner, "PetDamageBuffPotionUntil")
-    )
     for _, pet in ipairs(petsFolder:GetChildren()) do
-        if pet:IsA("Model") then
-            if secs > 0.05 then
-                setSlot(
-                    pet,
-                    "dmgbuff",
-                    { category = "buff", element = elementForPet(pet), duration = secs }
-                )
-            else
-                stopSlot(pet, "dmgbuff")
-            end
-        end
+        refreshPetDamageBuff(pet, petsFolder)
     end
 end
 
@@ -773,7 +875,7 @@ function CombatAuraController.start()
                 return
             end
             watchFolder(folder, hookPet)
-            local owner = Players:FindFirstChild(folder.Name)
+            local owner = folderBuffOwner(folder)
             if owner then
                 owner:GetAttributeChangedSignal("PetDamageBuffUntil"):Connect(function()
                     refreshPlayerDamageBuff(folder)
@@ -782,6 +884,9 @@ function CombatAuraController.start()
                     refreshPlayerDamageBuff(folder)
                 end)
             end
+            folder:GetAttributeChangedSignal("NpcOwner"):Connect(function()
+                refreshPlayerDamageBuff(folder)
+            end)
             refreshPlayerDamageBuff(folder)
         end
         for _, folder in ipairs(root:GetChildren()) do

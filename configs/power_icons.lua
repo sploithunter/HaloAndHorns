@@ -136,6 +136,18 @@ local M = {
         control = "hand_stop",
     },
 
+    -- Merge / other combat sources stamp DebuffPowerId without a powers.lua entry. Reuse the
+    -- existing effect disc so they resolve like a real power (hedge = the same root badge as
+    -- frost_bind, grass-colored).
+    combat_source_badge = {
+        -- Grass/earth disc (green). `elementKey("grass")` -> earth; same root glyph as Frost Bind.
+        grasping_hedge = { element = "grass", symbol = "user_desk", target = "enemy_aoe" },
+        impaler_palisade = { element = "earth", symbol = "user_desk", target = "enemy_aoe" },
+        concertina_line = { element = "fire", symbol = "contagion", target = "enemy_aoe" },
+        saw_blade = { element = "fire", symbol = "fist_impact", target = "enemy_aoe" },
+        land_shark = { element = "ice", symbol = "capacitor", target = "single" },
+    },
+
     -- Power badges. A power's disc COLOUR = its element (signature `element`, else the archetype
     -- theme); SYMBOL + RING (targeting) come from these maps. `power_effect_badge` keys off the
     -- power's `effect` (configs/powers.lua); signatures use `power_glyph_symbol` + the target map.

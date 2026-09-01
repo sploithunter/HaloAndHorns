@@ -68,4 +68,21 @@ return function()
             expect(StarterPetChoice.isEligible(cfg, reset)).to.equal(true)
         end)
     end)
+
+    describe("place ownership", function()
+        it("keeps the starter chooser in Farm and Fight rather than the Merge place", function()
+            local service = readFile("src/Server/Services/StarterPetService.lua")
+
+            expect(service:find("function StarterPetService:_isAvailableHere", 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    'return PlaceRuntime.isRole(game.PlaceId, self._placesConfig, "main")',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("if not self:_isAvailableHere() then", 1, true)).to.be.ok()
+            expect(service:find("eligible = false", 1, true)).to.be.ok()
+        end)
+    end)
 end

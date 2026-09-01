@@ -720,6 +720,7 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
         or nil
     local usePlayerModifiers = options.usePlayerModifiers ~= false
     local source = type(options.source) == "string" and options.source or nil
+    local reason = type(options.reason) == "string" and options.reason or nil
     local visualScale = math.max(0.1, tonumber(options.visualScale) or 1)
     local despawnSeconds = tonumber(options.despawnSeconds)
     if despawnSeconds then
@@ -779,6 +780,7 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
         model:SetAttribute("DropCollectRadiusAttribute", collectRadiusAttribute)
         model:SetAttribute("DropUsesPlayerModifiers", usePlayerModifiers)
         model:SetAttribute("DropSource", source)
+        model:SetAttribute("DropReason", reason)
         model:SetAttribute("DropVisualScale", visualScale)
         model:SetAttribute("DropDespawnSeconds", despawnSeconds)
         model:SetAttribute("DropBouncedInside", bounced)
@@ -793,6 +795,7 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
             collectRadiusAttribute = collectRadiusAttribute,
             usePlayerModifiers = usePlayerModifiers,
             source = source,
+            reason = reason,
             spawnAt = os.clock(),
             despawnSeconds = despawnSeconds,
             settling = true,

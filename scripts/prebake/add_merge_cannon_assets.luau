@@ -1,9 +1,8 @@
 --!strict
 
--- Add the six Merge cannon meshes to the Rojo-served Models.rbxm library. The uploaded Model ids
+-- Add all 24 Merge cannon meshes to the Rojo-served Models.rbxm library. The uploaded Model ids
 -- remain provenance; runtime clones these local templates and never depends on Workspace review
--- objects. Current art is Tier 2. Tier 1 deliberately reuses that mesh at a smaller authored size
--- until its distinct model pass is ready.
+-- objects. Every gameplay tier has its own Mesh and Texture asset at a uniform template scale.
 --
 -- Usage:
 --   lune run scripts/prebake/add_merge_cannon_assets.luau \
@@ -30,49 +29,41 @@ end
 
 local cannonRoot = roblox.Instance.new("Folder")
 cannonRoot.Name = "MergeCannons"
-cannonRoot:SetAttribute("MergeTowerModelTierCount", manifest.tiering.modelTierCount)
-cannonRoot:SetAttribute("MergeTowerCurrentArtTier", manifest.tiering.currentArtTier)
-cannonRoot:SetAttribute("MergeTowerTier1Scale", manifest.tiering.tier1Scale)
+cannonRoot:SetAttribute("MergeTowerModelTierCount", manifest.runtimeContract.modelTierCount)
+cannonRoot:SetAttribute("MergeTowerScaledCopyFallbackRemoved", true)
 cannonRoot.Parent = root
 
 local roleOrder = { "heal", "rage", "debuff", "gravity", "repulsor", "nullifier" }
-local tierSpecs = {
-    { tier = 1, scale = manifest.tiering.tier1Scale },
-    { tier = 2, scale = 1 },
-}
 
 local added = 0
 for _, role in ipairs(roleOrder) do
-    local entry = assert(manifest[role], "missing cannon manifest entry for " .. role)
-    local size = assert(entry.canonicalTier2Size, "missing Tier 2 size for " .. role)
+    local family = assert(manifest.families[role], "missing cannon manifest family for " .. role)
 
     local roleFolder = roblox.Instance.new("Folder")
-    roleFolder.Name = string.upper(string.sub(role, 1, 1)) .. string.sub(role, 2)
+    roleFolder.Name = family.displayName
     roleFolder:SetAttribute("MergeTowerRole", role)
-    roleFolder:SetAttribute("RobloxModelAssetId", entry.modelAssetId)
     roleFolder.Parent = cannonRoot
 
-    for _, tierSpec in ipairs(tierSpecs) do
+    for _, entry in ipairs(family.tiers) do
+        local tier = assert(entry.tier, "missing tier number for " .. role)
+        local robloxEntry = assert(entry.roblox, "missing Roblox ids for " .. role)
+        local size = assert(robloxEntry.canonicalSize, "missing canonical size for " .. role)
         local model = roblox.Instance.new("Model")
-        model.Name = "Tier" .. tostring(tierSpec.tier)
+        model.Name = "Tier" .. tostring(tier)
         model:SetAttribute("MergeTowerRole", role)
-        model:SetAttribute("MergeTowerTier", tierSpec.tier)
-        model:SetAttribute("MergeTowerSourceArtTier", manifest.tiering.currentArtTier)
-        model:SetAttribute("MergeTowerTemplateScale", tierSpec.scale)
-        model:SetAttribute("RobloxModelAssetId", entry.modelAssetId)
-        model:SetAttribute("RobloxMeshAssetId", entry.meshId)
-        model:SetAttribute("RobloxTextureAssetId", entry.textureId)
+        model:SetAttribute("MergeTowerTier", tier)
+        model:SetAttribute("MergeTowerSourceArtTier", tier)
+        model:SetAttribute("MergeTowerTemplateScale", 1)
+        model:SetAttribute("RobloxModelAssetId", robloxEntry.modelAssetId)
+        model:SetAttribute("RobloxMeshAssetId", robloxEntry.meshId)
+        model:SetAttribute("RobloxTextureAssetId", robloxEntry.textureId)
         model.Parent = roleFolder
 
         local visual = roblox.Instance.new("MeshPart")
         visual.Name = "Visual"
-        visual.MeshId = "rbxassetid://" .. tostring(entry.meshId)
-        visual.TextureID = "rbxassetid://" .. tostring(entry.textureId)
-        visual.Size = roblox.Vector3.new(
-            size[1] * tierSpec.scale,
-            size[2] * tierSpec.scale,
-            size[3] * tierSpec.scale
-        )
+        visual.MeshId = "rbxassetid://" .. tostring(robloxEntry.meshId)
+        visual.TextureID = "rbxassetid://" .. tostring(robloxEntry.textureId)
+        visual.Size = roblox.Vector3.new(size[1], size[2], size[3])
         visual.Anchored = true
         visual.CanCollide = false
         visual.CanTouch = false

@@ -26,6 +26,8 @@ local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local GameEvents = require(script.Parent.GameEvents)
 local TutorialLanguageState = require(script.Parent.TutorialLanguageState)
 local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig
 local TUTORIAL_CFG
 pcall(function()
     TUTORIAL_CFG = require(ReplicatedStorage.Configs:WaitForChild("tutorial"))
@@ -67,13 +69,35 @@ end, function(enabled)
     StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, enabled)
 end)
 
+local function isMergePlace()
+    if placesConfig == nil then
+        local configs = ReplicatedStorage:FindFirstChild("Configs")
+        local places = configs and configs:FindFirstChild("places")
+        if places then
+            local ok, loaded = pcall(require, places)
+            if ok then
+                placesConfig = loaded
+            end
+        end
+    end
+    return placesConfig ~= nil and PlaceRuntime.isMerge(game.PlaceId, placesConfig)
+end
+
+local function hidesHomeTutorial(player)
+    player = player or Players.LocalPlayer
+    return isMergePlace()
+        or player:GetAttribute("InMergeEggPrototype") == true
+        or player:GetAttribute("InPrologue") == true
+end
+
 local function syncCapsuleVisibility()
     if not capsule then
         return
     end
     local player = Players.LocalPlayer
+    -- Merge's wave meter docks in the same upper-right slot as the Farm tutorial card.
     local tutorialOwnsCorner = capsuleWantedVisible
-        and player:GetAttribute("InPrologue") ~= true
+        and not hidesHomeTutorial(player)
         and player:GetAttribute("LargeMenuOpen") ~= true
     local peekingAtPlayers = tutorialOwnsCorner and os.clock() < playerListPeekUntil
     capsule.Visible = tutorialOwnsCorner and not peekingAtPlayers
@@ -1501,17 +1525,15 @@ function TutorialController.start()
 
     -- THE PROLOGUE OWNS THE SCREEN (docs/PROLOGUE.md). While InPrologue is set, the tutorial
     -- renders NOTHING — capsule hidden, breadcrumb cleared — and whatever state arrives is
-    -- parked for the warp-out. This is the client-side half of the ordering: the server gate
-    -- holds the initial push, but a state that already rendered (or slips any race) must be
-    -- RETRACTED, not just not-sent (Jason: tutorial 1/10 + a breadcrumb to nowhere, drawn
-    -- inside the mezzanine toward an egg 8000 studs above).
+    -- parked for the warp-out. Merge uses the same retract: the Farm capsule shares the
+    -- wave meter's upper-right dock. This is the client-side half of the ordering: the
+    -- server gate holds the initial push, but a state that already rendered (or slips any
+    -- race) must be RETRACTED, not just not-sent (Jason: tutorial 1/10 + a breadcrumb to
+    -- nowhere, drawn inside the mezzanine toward an egg 8000 studs above).
     local me = Players.LocalPlayer
     local parked = nil
-    local function inPrologue()
-        return me:GetAttribute("InPrologue") == true
-    end
     local function gatedApply(state)
-        if inPrologue() then
+        if hidesHomeTutorial(me) then
             parked = state
             clearGuidance()
             hideHandoffBanner()
@@ -1523,12 +1545,12 @@ function TutorialController.start()
         apply(state)
     end
     me:GetAttributeChangedSignal("InputMode"):Connect(function()
-        if not inPrologue() then
+        if not hidesHomeTutorial(me) then
             Signals.TutorialStateRequest:FireServer()
         end
     end)
-    me:GetAttributeChangedSignal("InPrologue"):Connect(function()
-        if inPrologue() then
+    local function onHomeTutorialGateChanged()
+        if hidesHomeTutorial(me) then
             clearGuidance()
             if capsule then
                 syncCapsuleVisibility()
@@ -1540,7 +1562,9 @@ function TutorialController.start()
         else
             Signals.TutorialStateRequest:FireServer() -- nothing parked: pull fresh
         end
-    end)
+    end
+    me:GetAttributeChangedSignal("InPrologue"):Connect(onHomeTutorialGateChanged)
+    me:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(onHomeTutorialGateChanged)
     me:GetAttributeChangedSignal("LargeMenuOpen"):Connect(function()
         if me:GetAttribute("LargeMenuOpen") == true then
             -- Yield before MenuManager captures the current People-list state for its modal.

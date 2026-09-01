@@ -18,6 +18,7 @@ local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
 local TutorialService = {}
 TutorialService.__index = TutorialService
@@ -48,6 +49,7 @@ function TutorialService:Init()
     self._petGrantService = self._modules and self._modules.PetGrantService
     self._questService = self._modules and self._modules.QuestService
     self._config = self._configLoader:LoadConfig("tutorial")
+    self._placesConfig = self._configLoader:LoadConfig("places")
     self._squadReviewOpened = setmetatable({}, { __mode = "k" })
 
     fireGameEvent.tap(function(player, name, ctx)
@@ -118,15 +120,36 @@ function TutorialService:Start()
         fireGameEvent(player, "combat_training_quest_ack", { source = "handoff_banner" })
     end)
     Players.PlayerAdded:Connect(function(player)
+        self:_watchMergeHud(player)
         task.spawn(function()
             self:_waitForDataAndPush(player)
         end)
     end)
     for _, player in ipairs(Players:GetPlayers()) do
+        self:_watchMergeHud(player)
         task.spawn(function()
             self:_waitForDataAndPush(player)
         end)
     end
+end
+
+-- Home tutorial is Farm-only. Re-push when a Merge session ends so Farm can resume.
+function TutorialService:_watchMergeHud(player)
+    if not player then
+        return
+    end
+    player:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
+        if player.Parent and player:GetAttribute("InMergeEggPrototype") ~= true then
+            self:_push(player)
+        end
+    end)
+end
+
+function TutorialService:_hidesHomeTutorial(player)
+    if player and player:GetAttribute("InMergeEggPrototype") == true then
+        return true
+    end
+    return PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
 end
 
 function TutorialService:_waitForDataAndPush(player)
@@ -543,6 +566,11 @@ end
 
 function TutorialService:_push(player)
     if player and player:GetAttribute("InCombatTutorial") == true then
+        return
+    end
+    -- Merge owns the upper-right chrome (wave meter). The Farm "Hatch your first
+    -- egg" capsule must not fire here — it shares that dock and covers the meter.
+    if self:_hidesHomeTutorial(player) then
         return
     end
     local data = self._dataService:GetData(player)

@@ -69,15 +69,21 @@ per bay and their invisible `TowerAnchor` parts under
 objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
 `Models.MergeCannons/<Role>/<Tier>`. Runtime clones and grounds a selected template through
 `src/Shared/Game/MergeTowerModels.lua`, so changing tower role or tier never mutates or duplicates
-the permanent map. A claimed bay currently grounds the current-art Repulsor at locked
-`tier_scales` (0.40 / 0.50) and lofts a labeled sphere from each pad; the cannon aims
-along the launch tangent. Upgrades and role acquisition stay later.
+the permanent map. All six roles have distinct Tier 1–4 templates at scale 1; the installed
+gameplay tier is the art tier. The cannon lofts a sphere from its pad and aims along the launch
+tangent. The Artillery Commander owns role acquisition, installation, and tier upgrades.
 
-Merge bulwark defenses use ten invisible `BulwarkAnchor` parts per bay under
-`Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`. The anchors
-span 94 studs across the authored 96-stud `BulwarkLine`: each represents a 9.4-stud tile and leaves
-one stud of clearance at both retaining walls. Their Y position is the corresponding portable
-bay's authored `LandStrip` top, with `PlayFields` only as an authoring fallback. Runtime clones the
+`BulwarkLine` and `BreachLine` are combat planes, not install catalogs. Crossing
+the gold line opens pet combat; crossing the red line opens hatcher-egg attacks.
+Do not rename, reuse, or add a third meaning to those parts.
+
+Physical installs are separate hooks from `MergeBulwarkSlots`. Lane uses ten
+invisible `BulwarkAnchor` parts per bay under
+`Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`.
+Egg uses `EggBulwarkStations` / `EggBulwarkAnchor` stamped from `BreachLine`.
+Mid and front are reserved rows and stay dark until authored. Each line spans
+94 studs across a 96-stud marker with one-stud wall clearance. Y is the portable
+bay `LandStrip` top, with `PlayFields` as fallback. Runtime clones the
 selected family/tier through `MergeBulwarkModels`; maps must not retain visible review copies.
 All families share the same line-width anchor orientation. The model library owns any source-axis
 correction, so map authors must not rotate individual families differently.
@@ -211,6 +217,14 @@ permission for both objects to survive. Layer 3 removes those linked visuals thr
 `scripts/studio/remove_layer3_authored_flora_visuals.luau`; its exact runtime dressing can be
 inspected with `scripts/studio/preview_layer3_flora.luau`, whose `_Layer3FloraPreview` folders must
 be deleted before saving the place.
+
+Soft flora rustles on the observing client only. `FloraService` stamps
+`FloraSway` on plants/trees/cacti; rocks stay still. The client also
+picks up Merge `RealmDecor_` clones and authored map plants whose names
+match the same soft tokens. Motion is a few degrees around the base and
+sleeps beyond `configs/flora.lua` `sway.radius` (80 studs). Settings →
+Prop Effects is the player opt-out (default on). This is not a skinned
+animation and does not write the server pivot.
 
 Ambient fauna use invisible BaseParts tagged `AmbientFaunaAnchor`. Each anchor supplies
 `ModelName`, `Motion` (`hover` or `ground`), `MoveRadius` (or elliptical `PathRadiusX` and

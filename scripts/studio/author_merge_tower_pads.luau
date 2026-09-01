@@ -214,6 +214,10 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
                 centerOffset = slotOne.Size.X * 0.5 + PAD_FOOTPRINT * 0.5 + PAD_CLEARANCE
             end
             local facing = side == "Heaven" and Vector3.new(1, 0, 0) or Vector3.new(-1, 0, 0)
+            -- One pad-width behind the egg-row depth so the chassis is not on
+            -- top of the red-line Bulwark Engineer. March axis stays the egg
+            -- stand X, then steps back a full footprint toward the player.
+            local depth = -facing * PAD_FOOTPRINT
             local bayId = string.format("%s_%02d", string.lower(side), column)
             local bayFolder = Instance.new("Folder")
             bayFolder.Name = string.format("%s_%02d_TowerPads", side, column)
@@ -229,7 +233,7 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
                 column,
                 1,
                 "Left",
-                slotOne.Position - rowDirection * centerOffset,
+                slotOne.Position - rowDirection * centerOffset + depth,
                 floorTop,
                 facing
             )
@@ -240,7 +244,7 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
                 column,
                 2,
                 "Right",
-                slotNine.Position + rowDirection * centerOffset,
+                slotNine.Position + rowDirection * centerOffset + depth,
                 floorTop,
                 facing
             )

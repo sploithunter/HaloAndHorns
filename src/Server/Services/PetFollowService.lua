@@ -961,6 +961,14 @@ function PetFollowService:_mine(player, pet, breakable)
             fraction = (pet:GetAttribute("EmpowerDamageBuff") or 1) - 1,
             expiry = pet:GetAttribute("EmpowerDamageBuffUntil") or 0,
         },
+        {
+            -- BERSERK CIRCLE (rage cannon landing): PotionService:SipBrewOn writes
+            -- the brew stamp on THIS pet. Player flask still rides the player
+            -- PetDamageBuffPotion axis above. Circle must not write the player
+            -- or every pet inherits it.
+            fraction = tonumber(pet:GetAttribute("PetDamageBuffPotion")) or 0,
+            expiry = pet:GetAttribute("PetDamageBuffPotionUntil") or 0,
+        },
     }
     for _, source in ipairs(petSpecificSources) do
         petDmgSources[#petDmgSources + 1] = source

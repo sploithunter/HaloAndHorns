@@ -155,6 +155,9 @@ function ModuleLoader:_loadModule(name)
         dependencies[depName] = self:_loadModule(depName)
     end
 
+    game:SetAttribute("ModuleLoaderStage", "require:" .. name)
+    local loadStartedAt = os.clock()
+
     -- Require the module
     local success, moduleResult = pcall(require, moduleInfo.script)
     if not success then
@@ -187,6 +190,7 @@ function ModuleLoader:_loadModule(name)
 
         -- Call Init if it exists
         if instance.Init then
+            game:SetAttribute("ModuleLoaderStage", "init:" .. name)
             local initSuccess, initError = pcall(instance.Init, instance)
             if not initSuccess then
                 self._loading[name] = nil
@@ -198,10 +202,17 @@ function ModuleLoader:_loadModule(name)
     self._loaded[name] = instance
     self._loading[name] = nil
 
+    local loadSeconds = os.clock() - loadStartedAt
+    if loadSeconds >= 2 then
+        warn(string.format("[ModuleLoader] Slow module %s loaded in %.2fs", name, loadSeconds))
+    end
+    game:SetAttribute("ModuleLoaderStage", "loaded:" .. name)
+
     return instance
 end
 
 function ModuleLoader:LoadAll(configure)
+    game:SetAttribute("ModuleLoaderStage", "validate")
     -- Validate all dependencies
     self:_validateDependencies()
 
@@ -219,6 +230,7 @@ function ModuleLoader:LoadAll(configure)
     -- The composition root may wire intentional cycles after every Init has run but before any
     -- Start callback can observe a partially configured service graph.
     if configure then
+        game:SetAttribute("ModuleLoaderStage", "configure")
         configure(self)
     end
 
@@ -226,12 +238,15 @@ function ModuleLoader:LoadAll(configure)
     for _, name in ipairs(loadOrder) do
         local instance = self._loaded[name]
         if instance and type(instance) == "table" and instance.Start then
+            game:SetAttribute("ModuleLoaderStage", "start:" .. name)
             local startSuccess, startError = pcall(instance.Start, instance)
             if not startSuccess then
                 error(string.format("Failed to start module '%s': %s", name, startError))
             end
         end
     end
+
+    game:SetAttribute("ModuleLoaderStage", "ready")
 
     return loadOrder
 end

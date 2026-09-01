@@ -1343,6 +1343,47 @@ end
 
 -- Seed only one pet folder. A stationary hatcher team uses this instead of drafting every other
 -- manifested principal (or the owner's real squad) through the broader team-combat seam.
+function EnemyService:RedirectMarchGoal(targetId, config)
+    local entry = self._enemies[tonumber(targetId)]
+    if not (entry and entry.model and entry.model.Parent) then
+        return false
+    end
+    local goal = EnemyMarchGoal.new(config)
+    if not goal then
+        return false
+    end
+    goal.onReached = type(config.onReached) == "function" and config.onReached or nil
+    entry.marchGoal = goal
+    entry.model:SetAttribute("MarchGoalReached", false)
+    return true
+end
+
+-- Pin one combatant onto a specific pet/objective and wipe other threat rows so they
+-- cannot peel off and walk out the back while that target is still alive.
+function EnemyService:ForceAttackTarget(targetId, petModel, opts)
+    local entry = self._enemies[tonumber(targetId)]
+    if not (entry and entry.model and entry.model.Parent and petModel and petModel.Parent) then
+        return false
+    end
+    opts = type(opts) == "table" and opts or {}
+    local ownerName = opts.ownerName
+    if type(ownerName) ~= "string" or ownerName == "" then
+        local player = self:_playerForPetFolder(petModel.Parent)
+        ownerName = player and player.Name or nil
+    end
+    if type(ownerName) == "string" and ownerName ~= "" then
+        self:_setAggroOwner(entry, ownerName)
+    end
+    local threat = math.max(1, tonumber(opts.threat) or 10000)
+    entry.aggro = entry.aggro or AggroTable.new()
+    AggroTable.clearAll(entry.aggro)
+    AggroTable.set(entry.aggro, petModel, threat)
+    entry.targetPet = petModel
+    entry.meander = nil
+    entry.stuckTime = 0
+    return true
+end
+
 function EnemyService:AlertPetFolderToEnemy(folder, targetId, opts)
     if not (folder and folder.Parent) then
         return false, 0
@@ -1725,9 +1766,11 @@ function EnemyService:_playDefeatDeath(model, entry)
     if not (model and model.Parent) then
         return
     end
-    local style = CombatDeath.pick(self._deathConfig, math.random, {
-        rank = model:GetAttribute("EnemyTier") or (entry and entry.def and entry.def.tier),
-    })
+    local preferred = tostring(model:GetAttribute("DeathStylePreferred") or "")
+    local style = CombatDeath.styleById(self._deathConfig, preferred)
+        or CombatDeath.pick(self._deathConfig, math.random, {
+            rank = model:GetAttribute("EnemyTier") or (entry and entry.def and entry.def.tier),
+        })
     local seconds = math.max(
         0.4,
         tonumber(style and style.seconds)
@@ -2601,6 +2644,47 @@ end
 -- knockdown (no fall-over animations yet — flagged as future polish). Same server-move rules as
 -- every other step: grounded (a wall shortens the shove — slammed into it), home-area leashed,
 -- published via MoveTarget so the client lerps the anchored model.
+function EnemyService:_displaceEnemy(entry, targetId, enemyModel, away, distance)
+    local ePos = entry.pos
+    if not ePos then
+        return false
+    end
+    if self:_outsideMovementLeash(entry) then
+        return self:_recoverPersistentEnemy(
+            entry,
+            targetId,
+            "knockback found enemy outside authored movement room"
+        )
+    end
+    local dist = tonumber(distance) or 12
+    if dist <= 0 or away.Magnitude <= 1e-3 then
+        return false
+    end
+    away = Vector3.new(away.X, 0, away.Z).Unit
+    local eng = (self._combatConfig and self._combatConfig.engagement) or {}
+    local climbMax = tonumber(eng.ground_climb_max) or 10
+    local newPos
+    local step = dist
+    while step >= 1 do
+        local nx, nz = ePos.X + away.X * step, ePos.Z + away.Z * step
+        local groundedY = self:_groundedY(entry, nx, nz, ePos.Y)
+        local flyer = (entry.hoverHeight or 0) > 0
+        if flyer or (groundedY - ePos.Y) <= climbMax then
+            newPos = Vector3.new(nx, groundedY, nz)
+            break
+        end
+        step = step / 2
+    end
+    if not newPos then
+        return false
+    end
+    newPos = self:_leashToHomeArea(entry, newPos)
+    entry.pos = newPos
+    enemyModel:SetAttribute("MoveTarget", newPos)
+    enemyModel:SetAttribute("MoveFace", newPos - away * 4)
+    return true
+end
+
 function EnemyService:ApplyKnockback(enemyModel, player, distance)
     local dist = tonumber(distance) or 12
     if dist <= 0 then
@@ -2611,15 +2695,6 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
             local ePos = entry.pos
             if not ePos then
                 return false
-            end
-            -- A prior/unknown displacement already escaped the room: do not clamp from the wrong
-            -- side of a wall. Recover to the authored room anchor immediately.
-            if self:_outsideMovementLeash(entry) then
-                return self:_recoverPersistentEnemy(
-                    entry,
-                    targetId,
-                    "knockback found enemy outside authored movement room"
-                )
             end
             local pfs = self._petFollowServiceInstance
             local fromPos
@@ -2638,29 +2713,49 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
             end
             local away = Vector3.new(ePos.X - fromPos.X, 0, ePos.Z - fromPos.Z)
             away = (away.Magnitude > 1e-3) and away.Unit or Vector3.new(1, 0, 0)
-            local eng = (self._combatConfig and self._combatConfig.engagement) or {}
-            local climbMax = tonumber(eng.ground_climb_max) or 10
-            -- try the full shove, halving against a wall until it fits (a cornered enemy barely moves)
-            local newPos
-            local step = dist
-            while step >= 1 do
-                local nx, nz = ePos.X + away.X * step, ePos.Z + away.Z * step
-                local groundedY = self:_groundedY(entry, nx, nz, ePos.Y)
-                local flyer = (entry.hoverHeight or 0) > 0
-                if flyer or (groundedY - ePos.Y) <= climbMax then
-                    newPos = Vector3.new(nx, groundedY, nz)
-                    break
-                end
-                step = step / 2
+            return self:_displaceEnemy(entry, targetId, enemyModel, away, dist)
+        end
+    end
+    return false
+end
+
+-- Authoritative scripted placement for Merge hunters (land-shark drag). Updates entry.pos and
+-- MoveTarget together so the client lerp and combat math stay on the same point.
+function EnemyService:SetScriptedMove(enemyModel, position, opts)
+    if typeof(enemyModel) ~= "Instance" or typeof(position) ~= "Vector3" then
+        return false
+    end
+    opts = type(opts) == "table" and opts or {}
+    for _, entry in pairs(self._enemies) do
+        if entry.model == enemyModel then
+            entry.pos = position
+            enemyModel:SetAttribute("MoveTarget", position)
+            if typeof(opts.face) == "Vector3" then
+                enemyModel:SetAttribute("MoveFace", opts.face)
             end
-            if not newPos then
-                return false -- back to the wall: the quake pins it where it stands
+            local hold = tonumber(opts.holdSeconds)
+            if hold and hold > 0 then
+                enemyModel:SetAttribute("HeldUntil", os.time() + hold)
             end
-            newPos = self:_leashToHomeArea(entry, newPos)
-            entry.pos = newPos
-            enemyModel:SetAttribute("MoveTarget", newPos)
-            enemyModel:SetAttribute("MoveFace", newPos - away * 4) -- knocked back FACING the fight
             return true
+        end
+    end
+    return false
+end
+
+-- Same shove as the tank Seismic knockback, but along an authored direction (Merge gate, not
+-- "away from the nearest pet"). Used by the Impaler Palisade stop wall.
+function EnemyService:ApplyDirectedKnockback(enemyModel, direction, distance)
+    if typeof(direction) ~= "Vector3" then
+        return false
+    end
+    local away = Vector3.new(direction.X, 0, direction.Z)
+    if away.Magnitude <= 1e-3 then
+        return false
+    end
+    for targetId, entry in pairs(self._enemies) do
+        if entry.model == enemyModel then
+            return self:_displaceEnemy(entry, targetId, enemyModel, away.Unit, distance)
         end
     end
     return false
@@ -2940,7 +3035,25 @@ function EnemyService:_followAuthoredMarchGoal(entry, targetId, model, ePos, dt)
         return false
     end
 
-    local x, z, reached = EnemyMarchGoal.step(goal, ePos.X, ePos.Z, math.max(0, dt or 0))
+    -- Merge marchers live on this path, not chase. Root/hold and SlowFactor have to apply
+    -- here or a strip slow / palisade pin is presentation-only while they keep walking.
+    local now = os.time()
+    if
+        CrowdControl.isImmobilized(
+            model:GetAttribute("RootedUntil"),
+            model:GetAttribute("HeldUntil"),
+            now
+        )
+    then
+        model:SetAttribute("MoveTarget", ePos)
+        return true
+    end
+    local stepDt = math.max(0, dt or 0)
+    if (tonumber(model:GetAttribute("SlowUntil")) or 0) > now then
+        stepDt = OnHitEffects.slowSpeed(stepDt, model:GetAttribute("SlowFactor"))
+    end
+
+    local x, z, reached = EnemyMarchGoal.step(goal, ePos.X, ePos.Z, stepDt)
     local gy = self:_groundedY(entry, x, z, ePos.Y)
     local eng = self._combatConfig and self._combatConfig.engagement or {}
     local flyer = (entry.hoverHeight or 0) > 0
@@ -4704,6 +4817,18 @@ function EnemyService:_focusEnemy(player)
     return model
 end
 
+-- Authoritative world position for a live enemy. The server never re-pivots the
+-- anchored model after spawn (EnemyMotion interpolates on the client toward
+-- MoveTarget), so model:GetPivot() is the spawn CFrame. Combat, drops, and
+-- Merge cannons must read entry.pos — never the presentation pivot.
+function EnemyService:GetLivePosition(targetId)
+    local entry = targetId and self._enemies[targetId]
+    if entry and typeof(entry.pos) == "Vector3" then
+        return entry.pos
+    end
+    return nil
+end
+
 -- Public shared focus seam for powers, potions, and future enemy-target actions. Keeping resolution
 -- here prevents each feature from drifting into a different idea of which enemy the squad means.
 function EnemyService:GetFocusEnemy(player)
@@ -6035,6 +6160,17 @@ end
 -- carries the chain. Needs an active DoT (the burn) to spread — set by the contagion stamp in _mine.
 function EnemyService:_contagionPass(now)
     local cc = (self._combatConfig and self._combatConfig.pet_contagion) or {}
+    local function contagionPosition(other, model)
+        if other and typeof(other.pos) == "Vector3" then
+            return other.pos
+        end
+        local published = model and model:GetAttribute("MoveTarget")
+        if typeof(published) == "Vector3" then
+            return published
+        end
+        local part = model and (model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart"))
+        return part and part.Position
+    end
     for _, entry in pairs(self._enemies) do
         local src = entry.model
         if src and src.Parent and (src:GetAttribute("HP") or 0) > 0 then
@@ -6058,11 +6194,14 @@ function EnemyService:_contagionPass(now)
                 and left > 0
                 and perTick > 0
                 and now >= spreadAt
-                and not DamageOverTime.isExpired(src:GetAttribute("DotExpireAt") or 0, now)
+                and (
+                    src:GetAttribute("DotPermanent") == true
+                    or not DamageOverTime.isExpired(src:GetAttribute("DotExpireAt") or 0, now)
+                )
             then
-                local sp = src.PrimaryPart or src:FindFirstChildWhichIsA("BasePart")
+                local sourcePos = contagionPosition(entry, src)
                 local best, bestD
-                if sp then
+                if sourcePos then
                     for _, e2 in pairs(self._enemies) do
                         local m2 = e2.model
                         if
@@ -6072,9 +6211,9 @@ function EnemyService:_contagionPass(now)
                             and (m2:GetAttribute("HP") or 0) > 0
                             and (tonumber(m2:GetAttribute("DotPerTick")) or 0) <= 0 -- not already burning
                         then
-                            local p2 = m2.PrimaryPart or m2:FindFirstChildWhichIsA("BasePart")
-                            if p2 then
-                                local d = (p2.Position - sp.Position).Magnitude
+                            local otherPos = contagionPosition(e2, m2)
+                            if otherPos then
+                                local d = (otherPos - sourcePos).Magnitude
                                 if d <= spreadRadius and (not bestD or d < bestD) then
                                     best, bestD = m2, d
                                 end
@@ -6085,17 +6224,25 @@ function EnemyService:_contagionPass(now)
                 if best then
                     local interval = tonumber(src:GetAttribute("DotInterval")) or 1
                     local duration = tonumber(src:GetAttribute("DotDuration")) or 0
+                    local permanent = src:GetAttribute("DotPermanent") == true
                     best:SetAttribute("DotPerTick", perTick) -- copy the burn (fresh window)
                     best:SetAttribute("DotInterval", interval)
                     best:SetAttribute("DotNextTick", now + interval)
-                    best:SetAttribute("DotExpireAt", now + duration)
-                    best:SetAttribute("DotDuration", duration)
+                    best:SetAttribute("DotPermanent", permanent)
+                    if permanent then
+                        best:SetAttribute("DotExpireAt", 0)
+                        best:SetAttribute("DotDuration", 0)
+                        best:SetAttribute("BurnFxUntil", os.time() + 30)
+                    else
+                        best:SetAttribute("DotExpireAt", now + duration)
+                        best:SetAttribute("DotDuration", duration)
+                        best:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration))
+                    end
                     best:SetAttribute("DotSourceUserId", src:GetAttribute("DotSourceUserId"))
                     best:SetAttribute(
                         "DotPlayerPetKillUserId",
                         src:GetAttribute("DotPlayerPetKillUserId")
                     )
-                    best:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration))
                     best:SetAttribute("BurnElement", src:GetAttribute("BurnElement")) -- carry the theme as it hops
                     local nextLeft = left - 1
                     best:SetAttribute("ContagionLeft", nextLeft)
@@ -6130,17 +6277,26 @@ function EnemyService:_dotPass(now)
         if model and model.Parent and (model:GetAttribute("HP") or 0) > 0 then
             local perTick = tonumber(model:GetAttribute("DotPerTick")) or 0
             if perTick > 0 then
-                if DamageOverTime.isExpired(model:GetAttribute("DotExpireAt") or 0, now) then
+                local permanent = model:GetAttribute("DotPermanent") == true
+                if
+                    not permanent
+                    and DamageOverTime.isExpired(model:GetAttribute("DotExpireAt") or 0, now)
+                then
                     model:SetAttribute("DotPerTick", 0) -- burned out
                 else
+                    local expireAt = permanent and (now + 3600)
+                        or (tonumber(model:GetAttribute("DotExpireAt")) or 0)
                     local count, nextAt = DamageOverTime.ticksDue(
                         model:GetAttribute("DotNextTick") or 0,
                         model:GetAttribute("DotInterval") or 1,
-                        model:GetAttribute("DotExpireAt") or 0,
+                        expireAt,
                         now
                     )
                     if count > 0 then
                         model:SetAttribute("DotNextTick", nextAt)
+                        if permanent then
+                            model:SetAttribute("BurnFxUntil", os.time() + 30)
+                        end
                         local uid = model:GetAttribute("DotSourceUserId")
                         CombatApplication.ApplyDamage(model, perTick * count, {
                             sourceUserId = uid,

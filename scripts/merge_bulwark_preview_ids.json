@@ -1,0 +1,42 @@
+{
+  "_note": "Group-owned flat UI previews for Merge bulwarks. ImageLabel must use imageId, not the uploaded Decal id. Five static families use the same long side-to-side presentation; Land Shark is the only special case.",
+  "creatorGroupId": "15872767",
+  "families": {
+    "concertina_line": [
+      { "tier": 1, "decalId": "113357672010171", "imageId": "95976103236128" },
+      { "tier": 2, "decalId": "105913949349922", "imageId": "78607657186991" },
+      { "tier": 3, "decalId": "72955017349938", "imageId": "96796451629095" },
+      { "tier": 4, "decalId": "90245489274928", "imageId": "132184842471879" }
+    ],
+    "grasping_hedge": [
+      { "tier": 1, "decalId": "85025651891171", "imageId": "120101571433380" },
+      { "tier": 2, "decalId": "80372327819409", "imageId": "104866667075819" },
+      { "tier": 3, "decalId": "90028794177150", "imageId": "138597207745165" },
+      { "tier": 4, "decalId": "87259173917660", "imageId": "90653615288915" }
+    ],
+    "impaler_palisade": [
+      { "tier": 1, "decalId": "116860085128235", "imageId": "124546646970176" },
+      { "tier": 2, "decalId": "97859864666503", "imageId": "121896745166839" },
+      { "tier": 3, "decalId": "129822630921173", "imageId": "120324773127269" },
+      { "tier": 4, "decalId": "74198495305059", "imageId": "111261492473917" }
+    ],
+    "land_shark": [
+      { "tier": 1, "decalId": "113908496978867", "imageId": "125485642403832" },
+      { "tier": 2, "decalId": "88409379844802", "imageId": "75259312220377" },
+      { "tier": 3, "decalId": "111766652323283", "imageId": "132132639576751" },
+      { "tier": 4, "decalId": "108251207551720", "imageId": "97340483579848" }
+    ],
+    "saw_blade": [
+      { "tier": 1, "decalId": "121529052464390", "imageId": "111871737979481" },
+      { "tier": 2, "decalId": "77664713466251", "imageId": "125065754759272" },
+      { "tier": 3, "decalId": "72827689088718", "imageId": "116501721382158" },
+      { "tier": 4, "decalId": "112838270832676", "imageId": "130501614859479" }
+    ],
+    "wardstone_barrier": [
+      { "tier": 1, "decalId": "135466894164464", "imageId": "118563591065821" },
+      { "tier": 2, "decalId": "115291422790551", "imageId": "129836621723708" },
+      { "tier": 3, "decalId": "138858336514150", "imageId": "92762146050724" },
+      { "tier": 4, "decalId": "100267714245380", "imageId": "128541077916592" }
+    ]
+  }
+}

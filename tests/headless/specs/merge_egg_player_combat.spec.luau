@@ -51,13 +51,20 @@ return function()
                 },
                 management_gems_spent = 175.9,
                 tutorial_completed = true,
+                playstate = {
+                    saved = true,
+                    wave = 17,
+                    coins = 777,
+                    egg_inventory = { 1, 2 },
+                    deployed_egg_tiers = { 2, 0, 3 },
+                },
                 checkpoint = {
                     wave = 27,
                     coins = 4321,
                     deployed_egg_tiers = { 3, 4, 0, 6 },
                 },
             })
-            expect(state.version).to.equal(4)
+            expect(state.version).to.equal(6)
             expect(state.visited).to.equal(true)
             expect(state.rebirths).to.equal(2)
             expect(state.management_upgrades.damage).to.equal(3)
@@ -67,7 +74,84 @@ return function()
             expect(state.checkpoint.wave).to.equal(20)
             expect(state.checkpoint.coins).to.equal(4321)
             expect(state.checkpoint.deployed_egg_tiers[2]).to.equal(4)
+            expect(state.playstate.saved).to.equal(true)
+            expect(state.playstate.wave).to.equal(10)
+            expect(state.playstate.coins).to.equal(777)
+            expect(state.playstate.deployed_egg_tiers[3]).to.equal(3)
             expect(PlayerCombat.normalizeOnboarding({ rebirths = -4 }).rebirths).to.equal(0)
+        end)
+
+        it("preserves and sanitizes the durable Merge bulwark selection", function()
+            local state = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "concertina_line",
+                bulwark_tier = 3.8,
+                bulwark_waycoins_spent = 7.9,
+            })
+            expect(state.bulwark_family).to.equal("concertina_line")
+            expect(state.bulwark_tier).to.equal(3)
+            expect(state.bulwark_owned.concertina_line).to.equal(3)
+            expect(state.bulwark_waycoins_spent).to.equal(7)
+            expect(state.egg_bulwark_family).to.equal(nil)
+            expect(state.bulwark_slots.lane.family).to.equal("concertina_line")
+
+            local both = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "saw_blade",
+                egg_bulwark_family = "wardstone_barrier",
+                egg_bulwark_tier = 2,
+                bulwark_owned = { saw_blade = 1, wardstone_barrier = 2 },
+            })
+            expect(both.bulwark_family).to.equal("saw_blade")
+            expect(both.egg_bulwark_family).to.equal("wardstone_barrier")
+            expect(both.egg_bulwark_tier).to.equal(2)
+            expect(both.bulwark_slots.egg.family).to.equal("wardstone_barrier")
+
+            local migrated = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "wardstone_barrier",
+                bulwark_tier = 2,
+            })
+            expect(migrated.bulwark_family).to.equal(nil)
+            expect(migrated.egg_bulwark_family).to.equal("wardstone_barrier")
+
+            local invalid = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "not_a_defense",
+                bulwark_tier = 4,
+            })
+            expect(invalid.bulwark_family).to.equal(nil)
+            expect(invalid.bulwark_tier).to.equal(0)
+            expect(invalid.bulwark_waycoins_spent).to.equal(0)
+        end)
+
+        it("preserves and sanitizes the durable Merge cannon selection", function()
+            local state = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "repulsor",
+                left_tower_tier = 2.8,
+                tower_waycoins_spent = 4.2,
+            })
+            expect(state.left_tower_family).to.equal("repulsor")
+            expect(state.left_tower_tier).to.equal(2)
+            expect(state.tower_owned.repulsor).to.equal(2)
+            expect(state.tower_waycoins_spent).to.equal(4)
+            expect(state.right_tower_family).to.equal(nil)
+            expect(state.tower_slots.left.family).to.equal("repulsor")
+
+            local both = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "heal",
+                right_tower_family = "rage",
+                right_tower_tier = 3,
+                tower_owned = { heal = 1, rage = 3 },
+            })
+            expect(both.left_tower_family).to.equal("heal")
+            expect(both.right_tower_family).to.equal("rage")
+            expect(both.right_tower_tier).to.equal(3)
+            expect(both.tower_slots.right.family).to.equal("rage")
+
+            local invalid = PlayerCombat.normalizeOnboarding({
+                left_tower_family = "not_a_cannon",
+                left_tower_tier = 4,
+            })
+            expect(invalid.left_tower_family).to.equal(nil)
+            expect(invalid.left_tower_tier).to.equal(0)
+            expect(invalid.tower_waycoins_spent).to.equal(0)
         end)
 
         it("lets a formerly locked player switch to Full exactly once", function()

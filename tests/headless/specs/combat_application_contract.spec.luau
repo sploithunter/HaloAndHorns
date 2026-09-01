@@ -99,7 +99,7 @@ return function()
         it("re-resolves an armor badge when its replicated power identity arrives", function()
             local presenter = readFile("src/Client/Systems/CombatAuraController.lua")
             expect(count(presenter, 'GetAttributeChangedSignal("DefenseBuffPowerId")')).to.equal(1)
-            expect(count(presenter, "current.powerId == powerId")).to.equal(1)
+            expect(count(presenter, "current.powerId == powerId")).to.equal(2)
         end)
 
         it(

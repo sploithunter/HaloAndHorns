@@ -35,6 +35,18 @@ return {
     -- part in Studio to change one.
     random_yaw_kinds = { rock = true, cactus = true, plant = true },
 
+    -- Client-only rustle for nearby soft flora. Rocks stay still. The client
+    -- skips anything farther than `radius` studs from the camera.
+    sway = {
+        enabled = true,
+        radius = 80,
+        tree_degrees = 1.3,
+        plant_degrees = 2.6,
+        cactus_degrees = 1.8,
+        banner_degrees = 4.5,
+        speed = 1.15,
+    },
+
     -- fraction of a spawn's height sunk BELOW the anchor floor, per kind
     -- (Jason 2026-07-16: "sink the rocks into the ground a bit — they look
     -- like they're kind of floating there on points"). Irregular meshes

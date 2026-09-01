@@ -7,6 +7,9 @@
 local MergeEggPlayerCombat = {}
 
 local MergeEggCheckpoint = require(script.Parent.MergeEggCheckpoint)
+local MergeEggPlaystate = require(script.Parent.MergeEggPlaystate)
+local MergeBulwarkProgression = require(script.Parent.MergeBulwarkProgression)
+local MergeTowerProgression = require(script.Parent.MergeTowerProgression)
 
 local VALID_MODES = {
     simple = true,
@@ -45,8 +48,24 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
             managementUpgrades[upgradeId] = math.max(0, math.floor(tonumber(level) or 0))
         end
     end
+    local persisted = MergeBulwarkProgression.persistFields({
+        family = raw.bulwark_family,
+        tier = raw.bulwark_tier,
+        eggFamily = raw.egg_bulwark_family,
+        eggTier = raw.egg_bulwark_tier,
+        slots = raw.bulwark_slots,
+        owned = raw.bulwark_owned,
+    })
+    local towers = MergeTowerProgression.persistFields({
+        leftFamily = raw.left_tower_family,
+        leftTier = raw.left_tower_tier,
+        rightFamily = raw.right_tower_family,
+        rightTier = raw.right_tower_tier,
+        slots = raw.tower_slots,
+        owned = raw.tower_owned,
+    })
     return {
-        version = 4,
+        version = 6,
         visited = raw.visited == true,
         played_locked_simple = raw.played_locked_simple == true,
         full_intro_pending = raw.full_intro_pending == true,
@@ -56,8 +75,29 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         rebirths = math.max(0, math.floor(tonumber(raw.rebirths) or 0)),
         management_upgrades = managementUpgrades,
         management_gems_spent = math.max(0, math.floor(tonumber(raw.management_gems_spent) or 0)),
+        bulwark_family = persisted.bulwark_family,
+        bulwark_tier = persisted.bulwark_tier,
+        egg_bulwark_family = persisted.egg_bulwark_family,
+        egg_bulwark_tier = persisted.egg_bulwark_tier,
+        mid_bulwark_family = persisted.mid_bulwark_family,
+        mid_bulwark_tier = persisted.mid_bulwark_tier,
+        front_bulwark_family = persisted.front_bulwark_family,
+        front_bulwark_tier = persisted.front_bulwark_tier,
+        bulwark_slots = persisted.bulwark_slots,
+        bulwark_owned = persisted.bulwark_owned,
+        left_tower_family = towers.left_tower_family,
+        left_tower_tier = towers.left_tower_tier,
+        right_tower_family = towers.right_tower_family,
+        right_tower_tier = towers.right_tower_tier,
+        tower_slots = towers.tower_slots,
+        tower_owned = towers.tower_owned,
+        tower_waycoins_spent = math.max(0, math.floor(tonumber(raw.tower_waycoins_spent) or 0)),
+        bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),
+        -- Current possessions survive logout independently of the last ten-wave combat boundary.
+        -- Unlike a checkpoint, Wave 0 is a valid saved playstate.
+        playstate = MergeEggPlaystate.normalize(raw.playstate),
     }
 end
 

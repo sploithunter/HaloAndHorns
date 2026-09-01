@@ -4,6 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlayerCombat)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
 local AdminToolsService = {}
 AdminToolsService.__index = AdminToolsService
@@ -44,6 +45,7 @@ function AdminToolsService:Init()
     self._petsConfig = self._configLoader:LoadConfig("pets")
     self._inventoryConfig = self._configLoader:LoadConfig("inventory")
     self._eggSystemConfig = self._configLoader:LoadConfig("egg_system")
+    self._placesConfig = self._configLoader:LoadConfig("places")
 
     Signals.Admin_GetPlayerSnapshot.OnServerEvent:Connect(function(player, data)
         self:_handleSnapshot(player, data)
@@ -620,6 +622,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     end
 
     local playerData = self._dataService:GetData(targetPlayer)
+    local inMerge = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+    local priorMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(
+        playerData and playerData.GameData and playerData.GameData.MergeDefense
+    )
+    local preserveMergeTutorial = inMerge and priorMergeDefense.tutorial_completed == true
     local pets = playerData and playerData.Inventory and playerData.Inventory.pets
     if type(pets) ~= "table" or type(pets.items) ~= "table" then
         self:_sendResult(adminPlayer, {
@@ -676,9 +683,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         return
     end
 
-    -- End any live/pending Merge Defense session before resetting currencies or inventory. Session
-    -- teardown restores the pre-entry wallet and parked pets, so it must precede the beginning-state
-    -- writes below rather than silently overwriting them afterward.
+    -- End any live/pending Merge Defense session before resetting currencies or inventory. The
+    -- explicit beginning reset discards its durable playstate and restores parked pets, so it must
+    -- precede the beginning-state writes below rather than persisting the old run afterward.
     if self._mergeEggPrototypeService and self._mergeEggPrototypeService.ResetForBeginning then
         local ok, resetReason = pcall(function()
             return self._mergeEggPrototypeService:ResetForBeginning(targetPlayer)
@@ -737,6 +744,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
             )
         end
     end
+    -- Merge's Wave-1 lesson lays 600 Waycoins on the ground from a zero wallet. The hall_coins
+    -- profile default is 100 and must not survive this reset or collect_setup has nothing to pick up.
+    if inMerge then
+        self._economyService:SetCurrency(targetPlayer, "hall_coins", 0, "admin_reset_to_beginning")
+    end
 
     -- 3) Zones: the release patch always begins at Homeworld Spawn. Keep a blank Hall progress
     --    ledger for later repair work, but do not authorize or resume any Hall tile.
@@ -757,9 +769,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
     playerData.GameData.PromoCodes = { claims = {}, attribution = {} }
-    -- Merge Defense is a complete beginning-state reset: onboarding/tutorial, mode notices,
-    -- rebirths, management upgrades, and spent-gem accounting all return to profile defaults.
-    playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    -- Merge Defense playstate, checkpoints, prestige, upgrades, and currency spending all reset.
+    -- A player who already learned the dedicated Merge loop does not repeat that tutorial merely
+    -- because an administrator cleared this play session.
+    local resetMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    resetMergeDefense.tutorial_completed = preserveMergeTutorial
+    playerData.GameData.MergeDefense = resetMergeDefense
     playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
     playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService
@@ -931,15 +946,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         founderChoiceReset = ok and reset == true
     end
 
-    -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models) + save.
+    -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models).
     if self._inventoryService and self._inventoryService.RebuildPetProjections then
         self._inventoryService:RebuildPetProjections(targetPlayer)
     end
-    self._dataService:RequestSave(
-        targetPlayer,
-        "admin_reset_to_beginning",
-        { critical = true, debounceSeconds = 0 }
-    )
     if founderChoiceReset and self._monetizationService then
         -- Remove the previously selected Founder entitlement immediately. The tutorial-complete
         -- event will reserve ordinal 0 again and open the chooser for the next test selection.
@@ -954,7 +964,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         playerData.Settings.AutoSystems = nil
     end
     if self._settingsService and self._settingsService.ResetMergeDefenseForBeginning then
-        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer)
+        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer, {
+            preserveTutorialCompleted = preserveMergeTutorial,
+        })
     else
         targetPlayer:SetAttribute("MergeDefenseFullEligible", false)
         targetPlayer:SetAttribute("MergeDefenseModeChoicePending", false)
@@ -965,10 +977,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- Close the prologue gate BEFORE the starter refresh: the relaunch below re-enters
     -- the cold open, and Refresh's offer push must defer behind it (offer-only deferral
     -- reads gate-nil as "unresolved"), not render over the battle.
-    if self._prologueService and self._prologueService.Replay then
+    -- Merge has no Home cold open — leaving the gate nil here would hold Home tutorial
+    -- forever and the Replay below would drop the player in the mall river.
+    if not inMerge and self._prologueService and self._prologueService.Replay then
         targetPlayer:SetAttribute("PrologueGate", nil)
     end
-    if self._starterPetService and self._starterPetService.Refresh then
+    if not inMerge and self._starterPetService and self._starterPetService.Refresh then
         self._starterPetService:Refresh(targetPlayer)
     end
 
@@ -979,6 +993,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
             prog:SetLevel(targetPlayer, 1)
         end)
     end
+
+    -- Save only after every reset owner has made its final mutation. Saving earlier allowed the
+    -- pre-Settings Merge record (including eggs/tutorial state) to win a leave/rejoin race.
+    self._dataService:RequestSave(
+        targetPlayer,
+        "admin_reset_to_beginning",
+        { critical = true, debounceSeconds = 0 }
+    )
 
     self._logger:Warn("🔄 ADMIN RESET TO BEGINNING (KEEP HUGE)", {
         admin = adminPlayer.Name,
@@ -992,8 +1014,22 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- that spawned battle... so we don't have to stop and start Studio"). Deferred a beat so
     -- the reset's save/replication settles; the client plays the title-card flash on the
     -- InPrologue transition (no boot screen needed — "it should just blank you out").
-    if self._prologueService and self._prologueService.Replay then
-        task.delay(0.75, function()
+    -- Dedicated Merge join only _begin's on CharacterAdded, so a same-character reset
+    -- must re-seat the pad explicitly instead of replaying the Farm prologue.
+    if inMerge then
+        if
+            self._mergeEggPrototypeService and self._mergeEggPrototypeService.ResumeDedicatedEntry
+        then
+            task.defer(function()
+                if targetPlayer.Parent then
+                    pcall(function()
+                        self._mergeEggPrototypeService:ResumeDedicatedEntry(targetPlayer)
+                    end)
+                end
+            end)
+        end
+    elseif self._prologueService and self._prologueService.Replay then
+        task.defer(function()
             if targetPlayer.Parent then
                 pcall(function()
                     self._prologueService:Replay(targetPlayer)

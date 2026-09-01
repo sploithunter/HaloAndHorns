@@ -28,6 +28,7 @@ local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
 local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
 local HideTogglesInBattle = require(script.Parent.Parent.Parent.Systems.HideTogglesInBattle)
+local FloraSway = require(script.Parent.Parent.Parent.Systems.FloraSway)
 local SquadDisplayState = require(script.Parent.Parent.Parent.Systems.SquadDisplayState)
 local QuestDisplayState = require(script.Parent.Parent.Parent.Systems.QuestDisplayState)
 local TutorialLanguageState = require(script.Parent.Parent.Parent.Systems.TutorialLanguageState)
@@ -200,6 +201,7 @@ function SettingsPanel.new()
             -- Display method preferences
             inventoryDisplay = "images", -- images, viewports
             eggPreviewDisplay = "images", -- images, viewports
+            propEffects = true,
         },
         ui = {
             scale = 1.0,
@@ -693,6 +695,17 @@ function SettingsPanel:_createGraphicsSettings()
         function(value)
             self.settings.graphics.reducedMotion = value
             -- Disable/reduce animations
+        end
+    )
+
+    self.settings.graphics.propEffects = FloraSway.isEnabled()
+    self:_createToggleSetting(
+        "Prop Effects",
+        self.settings.graphics.propEffects,
+        8.5,
+        function(value)
+            self.settings.graphics.propEffects = value
+            FloraSway.setEnabled(value)
         end
     )
 

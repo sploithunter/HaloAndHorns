@@ -2,6 +2,36 @@
 
 Status: current
 
+## Merge Actions Are Async And Independent (2026-09-01)
+
+Eggs, bulwarks, and cannons do not share a state machine with waves
+or with each other. A system may *read* another system's live
+position for targeting (pets, marchers, hatcher eggs). It may not
+ask that system for permission to apply its own action.
+
+- **Eggs:** create / merge / place mutate the board. They do not
+  compare-and-swap `MergeDefense` and do not read `waveIndex`.
+- **Bulwarks:** `MergeBulwarkPersist` owns wall keys only. Install
+  writes the live profile table. No signature compare. No live wave.
+- **Cannons:** `MergeCannonPersist` owns pad keys the same way. Fire
+  still hands off to `PowerService`. Pads do not talk to each other.
+- **Waves:** start → result (auto or manual) → start. The only
+  wave hook other systems need is an optional pause between two
+  waves (`gap_after`, checkpoint intermission, later a tutorial
+  insert between 10 and 11 or 1 and 2). Shops and the board are
+  not unlock-gated on the live wave.
+
+## Cannon Persist Is Independent Of The Wave Machine (2026-09-01)
+
+Pad install/upgrade does not compare the encounter record to
+`GameData.MergeDefense`, does not read `waveIndex`, and does not
+rebuild the onboarding blob. `MergeCannonPersist` owns the tower
+keys (`tower_owned`, `tower_slots`, left/right family+tier). Apply
+uses the authored unlock wave only. A click writes that slice onto
+the live profile table, then the pad respawns. Fire still lives on
+the bay heartbeat and hands off to `PowerService`. Cannons do not
+talk to each other.
+
 ## Game Identity
 
 The game is **Halo & Horns** (working codename "Pet Realm"). Core fantasy: hatch soul-bound pets, conquer the elemental ring, and tip your **Soul** toward Heaven (Halo) or Hell (Horns) — no neutral ending. The published store description (kept ≤1000 chars) is in `docs/STORE_DESCRIPTION.md`. The Roblox experience is "Halo and Horns" (see Roblox Places below for IDs). Internal branch/codename slugs may still use `pet-realm`/`game`.
@@ -696,6 +726,77 @@ additive +100% of base allied Merge damage per rank without discounting eggs or 
 The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exists until its price
 and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
 deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
+
+## Rage Cannon Is A One-Time Berserk Circle (2026-09-01)
+
+Do not use the tank Rage power and do not invent a tick loop. Landing
+is the Healing Field MagicCircle, tinted ruddy red, as a one-shot
+telegraph. Each unit inside the circle gets one no-consume Berserk
+Brew sip on that model (`PotionService:SipBrewOn` → existing
+`BrewMeter.sip`). Do not sip the owner: player `PetDamageBuffPotion`
+broadcasts to every pet and makes the radius a visual only.
+Stacking is the brew's diminishing sip; it will not climb far. Tier
+knobs are fire `interval` and circle `radius` only. Sip size stays
+the brew's `sip_fraction`. No Focus, no flask consume, no player
+cooldown. Rage fires at one ally already in combat
+(`rage_target = "combat_pets"`: `TargetType == Enemy` on a live
+wave enemy, or that enemy's `AggroTargetRef`). That pet gets the
+sip; any other ally inside the landing circle gets it too. Idle
+pets and empty-lane shots are not aims. Heal still aims injured
+pets. Aim does not sip the owner.
+
+## Heal Cannon Tiers Are Magnitude And Fire Rate (2026-09-01)
+
+Do not change Healing Field ticks (`hot_tick` stays 2s). A heal tier
+only edits two numbers: the existing per-tick `magnitude`, and that
+pad's shot `interval`. Overlapping fields still stack. Tuning is
+config (`shot.landing.heal.magnitude` / `interval`); T1 starts at the
+authored field (110) and the shared 2.4s cadence.
+
+## Reuse Existing Powers — Do Not Rebuild Them (2026-09-01)
+
+If a power already exists, cast that power. Do not pull its
+visualization out, restamp a decoy rune, and rebuild ticks beside it.
+Healing Field was the exception to "visuals first": it already had a
+look and a combat loop, so the heal cannon lands by placing that same
+`_healZone` at impact. New cannon roles may still wait on missing
+telegraphs. This does not spend Focus or start the player cooldown.
+
+## Cannon Gameplay Tier Selects Distinct Art At Uniform Scale (2026-09-01)
+
+Supersedes the temporary scale-only decision. Heal, Rage, Debuff, Gravity,
+Repulsor, and Nullifier each ship four distinct tier meshes. Runtime must request
+the gameplay tier directly and must not substitute `current_art_tier`, apply a
+`tier_scales` table, or derive one tier by resizing another. Templates keep scale
+1 and normalize to the shared 7.953594-stud reference width. The proof manifest
+must retain 24 distinct concept hashes, Model IDs, Mesh IDs, and Texture IDs.
+
+## Cannons Never Fire Behind the Breach (2026-09-01)
+
+A pad cannon may not aim at a target on the egg/hatcher side of
+`BreachLine`. That plane stays the unique overrun line; this is only a
+shot filter. Heal aims injured pets via `CombatDamageTaken` and uses
+the same breach floor until a tighter `heal_fire_line` is proven.
+Mid is the computed halfway between the two existing planes — do not
+author a third combat part for it.
+
+## Land Sharks Hunt One Marcher and Drag It Under (2026-09-01)
+
+Land Shark combat is a pet-like chase, not a lane DoT. Territory is the full
+strip width plus hunt range toward the gate. Count is 4/5/6/7 by tier. One
+shark claims one live target, leaves the wander, bites on cadence, holds the
+marcher, and pulls it down into the water. T3 venom is one proximity cloud per
+marcher. T4 prefers an unclaimed boss but will not drop a drag. Death prefers
+the `sink` style. Shark kills do not stamp `MergeEggPlayerPetKillUserId`.
+
+## Impaler Palisade Stops, Then Breaches (2026-08-31)
+
+The Stop wall shove deals no damage. Each marcher is shoved toward the gate with
+the same displacement as tank Seismic, pinned briefly, and must leave the line
+before the next bounce. Tier is bounce count (1/2/3/4), per marcher, not wall HP.
+T3 stamps a permanent venom DoT on the bounce. T4 adds a permanent contagion
+plague that hops to nearby marchers. Wave fights end, so the burn dies with them.
+Combat opens on the crossing after charges are spent.
 
 ## Merge Combat IDs Establish Fronts but Do Not Strand Idle Teams (2026-08-27)
 

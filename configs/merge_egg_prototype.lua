@@ -457,13 +457,23 @@ return {
             },
         },
         edge_towers = {
+            -- Permanent cadence: award the first tower during the Wave-10 intermission.
+            -- Pads start empty; the Artillery Commander installs a chassis.
+            unlock_wave = 10,
+            tutorial_intermission_wave = 10,
+            playtest_spawn_enabled = false,
+            -- Visual pass: own every role so each chassis can be installed
+            -- without a dummy starter. Combat powers stay later.
+            visual_catalog_owned = true,
+            playtest_unlock_enabled = true,
+            playtest_unlock_wave = 1,
+            action_cost = 1,
+            currency = "hall_coins",
+            maximum_tier = 4,
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
-            current_art_tier = 2,
-            -- Playtest-locked chassis sizes on the current-art mesh. Tier 1 is the starter;
-            -- tiers 2–4 share 0.50 until those upgrade models exist.
-            tier_1_scale = 0.40,
-            tier_scales = { 0.40, 0.50, 0.50, 0.50 },
+            -- All six families ship distinct Tier 1–4 meshes at a uniform template scale.
+            distinct_art_tiers = true,
             available_roles = {
                 "heal",
                 "rage",
@@ -472,9 +482,8 @@ return {
                 "repulsor",
                 "nullifier",
             },
-            -- First combat slice: spawn the starter-scale chassis on both authored pads and loft a
-            -- sphere toward the nearest in-lane enemy, or a gate-side landing point if the lane is
-            -- empty. The cannon yaws/pitches along the launch tangent. Upgrades stay unwired.
+            -- First combat slice: an installed chassis lofts a sphere toward the nearest
+            -- in-lane enemy. Pads stay empty until Buy/Install. Upgrades stay unwired.
             starter_role = "repulsor",
             starter_tier = 1,
             -- Size-preview cycle is locked; E now fires a cannonball. Keep the scale list so
@@ -485,18 +494,166 @@ return {
             },
             shot = {
                 interval = 2.4,
+                interval_jitter = 0.05,
                 flight_seconds = 0.85,
                 apex_height = 14,
                 range = 90,
                 diameter = 1.2,
                 land_seconds = 0.55,
+                -- Heal landing casts the real Healing Field at impact (same
+                -- kind numbers, no Focus/cooldown). Rage landing is a one-time
+                -- Berserk sip in a ruddy MagicCircle — no tick loop.
+                -- Hard floor: never shoot a target on the egg side of BreachLine.
+                -- Heal aims injured pets (CombatDamageTaken). Rage fires at
+                -- one ally already in combat (TargetType Enemy / AggroTargetRef);
+                -- that pet and anyone else inside the landing circle get a
+                -- per-unit sip. No idle-pet or empty-lane shot.
+                -- heal_fire_line / rage_fire_line can tighten to
+                -- "bulwark" or "mid" later; breach is the live floor.
+                fire_line = "breach",
+                fire_line_epsilon = 2,
+                heal_target = "injured_pets",
+                heal_fire_line = "breach",
+                rage_target = "combat_pets",
+                rage_fire_line = "breach",
+                landing = {
+                    -- Tiers only change magnitude (existing per-tick heal) and
+                    -- fire interval. hot_tick stays 2s on Healing Field.
+                    heal = {
+                        cast = "healing_field",
+                        magnitude = { 110, 110, 110, 110 },
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                    },
+                    -- Tiers only change fire interval and circle size.
+                    -- Sip size stays Berserk Brew's sip_fraction.
+                    rage = {
+                        cast = "berserk_brew",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 28, 28, 28, 28 },
+                    },
+                },
+                role_colors = {
+                    heal = { 85, 255, 130 },
+                    rage = { 235, 80, 60 },
+                    debuff = { 174, 100, 235 },
+                    gravity = { 76, 165, 245 },
+                    repulsor = { 255, 148, 36 },
+                    nullifier = { 196, 150, 255 },
+                },
+            },
+            -- Talkable vendor behind each pad cannon. Same workshop as
+            -- the Bulwark Engineer, but the list is cannons and each
+            -- commander opens only that pad.
+            commander = {
+                enabled = true,
+                user_id = 864785140,
+                name = "sploithunter",
+                display_name = "Artillery Commander",
+                action_text = "Talk",
+                object_text = "Artillery Commander",
+                max_distance = 16,
+                stand_behind_studs = 7,
             },
         },
         edge_bulwarks = {
             enabled = true,
-            starter_family = "impaler_palisade",
-            starter_tier = 1,
             tile_count = 10,
+            -- Land Sharks are a moving field hazard, not a wall tile. Count scales by tier
+            -- (4/5/6/7). They wander the full strip width and only a few studs off the
+            -- bulwark line, then occasionally porpoise so a sliver of body breaks the playfield.
+            land_shark_count = { 4, 5, 6, 7 },
+            land_shark_track_studs = 28,
+            land_shark_field_depth_studs = 7,
+            land_shark_field_margin_studs = 8,
+            land_shark_speed_studs = 10,
+            land_shark_surface_distance = 8,
+            land_shark_fin_exposure_studs = 1,
+            land_shark_bite_period_seconds = 1.4,
+            land_shark_breach_period_seconds = 7.5,
+            land_shark_breach_duration_seconds = 1.55,
+            land_shark_breach_rise_studs = 2.3,
+            land_shark_breach_pitch_degrees = 14,
+            maximum_tier = 4,
+            -- Permanent cadence is Wave 20. For the interaction playtest, expose the exact same
+            -- production transaction/menu from the pending Wave 1 and charge one Waycoin for an
+            -- install, family replacement, or tier upgrade.
+            unlock_wave = 20,
+            tutorial_intermission_wave = 20,
+            playtest_unlock_enabled = true,
+            playtest_unlock_wave = 1,
+            action_cost = 1,
+            currency = "hall_coins",
+            prompt_distance = 14,
+            -- Talkable vendors, same idea as Kade's Boards. The workshop is
+            -- unchanged; each post opens one slot. Same avatar for now; later
+            -- posts can set their own user_id (alts) without a line picker.
+            engineer = {
+                enabled = true,
+                user_id = 3200870803,
+                name = "ColoradoPlays",
+                display_name = "Bulwark Engineer",
+                action_text = "Talk",
+                object_text = "Bulwark Engineer",
+                max_distance = 16,
+                posts = {
+                    { slot = "egg", along = "left" },
+                    { slot = "lane", along = "right" },
+                },
+            },
+            -- Impaler Palisade: tank-style shove + short pin, no damage. Charges are per marcher.
+            -- T1 is one bounce; five per enemy would lock the wave for pets to farm.
+            combat = {
+                impaler_palisade = {
+                    charges = { 1, 2, 3, 4 },
+                    shove_studs = { 16, 20, 24, 28 },
+                    root_seconds = { 0.4, 0.45, 0.55, 0.7 },
+                    venom_damage = { 0, 0, 12, 18 },
+                    venom_period = { 1, 1, 0.7, 0.55 },
+                    venom_permanent = { false, false, true, true },
+                    contagion_radius = { 0, 0, 0, 12 },
+                    contagion_interval = { 1, 1, 1, 1.0 },
+                    contagion_hops = { 0, 0, 0, 4 },
+                },
+                concertina_line = {
+                    bleed_damage = { 8, 14, 20, 16 },
+                    bleed_period = { 0.9, 0.75, 0.55, 0.4 },
+                    slow_factor = { 0.8, 0.7, 0.58, 0.45 },
+                    linger_seconds = { 0, 1.5, 3.5, 0 },
+                    bleed_permanent = { false, false, false, true },
+                    bleed_stacks = { false, false, false, true },
+                    stack_cap = { 1, 1, 1, 4 },
+                    strip_depth_studs = { 8, 8, 10, 12 },
+                },
+                grasping_hedge = {
+                    grab_count = { 1, 2, 3, 4 },
+                    root_seconds = { 0.9, 1.2, 1.6, 2.2 },
+                    slow_factor = { 0.7, 0.6, 0.5, 0.42 },
+                    slow_seconds = { 0.8, 1.1, 1.6, 2.0 },
+                    venom_damage = { 0, 0, 10, 14 },
+                    venom_period = { 1, 1, 0.7, 0.55 },
+                    venom_duration = { 0, 0, 4, 5 },
+                    strip_depth_studs = { 8, 8, 8, 10 },
+                    exit_buffer_studs = { 6, 6, 6, 6 },
+                },
+                saw_blade = {
+                    shred_damage = { 16, 24, 30, 42 },
+                    shred_period = { 0.16, 0.13, 0.10, 0.08 },
+                    strip_depth_studs = { 6, 6, 6, 6 },
+                    chunk_count = { 6, 7, 8, 10 },
+                },
+                land_shark = {
+                    shark_count = { 4, 5, 6, 7 },
+                    bite_damage = { 36, 90, 130, 190 },
+                    bite_period = { 0.575, 0.25, 0.21, 0.175 },
+                    hunt_range_studs = { 16, 18, 20, 22 },
+                    grab_range_studs = { 7, 7, 8, 8 },
+                    sink_studs = { 8, 9, 10, 12 },
+                    venom_damage = { 0, 0, 10, 14 },
+                    venom_period = { 0.5, 0.5, 0.35, 0.275 },
+                    venom_range_studs = { 0, 0, 8, 9 },
+                    prefer_bosses = { false, false, false, true },
+                },
+            },
         },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically

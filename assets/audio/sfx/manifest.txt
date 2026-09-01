@@ -25,5 +25,7 @@ freezing_crack_single_target	freezing_crack_single_target.mp3	ice	impact	3	73197
 machine_hum	machine_hum.mp3	neutral	ambient	3	73197	MachineHum.mp3	Machine / engine hum loop
 deep_winter_wind	deep_winter_wind.mp3	ice	ambient	3	73197	DeepWinterWind.mp3	Deep winter wind (ambient)
 arrow_impact_desert	arrow_impact_desert.mp3	desert	impact	2	49581	ArrowImpactDesertPrompt.mp3	Arrow impact (desert)
+cannon_fire	cannon_fire.mp3	neutral	cast	2	49581	WEAPSiege-Three_powerful_pirat-Elevenlabs.mp3	Merge pad cannon fire (all roles)
+cannon_impact	cannon_impact.mp3	neutral	impact	1.28	32301	EXPLDsgn-big_fire_bomb_explos-Elevenlabs.mp3	Merge pad cannon fireball landing
 cartoony_spell_cast	cartoony_spell_cast.mp3	neutral	cast	2	49581	CartoonySpeelCast.mp3	Cartoony generic spell cast
 power_up_stronger	power_up_stronger.mp3	neutral	buff	1	25389	PowerUpStronger.mp3	Power-up / buff strengthen

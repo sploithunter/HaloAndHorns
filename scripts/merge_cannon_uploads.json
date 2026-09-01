@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "creatorGroupId": "15872767",
+  "resolvedInStudioAt": "2026-09-01T16:10:49Z",
+  "studioPlaceId": "84544653387905",
+  "ownershipVerification": {
+    "verifiedInStudioAt": "2026-09-01T16:15:55Z",
+    "method": "MarketplaceService:GetProductInfo",
+    "passed": true,
+    "verifiedAssets": 72,
+    "assetTypeCounts": { "Model": 24, "Mesh": 24, "Image": 24 },
+    "creatorName": "Open Simulator Group",
+    "creatorGroupId": "15872767",
+    "failures": []
+  },
+  "runtimeVerification": {
+    "verifiedInStudioAt": "2026-09-01T16:18:01Z",
+    "method": "ReplicatedStorage prebake inspection in Edit datamodel",
+    "passed": true,
+    "templates": 24,
+    "distinctMeshIds": 24,
+    "distinctTextureIds": 24,
+    "scaledCopyFallbackRemoved": true,
+    "failures": []
+  },
+  "families": {
+    "heal": {
+      "1": { "modelAssetId": "83384749432985", "meshId": "114650833232709", "textureId": "139686347540585", "rawRobloxSize": [2, 1.833754062652588, 1.4915599822998047] },
+      "2": { "modelAssetId": "139934426250291", "meshId": "101416290536855", "textureId": "125180760410565", "rawRobloxSize": [2, 1.725938081741333, 1.6759839057922364] },
+      "3": { "modelAssetId": "108940380608596", "meshId": "70463710680411", "textureId": "111446641271808", "rawRobloxSize": [2, 1.842965841293335, 1.7739460468292237] },
+      "4": { "modelAssetId": "124634979760401", "meshId": "100407635866251", "textureId": "84388175252193", "rawRobloxSize": [2, 1.6046059131622315, 1.590824007987976] }
+    },
+    "rage": {
+      "1": { "modelAssetId": "74085555919304", "meshId": "140445830725136", "textureId": "120457257412811", "rawRobloxSize": [1.9975420236587525, 1.7343921661376954, 1.9999998807907105] },
+      "2": { "modelAssetId": "100102545353592", "meshId": "122743079797635", "textureId": "112130547119678", "rawRobloxSize": [2, 1.7251899242401124, 1.9176839590072632] },
+      "3": { "modelAssetId": "102457421153837", "meshId": "138331655618830", "textureId": "123219933125620", "rawRobloxSize": [2, 1.8558740615844727, 1.709589958190918] },
+      "4": { "modelAssetId": "87762252278760", "meshId": "127623585613419", "textureId": "78472306743043", "rawRobloxSize": [2, 1.769291877746582, 1.8132840394973755] }
+    },
+    "debuff": {
+      "1": { "modelAssetId": "90303291334041", "meshId": "101528155910040", "textureId": "100157293936396", "rawRobloxSize": [2, 1.9985281229019166, 1.9994200468063355] },
+      "2": { "modelAssetId": "98058587937305", "meshId": "79845338311693", "textureId": "122268989880172", "rawRobloxSize": [2, 1.6942801475524903, 1.706239938735962] },
+      "3": { "modelAssetId": "108380777646775", "meshId": "119280408890657", "textureId": "111095034109245", "rawRobloxSize": [1.7659460306167603, 1.6624161005020142, 2] },
+      "4": { "modelAssetId": "88248287711565", "meshId": "122588599717914", "textureId": "138671610283207", "rawRobloxSize": [1.9993760585784913, 1.8854899406433106, 2] }
+    },
+    "gravity": {
+      "1": { "modelAssetId": "77152402298985", "meshId": "127753732493357", "textureId": "86492725259912", "rawRobloxSize": [2, 1.9440181255340577, 1.7411099672317505] },
+      "2": { "modelAssetId": "117227343235730", "meshId": "84216404542389", "textureId": "125199654859868", "rawRobloxSize": [2, 1.818972110748291, 1.869711995124817] },
+      "3": { "modelAssetId": "122229990932951", "meshId": "103722578550022", "textureId": "109547694123216", "rawRobloxSize": [2, 1.663451910018921, 1.7945200204849244] },
+      "4": { "modelAssetId": "74242056171109", "meshId": "75538738354253", "textureId": "106500478108571", "rawRobloxSize": [2, 1.4010639190673829, 1.3860340118408204] }
+    },
+    "repulsor": {
+      "1": { "modelAssetId": "97936800984221", "meshId": "86200070009329", "textureId": "114202274285615", "rawRobloxSize": [2, 1.8552321195602418, 1.5309339761734009] },
+      "2": { "modelAssetId": "121632029834795", "meshId": "123147846691160", "textureId": "80442912867791", "rawRobloxSize": [2, 1.8244858980178834, 1.8587119579315186] },
+      "3": { "modelAssetId": "85711564245566", "meshId": "130732092642003", "textureId": "99120964974996", "rawRobloxSize": [2, 1.624380111694336, 1.67889404296875] },
+      "4": { "modelAssetId": "81406275628540", "meshId": "82000379884068", "textureId": "113912676709629", "rawRobloxSize": [2, 1.873343825340271, 1.9617400169372559] }
+    },
+    "nullifier": {
+      "1": { "modelAssetId": "79964691038207", "meshId": "112018017672665", "textureId": "92158246124108", "rawRobloxSize": [2, 1.84732186794281, 1.7097680568695069] },
+      "2": { "modelAssetId": "97270924486976", "meshId": "125200316700851", "textureId": "98389823322538", "rawRobloxSize": [2, 1.635895848274231, 1.6714099645614625] },
+      "3": { "modelAssetId": "73215093759999", "meshId": "84856296327141", "textureId": "80720189474681", "rawRobloxSize": [2, 1.7103221416473389, 1.9156839847564698] },
+      "4": { "modelAssetId": "74540150269159", "meshId": "95125160919558", "textureId": "92959528373062", "rawRobloxSize": [2, 1.4780378341674805, 1.5631680488586426] }
+    }
+  }
+}
