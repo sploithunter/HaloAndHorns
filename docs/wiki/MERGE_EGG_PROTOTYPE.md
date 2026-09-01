@@ -617,14 +617,21 @@ team and queue model:
   - **End of Wave 4:** if the Waycoin wallet is empty, chevron any existing
     pile (do not spawn one; credit 1 Waycoin if none are left so the beat
     cannot stick). Then a gem if the gem wallet is 0, meet right-pad
-    artillery, unlock Heal for 1 Gem, install. Shipped.
-    `tutorial_completed` currently stamps here and must move when later
-    beats land.
-  - **End of Wave 6 (not shipped):** some coins, then egg upgrades at player
-    choice. No prescribed upgrade path.
-  - **End of Wave 10 (not shipped):** meet the Quartermaster. Planned to
-    bring the Farm/Fight potion shop (Heaven/Hell themed) plus macros.
-    Still needs design.
+    artillery, unlock Heal for 1 Gem, install. The gem lands on the field
+    past the stone wall, not on the cannon pad. Stamps
+    `tutorial_cannon_completed` and snapshots egg merge/place/base-tier
+    so Wave 6 can tell whether they already upgraded.
+  - **End of Wave 6:** optional. If they merged, installed, or raised the
+    base egg since Wave 4, skip. Otherwise pause, pick up field coins
+    until the wallet is about 600 (enough for six Earth eggs), then one
+    loose card: create a couple, then upgrade or place. Hands-off.
+    `tutorial_upgrade_completed` stamps when that beat finishes. Skip
+    leaves it false so Wave 10 can still land.
+  - **End of Wave 10:** reveal the bay potion tent and post Macros as
+    Quartermaster. Talk only: "I'll get you whatever you need." Then
+    `tutorial_completed`. Shop browse unlocks after that talk. Macros
+    and tent stay planted and hidden (Transparency 1, no collide/query,
+    prompt off) until this beat.
   After Wave 2 clears, combat pauses (`TutorialIntermission`). Vendors are
   always in the bay but invisible (`Transparency = 1`, no collide/query,
   prompt off) until `_setVendorPosted`. The gold-line engineer is revealed
@@ -632,13 +639,17 @@ team and queue model:
   UNLOCK (1 Gem for Impaler Palisade) → INSTALL. That beat stores
   `tutorial_workshop_completed` and releases Waves 3–4; the gold-line post
   stays visible. After Wave 4, combat pauses again. If the gem wallet is 0,
-  a second gem is laid in front of the right-pad commander (`cannon_gem`)
-  and chevrons walk it. Then Talk → UNLOCK (1 Gem for Heal) → INSTALL.
-  The egg-line engineer and the other commander unhide only when the
-  cannon install finishes. Full
-  completion is stored in `GameData.MergeDefense.tutorial_completed` and critically saved together
-  with the current Merge playstate as soon as that cannon install completes (temporary;
-  Wave 6 / Wave 10 will push this later); later entries
+  a second gem is laid on the field in front of the right pad
+  (`cannon_gem`) and chevrons walk it. Then Talk → UNLOCK (1 Gem for
+  Heal) → INSTALL. That beat stores `tutorial_cannon_completed` and
+  releases Waves 5–6; remaining vendors unhide. After Wave 6, if they
+  have not merged, installed, or raised the base egg since that snapshot,
+  combat pauses for an encouraging coin pickup (about 600 Waycoins) and
+  one loose create-then-upgrade-or-place card. If they already did that
+  work, Wave 6 does not pause. After Wave 10 the potion tent and Macros
+  unhide; Talk completes the first-visit drip. Full
+  completion is stored in `GameData.MergeDefense.tutorial_completed` when
+  that Talk finishes. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
   independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
   rebirth. Admin **Reset to Beginning** (`🔄 Reset to Beginning (keeps ALL unique pets)`) is the

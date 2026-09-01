@@ -7088,3 +7088,33 @@ first-session cohort rates.
 - Wave 2 and Wave 4 chevron a live Waycoin drop only when the
   wallet is empty. No new pile is placed. If none remain, credit
   1 Waycoin so a vanished drop cannot stall Install.
+
+## 2026-09-01 — Wave 6 optional egg-upgrade pause
+
+- Heal install now stamps `tutorial_cannon_completed` and snapshots
+  merge/place/base-tier. Wave 6 pauses only if they have not upgraded
+  or installed since then. Collect ~600 field Waycoins, then one
+  loose create / upgrade / install card. `tutorial_completed` waits
+  for that beat. Wave 4 gem is placed past the stone wall, not on
+  the cannon pad. Not Play-confirmed.
+
+## 2026-09-01 — Merge bay potion tents copied to every field
+
+- Heaven_01 / Hell_01 authored tents cloned onto the other eight
+  PlayFields with the same local offset. `PotionShopService` already
+  binds every `HeavenPotionShop` / `HellPotionShop`. Save the Merge
+  place. Not Play-confirmed for prompts.
+
+## 2026-09-01 — Wave 10 Macros quartermaster
+
+- Potion tents stay planted and hidden until Wave 10. Macros
+  (873359641) posts at the tent. Talk: "I'll get you whatever you
+  need." That stamps `tutorial_completed` and opens Browse Potions.
+  Wave 6 now only stamps `tutorial_upgrade_completed`. Not
+  Play-confirmed.
+
+## 2026-09-01 — Wave 6 upgrade beat is create then upgrade-or-place
+
+- Creating eggs alone no longer leaves the Wave 6 card stuck. After
+  two creates, chevrons leave Buy Egg. One merge, base-egg raise, or
+  placement finishes the beat. Not Play-confirmed.

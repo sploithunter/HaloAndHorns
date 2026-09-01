@@ -71,6 +71,9 @@ local BULWARK_MENU_HOST_PREFIX = "MergeEggBulwarkMenuHost_"
 local BULWARK_ENGINEER_NAME = "MergeBulwarkEngineer"
 local ARTILLERY_COMMANDER_NAME = "MergeArtilleryCommander"
 local ARTILLERY_COMMANDER_PROMPT_NAME = "MergeEggArtilleryCommanderPrompt"
+local QUARTERMASTER_NAME = "MergeQuartermaster"
+local QUARTERMASTER_PROMPT_NAME = "MergeEggQuartermasterPrompt"
+local QUARTERMASTER_SPEECH_NAME = "MergeQuartermasterSpeech"
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
     power = true,
@@ -752,23 +755,45 @@ function MergeEggPrototypeService:_cannonGemWorldPosition(world, spec)
     end
     local slot = self:_tutorialWorkshopCannonSlot()
     local pad = self:_padForSlot(world, slot)
-    local stand, floorTop = self:_commanderStandCFrame(world, pad)
-    if not stand then
+    if not pad then
         return nil
     end
+    local box, size = pad:GetBoundingBox()
+    local landStrip = world:FindFirstChild("LandStrip")
+    local floorTop = landStrip and landStrip.Position.Y + landStrip.Size.Y * 0.5
+        or (box.Position.Y - size.Y * 0.5)
     local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
     local incoming = side == "hell" and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+    local look = self:_towerGateLook(world, box.Position)
+    if look and look.Magnitude > 0.001 then
+        look = Vector3.new(look.X, 0, look.Z)
+        look = look.Magnitude > 0.001 and look.Unit or incoming
+    else
+        look = incoming
+    end
     local rightDir = Vector3.new(0, 1, 0):Cross(incoming)
     if rightDir.Magnitude <= 0 then
         rightDir = Vector3.new(0, 0, -1)
     else
         rightDir = rightDir.Unit
     end
+    -- Commander stands behind the pad on the courtyard. The gem must clear
+    -- the pad and the stone wall onto LandStrip, then step toward the gate.
+    local worldCfg = type(self._config.world) == "table" and self._config.world or {}
+    local wall = findNamedPart(world, worldCfg.bulwark_line or "BulwarkLine")
+    local padPos = Vector3.new(box.Position.X, 0, box.Position.Z)
+    local pastWall = 0
+    if wall then
+        local wallPos = Vector3.new(wall.Position.X, 0, wall.Position.Z)
+        pastWall = (wallPos - padPos):Dot(look)
+    end
+    local footprint = tonumber(pad:GetAttribute("MergeTowerPadFootprint"))
+    local extent = footprint and footprint * 0.5 or math.max(size.X, size.Z) * 0.5
+    local fieldAlong = math.max(pastWall, extent) + (tonumber(spec.towardGate) or 12)
     local hover = tonumber(spec.offset and spec.offset.y) or 3
-    local floorY = floorTop or stand.Position.Y
-    return Vector3.new(0, floorY + hover, 0)
-        + Vector3.new(stand.Position.X, 0, stand.Position.Z)
-        + incoming * (tonumber(spec.towardGate) or 12)
+    return Vector3.new(0, floorTop + hover, 0)
+        + padPos
+        + look * fieldAlong
         - rightDir * (tonumber(spec.inward) or 8)
 end
 
@@ -826,6 +851,27 @@ function MergeEggPrototypeService:_tutorialPauseAfterCannonWave()
     )
 end
 
+function MergeEggPrototypeService:_tutorialPauseAfterUpgradeWave()
+    return math.max(
+        1,
+        math.floor(tonumber(self:_tutorialConfig().pause_after_upgrade_wave) or 6)
+    )
+end
+
+function MergeEggPrototypeService:_tutorialUpgradeCoinTarget()
+    return math.max(
+        1,
+        math.floor(tonumber(self:_tutorialConfig().upgrade_coin_target) or 600)
+    )
+end
+
+function MergeEggPrototypeService:_tutorialUpgradeCreateCount()
+    return math.max(
+        1,
+        math.floor(tonumber(self:_tutorialConfig().upgrade_create_count) or 2)
+    )
+end
+
 function MergeEggPrototypeService:_tutorialWorkshopSlot()
     return MergeBulwarkProgression.normalizeSlot(self:_tutorialConfig().workshop_slot or "lane")
 end
@@ -839,8 +885,76 @@ end
 function MergeEggPrototypeService:_tutorialWorkshopCompleted(record)
     local progress = record and self:_mergeDefenseProgress(record.player)
     return (progress and progress.tutorial_workshop_completed == true)
+        or (progress and progress.tutorial_cannon_completed == true)
         or record.tutorialStep == "cannon_waves"
+        or record.tutorialStep == "upgrade_waves"
         or self:_tutorialHasWorkshopBulwark(record)
+end
+
+function MergeEggPrototypeService:_tutorialCannonCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    return (progress and progress.tutorial_cannon_completed == true)
+        or (progress and progress.tutorial_upgrade_completed == true)
+        or (progress and progress.tutorial_completed == true)
+        or record.tutorialStep == "upgrade_waves"
+        or record.tutorialStep == "quartermaster_waves"
+        or self:_tutorialHasWorkshopCannon(record)
+end
+
+function MergeEggPrototypeService:_tutorialUpgradeCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    return (progress and progress.tutorial_upgrade_completed == true)
+        or (progress and progress.tutorial_completed == true)
+        or record.tutorialStep == "quartermaster_waves"
+end
+
+function MergeEggPrototypeService:_upgradeTutorialBaseline(record)
+    if record and type(record.upgradeTutorialBaseline) == "table" then
+        return record.upgradeTutorialBaseline
+    end
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    local raw = progress and progress.upgrade_tutorial_baseline
+    if type(raw) ~= "table" then
+        return nil
+    end
+    if raw.eggs_merged == nil and raw.eggs_placed == nil and raw.base_egg_tier == nil then
+        return nil
+    end
+    return {
+        eggsMerged = math.max(0, math.floor(tonumber(raw.eggs_merged) or 0)),
+        eggsPlaced = math.max(0, math.floor(tonumber(raw.eggs_placed) or 0)),
+        baseEggTier = math.max(1, math.floor(tonumber(raw.base_egg_tier) or 1)),
+    }
+end
+
+function MergeEggPrototypeService:_captureUpgradeTutorialBaseline(record)
+    if not record then
+        return
+    end
+    local baseline = {
+        eggsMerged = math.max(0, math.floor(tonumber(record.eggsMerged) or 0)),
+        eggsPlaced = math.max(0, math.floor(tonumber(record.eggsPlaced) or 0)),
+        baseEggTier = math.max(1, math.floor(tonumber(record.baseEggTier) or 1)),
+    }
+    record.upgradeTutorialBaseline = baseline
+    local progress = self:_mergeDefenseProgress(record.player)
+    if progress then
+        progress.upgrade_tutorial_baseline = {
+            eggs_merged = baseline.eggsMerged,
+            eggs_placed = baseline.eggsPlaced,
+            base_egg_tier = baseline.baseEggTier,
+        }
+    end
+end
+
+function MergeEggPrototypeService:_hasUpgradedSinceCannon(record)
+    local baseline = self:_upgradeTutorialBaseline(record)
+    if not (record and baseline) then
+        return false
+    end
+    return (record.eggsMerged or 0) > baseline.eggsMerged
+        or (record.eggsPlaced or 0) > baseline.eggsPlaced
+        or (record.baseEggTier or 1) > baseline.baseEggTier
 end
 
 function MergeEggPrototypeService:_tutorialVendorsReady(record, kind, slot)
@@ -849,14 +963,31 @@ function MergeEggPrototypeService:_tutorialVendorsReady(record, kind, slot)
         return true
     end
     local progress = record and self:_mergeDefenseProgress(record.player)
-    if progress and progress.tutorial_completed == true then
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    local step = record and record.tutorialStep
+    if kind == "quartermaster" then
+        if progress and progress.tutorial_completed == true then
+            return true
+        end
+        if tutorial.disable_after_rebirth == true and reborn then
+            return true
+        end
+        return record
+            and record.tutorialActive == true
+            and step == "talk_quartermaster"
+    end
+    if
+        progress
+        and (
+            progress.tutorial_completed == true
+            or progress.tutorial_cannon_completed == true
+        )
+    then
         return true
     end
-    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
     if tutorial.disable_after_rebirth == true and reborn then
         return true
     end
-    local step = record and record.tutorialStep
     local workshopOpen = record
         and record.tutorialActive == true
         and (
@@ -988,6 +1119,26 @@ function MergeEggPrototypeService:_markTutorialWorkshopCompleted(record)
     end
 end
 
+function MergeEggPrototypeService:_markTutorialCannonCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress then
+        progress.tutorial_setup_completed = true
+        progress.tutorial_workshop_completed = true
+        progress.tutorial_cannon_completed = true
+    end
+    self:_captureUpgradeTutorialBaseline(record)
+end
+
+function MergeEggPrototypeService:_markTutorialUpgradeCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress then
+        progress.tutorial_setup_completed = true
+        progress.tutorial_workshop_completed = true
+        progress.tutorial_cannon_completed = true
+        progress.tutorial_upgrade_completed = true
+    end
+end
+
 function MergeEggPrototypeService:_shouldStartCannonTutorial(record)
     if not record then
         return false
@@ -999,6 +1150,9 @@ function MergeEggPrototypeService:_shouldStartCannonTutorial(record)
         return false
     end
     if progress and progress.tutorial_completed == true then
+        return false
+    end
+    if progress and progress.tutorial_cannon_completed == true then
         return false
     end
     if tutorial.disable_after_rebirth == true and reborn then
@@ -1149,7 +1303,7 @@ function MergeEggPrototypeService:_startCannonTutorial(record)
     record.tutorialStepChangedAt = nil
     record.tutorialStepReadyAt = nil
     if self:_tutorialHasWorkshopCannon(record) then
-        self:_completeTutorial(record)
+        self:_releaseTutorialForCannonCombat(record)
         return
     end
     self:_ensureBayTowers(record)
@@ -1173,6 +1327,295 @@ function MergeEggPrototypeService:_startCannonTutorial(record)
     })
 end
 
+-- Wave 4 Heal install is done: unlock Waves 5–6. Do not mark the whole
+-- tutorial complete or Wave 6 will never offer the optional upgrade beat.
+function MergeEggPrototypeService:_releaseTutorialForCannonCombat(record)
+    if not record or record.tutorialActive ~= true then
+        return
+    end
+    record.tutorialActive = false
+    record.tutorialStep = "upgrade_waves"
+    record.tutorialStepReadyAt = nil
+    self:_markTutorialCannonCompleted(record)
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_cannon", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, "merge_defense_tutorial_cannon", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    self:_scheduleTutorialWaveResume(record)
+    self:_ensureBayBulwarks(record)
+    self:_ensureBayTowers(record)
+    self:_log("Info", "Merge Egg cannon tutorial released combat", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+    })
+end
+
+function MergeEggPrototypeService:_ownedWaycoinDropTotal(record)
+    local player = record and record.player
+    if not player then
+        return 0
+    end
+    local total = 0
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if
+            drop:GetAttribute("DropOwner") == player.UserId
+            and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+            and drop:GetAttribute("DropCurrency") == "hall_coins"
+        then
+            total += math.max(0, math.floor(tonumber(drop:GetAttribute("DropAmount")) or 0))
+        end
+    end
+    return total
+end
+
+function MergeEggPrototypeService:_spawnFieldWaycoinPiles(record, amountNeeded, reason)
+    local need = math.max(0, math.floor(tonumber(amountNeeded) or 0))
+    if not record or need <= 0 then
+        return 0
+    end
+    local opening = type(self._config.opening_economy) == "table" and self._config.opening_economy
+        or {}
+    local offsets = type(opening.pickup_offsets) == "table" and opening.pickup_offsets or {}
+    local pileAmount = math.max(1, math.floor(tonumber(opening.pickup_amount) or 120))
+    local currency = tostring(opening.currency or "hall_coins")
+    local worldCfg = self._config.world or {}
+    local world = self:_worldFor(record)
+    local anchor = findNamedPart(world, worldCfg.bulwark_line)
+        or findNamedPart(world, worldCfg.player_spawn)
+    if not (anchor and #offsets > 0 and self._dropService and self._dropService.SpawnCoinDrop) then
+        return 0
+    end
+    local spawnedAmount = 0
+    for _, offset in ipairs(offsets) do
+        if spawnedAmount >= need then
+            break
+        end
+        local dropAmount = math.min(pileAmount, need - spawnedAmount)
+        local position = anchor.CFrame:PointToWorldSpace(
+            Vector3.new(tonumber(offset.x) or 0, tonumber(offset.y) or 3, tonumber(offset.z) or 0)
+        )
+        local options = self:_prototypeCoinDropOptions(record)
+        options.reason = reason or "upgrade_coins"
+        local ok, result = pcall(function()
+            return self._dropService:SpawnCoinDrop(
+                record.player,
+                currency,
+                dropAmount,
+                position,
+                options
+            )
+        end)
+        if ok and result == true then
+            spawnedAmount += dropAmount
+        end
+    end
+    return spawnedAmount
+end
+
+function MergeEggPrototypeService:_ensureUpgradeCoinLesson(record)
+    if not record then
+        return false
+    end
+    local target = self:_tutorialUpgradeCoinTarget()
+    local wallet = self:_tutorialWallet(record)
+    if wallet >= target then
+        return true
+    end
+    local field = self:_ownedWaycoinDropTotal(record)
+    if wallet + field >= target then
+        return true
+    end
+    local spawned = self:_spawnFieldWaycoinPiles(record, target - wallet - field, "upgrade_coins")
+    if wallet + field + spawned >= target then
+        return true
+    end
+    local shortfall = target - wallet - field - spawned
+    if shortfall > 0 and self._economyService and self._economyService.AddCurrency then
+        self._economyService:AddCurrency(
+            record.player,
+            "hall_coins",
+            shortfall,
+            "merge_egg_upgrade_coin_fallback"
+        )
+    end
+    return self:_tutorialWallet(record) >= target
+end
+
+function MergeEggPrototypeService:_tutorialCollectedUpgradeCoins(record)
+    return self:_tutorialWallet(record) >= self:_tutorialUpgradeCoinTarget()
+end
+
+function MergeEggPrototypeService:_tutorialUpgradeEggsDone(record)
+    if not record then
+        return false
+    end
+    local createdNeed = self:_tutorialUpgradeCreateCount()
+    local created = (record.eggsCreated or 0) - (record.upgradeBeatEggsCreated or 0)
+    local merged = (record.eggsMerged or 0) - (record.upgradeBeatEggsMerged or 0)
+    local placed = (record.eggsPlaced or 0) - (record.upgradeBeatEggsPlaced or 0)
+    local upgradedBase = (record.baseEggTier or 1) > (record.upgradeBeatBaseEggTier or 1)
+    return created >= createdNeed and (merged > 0 or upgradedBase or placed > 0)
+end
+
+function MergeEggPrototypeService:_shouldStartUpgradeTutorial(record)
+    if not record then
+        return false
+    end
+    local tutorial = self:_tutorialConfig()
+    local progress = self:_mergeDefenseProgress(record.player)
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.enabled == false then
+        return false
+    end
+    if progress and progress.tutorial_completed == true then
+        return false
+    end
+    if progress and progress.tutorial_upgrade_completed == true then
+        return false
+    end
+    if tutorial.disable_after_rebirth == true and reborn then
+        return false
+    end
+    if record.tutorialActive == true then
+        return false
+    end
+    if not self:_tutorialCannonCompleted(record) then
+        return false
+    end
+    if (record.waveIndex or 0) ~= self:_tutorialPauseAfterUpgradeWave() then
+        return false
+    end
+    if (record.aliveEnemies or 0) > 0 or (record.pendingEnemySpawns or 0) > 0 then
+        return false
+    end
+    -- Optional: they already upgraded or installed since the Heal install.
+    if self:_hasUpgradedSinceCannon(record) then
+        return false
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_startUpgradeTutorial(record)
+    if not record then
+        return
+    end
+    if self:_hasUpgradedSinceCannon(record) then
+        return
+    end
+    record.nextWaveAt = nil
+    record.tutorialActive = true
+    record.tutorialUsesAutoCollector = self:_tutorialUsesAutoCollector(record)
+    record.tutorialStep = nil
+    record.tutorialStepChangedAt = nil
+    record.tutorialStepReadyAt = nil
+    record.upgradeBeatEggsCreated = record.eggsCreated or 0
+    record.upgradeBeatEggsMerged = record.eggsMerged or 0
+    record.upgradeBeatEggsPlaced = record.eggsPlaced or 0
+    record.upgradeBeatBaseEggTier = record.baseEggTier or 1
+    self:_ensureUpgradeCoinLesson(record)
+    if self:_tutorialCollectedUpgradeCoins(record) then
+        self:_setTutorialStep(record, "upgrade_eggs")
+    else
+        self:_setTutorialStep(record, "collect_upgrade_coins")
+    end
+    self:_setWorldState("TutorialIntermission", record)
+    self:_log("Info", "Merge Egg upgrade tutorial started", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        step = record.tutorialStep,
+    })
+end
+
+-- Wave 6 upgrade beat is done (or skipped). Unlock Waves 7–10. Do not
+-- mark the whole tutorial complete or Wave 10 will never post Macros.
+function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat(record)
+    if not record or record.tutorialActive ~= true then
+        return
+    end
+    record.tutorialActive = false
+    record.tutorialStep = "quartermaster_waves"
+    record.tutorialStepReadyAt = nil
+    self:_markTutorialUpgradeCompleted(record)
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_upgrade", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, "merge_defense_tutorial_upgrade", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    self:_scheduleTutorialWaveResume(record)
+    self:_ensureBayBulwarks(record)
+    self:_ensureBayTowers(record)
+    self:_ensureBayQuartermaster(record)
+    self:_log("Info", "Merge Egg upgrade tutorial released combat", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+    })
+end
+
+function MergeEggPrototypeService:_tutorialPauseAfterQuartermasterWave()
+    return math.max(
+        1,
+        math.floor(tonumber(self:_tutorialConfig().pause_after_quartermaster_wave) or 10)
+    )
+end
+
+function MergeEggPrototypeService:_shouldStartQuartermasterTutorial(record)
+    if not record then
+        return false
+    end
+    local tutorial = self:_tutorialConfig()
+    local progress = self:_mergeDefenseProgress(record.player)
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.enabled == false then
+        return false
+    end
+    if progress and progress.tutorial_completed == true then
+        return false
+    end
+    if tutorial.disable_after_rebirth == true and reborn then
+        return false
+    end
+    if record.tutorialActive == true then
+        return false
+    end
+    if not self:_tutorialCannonCompleted(record) then
+        return false
+    end
+    if (record.waveIndex or 0) ~= self:_tutorialPauseAfterQuartermasterWave() then
+        return false
+    end
+    if (record.aliveEnemies or 0) > 0 or (record.pendingEnemySpawns or 0) > 0 then
+        return false
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_startQuartermasterTutorial(record)
+    if not record then
+        return
+    end
+    record.nextWaveAt = nil
+    record.tutorialTalkedQuartermaster = false
+    record.tutorialActive = true
+    record.tutorialUsesAutoCollector = self:_tutorialUsesAutoCollector(record)
+    record.tutorialStep = nil
+    record.tutorialStepChangedAt = nil
+    record.tutorialStepReadyAt = nil
+    self:_setTutorialStep(record, "talk_quartermaster")
+    self:_setWorldState("TutorialIntermission", record)
+    self:_ensureBayQuartermaster(record)
+    self:_log("Info", "Merge Egg quartermaster tutorial started", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        step = record.tutorialStep,
+    })
+end
+
 function MergeEggPrototypeService:_completeTutorial(record)
     if not record or record.tutorialActive ~= true then
         return
@@ -1183,6 +1626,9 @@ function MergeEggPrototypeService:_completeTutorial(record)
     local progress = self:_mergeDefenseProgress(record.player)
     if progress then
         progress.tutorial_setup_completed = true
+        progress.tutorial_workshop_completed = true
+        progress.tutorial_cannon_completed = true
+        progress.tutorial_upgrade_completed = true
         progress.tutorial_completed = true
     end
     local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_complete", true)
@@ -1195,6 +1641,7 @@ function MergeEggPrototypeService:_completeTutorial(record)
     self:_scheduleTutorialWaveResume(record)
     self:_ensureBayBulwarks(record)
     self:_ensureBayTowers(record)
+    self:_ensureBayQuartermaster(record)
     self:_log("Info", "Merge Egg first-visit tutorial completed", {
         player = record.player.Name,
         wave = record.waveIndex,
@@ -1231,6 +1678,10 @@ function MergeEggPrototypeService:_startTutorial(record, force)
             self:_startWorkshopTutorial(record)
         elseif self:_shouldStartCannonTutorial(record) then
             self:_startCannonTutorial(record)
+        elseif self:_shouldStartUpgradeTutorial(record) then
+            self:_startUpgradeTutorial(record)
+        elseif self:_shouldStartQuartermasterTutorial(record) then
+            self:_startQuartermasterTutorial(record)
         end
         return
     end
@@ -1311,7 +1762,7 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         self:_releaseTutorialForWorkshopCombat(record)
     elseif step == "collect_cannon_coins" and self:_tutorialCollectedStageCoin(record) then
         if self:_tutorialHasWorkshopCannon(record) then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCannonCombat(record)
         elseif not self:_tutorialCollectedCannonGem(record) then
             self:_setTutorialStep(record, "collect_cannon_gem")
         elseif self:_tutorialOwnsCannonFamily(record) then
@@ -1321,7 +1772,7 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "collect_cannon_gem" and self:_tutorialCollectedCannonGem(record) then
         if self:_tutorialHasWorkshopCannon(record) then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCannonCombat(record)
         elseif self:_tutorialOwnsCannonFamily(record) then
             self:_setTutorialStep(record, "install_cannon")
         else
@@ -1329,7 +1780,7 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "talk_commander" and record.tutorialTalkedCommander == true then
         if self:_tutorialHasWorkshopCannon(record) then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCannonCombat(record)
         elseif self:_tutorialOwnsCannonFamily(record) then
             self:_setTutorialStep(record, "install_cannon")
         else
@@ -1337,11 +1788,21 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "unlock_cannon" and self:_tutorialOwnsCannonFamily(record) then
         if self:_tutorialHasWorkshopCannon(record) then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCannonCombat(record)
         else
             self:_setTutorialStep(record, "install_cannon")
         end
     elseif step == "install_cannon" and self:_tutorialHasWorkshopCannon(record) then
+        self:_releaseTutorialForCannonCombat(record)
+    elseif step == "collect_upgrade_coins" and self:_tutorialCollectedUpgradeCoins(record) then
+        if self:_tutorialUpgradeEggsDone(record) then
+            self:_releaseTutorialForUpgradeCombat(record)
+        else
+            self:_setTutorialStep(record, "upgrade_eggs")
+        end
+    elseif step == "upgrade_eggs" and self:_tutorialUpgradeEggsDone(record) then
+        self:_releaseTutorialForUpgradeCombat(record)
+    elseif step == "talk_quartermaster" and record.tutorialTalkedQuartermaster == true then
         self:_completeTutorial(record)
     end
 end
@@ -6111,6 +6572,337 @@ function MergeEggPrototypeService:_setVendorPosted(model, posted)
     end
 end
 
+function MergeEggPrototypeService:_quartermasterConfig()
+    return type(self._config.quartermaster) == "table" and self._config.quartermaster or {}
+end
+
+function MergeEggPrototypeService:_potionShopOpen(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress and progress.tutorial_completed == true then
+        return true
+    end
+    local tutorial = self:_tutorialConfig()
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    return tutorial.enabled ~= true
+        or (tutorial.disable_after_rebirth == true and reborn)
+end
+
+function MergeEggPrototypeService:_findPotionShop(world)
+    if not world then
+        return nil
+    end
+    local worldCfg = type(self._config.world) == "table" and self._config.world or {}
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local column = math.max(1, math.floor(tonumber(world:GetAttribute("MergeEggBayColumn")) or 1))
+    local shopName = side == "hell" and (worldCfg.potion_shop_hell or "HellPotionShop")
+        or (worldCfg.potion_shop_heaven or "HeavenPotionShop")
+    local fieldName = (side == "hell" and "Hell_" or "Heaven_") .. string.format("%02d", column)
+    local root = Workspace:FindFirstChild(worldCfg.voxel_map_name or "GeneratedMap_MergeEggVoxel")
+    local fields = root and root:FindFirstChild(worldCfg.playfields_folder or "PlayFields")
+    local field = fields and fields:FindFirstChild(fieldName)
+    local named = field and field:FindFirstChild(shopName)
+    if named and named:IsA("Model") then
+        return named
+    end
+    local bayId = tostring(world:GetAttribute("MergeEggBayId") or "")
+    for _, child in ipairs(fields and fields:GetDescendants() or {}) do
+        if child:IsA("Model") and child:GetAttribute("MergeEggBayId") == bayId then
+            return child
+        end
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
+    if not shop then
+        return
+    end
+    local function stash(instance)
+        if instance:IsA("BasePart") and instance:GetAttribute("MergeShopBaseCanCollide") == nil then
+            instance:SetAttribute("MergeShopBaseCanCollide", instance.CanCollide)
+        end
+    end
+    stash(shop)
+    for _, descendant in ipairs(shop:GetDescendants()) do
+        stash(descendant)
+    end
+    self:_setVendorPosted(shop, visible == true)
+    if visible == true then
+        local function restore(instance)
+            if instance:IsA("BasePart") then
+                instance.CanCollide = instance:GetAttribute("MergeShopBaseCanCollide") == true
+                instance.CanQuery = true
+            end
+        end
+        restore(shop)
+        for _, descendant in ipairs(shop:GetDescendants()) do
+            restore(descendant)
+        end
+    end
+    for _, descendant in ipairs(shop:GetDescendants()) do
+        if descendant:IsA("ProximityPrompt") and descendant.Name == "PotionShopPrompt" then
+            descendant.Enabled = visible == true and shopOpen == true
+        end
+    end
+end
+
+function MergeEggPrototypeService:_syncMergePotionShops(record)
+    local worldCfg = type(self._config.world) == "table" and self._config.world or {}
+    local root = Workspace:FindFirstChild(worldCfg.voxel_map_name or "GeneratedMap_MergeEggVoxel")
+    local fields = root and root:FindFirstChild(worldCfg.playfields_folder or "PlayFields")
+    if not fields then
+        return
+    end
+    local owners = {}
+    for _, live in pairs(self._activeByPlayer or {}) do
+        local bayId = live.world and tostring(live.world:GetAttribute("MergeEggBayId") or "")
+        if bayId ~= "" then
+            owners[bayId] = live
+        end
+    end
+    if record and record.world then
+        local bayId = tostring(record.world:GetAttribute("MergeEggBayId") or "")
+        if bayId ~= "" then
+            owners[bayId] = record
+        end
+    end
+    local heavenName = worldCfg.potion_shop_heaven or "HeavenPotionShop"
+    local hellName = worldCfg.potion_shop_hell or "HellPotionShop"
+    for _, shop in ipairs(fields:GetDescendants()) do
+        if shop:IsA("Model") and (shop.Name == heavenName or shop.Name == hellName) then
+            local owner = owners[tostring(shop:GetAttribute("MergeEggBayId") or "")]
+            self:_setPotionShopPosted(
+                shop,
+                owner and self:_tutorialVendorsReady(owner, "quartermaster") == true,
+                owner and self:_potionShopOpen(owner) == true
+            )
+        end
+    end
+end
+
+function MergeEggPrototypeService:_quartermasterStandCFrame(world, shop)
+    if not (world and shop) then
+        return nil
+    end
+    local commander = self:_quartermasterConfig()
+    local landStrip = world:FindFirstChild("LandStrip")
+    local box, size = shop:GetBoundingBox()
+    local floorTop = landStrip and landStrip.Position.Y + landStrip.Size.Y * 0.5
+        or (box.Position.Y - size.Y * 0.5)
+    local look = Vector3.new(shop:GetPivot().LookVector.X, 0, shop:GetPivot().LookVector.Z)
+    if look.Magnitude < 0.001 then
+        local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+        look = side == "hell" and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+    else
+        look = look.Unit
+    end
+    local front = tonumber(commander.stand_front_studs) or 8
+    local stand = Vector3.new(box.Position.X, floorTop, box.Position.Z) + look * front
+    return CFrame.lookAt(stand, stand + look, Vector3.yAxis), floorTop
+end
+
+function MergeEggPrototypeService:_setQuartermasterSpeech(model, text)
+    if not model then
+        return
+    end
+    local head = model:FindFirstChild("Head") or firstBasePart(model)
+    if not head then
+        return
+    end
+    local speech = head:FindFirstChild(QUARTERMASTER_SPEECH_NAME)
+    if speech and not speech:IsA("BillboardGui") then
+        speech:Destroy()
+        speech = nil
+    end
+    if not text or text == "" then
+        if speech then
+            speech:Destroy()
+        end
+        return
+    end
+    if not speech then
+        speech = Instance.new("BillboardGui")
+        speech.Name = QUARTERMASTER_SPEECH_NAME
+        speech.Size = UDim2.fromOffset(280, 56)
+        speech.StudsOffset = Vector3.new(0, 3.2, 0)
+        speech.AlwaysOnTop = true
+        speech.Parent = head
+        local label = Instance.new("TextLabel")
+        label.Name = "Line"
+        label.Size = UDim2.fromScale(1, 1)
+        label.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
+        label.BackgroundTransparency = 0.12
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = Color3.fromRGB(245, 248, 255)
+        label.TextScaled = true
+        label.Parent = speech
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 8)
+        corner.Parent = label
+    end
+    local line = speech:FindFirstChild("Line")
+    if line and line:IsA("TextLabel") then
+        line.Text = tostring(text)
+    end
+end
+
+function MergeEggPrototypeService:_findQuartermaster(folder)
+    if not folder then
+        return nil
+    end
+    local named = folder:FindFirstChild(QUARTERMASTER_NAME)
+    if named then
+        return named
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if child:GetAttribute("MergeQuartermaster") == true then
+            return child
+        end
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_openQuartermasterTalk(player)
+    local record = self:_recordFor(player)
+    if not (record and record.player == player and record.terminal ~= true) then
+        return false, "not_active_encounter"
+    end
+    if not self:_tutorialVendorsReady(record, "quartermaster") then
+        return false, "vendor_not_ready"
+    end
+    local greeting = tostring(self:_quartermasterConfig().greeting or "I'll get you whatever you need.")
+    local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
+    local live = self:_findQuartermaster(folder)
+    self:_setQuartermasterSpeech(live, greeting)
+    if record.tutorialActive == true and record.tutorialStep == "talk_quartermaster" then
+        record.tutorialTalkedQuartermaster = true
+        self:_updateTutorial(record, os.clock(), true)
+    end
+    Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+        ok = true,
+        action = "quartermaster_talk",
+        value = { greeting = greeting },
+    })
+    return true
+end
+
+function MergeEggPrototypeService:_spawnQuartermaster(record, folder, shop)
+    if not (record and folder and folder.Parent and shop) then
+        return
+    end
+    if self:_findQuartermaster(folder) then
+        return
+    end
+    local post = self:_quartermasterConfig()
+    if post.enabled ~= true then
+        return
+    end
+    local stand = self:_quartermasterStandCFrame(record.world, shop)
+    if not stand then
+        self:_log("Warn", "Merge Egg quartermaster has no stand pose", {
+            player = record.player and record.player.Name,
+        })
+        return
+    end
+    local userId = tonumber(post.user_id)
+    local model
+    if userId then
+        local ok, desc = pcall(function()
+            return Players:GetHumanoidDescriptionFromUserId(userId)
+        end)
+        if ok and desc then
+            local ok2, rig = pcall(function()
+                return Players:CreateHumanoidModelFromDescription(desc, Enum.HumanoidRigType.R15)
+            end)
+            if ok2 then
+                model = rig
+            end
+        end
+    end
+    if not model then
+        self:_log("Warn", "Merge Egg quartermaster avatar failed", {
+            userId = userId,
+        })
+        return
+    end
+    model.Name = QUARTERMASTER_NAME
+    model:SetAttribute("MergeQuartermaster", true)
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.DisplayName = post.display_name or "Macros"
+        humanoid.WalkSpeed = 0
+        humanoid.JumpPower = 0
+        humanoid.AutoJumpEnabled = false
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+        animator.Parent = humanoid
+        local idle = Instance.new("Animation")
+        idle.AnimationId =
+            requiredAssetUri(post.idle_animation, "quartermaster.idle_animation")
+        local ok, track = pcall(function()
+            return animator:LoadAnimation(idle)
+        end)
+        if ok and track then
+            track.Looped = true
+            track:Play()
+        end
+    end
+    self:_groundEngineerOnFloor(model, stand)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Anchored = true
+        pcall(function()
+            root:SetNetworkOwner(nil)
+        end)
+    end
+    self:_setVendorPosted(model, false)
+    model.Parent = folder
+    self:_setEngineerPassthrough(model)
+    local promptHost = root or firstBasePart(model)
+    local prompt = self:_attachPrompt(
+        promptHost,
+        QUARTERMASTER_PROMPT_NAME,
+        post.action_text or "Talk",
+        post.object_text or post.display_name or "Quartermaster",
+        function(player)
+            self:_openQuartermasterTalk(player)
+        end
+    )
+    if prompt then
+        prompt.HoldDuration = 0
+        prompt.MaxActivationDistance = math.max(4, tonumber(post.max_distance) or 16)
+    end
+    self:_setVendorPosted(model, self:_tutorialVendorsReady(record, "quartermaster"))
+end
+
+function MergeEggPrototypeService:_ensureBayQuartermaster(record)
+    local world = record and record.world
+    if not world then
+        return
+    end
+    self:_syncMergePotionShops(record)
+    local post = self:_quartermasterConfig()
+    if post.enabled ~= true then
+        return
+    end
+    local folder = self:_towerFolder(world, "MergeEggQuartermaster")
+    local shop = self:_findPotionShop(world)
+    if not shop then
+        return
+    end
+    local live = self:_findQuartermaster(folder)
+    if not live then
+        task.spawn(function()
+            self:_spawnQuartermaster(record, folder, shop)
+        end)
+        return
+    end
+    local stand = self:_quartermasterStandCFrame(world, shop)
+    if stand then
+        self:_groundEngineerOnFloor(live, stand)
+    end
+    self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "quartermaster"))
+end
+
 function MergeEggPrototypeService:_findBulwarkEngineer(folder, slot)
     if not folder then
         return nil
@@ -7779,6 +8571,18 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeEggTutorialPaused", record and record.tutorialActive == true or false)
     world:SetAttribute("MergeEggTutorialRequiredEggs", self:_tutorialRequiredEggs())
     world:SetAttribute("MergeEggTutorialEggsCreated", record and record.eggsCreated or 0)
+    world:SetAttribute("MergeEggTutorialUpgradeCoinTarget", self:_tutorialUpgradeCoinTarget())
+    world:SetAttribute("MergeEggTutorialUpgradeWallet", record and self:_tutorialWallet(record) or 0)
+    world:SetAttribute("MergeEggTutorialUpgradeCreateNeed", self:_tutorialUpgradeCreateCount())
+    world:SetAttribute(
+        "MergeEggTutorialUpgradeCreated",
+        record
+                and math.max(
+                    0,
+                    (record.eggsCreated or 0) - (record.upgradeBeatEggsCreated or 0)
+                )
+            or 0
+    )
     world:SetAttribute(
         "MergeEggTutorialPositionsFilled",
         record and self:_initializedHatcherCount(record) or 0
@@ -7809,6 +8613,15 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         end
     end
     world:SetAttribute("MergeEggTutorialCommanderAt", commanderAt)
+    local quartermasterAt
+    if record and self:_tutorialVendorsReady(record, "quartermaster") then
+        local shop = self:_findPotionShop(world)
+        local stand = shop and self:_quartermasterStandCFrame(world, shop)
+        if stand then
+            quartermasterAt = stand.Position
+        end
+    end
+    world:SetAttribute("MergeEggTutorialQuartermasterAt", quartermasterAt)
     local rebirth = self:_rebirthStatus(record)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
     local alliedDamage =
@@ -10437,6 +11250,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     self._activeByPlayer[player] = record
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
+    self:_ensureBayQuartermaster(record)
     local escortAnchor = self:_playerEscortAnchorCFrame(record)
     player:SetAttribute(
         "MergeEggEscortAnchorPosition",
@@ -10630,6 +11444,14 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         end
         if self:_shouldStartCannonTutorial(record) then
             self:_startCannonTutorial(record)
+            return
+        end
+        if self:_shouldStartUpgradeTutorial(record) then
+            self:_startUpgradeTutorial(record)
+            return
+        end
+        if self:_shouldStartQuartermasterTutorial(record) then
+            self:_startQuartermasterTutorial(record)
             return
         end
         local resolvedWave = self:_waveFor(record, record.waveIndex) or {}

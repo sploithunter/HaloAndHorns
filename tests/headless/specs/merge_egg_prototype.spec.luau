@@ -182,6 +182,14 @@ return function()
             expect(config.tutorial.pause_after_cannon_wave).to.equal(4)
             expect(config.tutorial.workshop_cannon_slot).to.equal("right")
             expect(config.tutorial.workshop_cannon_family).to.equal("heal")
+            expect(config.tutorial.pause_after_upgrade_wave).to.equal(6)
+            expect(config.tutorial.upgrade_coin_target).to.equal(600)
+            expect(config.tutorial.upgrade_create_count).to.equal(2)
+            expect(config.tutorial.pause_after_quartermaster_wave).to.equal(10)
+            expect(config.quartermaster.user_id).to.equal(873359641)
+            expect(config.quartermaster.greeting).to.equal("I'll get you whatever you need.")
+            expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
+            expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
             expect(config.tutorial.steps.collect_setup.target).to.equal("coins")
             expect(config.tutorial.steps.collect_setup.title).to.equal("COLLECT 600 WAYCOINS AND 1 GEM")
             expect(config.tutorial.steps.collect_setup.body).to.equal(
@@ -223,6 +231,20 @@ return function()
             expect(config.tutorial.steps.talk_commander.target).to.equal("commander")
             expect(config.tutorial.steps.unlock_cannon.target).to.equal("cannon_unlock")
             expect(config.tutorial.steps.install_cannon.target).to.equal("cannon_install")
+            expect(config.tutorial.steps.collect_upgrade_coins.target).to.equal("upgrade_coins")
+            expect(config.tutorial.steps.upgrade_eggs.target).to.equal("buy_egg")
+            expect(config.tutorial.steps.upgrade_eggs.body).to.equal(
+                "Create a couple of eggs, then upgrade one or place one on the line. However you like."
+            )
+            expect(
+                service:find(
+                    "created >= createdNeed and (merged > 0 or upgradedBase or placed > 0)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("and placed > 0", 1, true)).to.equal(nil)
+            expect(config.tutorial.steps.talk_quartermaster.target).to.equal("quartermaster")
             expect(config.opening_economy.cannon_gem.currency).to.equal("gems")
             expect(config.opening_economy.cannon_gem.amount).to.equal(1)
             expect(config.team.edge_bulwarks.unlock_costs.impaler_palisade.currency).to.equal("gems")
@@ -254,6 +276,41 @@ return function()
                 service:find("function MergeEggPrototypeService:_shouldStartCannonTutorial", 1, true)
             ).to.be.ok()
             expect(
+                service:find("function MergeEggPrototypeService:_releaseTutorialForCannonCombat", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_shouldStartUpgradeTutorial", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_startUpgradeTutorial", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_hasUpgradedSinceCannon", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_ensureUpgradeCoinLesson", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_shouldStartQuartermasterTutorial", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_startQuartermasterTutorial", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_ensureBayQuartermaster", 1, true)
+            ).to.be.ok()
+            expect(service:find('kind == "quartermaster"', 1, true)).to.be.ok()
+            expect(service:find("I'll get you whatever you need.", 1, true)).to.be.ok()
+            expect(service:find('reason or "upgrade_coins"', 1, true)).to.be.ok()
+            expect(service:find("progress.tutorial_cannon_completed = true", 1, true)).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_cannonGemWorldPosition", 1, true)
+            ).to.be.ok()
+            expect(service:find("worldCfg.bulwark_line or \"BulwarkLine\"", 1, true)).to.be.ok()
+            expect(
                 service:find("function MergeEggPrototypeService:_ensureCannonGemLesson", 1, true)
             ).to.be.ok()
             expect(service:find('"cannon_gem"', 1, true)).to.be.ok()
@@ -261,6 +318,15 @@ return function()
             expect(observer:find('targetKind == "commander"', 1, true)).to.be.ok()
             expect(observer:find("MergeEggTutorialCommanderAt", 1, true)).to.be.ok()
             expect(observer:find('nearestOwnedOpeningDrop("cannon_gem")', 1, true)).to.be.ok()
+            expect(observer:find("TUTORIAL_UPGRADE_ORDER", 1, true)).to.be.ok()
+            expect(observer:find('targetKind == "upgrade_coins"', 1, true)).to.be.ok()
+            expect(observer:find("EGG UPGRADES", 1, true)).to.be.ok()
+            expect(observer:find('step == "upgrade_eggs"', 1, true)).to.be.ok()
+            expect(observer:find("UPGRADE OR PLACE ONE", 1, true)).to.be.ok()
+            expect(observer:find("CREATE A COUPLE, THEN UPGRADE OR PLACE ONE", 1, true)).to.be.ok()
+            expect(observer:find("TUTORIAL_QUARTERMASTER_ORDER", 1, true)).to.be.ok()
+            expect(observer:find('targetKind == "quartermaster"', 1, true)).to.be.ok()
+            expect(observer:find("QUARTERMASTER", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_tutorialHasCombination", 1, true)
             ).to.be.ok()
@@ -2079,6 +2145,9 @@ return function()
             expect(observer:find("MergeBulwarkMenu.new", 1, true)).to.be.ok()
             expect(observer:find("MergeCannonMenu.new", 1, true)).to.be.ok()
             expect(observer:find('"open_cannon_menu"', 1, true)).to.be.ok()
+            expect(observer:find("bulwarkMenu:hide()", 1, true)).to.be.ok()
+            expect(observer:find("cannonMenu:hide()", 1, true)).to.be.ok()
+            expect(observer:find('operation == "installed"', 1, true)).to.be.ok()
             local cannonMenu = readFile("src/Client/UI/Components/MergeCannonMenu.lua")
             expect(cannonMenu:find('"ARTILLERY WORKSHOP"', 1, true)).to.be.ok()
             expect(cannonMenu:find('Instance.new("ViewportFrame")', 1, true)).to.be.ok()

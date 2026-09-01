@@ -73,6 +73,25 @@ return function()
             expect(state.tutorial_completed).to.equal(true)
             expect(state.tutorial_setup_completed).to.equal(true)
             expect(state.tutorial_workshop_completed).to.equal(true)
+            expect(state.tutorial_cannon_completed).to.equal(true)
+            expect(state.tutorial_upgrade_completed).to.equal(true)
+            expect(state.upgrade_tutorial_baseline).to.equal(nil)
+            local cannonOnly = PlayerCombat.normalizeOnboarding({
+                tutorial_cannon_completed = true,
+                upgrade_tutorial_baseline = {
+                    eggs_merged = 2.4,
+                    eggs_placed = 1.2,
+                    base_egg_tier = 3.9,
+                },
+            })
+            expect(cannonOnly.tutorial_cannon_completed).to.equal(true)
+            expect(cannonOnly.tutorial_workshop_completed).to.equal(true)
+            expect(cannonOnly.tutorial_setup_completed).to.equal(true)
+            expect(cannonOnly.tutorial_upgrade_completed).to.equal(false)
+            expect(cannonOnly.tutorial_completed).to.equal(false)
+            expect(cannonOnly.upgrade_tutorial_baseline.eggs_merged).to.equal(2)
+            expect(cannonOnly.upgrade_tutorial_baseline.eggs_placed).to.equal(1)
+            expect(cannonOnly.upgrade_tutorial_baseline.base_egg_tier).to.equal(3)
             expect(state.checkpoint.wave).to.equal(20)
             expect(state.checkpoint.coins).to.equal(4321)
             expect(state.checkpoint.deployed_egg_tiers[2]).to.equal(4)

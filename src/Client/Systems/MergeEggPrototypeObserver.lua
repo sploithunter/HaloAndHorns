@@ -174,6 +174,15 @@ local TUTORIAL_CANNON_ORDER = {
     install_cannon = 5,
 }
 local TUTORIAL_CANNON_COUNT = 5
+local TUTORIAL_UPGRADE_ORDER = {
+    collect_upgrade_coins = 1,
+    upgrade_eggs = 2,
+}
+local TUTORIAL_UPGRADE_COUNT = 2
+local TUTORIAL_QUARTERMASTER_ORDER = {
+    talk_quartermaster = 1,
+}
+local TUTORIAL_QUARTERMASTER_COUNT = 1
 
 local function createTutorialCard(parent)
     local frame = Instance.new("Frame")
@@ -588,6 +597,8 @@ local function tutorialTarget(world, targetKind)
             return stand
         end
         return nil
+    elseif targetKind == "upgrade_coins" then
+        return nearestOwnedWaycoinDrop()
     elseif targetKind == "cannon_gem" then
         return cannonGemCollectTarget()
     elseif targetKind == "commander" then
@@ -606,6 +617,24 @@ local function tutorialTarget(world, targetKind)
             end
         end
         local stand = world and world:GetAttribute("MergeEggTutorialCommanderAt")
+        if typeof(stand) == "Vector3" then
+            return stand
+        end
+        return nil
+    elseif targetKind == "quartermaster" then
+        local folder = world and world:FindFirstChild("MergeEggQuartermaster")
+        local named = folder and folder:FindFirstChild("MergeQuartermaster")
+        if named and named:GetAttribute("MergeVendorPosted") == true then
+            return named
+        end
+        for _, child in ipairs(folder and folder:GetChildren() or {}) do
+            if child:GetAttribute("MergeQuartermaster") == true
+                and child:GetAttribute("MergeVendorPosted") == true
+            then
+                return child
+            end
+        end
+        local stand = world and world:GetAttribute("MergeEggTutorialQuartermasterAt")
         if typeof(stand) == "Vector3" then
             return stand
         end
@@ -691,22 +720,33 @@ local function updateTutorialPath(target)
 end
 
 local function tutorialBuyEggCueAllowed(world)
-    if
-        not world
-        or world:GetAttribute("MergeEggTutorialActive") ~= true
-        or world:GetAttribute("MergeEggTutorialStep") ~= "create_five"
-    then
+    if not world or world:GetAttribute("MergeEggTutorialActive") ~= true then
         return false
     end
+    local step = tostring(world:GetAttribute("MergeEggTutorialStep") or "")
     local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
+    local rebirthCount =
+        math.max(0, math.floor(tonumber(world:GetAttribute("MergeDefenseRebirthCount")) or 0))
+    if tutorial.disable_after_rebirth == true and rebirthCount > 0 then
+        return false
+    end
+    if step == "upgrade_eggs" then
+        local created =
+            math.max(0, math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreated")) or 0))
+        local need = math.max(
+            1,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreateNeed")) or 2)
+        )
+        return created < need
+    end
+    if step ~= "create_five" then
+        return false
+    end
     local cuePurchaseCount =
         math.max(0, math.floor(tonumber(tutorial.click_cue_purchase_count) or 3))
     local eggsCreated =
         math.max(0, math.floor(tonumber(world:GetAttribute("MergeEggTutorialEggsCreated")) or 0))
-    local rebirthCount =
-        math.max(0, math.floor(tonumber(world:GetAttribute("MergeDefenseRebirthCount")) or 0))
     return eggsCreated < cuePurchaseCount
-        and (tutorial.disable_after_rebirth ~= true or rebirthCount == 0)
 end
 
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
@@ -735,6 +775,8 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
     card.frame.Visible = true
     local workshopOrder = TUTORIAL_WORKSHOP_ORDER[step]
     local cannonOrder = TUTORIAL_CANNON_ORDER[step]
+    local upgradeOrder = TUTORIAL_UPGRADE_ORDER[step]
+    local quartermasterOrder = TUTORIAL_QUARTERMASTER_ORDER[step]
     card.progress.Text = workshopOrder
             and string.format(
                 "BULWARK TUTORIAL  •  %d / %d",
@@ -746,6 +788,18 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                 "CANNON TUTORIAL  •  %d / %d",
                 cannonOrder,
                 TUTORIAL_CANNON_COUNT
+            )
+        or upgradeOrder
+            and string.format(
+                "EGG UPGRADES  •  %d / %d",
+                upgradeOrder,
+                TUTORIAL_UPGRADE_COUNT
+            )
+        or quartermasterOrder
+            and string.format(
+                "QUARTERMASTER  •  %d / %d",
+                quartermasterOrder,
+                TUTORIAL_QUARTERMASTER_COUNT
             )
         or string.format(
             "MERGE DEFENSE TUTORIAL  •  %d / %d",
@@ -768,6 +822,21 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
             card.body.Text = "Follow the chevrons to the gem in front of the second Bulwark Engineer."
         end
     end
+    if step == "collect_upgrade_coins" and not autoCollector then
+        local target = math.max(
+            1,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCoinTarget")) or 600)
+        )
+        local wallet = math.max(
+            0,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeWallet")) or 0)
+        )
+        local remaining = math.max(0, target - wallet)
+        if remaining > 0 then
+            card.title.Text = string.format("PICK UP %d MORE WAYCOINS", remaining)
+            card.body.Text = "Follow the chevrons to coins on the field. About 600 is enough for six eggs."
+        end
+    end
     if step == "create_five" then
         local required = math.max(
             1,
@@ -787,7 +856,30 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
             or "FIVE EARTH EGGS READY"
         card.body.Text = "Click the highlighted BUY EGG button again."
     end
+    if step == "upgrade_eggs" then
+        local created = math.max(
+            0,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreated")) or 0)
+        )
+        local need = math.max(
+            1,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreateNeed")) or 2)
+        )
+        local remaining = math.max(0, need - created)
+        if remaining > 0 then
+            card.title.Text = remaining == 1
+                    and "CREATE ONE MORE EGG"
+                or string.format("CREATE %d MORE EGGS", remaining)
+            card.body.Text = "Click BUY EGG. Then upgrade one or place one on the line."
+        else
+            card.title.Text = "UPGRADE OR PLACE ONE"
+            card.body.Text = "Merge two matching eggs, or drag one onto the line."
+        end
+    end
     local targetKind = tostring(spec.target or "none")
+    if step == "upgrade_eggs" and not tutorialBuyEggCueAllowed(world) then
+        targetKind = "board_egg"
+    end
     local menuOpen = bulwarkMenu and bulwarkMenu.isOpen and bulwarkMenu:isOpen() == true
     local cannonMenuOpen = cannonMenu and cannonMenu.isOpen and cannonMenu:isOpen() == true
     if autoCollector and targetKind == "coins" then
@@ -822,10 +914,11 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
             targetKind = "commander"
         end
         tutorialPathTarget = tutorialTarget(world, targetKind)
-        tutorialClickTarget = (
+            tutorialClickTarget = (
                 (targetKind == "buy_egg" and tutorialBuyEggCueAllowed(world))
                 or targetKind == "engineer"
                 or targetKind == "commander"
+                or targetKind == "quartermaster"
             )
             and tutorialPathTarget
             or nil
@@ -1861,6 +1954,14 @@ local function updateWaveMeter(
                 or step == "collect_cannon_gem"
                     and "WAVES PAUSED — PICK UP THE GEM"
                 or "WAVES PAUSED — TALK TO THE ARTILLERY COMMANDER"
+        elseif TUTORIAL_UPGRADE_ORDER[step] then
+            meter.title.Text = string.upper(stageName) .. " • STRENGTHEN THE LINE"
+            meter.detail.Text = step == "collect_upgrade_coins"
+                    and "WAVES PAUSED — PICK UP ABOUT 600 WAYCOINS"
+                or "WAVES PAUSED — CREATE A COUPLE, THEN UPGRADE OR PLACE ONE"
+        elseif TUTORIAL_QUARTERMASTER_ORDER[step] then
+            meter.title.Text = string.upper(stageName) .. " • QUARTERMASTER ARRIVED"
+            meter.detail.Text = "WAVES PAUSED — TALK TO MACROS AT THE POTION TENT"
         else
             meter.title.Text = string.upper(stageName) .. " • ENGINEER ARRIVED"
             meter.detail.Text = step == "collect_workshop_coins"
@@ -3615,11 +3716,24 @@ function MergeEggPrototypeObserver.start()
             return
         end
         local success = result.ok == true
+        local operation = type(result.value) == "table" and tostring(result.value.operation or "")
+            or ""
+        local placed = operation == "installed"
+            or operation == "replaced"
+            or operation == "equipped"
         if action == "bulwark" and success and type(result.value) == "table" then
-            bulwarkMenu:show(result.value)
+            if placed then
+                bulwarkMenu:hide()
+            else
+                bulwarkMenu:show(result.value)
+            end
         end
         if action == "cannon" and success and type(result.value) == "table" then
-            cannonMenu:show(result.value)
+            if placed then
+                cannonMenu:hide()
+            else
+                cannonMenu:show(result.value)
+            end
         end
         boardActionFeedback.Text = boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)

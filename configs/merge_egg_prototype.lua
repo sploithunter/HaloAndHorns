@@ -115,6 +115,10 @@ return {
         bulwark_line = "BulwarkLine",
         breach_line = "BreachLine",
         enemy_portal_visual = "EnemyPortalVisual",
+        voxel_map_name = "GeneratedMap_MergeEggVoxel",
+        playfields_folder = "PlayFields",
+        potion_shop_heaven = "HeavenPotionShop",
+        potion_shop_hell = "HellPotionShop",
         bounds = {
             center_x = -16000,
             center_z = -150,
@@ -323,9 +327,9 @@ return {
             offset = { x = 24, z = 28 },
             visual_scale = 1.5,
         },
-        -- Laid after Wave 4 only when the gem wallet is 0. Stands in front
-        -- of the right-pad Artillery Commander (same offset language as
-        -- the opening gem).
+        -- Laid after Wave 4 only when the gem wallet is 0. Lands on the
+        -- field past the stone wall, in front of the right pad — not on
+        -- the pad deck or the commander stand behind it.
         cannon_gem = {
             currency = "gems",
             amount = 1,
@@ -349,8 +353,7 @@ return {
         click_cue_purchase_count = 3,
         disable_after_rebirth = true,
         -- Locked drip: Wave 0 eggs → Wave 2 Impaler → Wave 4 Heal →
-        -- Wave 6 coins + optional egg upgrades (not shipped) → Wave 10
-        -- Quartermaster / potions / macros (not shipped).
+        -- Wave 6 optional coins + egg upgrades → Wave 10 Quartermaster.
         -- Phase 1 unlocks Waves 1–2. After this wave clears, hold Wave 3
         -- and baby-step the gold-line (second) engineer workshop.
         pause_after_wave = 2,
@@ -362,6 +365,16 @@ return {
         pause_after_cannon_wave = 4,
         workshop_cannon_slot = "right",
         workshop_cannon_family = "heal",
+        -- After Wave 6, pause only if they have not upgraded or installed
+        -- eggs since the Heal install. 600 Waycoins covers six Earth eggs
+        -- at the opening price. Then one loose card: create a couple,
+        -- then upgrade or place. Skip entirely when they already did that work.
+        pause_after_upgrade_wave = 6,
+        upgrade_coin_target = 600,
+        upgrade_create_count = 2,
+        -- After Wave 10, reveal the potion tent and post Macros as
+        -- Quartermaster. Talk only for now; the shop opens after that.
+        pause_after_quartermaster_wave = 10,
         steps = {
             collect_setup = {
                 title = "COLLECT 600 WAYCOINS AND 1 GEM",
@@ -429,7 +442,38 @@ return {
                 body = "Click INSTALL to place Tier 1 Heal on this pad.",
                 target = "cannon_install",
             },
+            collect_upgrade_coins = {
+                title = "GRAB SOME WAYCOINS",
+                body = "Pick up coins on the field until you have about 600 — enough for six eggs. You will want them.",
+                auto_body = "Your Coin Pup will gather the coins. You need about 600 for a few more eggs.",
+                target = "upgrade_coins",
+            },
+            upgrade_eggs = {
+                title = "MAKE A COUPLE OF EGGS",
+                body = "Create a couple of eggs, then upgrade one or place one on the line. However you like.",
+                target = "buy_egg",
+            },
+            talk_quartermaster = {
+                title = "THE QUARTERMASTER POSTED UP",
+                body = "Macros is at the potion tent. Follow the chevrons and Talk.",
+                target = "quartermaster",
+            },
         },
+    },
+
+    -- Macros sits at the bay potion tent. Hidden with the tent until
+    -- Wave 10, then Talk. Greeting is the whole beat for now.
+    quartermaster = {
+        enabled = true,
+        user_id = 873359641,
+        name = "MacrosGodOfMagic",
+        display_name = "Macros",
+        action_text = "Talk",
+        object_text = "Quartermaster",
+        idle_animation = "507766388",
+        max_distance = 16,
+        stand_front_studs = 8,
+        greeting = "I'll get you whatever you need.",
     },
 
     -- The existing Future Self / Colorado NPC-principal lifecycle consumes this base definition.

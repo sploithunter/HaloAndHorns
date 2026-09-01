@@ -203,9 +203,13 @@ Pet enchant/reroll stations are authored map fixtures. Tag the station model or 
 
 Potion tents follow the same fixture rule. `configs/potions.lua` contracts
 `HomePotionShop`, `HeavenPotionShop`, and `HellPotionShop`; `PotionShopService` finds every matching
-model under Workspace and attaches its prompt to the authored `PotionBannerLabel`. The five current
-tents (Home plus two Heaven and two Hell layers) carry art and lettering only. Pricing, stock,
-proximity authorization, inventory mutation, and currency mutation remain config/service-owned.
+model under Workspace and attaches its prompt to the authored `PotionBannerLabel`. Farm/Fight keeps
+the Home plus per-layer Heaven/Hell tents. The Merge voxel map now has one
+`HeavenPotionShop` or `HellPotionShop` under each `PlayFields` bay
+(cloned from bay 1). Merge runtime hides those tents until the Wave 10
+Quartermaster beat, then Macros talks and the shop prompt turns on.
+Pricing, stock, proximity authorization, inventory
+mutation, and currency mutation remain config/service-owned.
 
 Builder-authored egg visuals are map fixtures too. A visible model can have any builder-friendly name, then a setup pass stamps the intended interaction anchor part with `EggStand`, `EggId`/`EggType`, optional `AreaId`/`SpawnId`, `AuthoredVisual = true`, and `SpawnMode = "authored"`. For large hatchers, tag the egg/rock part players approach rather than the full decorative container so proximity distance and billboards attach to the right spot. `scripts/studio/audit_authored_map_candidates.luau` lists likely imported objects, and `scripts/studio/stamp_authored_egg_stands.luau` is the current repeatable helper for the assisted mapping pass. Blank/template maps still use synthetic invisible egg hooks and spawned placeholder egg models.
 

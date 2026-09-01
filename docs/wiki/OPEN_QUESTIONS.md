@@ -51,12 +51,12 @@ Status: current
   (T1 40%). Tune hit_chance if the lane feels too locked or too
   loose.
 - Merge first-visit drip is locked: Wave 0 eggs → Wave 2 Impaler (1 Gem)
-  → Wave 4 Heal (1 Gem if wallet is 0) → Wave 6 coins + optional egg
-  upgrades → Wave 10 Quartermaster (potion shop + macros, Heaven/Hell
-  theme). 0 / 2 / 4 are in. Each pause after Wave 0 chevrons an
-  existing Waycoin pile only if the wallet is empty; no authored
-  placement. Wave 6 and 10 are not shipped; `tutorial_completed`
-  still stamps at Heal install. Do not unlock Impaler and Heal at pickup.
+  → Wave 4 Heal (1 Gem if wallet is 0) → Wave 6 optional coins + egg
+  upgrades (skip if they already upgraded since Wave 4) → Wave 10
+  Quartermaster (Macros at the Heaven/Hell potion tent). 0 / 2 / 4 / 6 / 10
+  talk are in. After Talk the tent can sell; macros still need design.
+  `tutorial_completed` stamps at the Wave 10 Talk. Do not unlock Impaler
+  and Heal at pickup.
 - Heal fire line is BreachLine (same hard floor as other chassis).
   Tighten to the gold line or the computed mid plane only after live
   shots prove pets sit in a band we do not want to heal?

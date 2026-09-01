@@ -174,6 +174,9 @@ local function generateProfileTemplate(configLoader)
                 tutorial_completed = false,
                 tutorial_setup_completed = false,
                 tutorial_workshop_completed = false,
+                tutorial_cannon_completed = false,
+                tutorial_upgrade_completed = false,
+                upgrade_tutorial_baseline = {},
                 -- Compact reconstructable checkpoint; runtime pet rolls are deliberately rerolled
                 -- when a player returns, while wave, board, deployments, and wallet survive.
                 checkpoint = {},
