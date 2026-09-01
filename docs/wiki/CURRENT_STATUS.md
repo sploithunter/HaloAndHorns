@@ -4,10 +4,13 @@ Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2
 
 ## Merge tier art is config-owned and runtime-verified (2026-09-01)
 
-`configs/merge_tier_art.lua` is generated from the committed cannon, bulwark-model, and bulwark-
-preview manifests. It is the single runtime authority for both workshop previews and spawned model
-identity. `scripts/merge_tier_runtime_manifest.json` proves 24 cannon mappings, 24 bulwark mappings,
-24 bulwark preview mappings, and 48 distinct model assets. Fresh Studio Edit and Play audits passed
+`configs/merge_tier_art.lua` is generated from the committed cannon-model, cannon-preview,
+bulwark-model, and bulwark-preview manifests. It is the single runtime authority for both workshop
+previews and spawned model identity. Cannon cards use 24 group-owned 256×256 transparent Image
+assets normalized to a 78% silhouette footprint rather than model thumbnails or live
+ViewportFrames. `scripts/merge_tier_runtime_manifest.json` proves 24 cannon mappings, 24 cannon
+preview mappings, 24 bulwark mappings, 24 bulwark preview mappings, and 48 distinct model assets.
+Fresh Studio Edit and Play audits passed
 all 48 templates, all 48 transient runtime clones/spawns, and fail-closed rejection of a deliberately
 stale model ID. Existing world instances are replaced when their manifest identity or cannon scale
 does not match, rather than trusting tier attributes alone.

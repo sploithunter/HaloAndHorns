@@ -1,0 +1,758 @@
+{
+  "schemaVersion": 1,
+  "status": "COMPLETE",
+  "note": "Accepted Meshy retexture alpha renders normalized to a 256px power-of-two canvas. Each visible silhouette occupies at most 78% of the canvas so tier art stays inside the artillery workshop card without live ViewportFrames.",
+  "canvasSize": [
+    256,
+    256
+  ],
+  "subjectFill": 0.78,
+  "alphaThreshold": 8,
+  "count": 24,
+  "records": [
+    {
+      "family": "heal",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/heal/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "776e3d232f2cc1bcd2a760ffeb085fc62fbc7e77d72e51853cf791e94336fdd3",
+      "file": "assets/ui/merge_cannons/heal_tier1.png",
+      "sha256": "372a8e7e15b35ba402876119ff53a5960419fcc9225dc6813bf9347bf976806e",
+      "bytes": 52815,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        42,
+        68,
+        475,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        30,
+        28,
+        225,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "heal",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/heal/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "8d82cd9713f23957a6471333cb89bfb817a670c9caaf07ee633ae35d90d0c036",
+      "file": "assets/ui/merge_cannons/heal_tier2.png",
+      "sha256": "77b08b8595e433ee10aae428aac26e6ca7812be1e194da8e90823e497604c6f0",
+      "bytes": 56122,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        42,
+        80,
+        477,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        228,
+        227
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "heal",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/heal/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "a7dc0c891181d6615237f5398ed9aec30a72a4ca205367eeb23f48a3f1ba0c33",
+      "file": "assets/ui/merge_cannons/heal_tier3.png",
+      "sha256": "9b077c21d214d96ad151c08a337c916fae0282fd1ac6551a724cf02da955ca9a",
+      "bytes": 63999,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        36,
+        68,
+        480,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        228,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "heal",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/heal/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "9411841b2717f02b258409f98e937591174109b93233b719b7173bed02a195d6",
+      "file": "assets/ui/merge_cannons/heal_tier4.png",
+      "sha256": "3e51e3fde5e1bde7f2244ada40fd39a57e28cf5f140d11c1053687bae3ce5e29",
+      "bytes": 69711,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        43,
+        92,
+        478,
+        486
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        37,
+        228,
+        218
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "rage",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/rage/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "20acc735beb9a12ab96ff641544772ae9302162ceb2bf2807de7e49c406d6aa2",
+      "file": "assets/ui/merge_cannons/rage_tier1.png",
+      "sha256": "b32feed4629eecc92f0e648f999e0978b692f046cbff45049d39d3a137438e34",
+      "bytes": 45295,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        30,
+        40,
+        463,
+        480
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        29,
+        28,
+        226,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "rage",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/rage/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "ca5cedcf720f84263a114f1105f748952122817c29804063027c9bbc9b19cb08",
+      "file": "assets/ui/merge_cannons/rage_tier2.png",
+      "sha256": "8645e319a6f38f6593091916e50cc22c139c1cd34e5281ff68dccdc3faa644eb",
+      "bytes": 56156,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        39,
+        80,
+        478,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        29,
+        228,
+        226
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "rage",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/rage/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "8d6dfea1bf29f9589e267b8f5bcd329e37ef79bd4819fba2932a47e972396e66",
+      "file": "assets/ui/merge_cannons/rage_tier3.png",
+      "sha256": "95f11b15918d96e4c0a3aaa09160f4fc6510f1991258199f810006c7b64dbee3",
+      "bytes": 61894,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        46,
+        64,
+        480,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        31,
+        28,
+        225,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "rage",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/rage/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "73aa3d39e5663aa2dd100de74735a6633adbcfedf3155d0eee543feb4934c77c",
+      "file": "assets/ui/merge_cannons/rage_tier4.png",
+      "sha256": "abd75522dfb5f2425776fdeadd8be9b4479f19b2320d4ec34e3c31067cbcc631",
+      "bytes": 66385,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        36,
+        67,
+        477,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        29,
+        28,
+        227,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "debuff",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/debuff/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "7c8677e55260fb122cbfe646eab9a95d08a7af787e173857d956b51806714f53",
+      "file": "assets/ui/merge_cannons/debuff_tier1.png",
+      "sha256": "4ab1536d0ac9e538683763b12f619e7b3441a10a9275760331ecf901c00cc0e6",
+      "bytes": 55222,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        19,
+        52,
+        485,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        29,
+        228,
+        226
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "debuff",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/debuff/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "7e40dfc9ae9b121285ea8dc7b4522452212d3f8561d87fcd83d0c4c47498b59f",
+      "file": "assets/ui/merge_cannons/debuff_tier2.png",
+      "sha256": "916576b3a99501fe8042e2a7cfd031e351455abb1cbed37bd989e26a62b6f120",
+      "bytes": 54817,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        44,
+        83,
+        474,
+        509
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        29,
+        228,
+        227
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "debuff",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/debuff/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "679e424af6a1a62128243f4fe4126e51b86187c621b628190fe83f4e9aab02b1",
+      "file": "assets/ui/merge_cannons/debuff_tier3.png",
+      "sha256": "90acf3d6b35b399d0469c6241da300bc2706fb39ee4249714aa85e0cfdeab4ed",
+      "bytes": 46821,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        46,
+        49,
+        441,
+        478
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        36,
+        28,
+        220,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "debuff",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/debuff/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "a0f25a48b279b828030bb71035a6dd0521da56da447fb96f45078c5b790459a3",
+      "file": "assets/ui/merge_cannons/debuff_tier4.png",
+      "sha256": "d68dd72724c2bd51df5b23b53035d74d2233aeb6acd60363d5b0048c9785ffa6",
+      "bytes": 51935,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        8,
+        21,
+        471,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        33,
+        28,
+        222,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "gravity",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/gravity/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "a774e11d100c4adc2b2efd82d5d4dcf0f596dec29c0d02d8bb0b556e1c9eda77",
+      "file": "assets/ui/merge_cannons/gravity_tier1.png",
+      "sha256": "a41a73090b403be9af5904c1cb143751edf1a9c4b07e831661d760071277bb54",
+      "bytes": 49115,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        31,
+        57,
+        480,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        29,
+        28,
+        226,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "gravity",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/gravity/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "9904f9aeec5e987f141bceb86065bb4e2ecf174e1e55cc1f58c31268aa7de245",
+      "file": "assets/ui/merge_cannons/gravity_tier2.png",
+      "sha256": "399d99db08dbee47a00601d3725d33927b544fe5262f6ebd1652dcda040722f6",
+      "bytes": 60835,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        36,
+        71,
+        478,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        228,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "gravity",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/gravity/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "309a269454601ee34c90509df8f58e64ff37c061799fb1f6efef48401f45040b",
+      "file": "assets/ui/merge_cannons/gravity_tier3.png",
+      "sha256": "1e131ce19523cd7c21516fdfa204aac9f81145e539200342a2bc763d406323f3",
+      "bytes": 60907,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        40,
+        86,
+        474,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        30,
+        228,
+        226
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "gravity",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/gravity/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "d04b7dd1007e27999665afb7e874fd3c01ff955a89e2cc61b40731036265f4d4",
+      "file": "assets/ui/merge_cannons/gravity_tier4.png",
+      "sha256": "6b7ea688887ed501437f1528899017c1a9df69e01e3e1238dc5f817a454cd9ff",
+      "bytes": 54777,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        44,
+        111,
+        483,
+        445
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        52,
+        228,
+        204
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "repulsor",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/repulsor/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "99b2ea1b33045f67caf3746263cd0f1e07d96798a28a93d4d33588aa4126b837",
+      "file": "assets/ui/merge_cannons/repulsor_tier1.png",
+      "sha256": "80de38dd0706f38ab53f0ad8648f5499292a3f2125378662240bd3c688fa96f5",
+      "bytes": 51498,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        34,
+        65,
+        479,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        227,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "repulsor",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/repulsor/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "96c5618b5201f24f6a5fc1d595b2fbfee3f19287615bb6c42849807b9a8cb1d3",
+      "file": "assets/ui/merge_cannons/repulsor_tier2.png",
+      "sha256": "0508b742b4509b11681fd5d6dc47cf4500591c761573675e2a0414038eebd2c0",
+      "bytes": 62906,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        41,
+        65,
+        473,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        31,
+        28,
+        224,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "repulsor",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/repulsor/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "ae6c7276a8c721c7816284a6fd0588db405f4f7e0d2dceb6b22bf2a5a36ab7a8",
+      "file": "assets/ui/merge_cannons/repulsor_tier3.png",
+      "sha256": "04e5185c44f39cdb905a48f9b26785275265ef9c3b015356292b2740fa4cd85e",
+      "bytes": 62902,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        44,
+        88,
+        472,
+        504
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        31,
+        228,
+        225
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "repulsor",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/repulsor/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "18951022f57e2ff8d0ee1296972b7a5ed865579e9562ca19e426e5f7659e57a5",
+      "file": "assets/ui/merge_cannons/repulsor_tier4.png",
+      "sha256": "671e174f79f543e5df81fe2d4460a4f1184932fc8b346c43ebbb08336fb44b2f",
+      "bytes": 66013,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        35,
+        52,
+        494,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        228,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "nullifier",
+      "tier": 1,
+      "source": "assets/source/props/merge_cannons/nullifier/tier_1/textured/preview_alpha.png",
+      "sourceSha256": "ea7850131c1be1506cbbd4c2f59ab55f073c898e11f4c4e6cf9d68fee55aa9b9",
+      "file": "assets/ui/merge_cannons/nullifier_tier1.png",
+      "sha256": "7575b8ee1fd489ab8ae6a3eb7d7c0322bc4f5ddda93779900e90789a593a82f6",
+      "bytes": 54927,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        34,
+        67,
+        480,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        228,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "nullifier",
+      "tier": 2,
+      "source": "assets/source/props/merge_cannons/nullifier/tier_2/textured/preview_alpha.png",
+      "sourceSha256": "03781b4d9e92bf22bc5ad3d39662b61ae13cbf11c9436ac2223ccc46bf59744d",
+      "file": "assets/ui/merge_cannons/nullifier_tier2.png",
+      "sha256": "643ff7b5276661b9eab485a0bc6619c332b4730446389dd94c80a7c0102abd0f",
+      "bytes": 56093,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        49,
+        89,
+        473,
+        499
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        31,
+        228,
+        224
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "nullifier",
+      "tier": 3,
+      "source": "assets/source/props/merge_cannons/nullifier/tier_3/textured/preview_alpha.png",
+      "sourceSha256": "6b1b6b1c22e27963ffa294f6fcfca7dc930840a3fc8fb6c668fc6846f9820376",
+      "file": "assets/ui/merge_cannons/nullifier_tier3.png",
+      "sha256": "632f6040dd25fedb910b3525f18b6fd07032cabbf0086d750cff69d953780c84",
+      "bytes": 64344,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        47,
+        81,
+        476,
+        512
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        28,
+        227,
+        228
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    },
+    {
+      "family": "nullifier",
+      "tier": 4,
+      "source": "assets/source/props/merge_cannons/nullifier/tier_4/textured/preview_alpha.png",
+      "sourceSha256": "fa646edd6c3be4d924b3faeb98b1c7d8498e4b76f4217808fa867f2572f11c8a",
+      "file": "assets/ui/merge_cannons/nullifier_tier4.png",
+      "sha256": "23edfa8b16427117b4a257d34a9b0a38433a7304fcb7d5bf8aae50c1cfa6e32f",
+      "bytes": 66466,
+      "sourceDimensions": [
+        512,
+        512
+      ],
+      "sourceAlphaBoundingBox": [
+        51,
+        97,
+        477,
+        476
+      ],
+      "outputDimensions": [
+        256,
+        256
+      ],
+      "outputAlphaBoundingBox": [
+        28,
+        39,
+        228,
+        217
+      ],
+      "subjectFill": 0.78,
+      "alphaThreshold": 8
+    }
+  ]
+}

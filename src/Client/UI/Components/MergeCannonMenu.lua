@@ -92,7 +92,8 @@ local function label(parent, name, text, size, bold)
     return value
 end
 
--- Cannon previews use the manifest-generated Model asset id for the selected gameplay tier.
+-- Cannon previews use normalized 256x256 transparent images. Keep these flat: cloning live 3D
+-- scenes made the workshop heavier and caused ornate tiers to crowd the card.
 local function makePreviewImage(parent, name)
     local pane = Instance.new("Frame")
     pane.Name = name

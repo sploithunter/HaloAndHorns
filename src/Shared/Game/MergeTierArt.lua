@@ -14,7 +14,7 @@ function MergeTierArt.entry(config, kind, family, tier)
 end
 
 function MergeTierArt.previewAssetIds(config, kind, family)
-    local field = if kind == "cannon" then "modelAssetId" else "previewDecalId"
+    local field = "previewDecalId"
     local ids = {}
     for tier = 1, 4 do
         local value = MergeTierArt.entry(config, kind, family, tier)

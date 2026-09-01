@@ -112,7 +112,7 @@ return function()
 
         it("lists every authored cannon role and persists per-pad installs", function()
             local families = Progression.families(mergeConfig.tier_art)
-            local manifest = readFile("scripts/merge_cannon_model_ids.json")
+            local manifest = readFile("scripts/merge_cannon_preview_ids.json")
             local seenPreviewIds = {}
             expect(#families).to.equal(6)
             expect(families[1].id).to.equal("heal")
@@ -126,11 +126,7 @@ return function()
                     expect(seenPreviewIds[previewAssetId]).to.equal(nil)
                     seenPreviewIds[previewAssetId] = true
                     expect(
-                        manifest:find(
-                            '"modelAssetId": "' .. tostring(previewAssetId) .. '"',
-                            1,
-                            true
-                        )
+                        manifest:find('"decalId": "' .. tostring(previewAssetId) .. '"', 1, true)
                     ).to.be.ok()
                 end
                 for _, upgradeNotes in ipairs(family.upgradeNotes) do

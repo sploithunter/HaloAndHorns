@@ -6874,3 +6874,16 @@ first-session cohort rates.
 - The full tracked `src/` audit found 138 runtime asset/content literals across 36 files and 1,642
   numeric tuning fallbacks across 239 files. CI now ratchets the complete inventory; remediation is
   tracked in issue #343.
+
+## 2026-09-01 — Cannon workshop alpha previews
+
+- Promoted the 24 accepted Meshy cannon retexture alpha renders into tracked 256×256 RGBA workshop
+  images. Every silhouette is centered and normalized to at most 78% of the canvas, keeping ornate
+  tiers inside the card while cutting uncompressed texture area to one quarter of 512×512.
+- Uploaded all 24 previews under project group 15872767 and recorded both the Open Cloud Decal IDs
+  and resolved Image IDs. `configs/merge_tier_art.lua` and the runtime proof manifest are generated
+  from those records; the cannon menu uses flat `ImageLabel` assets through the 24/24 Studio-verified
+  Decal thumbnail URLs, with no model thumbnail or live ViewportFrame.
+- Added source hashes, an alpha contact sheet, config/headless coverage, and a CI registry check so a
+  missing PNG, wrong dimensions/color type, changed hash, duplicate ID, or stale generated config
+  fails the gate.
