@@ -26,62 +26,111 @@ return function()
             end
         )
 
-        it("keeps bought families and switches them onto the strip at the owned tier", function()
-            local installed = Progression.apply(nil, "select", "impaler_palisade", 0, config)
+        it("unlocks a family once, then places and upgrades each slot on its own", function()
+            local unlocked = Progression.apply(nil, "unlock", "impaler_palisade", 0, config, "lane")
+            expect(unlocked.owned.impaler_palisade).to.equal(1)
+            expect(unlocked.family).to.equal(nil)
+            expect(unlocked.operation).to.equal("unlocked")
+            expect(unlocked.charged).to.equal(true)
+
+            local placed, placeReason =
+                Progression.apply(nil, "select", "impaler_palisade", 0, config, "lane")
+            expect(placed).to.equal(nil)
+            expect(placeReason).to.equal("bulwark_not_owned")
+
+            local installed =
+                Progression.apply(unlocked, "select", "impaler_palisade", 0, config, "lane")
             expect(installed.family).to.equal("impaler_palisade")
             expect(installed.tier).to.equal(1)
             expect(installed.owned.impaler_palisade).to.equal(1)
             expect(installed.operation).to.equal("installed")
             expect(installed.charged).to.equal(true)
 
-            local upgraded = Progression.apply(installed, "upgrade", "impaler_palisade", 1, config)
+            local upgraded =
+                Progression.apply(installed, "upgrade", "impaler_palisade", 1, config, "lane")
             expect(upgraded.family).to.equal("impaler_palisade")
             expect(upgraded.tier).to.equal(2)
-            expect(upgraded.owned.impaler_palisade).to.equal(2)
+            expect(upgraded.owned.impaler_palisade).to.equal(1)
+            expect(upgraded.eggFamily).to.equal(nil)
 
-            local switched = Progression.apply(upgraded, "select", "land_shark", 1, config)
+            local sharkUnlock = Progression.apply(upgraded, "unlock", "land_shark", 1, config, "lane")
+            local switched =
+                Progression.apply(sharkUnlock, "select", "land_shark", 1, config, "lane")
             expect(switched.family).to.equal("land_shark")
             expect(switched.tier).to.equal(1)
-            expect(switched.owned.impaler_palisade).to.equal(2)
+            expect(switched.owned.impaler_palisade).to.equal(1)
             expect(switched.owned.land_shark).to.equal(1)
-            expect(switched.operation).to.equal("installed")
+            expect(switched.operation).to.equal("replaced")
+            expect(switched.charged).to.equal(true)
 
-            local restored = Progression.apply(switched, "select", "impaler_palisade", 1, config)
-            expect(restored.family).to.equal("impaler_palisade")
-            expect(restored.tier).to.equal(2)
-            expect(restored.operation).to.equal("equipped")
-            expect(restored.charged).to.equal(false)
+            local egg = Progression.apply(switched, "select", "impaler_palisade", 1, config, "egg")
+            expect(egg.family).to.equal("land_shark")
+            expect(egg.tier).to.equal(1)
+            expect(egg.eggFamily).to.equal("impaler_palisade")
+            expect(egg.eggTier).to.equal(1)
+            expect(egg.operation).to.equal("installed")
+            expect(egg.charged).to.equal(true)
+
+            local laneUp = Progression.apply(egg, "upgrade", "land_shark", 1, config, "lane")
+            expect(laneUp.tier).to.equal(2)
+            expect(laneUp.eggFamily).to.equal("impaler_palisade")
+            expect(laneUp.eggTier).to.equal(1)
+
+            local menuLane = Progression.menuOwned(laneUp, "lane")
+            expect(menuLane.land_shark).to.equal(2)
+            expect(menuLane.impaler_palisade).to.equal(1)
+            local menuEgg = Progression.menuOwned(laneUp, "egg")
+            expect(menuEgg.impaler_palisade).to.equal(1)
+            expect(menuEgg.land_shark).to.equal(1)
+
+            local cleared = Progression.clearInstalls(laneUp, 4)
+            expect(cleared.owned.land_shark).to.equal(1)
+            expect(cleared.owned.impaler_palisade).to.equal(1)
+            expect(cleared.family).to.equal(nil)
+            expect(cleared.eggFamily).to.equal(nil)
+            expect(cleared.tier).to.equal(0)
         end)
 
-        it("upgrades the selected family even when another family is on the strip", function()
+        it("upgrades only the chassis sitting on that slot", function()
             local state = {
                 family = "saw_blade",
                 tier = 2,
-                owned = { saw_blade = 2, concertina_line = 1 },
+                owned = { saw_blade = 1, concertina_line = 1 },
             }
-            local upgraded = Progression.apply(state, "upgrade", "concertina_line", 1, config)
-            expect(upgraded.family).to.equal("saw_blade")
-            expect(upgraded.tier).to.equal(2)
-            expect(upgraded.owned.concertina_line).to.equal(2)
-            expect(upgraded.upgradedFamily).to.equal("concertina_line")
+            local refused, reason =
+                Progression.apply(state, "upgrade", "concertina_line", 1, config, "lane")
+            expect(refused).to.equal(nil)
+            expect(reason).to.equal("bulwark_not_installed")
 
-            local maxed, reason = Progression.apply({
+            local upgraded = Progression.apply(state, "upgrade", "saw_blade", 1, config, "lane")
+            expect(upgraded.family).to.equal("saw_blade")
+            expect(upgraded.tier).to.equal(3)
+            expect(upgraded.owned.saw_blade).to.equal(1)
+            expect(upgraded.owned.concertina_line).to.equal(1)
+
+            local maxed, maxReason = Progression.apply({
                 family = "saw_blade",
-                owned = { saw_blade = 4 },
-            }, "upgrade", "saw_blade", 1, config)
+                tier = 4,
+                owned = { saw_blade = 1 },
+            }, "upgrade", "saw_blade", 1, config, "lane")
             expect(maxed).to.equal(nil)
-            expect(reason).to.equal("bulwark_maxed")
+            expect(maxReason).to.equal("bulwark_maxed")
 
             local missing, missingReason =
-                Progression.apply(state, "upgrade", "wardstone_barrier", 1, config)
+                Progression.apply(state, "upgrade", "wardstone_barrier", 1, config, "lane")
             expect(missing).to.equal(nil)
-            expect(missingReason).to.equal("bulwark_not_owned")
+            expect(missingReason).to.equal("bulwark_not_installed")
         end)
 
         it("charges one configured Waycoin for every mutation", function()
             local price = Progression.actionCost(config)
             expect(price.currency).to.equal("hall_coins")
             expect(price.amount).to.equal(1)
+            local unlock = Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "impaler_palisade")
+            expect(unlock.currency).to.equal("gems")
+            expect(unlock.amount).to.equal(1)
+            local other = Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "concertina_line")
+            expect(other.currency).to.equal("hall_coins")
             local families = Progression.families(mergeConfig.tier_art)
             local modelManifest = readFile("scripts/merge_bulwark_model_ids.json")
             local previewManifest = readFile("scripts/merge_bulwark_preview_ids.json")
@@ -258,18 +307,23 @@ return function()
             expect(forbidden).to.equal(nil)
             expect(reason).to.equal("bulwark_slot_forbidden")
 
-            local egg = Progression.apply(nil, "select", "wardstone_barrier", 1, config, "egg")
+            local wardUnlock =
+                Progression.apply(nil, "unlock", "wardstone_barrier", 1, config, "egg")
+            local egg =
+                Progression.apply(wardUnlock, "select", "wardstone_barrier", 1, config, "egg")
             expect(egg.eggFamily).to.equal("wardstone_barrier")
             expect(egg.family).to.equal(nil)
             expect(egg.slots.egg.family).to.equal("wardstone_barrier")
 
-            local both = Progression.apply(egg, "select", "saw_blade", 1, config, "lane")
+            local sawUnlock = Progression.apply(egg, "unlock", "saw_blade", 1, config, "lane")
+            local both = Progression.apply(sawUnlock, "select", "saw_blade", 1, config, "lane")
             expect(both.family).to.equal("saw_blade")
             expect(both.eggFamily).to.equal("wardstone_barrier")
 
             local copy = Progression.apply(both, "select", "saw_blade", 1, config, "egg")
             expect(copy.family).to.equal("saw_blade")
             expect(copy.eggFamily).to.equal("saw_blade")
+            expect(copy.eggTier).to.equal(1)
             expect(copy.owned.saw_blade).to.equal(1)
 
             local persisted = Progression.persistFields({

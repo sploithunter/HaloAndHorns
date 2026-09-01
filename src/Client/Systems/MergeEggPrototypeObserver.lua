@@ -129,13 +129,17 @@ local BOARD_ACTION_FAILURE_COPY = {
     bulwark_locked = "BULWARK UNLOCKED AT ITS WAVE MILESTONE",
     bulwark_station_too_far = "MOVE CLOSER TO A BULWARK EDGE",
     bulwark_already_selected = "THAT BULWARK IS ALREADY INSTALLED",
+    bulwark_already_unlocked = "THAT BULWARK IS ALREADY UNLOCKED",
+    bulwark_not_owned = "BUY THAT BULWARK FIRST",
     bulwark_not_installed = "INSTALL A BULWARK FIRST",
     bulwark_maxed = "BULWARK IS ALREADY MAXIMUM TIER",
     cannon_locked = "ARTILLERY UNLOCKED AT ITS WAVE MILESTONE",
     cannon_station_too_far = "MOVE CLOSER TO THE ARTILLERY COMMANDER",
     cannon_already_selected = "THAT CANNON IS ALREADY INSTALLED",
+    cannon_already_unlocked = "THAT CANNON IS ALREADY UNLOCKED",
     cannon_state_changed = "CANNON STATE CHANGED — TRY AGAIN",
     cannon_not_owned = "BUY THAT CANNON FIRST",
+    cannon_not_installed = "INSTALL A CANNON FIRST",
     cannon_maxed = "CANNON IS ALREADY MAXIMUM TIER",
     automation_owns_upgrades = "AUTOMATION IS USING UPGRADES",
     automation_running = "AUTOMATION IS RUNNING",
@@ -155,6 +159,21 @@ local TUTORIAL_STEP_ORDER = {
     deploy_one = 4,
 }
 local TUTORIAL_STEP_COUNT = 4
+local TUTORIAL_WORKSHOP_ORDER = {
+    collect_workshop_coins = 1,
+    talk_engineer = 2,
+    unlock_bulwark = 3,
+    install_bulwark = 4,
+}
+local TUTORIAL_WORKSHOP_COUNT = 4
+local TUTORIAL_CANNON_ORDER = {
+    collect_cannon_coins = 1,
+    collect_cannon_gem = 2,
+    talk_commander = 3,
+    unlock_cannon = 4,
+    install_cannon = 5,
+}
+local TUTORIAL_CANNON_COUNT = 5
 
 local function createTutorialCard(parent)
     local frame = Instance.new("Frame")
@@ -439,29 +458,87 @@ local function clearTutorialEggFocus()
     end
 end
 
-local function tutorialTarget(world, targetKind)
-    if targetKind == "coins" then
-        local root = localPlayer.Character
-            and localPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local drops = Workspace:FindFirstChild("CoinDrops")
-        local nearest
-        local nearestDistance = math.huge
-        for _, drop in ipairs(drops and drops:GetChildren() or {}) do
-            if
-                drop:IsA("Model")
-                and tonumber(drop:GetAttribute("DropOwner")) == localPlayer.UserId
-                and drop:GetAttribute("DropSource") == "merge_egg_prototype"
-            then
-                local part = drop.PrimaryPart or drop:FindFirstChildWhichIsA("BasePart", true)
-                local distance = root and part and (part.Position - root.Position).Magnitude
-                    or math.huge
-                if distance < nearestDistance then
-                    nearest = part
-                    nearestDistance = distance
-                end
+local function openingDropPart(drop)
+    return drop.PrimaryPart or drop:FindFirstChildWhichIsA("BasePart", true)
+end
+
+local function isOwnedOpeningDrop(drop, reason)
+    return drop:IsA("Model")
+        and tonumber(drop:GetAttribute("DropOwner")) == localPlayer.UserId
+        and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+        and drop:GetAttribute("DropReason") == reason
+end
+
+local function nearestOwnedOpeningDrop(reason)
+    local root = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    local nearest
+    local nearestDistance = math.huge
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if isOwnedOpeningDrop(drop, reason) then
+            local part = openingDropPart(drop)
+            local distance = root and part and (part.Position - root.Position).Magnitude or math.huge
+            if distance < nearestDistance then
+                nearest = part
+                nearestDistance = distance
             end
         end
-        return nearest
+    end
+    return nearest
+end
+
+local function openingDropCounts()
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    local coins = 0
+    local gems = 0
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if isOwnedOpeningDrop(drop, "opening") then
+            coins += 1
+        elseif isOwnedOpeningDrop(drop, "opening_gem") then
+            gems += 1
+        end
+    end
+    return coins, gems
+end
+
+-- Closest remaining Waycoin stack first. The gem is a second walk, skipped
+-- when that drop is already gone.
+local function openingCollectTarget()
+    return nearestOwnedOpeningDrop("opening") or nearestOwnedOpeningDrop("opening_gem")
+end
+
+local function cannonGemCollectTarget()
+    return nearestOwnedOpeningDrop("cannon_gem")
+end
+
+local function nearestOwnedWaycoinDrop()
+    local root = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    local nearest
+    local nearestDistance = math.huge
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if
+            drop:IsA("Model")
+            and tonumber(drop:GetAttribute("DropOwner")) == localPlayer.UserId
+            and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+            and drop:GetAttribute("DropCurrency") == "hall_coins"
+        then
+            local part = openingDropPart(drop)
+            local distance = root and part and (part.Position - root.Position).Magnitude or math.huge
+            if distance < nearestDistance then
+                nearest = part
+                nearestDistance = distance
+            end
+        end
+    end
+    return nearest
+end
+
+local function tutorialTarget(world, targetKind)
+    if targetKind == "coins" then
+        return openingCollectTarget()
+    elseif targetKind == "stage_coins" then
+        return nearestOwnedWaycoinDrop()
     elseif targetKind == "buy_egg" then
         local host = world
             and world:FindFirstChild(
@@ -491,6 +568,48 @@ local function tutorialTarget(world, targetKind)
                 (CONFIG.world or {}).equip_best_control or "EquipBestControl",
                 true
             )
+    elseif targetKind == "engineer" then
+        local slot = tostring((CONFIG.tutorial or {}).workshop_slot or "lane")
+        local folder = world and world:FindFirstChild("MergeEggBulwarks")
+        local named = folder and folder:FindFirstChild("MergeBulwarkEngineer_" .. slot)
+        if named and named:GetAttribute("MergeVendorPosted") == true then
+            return named
+        end
+        for _, child in ipairs(folder and folder:GetChildren() or {}) do
+            if child:GetAttribute("MergeBulwarkEngineer") == true
+                and tostring(child:GetAttribute("MergeBulwarkSlot") or "") == slot
+                and child:GetAttribute("MergeVendorPosted") == true
+            then
+                return child
+            end
+        end
+        local stand = world and world:GetAttribute("MergeEggTutorialEngineerAt")
+        if typeof(stand) == "Vector3" then
+            return stand
+        end
+        return nil
+    elseif targetKind == "cannon_gem" then
+        return cannonGemCollectTarget()
+    elseif targetKind == "commander" then
+        local slot = tostring((CONFIG.tutorial or {}).workshop_cannon_slot or "right")
+        local folder = world and world:FindFirstChild("MergeEggTowers")
+        local named = folder and folder:FindFirstChild("MergeArtilleryCommander_" .. slot)
+        if named and named:GetAttribute("MergeVendorPosted") == true then
+            return named
+        end
+        for _, child in ipairs(folder and folder:GetChildren() or {}) do
+            if child:GetAttribute("MergeArtilleryCommander") == true
+                and tostring(child:GetAttribute("MergeTowerSlot") or "") == slot
+                and child:GetAttribute("MergeVendorPosted") == true
+            then
+                return child
+            end
+        end
+        local stand = world and world:GetAttribute("MergeEggTutorialCommanderAt")
+        if typeof(stand) == "Vector3" then
+            return stand
+        end
+        return nil
     end
     return nil
 end
@@ -590,7 +709,7 @@ local function tutorialBuyEggCueAllowed(world)
         and (tutorial.disable_after_rebirth ~= true or rebirthCount == 0)
 end
 
-local function updateTutorialCard(card, world, observing)
+local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
     local active = observing and world and world:GetAttribute("MergeEggTutorialActive") == true
     local step = active and tostring(world:GetAttribute("MergeEggTutorialStep") or "") or ""
     local spec = type((CONFIG.tutorial or {}).steps) == "table"
@@ -598,21 +717,57 @@ local function updateTutorialCard(card, world, observing)
         or nil
     if not (active and type(spec) == "table") then
         card.frame.Visible = false
-        tutorialPathTarget = nil
-        clearTutorialPath()
         clearTutorialEggFocus()
         clearTutorialClickChevron()
+        local autoCollector = world and world:GetAttribute("MergeEggTutorialUsesAutoCollector")
+            == true
+        local drop = not autoCollector and openingCollectTarget() or nil
+        if drop then
+            tutorialPathTarget = drop
+            updateTutorialPath(drop)
+        else
+            tutorialPathTarget = nil
+            clearTutorialPath()
+        end
         return
     end
     local autoCollector = world:GetAttribute("MergeEggTutorialUsesAutoCollector") == true
     card.frame.Visible = true
-    card.progress.Text = string.format(
-        "MERGE DEFENSE TUTORIAL  •  %d / %d",
-        TUTORIAL_STEP_ORDER[step] or 1,
-        TUTORIAL_STEP_COUNT
-    )
+    local workshopOrder = TUTORIAL_WORKSHOP_ORDER[step]
+    local cannonOrder = TUTORIAL_CANNON_ORDER[step]
+    card.progress.Text = workshopOrder
+            and string.format(
+                "BULWARK TUTORIAL  •  %d / %d",
+                workshopOrder,
+                TUTORIAL_WORKSHOP_COUNT
+            )
+        or cannonOrder
+            and string.format(
+                "CANNON TUTORIAL  •  %d / %d",
+                cannonOrder,
+                TUTORIAL_CANNON_COUNT
+            )
+        or string.format(
+            "MERGE DEFENSE TUTORIAL  •  %d / %d",
+            TUTORIAL_STEP_ORDER[step] or 1,
+            TUTORIAL_STEP_COUNT
+        )
     card.title.Text = tostring(spec.title or "MERGE DEFENSE")
     card.body.Text = tostring(autoCollector and spec.auto_body or spec.body or "")
+    if step == "collect_setup" and not autoCollector then
+        local coinsLeft, gemsLeft = openingDropCounts()
+        if coinsLeft > 0 then
+            card.title.Text = string.format(
+                "PICK UP %d MORE WAYCOIN STACK%s",
+                coinsLeft,
+                coinsLeft == 1 and "" or "S"
+            )
+            card.body.Text = "Follow the chevrons to the closest stack."
+        elseif gemsLeft > 0 then
+            card.title.Text = "NOW PICK UP THE GEM"
+            card.body.Text = "Follow the chevrons to the gem in front of the second Bulwark Engineer."
+        end
+    end
     if step == "create_five" then
         local required = math.max(
             1,
@@ -633,17 +788,46 @@ local function updateTutorialCard(card, world, observing)
         card.body.Text = "Click the highlighted BUY EGG button again."
     end
     local targetKind = tostring(spec.target or "none")
+    local menuOpen = bulwarkMenu and bulwarkMenu.isOpen and bulwarkMenu:isOpen() == true
+    local cannonMenuOpen = cannonMenu and cannonMenu.isOpen and cannonMenu:isOpen() == true
     if autoCollector and targetKind == "coins" then
         tutorialPathTarget = nil
         tutorialFocusTarget = nil
         clearTutorialPath()
         clearTutorialEggFocus()
         clearTutorialClickChevron()
+    elseif (targetKind == "bulwark_unlock" or targetKind == "bulwark_install") and menuOpen then
+        tutorialPathTarget = nil
+        tutorialClickTarget = nil
+        tutorialFocusTarget = nil
+        clearTutorialPath()
+        clearTutorialEggFocus()
+        clearTutorialClickChevron()
+        local cueKind = targetKind == "bulwark_unlock" and "unlock" or "install"
+        setTutorialClickCueTarget(bulwarkMenu:tutorialCueButton(cueKind))
+    elseif (targetKind == "cannon_unlock" or targetKind == "cannon_install") and cannonMenuOpen then
+        tutorialPathTarget = nil
+        tutorialClickTarget = nil
+        tutorialFocusTarget = nil
+        clearTutorialPath()
+        clearTutorialEggFocus()
+        clearTutorialClickChevron()
+        local cueKind = targetKind == "cannon_unlock" and "unlock" or "install"
+        setTutorialClickCueTarget(cannonMenu:tutorialCueButton(cueKind))
     else
+        if targetKind == "bulwark_unlock" or targetKind == "bulwark_install" then
+            targetKind = "engineer"
+        end
+        if targetKind == "cannon_unlock" or targetKind == "cannon_install" then
+            targetKind = "commander"
+        end
         tutorialPathTarget = tutorialTarget(world, targetKind)
-        tutorialClickTarget = targetKind == "buy_egg"
-                and tutorialBuyEggCueAllowed(world)
-                and tutorialPathTarget
+        tutorialClickTarget = (
+                (targetKind == "buy_egg" and tutorialBuyEggCueAllowed(world))
+                or targetKind == "engineer"
+                or targetKind == "commander"
+            )
+            and tutorialPathTarget
             or nil
         if tutorialClickTarget then
             updateTutorialClickChevron()
@@ -794,7 +978,9 @@ local function boardActionResultCopy(result)
             return string.format("REBIRTH %d ACTIVE", math.max(0, tonumber(result.value) or 0))
         elseif action == "bulwark" then
             local value = type(result.value) == "table" and result.value or {}
-            if value.operation == "installed" then
+            if value.operation == "unlocked" then
+                return "BULWARK UNLOCKED"
+            elseif value.operation == "installed" then
                 return "BULWARK INSTALLED"
             elseif value.operation == "replaced" then
                 return "BULWARK REPLACED AT TIER 1"
@@ -804,12 +990,16 @@ local function boardActionResultCopy(result)
             return "BULWARK UPDATED"
         elseif action == "cannon" then
             local value = type(result.value) == "table" and result.value or {}
-            if value.operation == "installed" or value.operation == "equipped" then
+            if value.operation == "unlocked" then
+                return "CANNON UNLOCKED"
+            elseif value.operation == "installed" or value.operation == "equipped" then
                 return "CANNON INSTALLED"
+            elseif value.operation == "replaced" then
+                return "CANNON REPLACED AT TIER 1"
             elseif value.operation == "upgraded" then
                 return string.format(
                     "CANNON UPGRADED TO TIER %d",
-                    tonumber(value.leftTier or value.tier) or 1
+                    tonumber(value.tier) or 1
                 )
             end
             return "CANNON UPDATED"
@@ -1662,16 +1852,44 @@ local function updateWaveMeter(
     meter.frame.Visible = true
     local world = prototypeWorld()
     local endless = world and world:GetAttribute("WavesEndless") == true or false
+    if state == "TutorialIntermission" then
+        local step = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "") or ""
+        if TUTORIAL_CANNON_ORDER[step] then
+            meter.title.Text = string.upper(stageName) .. " • COMMANDER ARRIVED"
+            meter.detail.Text = step == "collect_cannon_coins"
+                    and "WAVES PAUSED — PICK UP A WAYCOIN PILE"
+                or step == "collect_cannon_gem"
+                    and "WAVES PAUSED — PICK UP THE GEM"
+                or "WAVES PAUSED — TALK TO THE ARTILLERY COMMANDER"
+        else
+            meter.title.Text = string.upper(stageName) .. " • ENGINEER ARRIVED"
+            meter.detail.Text = step == "collect_workshop_coins"
+                    and "WAVES PAUSED — PICK UP A WAYCOIN PILE"
+                or "WAVES PAUSED — TALK TO THE GOLD-LINE ENGINEER"
+        end
+        return
+    end
     if wave <= 0 then
         local waitingForFirstEgg = state == "AwaitingFirstEgg"
+        local waitingForCollect = world
+                and (
+                    world:GetAttribute("MergeEggTutorialStep") == "collect_setup"
+                    or openingCollectTarget() ~= nil
+                )
+            or false
         meter.title.Text = string.upper(stageName)
             .. " • "
-            .. (waitingForFirstEgg and "INSTALL FIRST EGG" or "READY TO HATCH")
+            .. (
+                waitingForCollect and "COLLECT WAYCOINS"
+                or waitingForFirstEgg and "INSTALL FIRST EGG"
+                or "READY TO HATCH"
+            )
         meter.detail.Text = string.format(
             "%s • %.0f× COMBAT\n%s • EGGS %d/%d • FIFO READY",
             endless and "ENDLESS DEFENSE" or string.format("%d-WAVE ENDURANCE TEST", waveCount),
             COMBAT_CADENCE_MULTIPLIER,
-            waitingForFirstEgg
+            waitingForCollect and "PICK UP THE PILES — KEEP DOING THIS"
+                or waitingForFirstEgg
                     and string.format(
                         "WAVE 1 HELD • %d/%d HATCHERS ONLINE",
                         initializedHatchers,
@@ -3539,13 +3757,23 @@ function MergeEggPrototypeObserver.start()
         end
 
         local world = prototypeWorld()
-        updateTutorialCard(tutorialCard, world, true)
-        local tutorialBuyingEggs = tutorialBuyEggCueAllowed(world)
-        local buyEggCard = boardWallControls
-            and boardWallControls.board
-            and boardWallControls.board.buttons
-            and boardWallControls.board.buttons.buy_egg
-        setTutorialClickCueTarget(tutorialBuyingEggs and buyEggCard and buyEggCard.button or nil)
+        updateTutorialCard(tutorialCard, world, true, bulwarkMenu, cannonMenu)
+        local tutorialStep = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "")
+        if
+            tutorialStep ~= "unlock_bulwark"
+            and tutorialStep ~= "install_bulwark"
+            and tutorialStep ~= "unlock_cannon"
+            and tutorialStep ~= "install_cannon"
+        then
+            local tutorialBuyingEggs = tutorialBuyEggCueAllowed(world)
+            local buyEggCard = boardWallControls
+                and boardWallControls.board
+                and boardWallControls.board.buttons
+                and boardWallControls.board.buttons.buy_egg
+            setTutorialClickCueTarget(
+                tutorialBuyingEggs and buyEggCard and buyEggCard.button or nil
+            )
+        end
 
         local ownedSlots = math.max(
             1,

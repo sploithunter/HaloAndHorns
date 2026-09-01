@@ -94,6 +94,10 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         tower_waycoins_spent = math.max(0, math.floor(tonumber(raw.tower_waycoins_spent) or 0)),
         bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
+        tutorial_setup_completed = raw.tutorial_setup_completed == true
+            or raw.tutorial_completed == true,
+        tutorial_workshop_completed = raw.tutorial_workshop_completed == true
+            or raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),
         -- Current possessions survive logout independently of the last ten-wave combat boundary.
         -- Unlike a checkpoint, Wave 0 is a valid saved playstate.

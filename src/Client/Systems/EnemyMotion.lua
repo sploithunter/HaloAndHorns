@@ -411,7 +411,10 @@ function EnemyMotion.start()
                         -- 2) Layer the procedural gait (shared with pets) on the clean base.
                         local gait = resolveGait(model:GetAttribute("EnemyId"))
                         local bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
-                        local cf = CFrame.new(0, bob, 0) * base * CFrame.Angles(0, yaw, roll)
+                        local tumble = tonumber(model:GetAttribute("FlingTumble")) or 0
+                        local cf = CFrame.new(0, bob, 0)
+                            * base
+                            * CFrame.Angles(tumble * 0.55, yaw + tumble, roll + tumble * 0.35)
                         -- 3) Hit-react flinch: world-space recoil + a local twist, decaying to 0.
                         local fs = flinch[model]
                         if fs then

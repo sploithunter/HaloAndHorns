@@ -9,7 +9,7 @@ return function()
             maximum_tier = 4,
             currency = "hall_coins",
             action_cost = 1,
-            visual_catalog_owned = true,
+            visual_catalog_owned = false,
             starter_tier = 1,
             available_roles = {
                 "heal",
@@ -38,16 +38,24 @@ return function()
             expect(state.leftTier).to.equal(2)
         end)
 
-        it("installs from the catalog without consulting a live wave", function()
-            local granted = Persist.read({}, config)
-            expect(granted.owned.heal).to.equal(1)
-            expect(granted.leftFamily).to.equal(nil)
+        it("unlocks then installs without consulting a live wave", function()
+            local empty = Persist.read({}, config)
+            expect(empty.owned.heal).to.equal(nil)
+            expect(empty.leftFamily).to.equal(nil)
 
-            local installed, reason = Persist.apply(granted, "select", "heal", config, "left")
+            local unlocked, unlockReason = Persist.apply(empty, "unlock", "heal", config, "left")
+            expect(unlockReason).to.equal(nil)
+            expect(unlocked.owned.heal).to.equal(1)
+            expect(unlocked.leftFamily).to.equal(nil)
+            expect(unlocked.operation).to.equal("unlocked")
+            expect(unlocked.charged).to.equal(true)
+
+            local installed, reason = Persist.apply(unlocked, "select", "heal", config, "left")
             expect(reason).to.equal(nil)
             expect(installed.leftFamily).to.equal("heal")
-            expect(installed.operation).to.equal("equipped")
-            expect(installed.charged).to.equal(false)
+            expect(installed.leftTier).to.equal(1)
+            expect(installed.operation).to.equal("installed")
+            expect(installed.charged).to.equal(true)
 
             local record = { waveIndex = 14, owned = { eggs = true } }
             local progress = {
@@ -65,8 +73,8 @@ return function()
         end)
 
         it("writes onto a replaced profile table without needing a signature match", function()
-            local granted = Persist.read({}, config)
-            local installed = Persist.apply(granted, "select", "heal", config, "left")
+            local unlocked = Persist.apply({}, "unlock", "heal", config, "left")
+            local installed = Persist.apply(unlocked, "select", "heal", config, "left")
             local record = {}
             local detached = { tower_owned = {} }
             local live = { playstate = { wave = 3 } }
@@ -77,6 +85,22 @@ return function()
             Persist.addSpent(record, live, 0)
             expect(record.towerWaycoinsSpent).to.equal(0)
             expect(live.tower_waycoins_spent).to.equal(0)
+        end)
+
+        it("clears placements on rebirth and keeps unlock flags", function()
+            local unlocked = Persist.apply({}, "unlock", "heal", config, "left")
+            local installed = Persist.apply(unlocked, "select", "heal", config, "left")
+            local upgraded = Persist.apply(installed, "upgrade", "heal", config, "left")
+            local progress = {}
+            Persist.write(nil, progress, upgraded)
+            expect(progress.left_tower_family).to.equal("heal")
+            expect(progress.left_tower_tier).to.equal(2)
+            expect(progress.tower_owned.heal).to.equal(1)
+
+            Persist.resetPlacements(nil, progress, config)
+            expect(progress.tower_owned.heal).to.equal(1)
+            expect(progress.left_tower_family).to.equal(nil)
+            expect(progress.left_tower_tier).to.equal(0)
         end)
     end)
 end

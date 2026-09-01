@@ -2,6 +2,22 @@
 
 Status: current
 
+## Robux Purchases Are Permanent (2026-09-01)
+
+Never wipe something a player bought with Robux. Rebirth, chassis
+upgrade, family switch, wave reset, and checkpoint rewind may clear
+*placements* and other run progress. They must not clear a Robux
+entitlement, game pass, or any unlock flag that a pass will set.
+
+The only spendable exception is an authored **developer consumable**
+(potions and other explicit one-use items). Those are meant to be
+used up. Game passes, Robux unlocks, and paid permanent benefits
+are not consumables.
+
+Admin Reset to Beginning is an operator tool, not a player rebirth.
+It may still wipe Merge run state. It must not be used as the
+pattern for a live rebirth.
+
 ## Merge Actions Are Async And Independent (2026-09-01)
 
 Eggs, bulwarks, and cannons do not share a state machine with waves
@@ -14,7 +30,7 @@ ask that system for permission to apply its own action.
 - **Bulwarks:** `MergeBulwarkPersist` owns wall keys only. Install
   writes the live profile table. No signature compare. No live wave.
 - **Cannons:** `MergeCannonPersist` owns pad keys the same way. Fire
-  still hands off to `PowerService`. Pads do not talk to each other.
+  still hands off to `PowerService`. Pads do not share chassis tier.
 - **Waves:** start → result (auto or manual) → start. The only
   wave hook other systems need is an optional pause between two
   waves (`gap_after`, checkpoint intermission, later a tutorial
@@ -29,8 +45,57 @@ rebuild the onboarding blob. `MergeCannonPersist` owns the tower
 keys (`tower_owned`, `tower_slots`, left/right family+tier). Apply
 uses the authored unlock wave only. A click writes that slice onto
 the live profile table, then the pad respawns. Fire still lives on
-the bay heartbeat and hands off to `PowerService`. Cannons do not
-talk to each other.
+the bay heartbeat and hands off to `PowerService`.
+
+## Unlock, Place, And Upgrade Are Per Slot (2026-09-01)
+
+Cannons and bulwarks use the same three-step tower-defense loop.
+
+- **Unlock** is one-time and global. It grants the right to place
+  Tier 1 of that family. The workshop shows LOCKED until that flag
+  is set — do not grant the catalog for free. Playtest charges one
+  Waycoin so testing does not need gems. Final unlocks will almost
+  certainly be gems or a Robux game pass. Those flags are
+  entitlements: rebirth and upgrade never wipe them. See
+  **Robux Purchases Are Permanent**.
+- **Rebirth** keeps every unlock flag and empties every pad and
+  wall. Placement and upgrade are bought again. Players do not
+  keep T2+ chassis across a rebirth.
+- **Place** is paid per physical slot. Install always drops Tier 1
+  on *that* pad or wall. A second pad or wall does not inherit the
+  first slot's tier.
+- **Workshop:** the right list is the picker only (LOCKED /
+  UNLOCKED / TIER N). Unlock and Upgrade live on the left action
+  card. Install is the bottom slot commitment and shows its coin
+  price. Layout is unchanged.
+- **Switch** is allowed but is not free and is not a refund.
+  Replacing the family on a slot costs a new placement and drops
+  that slot to Tier 1. Unlock stays. Do not free-swap every wave,
+  and do not buy back spent upgrade coins. Revisit only if live
+  play wants lock-until-rebirth instead.
+- **Upgrade** is paid per slot and only advances the chassis
+  installed on the commander/engineer you talked to.
+- Cannon pads today: left and right. Bulwark slots today: lane
+  (gold) and egg (red). Mid/front stay cataloged the same way.
+- `owned[family]` is the unlock flag, not live chassis tier.
+  Persist already stores `tower_slots` / `bulwark_slots` with
+  `{ family, tier }`. Old saves that only have a global owned
+  tier copy that number onto each installed slot once.
+
+## Cannon Workshop Previews Are Live Side Views (2026-09-01)
+
+The two artillery-workshop windows (Currently Owned and Next Upgrade)
+clone `ReplicatedStorage.Assets.Models.MergeCannons` into a
+per-window ViewportFrame that fills the existing preview pane.
+Each window frames its own chassis: eye-level (camera Y equals bbox
+center), 90° to the long silhouette, filled to
+`team.edge_towers.workshop_preview.fill` with the rest as padding.
+The two windows scale independently. Do not inset a smaller
+aspect-locked frame inside the card.
+Do not use Roblox `rbxthumb` of the Model asset — those cameras
+are arbitrary and often top-down. Bulwark workshop cards stay
+flat authored `previewDecalId` art; do not put ViewportFrames
+in `MergeBulwarkMenu`.
 
 ## Game Identity
 

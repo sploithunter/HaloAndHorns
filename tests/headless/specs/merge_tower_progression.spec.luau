@@ -25,8 +25,19 @@ return function()
             end
         )
 
-        it("keeps bought cannons and switches them onto one pad at the owned tier", function()
-            local installed = Progression.apply(nil, "select", "repulsor", 0, config, "left")
+        it("unlocks a role once, then places and upgrades each pad on its own", function()
+            local unlocked = Progression.apply(nil, "unlock", "repulsor", 0, config, "left")
+            expect(unlocked.owned.repulsor).to.equal(1)
+            expect(unlocked.leftFamily).to.equal(nil)
+            expect(unlocked.operation).to.equal("unlocked")
+            expect(unlocked.charged).to.equal(true)
+
+            local placed, placeReason =
+                Progression.apply(nil, "select", "repulsor", 0, config, "left")
+            expect(placed).to.equal(nil)
+            expect(placeReason).to.equal("cannon_not_owned")
+
+            local installed = Progression.apply(unlocked, "select", "repulsor", 0, config, "left")
             expect(installed.leftFamily).to.equal("repulsor")
             expect(installed.leftTier).to.equal(1)
             expect(installed.rightFamily).to.equal(nil)
@@ -37,76 +48,93 @@ return function()
             local upgraded = Progression.apply(installed, "upgrade", "repulsor", 1, config, "left")
             expect(upgraded.leftFamily).to.equal("repulsor")
             expect(upgraded.leftTier).to.equal(2)
-            expect(upgraded.owned.repulsor).to.equal(2)
+            expect(upgraded.owned.repulsor).to.equal(1)
+            expect(upgraded.rightTier).to.equal(0)
 
-            local switched = Progression.apply(upgraded, "select", "heal", 1, config, "left")
+            local healUnlock = Progression.apply(upgraded, "unlock", "heal", 1, config, "left")
+            local switched = Progression.apply(healUnlock, "select", "heal", 1, config, "left")
             expect(switched.leftFamily).to.equal("heal")
             expect(switched.leftTier).to.equal(1)
-            expect(switched.owned.repulsor).to.equal(2)
+            expect(switched.owned.repulsor).to.equal(1)
             expect(switched.owned.heal).to.equal(1)
-            expect(switched.operation).to.equal("installed")
+            expect(switched.operation).to.equal("replaced")
+            expect(switched.charged).to.equal(true)
 
             local otherPad = Progression.apply(switched, "select", "repulsor", 1, config, "right")
             expect(otherPad.leftFamily).to.equal("heal")
+            expect(otherPad.leftTier).to.equal(1)
             expect(otherPad.rightFamily).to.equal("repulsor")
-            expect(otherPad.rightTier).to.equal(2)
-            expect(otherPad.operation).to.equal("equipped")
-            expect(otherPad.charged).to.equal(false)
+            expect(otherPad.rightTier).to.equal(1)
+            expect(otherPad.operation).to.equal("installed")
+            expect(otherPad.charged).to.equal(true)
 
-            local restored = Progression.apply(otherPad, "select", "repulsor", 1, config, "left")
-            expect(restored.leftFamily).to.equal("repulsor")
-            expect(restored.leftTier).to.equal(2)
-            expect(restored.rightFamily).to.equal("repulsor")
-            expect(restored.operation).to.equal("equipped")
-            expect(restored.charged).to.equal(false)
+            local leftAgain = Progression.apply(otherPad, "upgrade", "heal", 1, config, "left")
+            expect(leftAgain.leftTier).to.equal(2)
+            expect(leftAgain.rightFamily).to.equal("repulsor")
+            expect(leftAgain.rightTier).to.equal(1)
+
+            local menuLeft = Progression.menuOwned(leftAgain, "left")
+            expect(menuLeft.heal).to.equal(2)
+            expect(menuLeft.repulsor).to.equal(1)
+            local menuRight = Progression.menuOwned(leftAgain, "right")
+            expect(menuRight.repulsor).to.equal(1)
+            expect(menuRight.heal).to.equal(1)
+
+            local cleared = Progression.clearInstalls(leftAgain, 4)
+            expect(cleared.owned.heal).to.equal(1)
+            expect(cleared.owned.repulsor).to.equal(1)
+            expect(cleared.leftFamily).to.equal(nil)
+            expect(cleared.rightFamily).to.equal(nil)
+            expect(cleared.leftTier).to.equal(0)
         end)
 
-        it("upgrades the selected cannon even when another role is on the pad", function()
+        it("upgrades only the chassis sitting on that pad", function()
             local state = {
                 leftFamily = "heal",
                 leftTier = 2,
-                owned = { heal = 2, rage = 1 },
+                owned = { heal = 1, rage = 1 },
             }
-            local upgraded = Progression.apply(state, "upgrade", "rage", 1, config, "left")
-            expect(upgraded.leftFamily).to.equal("heal")
-            expect(upgraded.leftTier).to.equal(2)
-            expect(upgraded.owned.rage).to.equal(2)
-            expect(upgraded.upgradedFamily).to.equal("rage")
+            local refused, reason = Progression.apply(state, "upgrade", "rage", 1, config, "left")
+            expect(refused).to.equal(nil)
+            expect(reason).to.equal("cannon_not_installed")
 
-            local maxed, reason = Progression.apply({
+            local upgraded = Progression.apply(state, "upgrade", "heal", 1, config, "left")
+            expect(upgraded.leftFamily).to.equal("heal")
+            expect(upgraded.leftTier).to.equal(3)
+            expect(upgraded.owned.heal).to.equal(1)
+            expect(upgraded.owned.rage).to.equal(1)
+
+            local maxed, maxReason = Progression.apply({
                 leftFamily = "heal",
-                owned = { heal = 4 },
+                leftTier = 4,
+                owned = { heal = 1 },
             }, "upgrade", "heal", 1, config, "left")
             expect(maxed).to.equal(nil)
-            expect(reason).to.equal("cannon_maxed")
+            expect(maxReason).to.equal("cannon_maxed")
 
             local missing, missingReason =
                 Progression.apply(state, "upgrade", "nullifier", 1, config, "left")
             expect(missing).to.equal(nil)
-            expect(missingReason).to.equal("cannon_not_owned")
+            expect(missingReason).to.equal("cannon_not_installed")
         end)
 
-        it("grants the visual catalog so Install does not require a Buy", function()
-            local granted = Progression.withCatalogOwned({}, {
-                "heal",
-                "rage",
-                "debuff",
-                "gravity",
-                "repulsor",
-                "nullifier",
-            }, 1, 4)
-            expect(granted.owned.heal).to.equal(1)
-            expect(granted.leftFamily).to.equal(nil)
-
-            local installed = Progression.apply(granted, "select", "heal", 1, config, "left")
-            expect(installed.leftFamily).to.equal("heal")
-            expect(installed.operation).to.equal("equipped")
-            expect(installed.charged).to.equal(false)
+        it("does not treat an empty save as owning every cannon", function()
+            local empty = Progression.normalize({}, 4)
+            expect(empty.owned.heal).to.equal(nil)
+            expect(empty.leftFamily).to.equal(nil)
+            local menu = Progression.menuOwned(empty, "left")
+            expect(menu.heal).to.equal(nil)
+            expect(menu.repulsor).to.equal(nil)
         end)
 
         it("charges one configured Waycoin for every mutation", function()
             local price = Progression.actionCost(config)
             expect(price.currency).to.equal("hall_coins")
+            local unlock = Progression.actionCost(mergeConfig.team.edge_towers, "unlock", "heal")
+            expect(unlock.currency).to.equal("gems")
+            expect(unlock.amount).to.equal(1)
+            local other = Progression.actionCost(mergeConfig.team.edge_towers, "unlock", "rage")
+            expect(other.currency).to.equal("hall_coins")
             expect(price.amount).to.equal(1)
         end)
 

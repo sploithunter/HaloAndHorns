@@ -171,7 +171,9 @@ if not isCleanOpening(initial) then
         return isCleanOpening(state) and state.runId ~= setupRunId
     end)
 end
-assert(initial.tutorialCompleted == true, "Completed tutorial should remain completed")
+assert(initial.tutorialCompleted == false, "Admin Reset should clear tutorial_completed")
+assert(initial.tutorialActive == true, "Admin Reset should start tutorial stage 1")
+assert(initial.tutorialStep == "collect_setup", "Admin Reset should start on collect_setup")
 assert(initial.wallet == 0, "Clean entry wallet must be 0")
 assert(initial.openingDropAmount == 600, "Five opening piles must total 600 Waycoins")
 assert(initial.boardInventory == 0 and initial.deployedEggs == 0, "Clean entry contains eggs")
@@ -242,10 +244,9 @@ assert(reset.openingDropAmount == 600, "Admin Reset did not create five 120-Wayc
 assert(reset.boardInventory == 0 and reset.boardEggVisuals == 0, "Admin Reset left board eggs")
 assert(reset.deployedEggs == 0 and reset.initializedHatchers == 0, "Admin Reset left deployed eggs")
 assert(reset.bulwarkInstalled == false and reset.bulwarkVisuals == 0, "Admin Reset left a bulwark")
-assert(
-    reset.tutorialCompleted == true and reset.tutorialActive == false,
-    "Admin Reset replayed the tutorial"
-)
+assert(reset.tutorialCompleted == false, "Admin Reset left tutorial_completed set")
+assert(reset.tutorialActive == true, "Admin Reset did not start the tutorial")
+assert(reset.tutorialStep == "collect_setup", "Admin Reset did not return to collect_setup")
 
 print("[MergeAdminResetLifecycle] PASS", {
     collectedWallet = collected.wallet,

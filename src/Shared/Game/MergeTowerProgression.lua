@@ -38,48 +38,48 @@ local FAMILIES = {
         id = "debuff",
         name = "Debuff Cannon",
         role = "Hex",
-        description = "A hex piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A hex piece on the pad. Landing sips a Weakening Vial on enemies in the circle. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Debuff chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Debuff chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Debuff chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Debuff chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Debuff chassis", "+ Sits on this pad", "+ Lands a Weakening Vial" },
+            { "+ Reinforced Debuff chassis", "+ Distinct Tier 2 model", "+ Weakening Vial" },
+            { "+ Advanced Debuff chassis", "+ Distinct Tier 3 model", "+ Weakening Vial" },
+            { "+ Mythic Debuff chassis", "+ Distinct Tier 4 model", "+ Weakening Vial" },
         },
     },
     {
         id = "gravity",
         name = "Gravity Cannon",
         role = "Pull",
-        description = "A pull piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A pull piece on the pad. Landing opens a black hole and shoves enemies into the impact. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Gravity chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Gravity chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Gravity chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Gravity chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Gravity chassis", "+ Sits on this pad", "+ Black hole pull" },
+            { "+ Reinforced Gravity chassis", "+ Distinct Tier 2 model", "+ Black hole pull" },
+            { "+ Advanced Gravity chassis", "+ Distinct Tier 3 model", "+ Black hole pull" },
+            { "+ Mythic Gravity chassis", "+ Distinct Tier 4 model", "+ Black hole pull" },
         },
     },
     {
         id = "repulsor",
         name = "Repulsor Cannon",
         role = "Push",
-        description = "The playtest starter. Knocks the look of a shove down the lane; shot damage is still later.",
+        description = "The playtest starter. Landing is a concussion blast: enemies in the radius can be flung outward. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Repulsor chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Repulsor chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Repulsor chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Repulsor chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Repulsor chassis", "+ Sits on this pad", "+ Blast (50% hit)" },
+            { "+ Reinforced Repulsor chassis", "+ Distinct Tier 2 model", "+ Blast (50% hit)" },
+            { "+ Advanced Repulsor chassis", "+ Distinct Tier 3 model", "+ Blast (45% hit)" },
+            { "+ Mythic Repulsor chassis", "+ Distinct Tier 4 model", "+ Blast (40% hit)" },
         },
     },
     {
         id = "nullifier",
         name = "Nullifier Cannon",
         role = "Silence",
-        description = "A silence piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A silence piece on the pad. Landing rolls Frost Bind on each enemy in the circle. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Nullifier chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Frost Bind (40% hit)" },
+            { "+ Reinforced Nullifier chassis", "+ Distinct Tier 2 model", "+ Frost Bind (50% hit)" },
+            { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Frost Bind (60% hit)" },
+            { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Frost Bind (70% hit)" },
         },
     },
 }
@@ -314,8 +314,18 @@ function MergeTowerProgression.isUnlocked(currentWave, config)
     return reachedWave >= MergeTowerProgression.unlockWave(config)
 end
 
-function MergeTowerProgression.actionCost(config)
+function MergeTowerProgression.actionCost(config, action, family)
     config = type(config) == "table" and config or {}
+    if tostring(action or "") == "unlock" then
+        local costs = type(config.unlock_costs) == "table" and config.unlock_costs or {}
+        local row = costs[string.lower(tostring(family or ""))]
+        if type(row) == "table" then
+            return {
+                currency = tostring(row.currency or "gems"),
+                amount = whole(row.amount, 1),
+            }
+        end
+    end
     return {
         currency = tostring(config.currency or "hall_coins"),
         amount = whole(config.action_cost, 1),
@@ -345,8 +355,8 @@ local function cloneInstalls(state)
     return installs
 end
 
--- Visual-pass helper: own every listed role at starter tier so Install does
--- not require a Buy. Does not place a chassis on a pad.
+-- Test helper: grant unlock flags without placing a chassis. Playtest no
+-- longer uses this; the workshop must show LOCKED until a real unlock.
 function MergeTowerProgression.withCatalogOwned(raw, roles, starterTier, maximumTier)
     local cap = math.max(1, whole(maximumTier, 4))
     local state = MergeTowerProgression.normalize(raw, cap)
@@ -359,6 +369,14 @@ function MergeTowerProgression.withCatalogOwned(raw, roles, starterTier, maximum
         end
     end
     return decorateState(owned, cloneInstalls(state), cap)
+end
+
+-- Rebirth keeps unlock flags. Robux/game-pass grants are permanent
+-- entitlements and must never be cleared here. Only placements empty.
+function MergeTowerProgression.clearInstalls(raw, maximumTier)
+    local cap = math.max(1, whole(maximumTier, 4))
+    local state = MergeTowerProgression.normalize(raw, cap)
+    return decorateState(cloneOwned(state.owned), {}, cap)
 end
 
 function MergeTowerProgression.apply(raw, action, family, currentWave, config, slot)
@@ -379,20 +397,11 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
             return nil, "cannon_slot_forbidden"
         end
         local owned = cloneOwned(state.owned)
+        if owned[requested] == nil then
+            return nil, "cannon_not_owned"
+        end
         local installs = cloneInstalls(state)
         local current = installs[slot] and installs[slot].family
-        if owned[requested] == nil then
-            owned[requested] = 1
-            installs[slot] = {
-                family = requested,
-                tier = 1,
-            }
-            return withInstalls(owned, installs, {
-                operation = "installed",
-                charged = true,
-                slot = slot,
-            }, maximumTier)
-        end
         if requested == current then
             return nil, "cannon_already_selected"
         end
@@ -401,8 +410,8 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
             tier = 1,
         }
         return withInstalls(owned, installs, {
-            operation = "equipped",
-            charged = false,
+            operation = current and "replaced" or "installed",
+            charged = true,
             slot = slot,
         }, maximumTier)
     end
@@ -429,10 +438,26 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
             family = currentFamily,
             tier = nextTier,
         }
-        owned[requested] = math.max(owned[requested], nextTier)
         return withInstalls(owned, installs, {
             upgradedFamily = requested,
             operation = "upgraded",
+            charged = true,
+            slot = slot,
+        }, maximumTier)
+    end
+
+    if action == "unlock" then
+        local requested = string.lower(tostring(family or ""))
+        if not FAMILY_SET[requested] then
+            return nil, "invalid_cannon_family"
+        end
+        local owned = cloneOwned(state.owned)
+        if owned[requested] ~= nil then
+            return nil, "cannon_already_unlocked"
+        end
+        owned[requested] = 1
+        return withInstalls(owned, cloneInstalls(state), {
+            operation = "unlocked",
             charged = true,
             slot = slot,
         }, maximumTier)

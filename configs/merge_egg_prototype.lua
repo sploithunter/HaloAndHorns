@@ -288,10 +288,16 @@ return {
         },
     },
 
-    -- Every Wave-1 run starts at zero and lays 600 owner-only Waycoins beyond the Bulwark. This is
-    -- invariant across first visits, completed tutorials, pre-checkpoint resets, and rebirths.
-    -- Five physical stacks preserve the collection lesson while leaving a 100-Waycoin buffer after
-    -- the tutorial's five Earth Eggs have been purchased.
+    -- Every Wave-1 run starts at zero and lays 600 owner-only Waycoins plus one
+    -- Gem beyond the Bulwark. Chevrons walk the five stacks nearest-first,
+    -- then the gem in front of the gold-line engineer (left of the field
+    -- while facing the enemy gate). This is invariant across
+    -- first visits, completed tutorials, pre-checkpoint resets, and rebirths.
+    -- Five physical stacks preserve the collection lesson while leaving a
+    -- 100-Waycoin buffer after the tutorial's five Earth Eggs have been
+    -- purchased. The opening gem unlocks Impaler Palisade. After Wave 4 a
+    -- second gem is laid in front of the right-pad commander if the wallet
+    -- is empty; that one unlocks Heal.
     opening_economy = {
         currency = "hall_coins",
         wallet_amount = 0,
@@ -302,6 +308,31 @@ return {
             { x = 0, z = 18 },
             { x = 12, z = 18 },
             { x = 24, z = 18 },
+        },
+        gem = {
+            currency = "gems",
+            amount = 1,
+            -- Gold-line engineer stands on the left of the field while
+            -- facing the enemy gate (`posts[2]`, along = "right" in strip
+            -- space). Place the gem in front of that vendor,
+            -- toward the gate, stepped inward onto the playboard. `offset` is
+            -- only used if that stand pose cannot be resolved.
+            engineer_post = 2,
+            toward_gate = 12,
+            inward = 8,
+            offset = { x = 24, z = 28 },
+            visual_scale = 1.5,
+        },
+        -- Laid after Wave 4 only when the gem wallet is 0. Stands in front
+        -- of the right-pad Artillery Commander (same offset language as
+        -- the opening gem).
+        cannon_gem = {
+            currency = "gems",
+            amount = 1,
+            toward_gate = 12,
+            inward = 8,
+            offset = { x = 24, z = 28 },
+            visual_scale = 1.5,
         },
     },
 
@@ -317,11 +348,25 @@ return {
         required_eggs = 5,
         click_cue_purchase_count = 3,
         disable_after_rebirth = true,
+        -- Locked drip: Wave 0 eggs → Wave 2 Impaler → Wave 4 Heal →
+        -- Wave 6 coins + optional egg upgrades (not shipped) → Wave 10
+        -- Quartermaster / potions / macros (not shipped).
+        -- Phase 1 unlocks Waves 1–2. After this wave clears, hold Wave 3
+        -- and baby-step the gold-line (second) engineer workshop.
+        pause_after_wave = 2,
+        workshop_slot = "lane",
+        -- After Wave 4, hold Wave 5 and baby-step the right-pad commander.
+        -- If the Waycoin wallet is empty, chevron any existing pile first.
+        -- Do not spawn or place piles here — a missing or off-map drop
+        -- must not block the beat (credit 1 Waycoin instead).
+        pause_after_cannon_wave = 4,
+        workshop_cannon_slot = "right",
+        workshop_cannon_family = "heal",
         steps = {
             collect_setup = {
-                title = "COLLECT 600 WAYCOINS",
-                body = "Follow the chevrons and collect all five Waycoin stacks.",
-                auto_body = "Your Coin Pup collects the five stacks for you. You can skip the walking lesson.",
+                title = "COLLECT 600 WAYCOINS AND 1 GEM",
+                body = "Follow the chevrons to the closest Waycoin stack. After all five, pick up the gem.",
+                auto_body = "Your Coin Pup collects the five stacks and the gem for you. You can skip the walking lesson.",
                 target = "coins",
             },
             create_five = {
@@ -338,6 +383,51 @@ return {
                 title = "DEPLOY AN EGG",
                 body = "Drag an egg to any open frontline slot, or press EQUIP BEST.",
                 target = "board_egg",
+            },
+            collect_workshop_coins = {
+                title = "PICK UP A WAYCOIN PILE",
+                body = "Follow the chevrons to any pile. You need at least one Waycoin to install the wall.",
+                target = "stage_coins",
+            },
+            talk_engineer = {
+                title = "THE ENGINEER TOOK THE GOLD LINE",
+                body = "He just posted on your left. Follow the chevrons and Talk — he will not wait through the next waves.",
+                target = "engineer",
+            },
+            unlock_bulwark = {
+                title = "UNLOCK A FAMILY",
+                body = "Click UNLOCK. Impaler Palisade costs 1 Gem.",
+                target = "bulwark_unlock",
+            },
+            install_bulwark = {
+                title = "INSTALL THE BULWARK",
+                body = "Click INSTALL to place Tier 1 on this line.",
+                target = "bulwark_install",
+            },
+            collect_cannon_coins = {
+                title = "PICK UP A WAYCOIN PILE",
+                body = "Follow the chevrons to any pile. You need at least one Waycoin to install the cannon.",
+                target = "stage_coins",
+            },
+            collect_cannon_gem = {
+                title = "PICK UP THE GEM",
+                body = "The commander left a gem in front of the right gun. You will need it to unlock Heal.",
+                target = "cannon_gem",
+            },
+            talk_commander = {
+                title = "THE COMMANDER TOOK THE RIGHT GUN",
+                body = "He just posted behind the right pad. Follow the chevrons and Talk — four fronts are coming.",
+                target = "commander",
+            },
+            unlock_cannon = {
+                title = "UNLOCK HEAL",
+                body = "Click UNLOCK. The Heal cannon costs 1 Gem.",
+                target = "cannon_unlock",
+            },
+            install_cannon = {
+                title = "INSTALL THE CANNON",
+                body = "Click INSTALL to place Tier 1 Heal on this pad.",
+                target = "cannon_install",
             },
         },
     },
@@ -465,19 +555,37 @@ return {
             unlock_wave = 10,
             tutorial_intermission_wave = 10,
             playtest_spawn_enabled = false,
-            -- Visual pass: own every role so each chassis can be installed
-            -- without a dummy starter. Combat powers stay later.
-            visual_catalog_owned = true,
+            -- Unlock is one-time and global. Robux-only roles will set this
+            -- flag via game passes; coin unlocks use the workshop Buy. Do not
+            -- grant the catalog for free — the menu must show LOCKED until
+            -- that flag is set. Placement and upgrade are paid per pad.
+            visual_catalog_owned = false,
             playtest_unlock_enabled = true,
             playtest_unlock_wave = 1,
+            -- Place and upgrade stay one Waycoin. Heal unlocks for 1 Gem so
+            -- the Wave-4 tutorial token is spent on that gun.
             action_cost = 1,
             currency = "hall_coins",
+            unlock_costs = {
+                heal = { currency = "gems", amount = 1 },
+            },
             maximum_tier = 4,
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
             -- All six families ship distinct Tier 1–4 meshes at a uniform template scale.
             -- Per-tier presentation size lives on merge_tier_art.worldScale.
             distinct_art_tiers = true,
+            -- Currently Owned and Next Upgrade each clone that pane's chassis
+            -- and frame it independently. The viewport fills the existing
+            -- preview pane; the camera fills that pane with padding. Camera
+            -- is eye-level (no pitch) and 90° to the long silhouette.
+            workshop_preview = {
+                fill = 0.9,
+                fov_degrees = 35,
+                ambient = { 168, 178, 198 },
+                light_color = { 255, 250, 240 },
+                light_direction = { -0.45, -0.8, -0.4 },
+            },
             available_roles = {
                 "heal",
                 "rage",
@@ -517,11 +625,18 @@ return {
                 -- Heal landing casts the real Healing Field at impact (same
                 -- kind numbers, no Focus/cooldown). Rage landing is a one-time
                 -- Berserk sip in a ruddy MagicCircle — no tick loop.
+                -- Debuff sips Weakening Vial on enemies (Rage's sibling).
+                -- Gravity pulls with a black-hole rune. Repulsor is a
+                -- concussion blast (CombatFX detonation, outward fling,
+                -- per-enemy hit roll). Nullifier is Frost Bind with a
+                -- per-enemy hit roll so the circle cannot hard-lock
+                -- the lane. No rebuilt powers.
                 -- Hard floor: never shoot a target on the egg side of BreachLine.
                 -- Heal aims injured pets (CombatDamageTaken). Rage fires at
                 -- one ally already in combat (TargetType Enemy / AggroTargetRef);
                 -- that pet and anyone else inside the landing circle get a
-                -- per-unit sip. No idle-pet or empty-lane shot.
+                -- per-unit sip. The other four aim the nearest in-lane enemy.
+                -- No idle-pet or empty-lane shot.
                 -- heal_fire_line / rage_fire_line can tighten to
                 -- "bulwark" or "mid" later; breach is the live floor.
                 fire_line = "breach",
@@ -550,6 +665,60 @@ return {
                         impact = "bloom",
                         interval = { 2.4, 2.4, 2.4, 2.4 },
                         radius = { 7, 28, 28, 28 },
+                    },
+                    -- Hex: same Weakening Vial sip Rage uses for Berserk,
+                    -- but on enemies. Meter and drain stay the potion's.
+                    debuff = {
+                        cast = "weakening_vial",
+                        land_at = "ground",
+                        impact = "bloom",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 7, 28, 28, 28 },
+                    },
+                    -- Pull toward the impact. Black-hole rune is visual;
+                    -- displacement is still Seismic's directed knockback.
+                    gravity = {
+                        cast = "seismic_hold",
+                        toward = "impact",
+                        black_hole = true,
+                        land_at = "ground",
+                        impact = "bloom",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 7, 28, 28, 28 },
+                        shove = { 14, 14, 18, 22 },
+                    },
+                    -- Concussion blast: existing CombatFX lava detonation
+                    -- (no magic ring). Fling is radial from the impact so
+                    -- the pack spreads instead of stacking at the gate.
+                    -- Each enemy rolls hit_chance — T4 at 100% froze the
+                    -- lane. Dest is still leashed before Y-snap.
+                    repulsor = {
+                        cast = "seismic_hold",
+                        toward = "outward",
+                        fling = true,
+                        explosion = true,
+                        land_at = "ground",
+                        impact = "bloom",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 7, 28, 28, 28 },
+                        shove = { 22, 28, 34, 40 },
+                        height = { 10, 12, 14, 16 },
+                        flight = { 0.55, 0.6, 0.65, 0.7 },
+                        recover = { 0.45, 0.5, 0.55, 0.6 },
+                        tumble_spins = 1.35,
+                        wall_inset = 6,
+                        hit_chance = { 0.5, 0.5, 0.45, 0.4 },
+                    },
+                    -- Frost Bind. A 2.4s circle would lock the lane if it
+                    -- always landed, so each enemy rolls hit_chance. T1 is
+                    -- conservative; duration stays the power's 5s root.
+                    nullifier = {
+                        cast = "frost_bind",
+                        land_at = "ground",
+                        impact = "bloom",
+                        interval = { 2.4, 2.4, 2.4, 2.4 },
+                        radius = { 7, 28, 28, 28 },
+                        hit_chance = { 0.4, 0.5, 0.6, 0.7 },
                     },
                 },
                 role_colors = {
@@ -605,15 +774,19 @@ return {
             land_shark_breach_rise_studs = 2.3,
             land_shark_breach_pitch_degrees = 14,
             maximum_tier = 4,
-            -- Permanent cadence is Wave 20. For the interaction playtest, expose the exact same
-            -- production transaction/menu from the pending Wave 1 and charge one Waycoin for an
-            -- install, family replacement, or tier upgrade.
+            -- Permanent cadence is Wave 20. Unlock is one-time and global
+            -- (requirements TBD). Placement and upgrade are paid per slot
+            -- (lane and egg now; mid/front later). Impaler unlocks for 1 Gem;
+            -- other playtest changes stay 1 Waycoin.
             unlock_wave = 20,
             tutorial_intermission_wave = 20,
             playtest_unlock_enabled = true,
             playtest_unlock_wave = 1,
             action_cost = 1,
             currency = "hall_coins",
+            unlock_costs = {
+                impaler_palisade = { currency = "gems", amount = 1 },
+            },
             prompt_distance = 14,
             -- Talkable vendors, same idea as Kade's Boards. The workshop is
             -- unchanged; each post opens one slot. Same avatar for now; later

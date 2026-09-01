@@ -549,6 +549,62 @@ function MergeEggPrototypeService:_tutorialWallet(record)
     )
 end
 
+function MergeEggPrototypeService:_ownedWaycoinDropExists(record)
+    local player = record and record.player
+    if not player then
+        return false
+    end
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if
+            drop:GetAttribute("DropOwner") == player.UserId
+            and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+            and drop:GetAttribute("DropCurrency") == "hall_coins"
+        then
+            return true
+        end
+    end
+    return false
+end
+
+-- Soft "pick up at least one" for later tutorial pauses. We do not spawn or
+-- place piles. Wallet already >= 1 is enough. No pile (or only an ungettable
+-- one we refuse to wait on) credits 1 Waycoin so Install cannot deadlock.
+function MergeEggPrototypeService:_ensureStageCoinCredit(record)
+    if not record then
+        return
+    end
+    if self:_tutorialWallet(record) >= 1 then
+        return
+    end
+    if self:_ownedWaycoinDropExists(record) then
+        return
+    end
+    if self._economyService and self._economyService.AddCurrency then
+        self._economyService:AddCurrency(
+            record.player,
+            "hall_coins",
+            1,
+            "merge_egg_stage_coin_fallback"
+        )
+    end
+end
+
+function MergeEggPrototypeService:_tutorialShouldCollectStageCoin(record)
+    return self:_tutorialWallet(record) < 1 and self:_ownedWaycoinDropExists(record)
+end
+
+function MergeEggPrototypeService:_tutorialCollectedStageCoin(record)
+    if self:_tutorialWallet(record) >= 1 then
+        return true
+    end
+    if not self:_ownedWaycoinDropExists(record) then
+        self:_ensureStageCoinCredit(record)
+        return self:_tutorialWallet(record) >= 1
+    end
+    return false
+end
+
 function MergeEggPrototypeService:_tutorialRequiredEggs()
     return math.max(2, math.floor(tonumber(self:_tutorialConfig().required_eggs) or 5))
 end
@@ -561,12 +617,345 @@ function MergeEggPrototypeService:_tutorialOpeningCoinTotal()
     return amount * #offsets
 end
 
+function MergeEggPrototypeService:_unlockCostMap(cfg)
+    local map = {}
+    for family, row in pairs(type(cfg) == "table" and cfg.unlock_costs or {}) do
+        if type(row) == "table" then
+            map[tostring(family)] = {
+                currency = tostring(row.currency or "gems"),
+                amount = math.max(0, math.floor(tonumber(row.amount) or 1)),
+            }
+        end
+    end
+    return map
+end
+
+function MergeEggPrototypeService:_openingGemSpec()
+    local opening = type(self._config.opening_economy) == "table" and self._config.opening_economy
+        or {}
+    local gem = type(opening.gem) == "table" and opening.gem or {}
+    local amount = math.max(0, math.floor(tonumber(gem.amount) or 0))
+    if amount <= 0 then
+        return nil
+    end
+    return {
+        currency = tostring(gem.currency or "gems"),
+        amount = amount,
+        engineerPost = math.max(0, math.floor(tonumber(gem.engineer_post) or 0)),
+        towardGate = tonumber(gem.toward_gate) or 12,
+        inward = tonumber(gem.inward) or 8,
+        offset = type(gem.offset) == "table" and gem.offset or { x = 24, z = 28 },
+        visualScale = math.max(0.1, tonumber(gem.visual_scale) or 1.5),
+    }
+end
+
+function MergeEggPrototypeService:_openingGemWorldPosition(world, spec)
+    spec = spec or self:_openingGemSpec()
+    if not (world and spec) then
+        return nil
+    end
+    local posts = self:_engineerPosts()
+    local post = posts[spec.engineerPost]
+    if not post then
+        return nil
+    end
+    local stand, floorTop = self:_engineerStandCFrame(world, post.slot, post.along)
+    if not stand then
+        return nil
+    end
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local incoming = side == "hell" and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+    local rightDir = Vector3.new(0, 1, 0):Cross(incoming)
+    if rightDir.Magnitude <= 0 then
+        rightDir = Vector3.new(0, 0, -1)
+    else
+        rightDir = rightDir.Unit
+    end
+    local hover = tonumber(spec.offset and spec.offset.y) or 3
+    local floorY = floorTop or stand.Position.Y
+    return Vector3.new(0, floorY + hover, 0)
+        + Vector3.new(stand.Position.X, 0, stand.Position.Z)
+        + incoming * (tonumber(spec.towardGate) or 12)
+        - rightDir * (tonumber(spec.inward) or 8)
+end
+
+function MergeEggPrototypeService:_tutorialGemWallet(record)
+    local spec = self:_openingGemSpec()
+    if not (spec and record and self._economyService) then
+        return 0
+    end
+    return math.max(
+        0,
+        math.floor(tonumber(self._economyService:GetCurrency(record.player, spec.currency)) or 0)
+    )
+end
+
+function MergeEggPrototypeService:_openingGemDropExists(record)
+    local player = record and record.player
+    if not player then
+        return false
+    end
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if
+            drop:GetAttribute("DropOwner") == player.UserId
+            and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+            and drop:GetAttribute("DropReason") == "opening_gem"
+        then
+            return true
+        end
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_tutorialCollectedOpeningStash(record)
+    if self:_tutorialWallet(record) < self:_tutorialOpeningCoinTotal() then
+        return false
+    end
+    -- Stay on collect while the opening gem is still on the field, even if
+    -- the wallet already has leftover gems from a prior run.
+    if self:_openingGemDropExists(record) then
+        return false
+    end
+    local spec = self:_openingGemSpec()
+    if not spec then
+        return true
+    end
+    if record.openingGemSpawned == true then
+        return self:_tutorialGemWallet(record) >= spec.amount
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_cannonGemSpec()
+    local opening = type(self._config.opening_economy) == "table" and self._config.opening_economy
+        or {}
+    local gem = type(opening.cannon_gem) == "table" and opening.cannon_gem or {}
+    local amount = math.max(0, math.floor(tonumber(gem.amount) or 0))
+    if amount <= 0 then
+        return nil
+    end
+    return {
+        currency = tostring(gem.currency or "gems"),
+        amount = amount,
+        towardGate = tonumber(gem.toward_gate) or 12,
+        inward = tonumber(gem.inward) or 8,
+        offset = type(gem.offset) == "table" and gem.offset or { x = 24, z = 28 },
+        visualScale = math.max(0.1, tonumber(gem.visual_scale) or 1.5),
+    }
+end
+
+function MergeEggPrototypeService:_cannonGemWorldPosition(world, spec)
+    spec = spec or self:_cannonGemSpec()
+    if not (world and spec) then
+        return nil
+    end
+    local slot = self:_tutorialWorkshopCannonSlot()
+    local pad = self:_padForSlot(world, slot)
+    local stand, floorTop = self:_commanderStandCFrame(world, pad)
+    if not stand then
+        return nil
+    end
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local incoming = side == "hell" and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+    local rightDir = Vector3.new(0, 1, 0):Cross(incoming)
+    if rightDir.Magnitude <= 0 then
+        rightDir = Vector3.new(0, 0, -1)
+    else
+        rightDir = rightDir.Unit
+    end
+    local hover = tonumber(spec.offset and spec.offset.y) or 3
+    local floorY = floorTop or stand.Position.Y
+    return Vector3.new(0, floorY + hover, 0)
+        + Vector3.new(stand.Position.X, 0, stand.Position.Z)
+        + incoming * (tonumber(spec.towardGate) or 12)
+        - rightDir * (tonumber(spec.inward) or 8)
+end
+
+function MergeEggPrototypeService:_cannonGemDropExists(record)
+    local player = record and record.player
+    if not player then
+        return false
+    end
+    local drops = Workspace:FindFirstChild("CoinDrops")
+    for _, drop in ipairs(drops and drops:GetChildren() or {}) do
+        if
+            drop:GetAttribute("DropOwner") == player.UserId
+            and drop:GetAttribute("DropSource") == "merge_egg_prototype"
+            and drop:GetAttribute("DropReason") == "cannon_gem"
+        then
+            return true
+        end
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_tutorialCollectedCannonGem(record)
+    if self:_cannonGemDropExists(record) then
+        return false
+    end
+    local spec = self:_cannonGemSpec()
+    if not spec then
+        return true
+    end
+    if self:_tutorialGemWallet(record) >= spec.amount then
+        return true
+    end
+    if record.cannonGemSpawned == true then
+        return self:_tutorialGemWallet(record) >= spec.amount
+    end
+    return false
+end
+
 function MergeEggPrototypeService:_tutorialHasCombination(record)
     return record ~= nil
         and (
             (record.eggsMerged or 0) > 0
             or ((record.maximumEggTier or 0) >= 2 and (record.eggsPlaced or 0) >= 2)
         )
+end
+
+function MergeEggPrototypeService:_tutorialPauseAfterWave()
+    return math.max(1, math.floor(tonumber(self:_tutorialConfig().pause_after_wave) or 2))
+end
+
+function MergeEggPrototypeService:_tutorialPauseAfterCannonWave()
+    return math.max(
+        1,
+        math.floor(tonumber(self:_tutorialConfig().pause_after_cannon_wave) or 4)
+    )
+end
+
+function MergeEggPrototypeService:_tutorialWorkshopSlot()
+    return MergeBulwarkProgression.normalizeSlot(self:_tutorialConfig().workshop_slot or "lane")
+end
+
+function MergeEggPrototypeService:_tutorialWorkshopCannonSlot()
+    return MergeTowerProgression.normalizeSlot(
+        self:_tutorialConfig().workshop_cannon_slot or "right"
+    )
+end
+
+function MergeEggPrototypeService:_tutorialWorkshopCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    return (progress and progress.tutorial_workshop_completed == true)
+        or record.tutorialStep == "cannon_waves"
+        or self:_tutorialHasWorkshopBulwark(record)
+end
+
+function MergeEggPrototypeService:_tutorialVendorsReady(record, kind, slot)
+    local tutorial = self:_tutorialConfig()
+    if tutorial.enabled ~= true then
+        return true
+    end
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress and progress.tutorial_completed == true then
+        return true
+    end
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.disable_after_rebirth == true and reborn then
+        return true
+    end
+    local step = record and record.tutorialStep
+    local workshopOpen = record
+        and record.tutorialActive == true
+        and (
+            step == "collect_workshop_coins"
+            or step == "talk_engineer"
+            or step == "unlock_bulwark"
+            or step == "install_bulwark"
+        )
+    local cannonOpen = record
+        and record.tutorialActive == true
+        and (
+            step == "collect_cannon_coins"
+            or step == "collect_cannon_gem"
+            or step == "talk_commander"
+            or step == "unlock_cannon"
+            or step == "install_cannon"
+        )
+    if kind == "artillery" then
+        if not cannonOpen then
+            return false
+        end
+        if slot == nil then
+            return true
+        end
+        return MergeTowerProgression.normalizeSlot(slot) == self:_tutorialWorkshopCannonSlot()
+    end
+    if workshopOpen then
+        if slot == nil then
+            return true
+        end
+        return MergeBulwarkProgression.normalizeSlot(slot) == self:_tutorialWorkshopSlot()
+    end
+    if self:_tutorialWorkshopCompleted(record) then
+        if slot == nil then
+            return true
+        end
+        return MergeBulwarkProgression.normalizeSlot(slot) == self:_tutorialWorkshopSlot()
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_tutorialOwnsBulwarkFamily(record)
+    local state = self:_normalizeBulwarkState(record)
+    local owned = MergeBulwarkProgression.menuOwned(state, self:_tutorialWorkshopSlot())
+    for _, tier in pairs(type(owned) == "table" and owned or {}) do
+        if math.max(0, math.floor(tonumber(tier) or 0)) > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_tutorialHasWorkshopBulwark(record)
+    local family = MergeBulwarkProgression.slotFamily(
+        self:_normalizeBulwarkState(record),
+        self:_tutorialWorkshopSlot()
+    )
+    return family ~= nil
+end
+
+function MergeEggPrototypeService:_tutorialSetupCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    return (progress and progress.tutorial_setup_completed == true)
+        or record.tutorialStep == "combat_waves"
+        or (
+            self:_tutorialHasCombination(record)
+            and self:_initializedHatcherCount(record) >= 1
+        )
+end
+
+function MergeEggPrototypeService:_shouldStartWorkshopTutorial(record)
+    if not record then
+        return false
+    end
+    local tutorial = self:_tutorialConfig()
+    local progress = self:_mergeDefenseProgress(record.player)
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.enabled == false then
+        return false
+    end
+    if progress and progress.tutorial_completed == true then
+        return false
+    end
+    if tutorial.disable_after_rebirth == true and reborn then
+        return false
+    end
+    if record.tutorialActive == true then
+        return false
+    end
+    if self:_tutorialWorkshopCompleted(record) then
+        return false
+    end
+    if (record.waveIndex or 0) ~= self:_tutorialPauseAfterWave() then
+        return false
+    end
+    if (record.aliveEnemies or 0) > 0 or (record.pendingEnemySpawns or 0) > 0 then
+        return false
+    end
+    return self:_tutorialSetupCompleted(record)
 end
 
 function MergeEggPrototypeService:_setTutorialStep(record, step)
@@ -584,24 +973,72 @@ function MergeEggPrototypeService:_setTutorialStep(record, step)
     )
 end
 
-function MergeEggPrototypeService:_completeTutorial(record)
-    if not record or record.tutorialActive ~= true then
-        return
-    end
-    record.tutorialActive = false
-    record.tutorialStep = "complete"
-    record.tutorialStepReadyAt = nil
-    local progress = self:_mergeDefenseProgress(record.player)
+function MergeEggPrototypeService:_markTutorialSetupCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
     if progress then
-        progress.tutorial_completed = true
+        progress.tutorial_setup_completed = true
     end
-    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_complete", true)
-    if not playstateSaved and self._dataService and self._dataService.RequestSave then
-        self._dataService:RequestSave(record.player, "merge_defense_tutorial_complete", {
-            debounceSeconds = 0,
-            critical = true,
-        })
+end
+
+function MergeEggPrototypeService:_markTutorialWorkshopCompleted(record)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress then
+        progress.tutorial_setup_completed = true
+        progress.tutorial_workshop_completed = true
     end
+end
+
+function MergeEggPrototypeService:_shouldStartCannonTutorial(record)
+    if not record then
+        return false
+    end
+    local tutorial = self:_tutorialConfig()
+    local progress = self:_mergeDefenseProgress(record.player)
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.enabled == false then
+        return false
+    end
+    if progress and progress.tutorial_completed == true then
+        return false
+    end
+    if tutorial.disable_after_rebirth == true and reborn then
+        return false
+    end
+    if record.tutorialActive == true then
+        return false
+    end
+    if not self:_tutorialWorkshopCompleted(record) then
+        return false
+    end
+    if (record.waveIndex or 0) ~= self:_tutorialPauseAfterCannonWave() then
+        return false
+    end
+    if (record.aliveEnemies or 0) > 0 or (record.pendingEnemySpawns or 0) > 0 then
+        return false
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_tutorialOwnsCannonFamily(record)
+    local state = self:_normalizeTowerState(record)
+    local owned = MergeTowerProgression.menuOwned(state, self:_tutorialWorkshopCannonSlot())
+    for _, tier in pairs(type(owned) == "table" and owned or {}) do
+        if math.max(0, math.floor(tonumber(tier) or 0)) > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+function MergeEggPrototypeService:_tutorialHasWorkshopCannon(record)
+    local family = MergeTowerProgression.slotFamily(
+        self:_normalizeTowerState(record),
+        self:_tutorialWorkshopCannonSlot()
+    )
+    return family ~= nil
+end
+
+function MergeEggPrototypeService:_scheduleTutorialWaveResume(record)
     if
         record.terminal ~= true
         and (record.aliveEnemies or 0) == 0
@@ -617,6 +1054,147 @@ function MergeEggPrototypeService:_completeTutorial(record)
             record
         )
     end
+end
+
+-- Phase 1 is done: unlock Waves 1–2. Do not mark the whole tutorial complete
+-- or Wave 3 will never pause for the workshop beat.
+function MergeEggPrototypeService:_releaseTutorialForCombat(record)
+    if not record or record.tutorialActive ~= true then
+        return
+    end
+    record.tutorialActive = false
+    record.tutorialStep = "combat_waves"
+    record.tutorialStepReadyAt = nil
+    self:_markTutorialSetupCompleted(record)
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_setup", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, "merge_defense_tutorial_setup", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    self:_scheduleTutorialWaveResume(record)
+    self:_log("Info", "Merge Egg setup tutorial released combat", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+    })
+end
+
+function MergeEggPrototypeService:_startWorkshopTutorial(record)
+    if not record then
+        return
+    end
+    record.nextWaveAt = nil
+    record.tutorialTalkedEngineer = false
+    record.tutorialActive = true
+    record.tutorialUsesAutoCollector = self:_tutorialUsesAutoCollector(record)
+    record.tutorialStep = nil
+    record.tutorialStepChangedAt = nil
+    record.tutorialStepReadyAt = nil
+    if self:_tutorialHasWorkshopBulwark(record) then
+        self:_releaseTutorialForWorkshopCombat(record)
+        return
+    end
+    self:_ensureStageCoinCredit(record)
+    if self:_tutorialShouldCollectStageCoin(record) then
+        self:_setTutorialStep(record, "collect_workshop_coins")
+    elseif self:_tutorialOwnsBulwarkFamily(record) then
+        self:_setTutorialStep(record, "install_bulwark")
+    else
+        self:_setTutorialStep(record, "talk_engineer")
+    end
+    self:_setWorldState("TutorialIntermission", record)
+    self:_ensureBayBulwarks(record)
+    self:_log("Info", "Merge Egg workshop tutorial started", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        step = record.tutorialStep,
+    })
+end
+
+-- Wave 2 workshop is done: unlock Waves 3–4. Do not mark the whole tutorial
+-- complete or Wave 5 will never pause for the cannon beat.
+function MergeEggPrototypeService:_releaseTutorialForWorkshopCombat(record)
+    if not record or record.tutorialActive ~= true then
+        return
+    end
+    record.tutorialActive = false
+    record.tutorialStep = "cannon_waves"
+    record.tutorialStepReadyAt = nil
+    self:_markTutorialWorkshopCompleted(record)
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_workshop", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, "merge_defense_tutorial_workshop", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    self:_scheduleTutorialWaveResume(record)
+    self:_ensureBayBulwarks(record)
+    self:_log("Info", "Merge Egg workshop tutorial released combat", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+    })
+end
+
+function MergeEggPrototypeService:_startCannonTutorial(record)
+    if not record then
+        return
+    end
+    record.nextWaveAt = nil
+    record.tutorialTalkedCommander = false
+    record.tutorialActive = true
+    record.tutorialUsesAutoCollector = self:_tutorialUsesAutoCollector(record)
+    record.tutorialStep = nil
+    record.tutorialStepChangedAt = nil
+    record.tutorialStepReadyAt = nil
+    if self:_tutorialHasWorkshopCannon(record) then
+        self:_completeTutorial(record)
+        return
+    end
+    self:_ensureBayTowers(record)
+    self:_ensureStageCoinCredit(record)
+    self:_ensureCannonGemLesson(record)
+    if self:_tutorialShouldCollectStageCoin(record) then
+        self:_setTutorialStep(record, "collect_cannon_coins")
+    elseif not self:_tutorialCollectedCannonGem(record) then
+        self:_setTutorialStep(record, "collect_cannon_gem")
+    elseif self:_tutorialOwnsCannonFamily(record) then
+        self:_setTutorialStep(record, "install_cannon")
+    else
+        self:_setTutorialStep(record, "talk_commander")
+    end
+    self:_setWorldState("TutorialIntermission", record)
+    self:_ensureBayTowers(record)
+    self:_log("Info", "Merge Egg cannon tutorial started", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        step = record.tutorialStep,
+    })
+end
+
+function MergeEggPrototypeService:_completeTutorial(record)
+    if not record or record.tutorialActive ~= true then
+        return
+    end
+    record.tutorialActive = false
+    record.tutorialStep = "complete"
+    record.tutorialStepReadyAt = nil
+    local progress = self:_mergeDefenseProgress(record.player)
+    if progress then
+        progress.tutorial_setup_completed = true
+        progress.tutorial_completed = true
+    end
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_complete", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, "merge_defense_tutorial_complete", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    self:_scheduleTutorialWaveResume(record)
+    self:_ensureBayBulwarks(record)
+    self:_ensureBayTowers(record)
     self:_log("Info", "Merge Egg first-visit tutorial completed", {
         player = record.player.Name,
         wave = record.waveIndex,
@@ -644,6 +1222,16 @@ function MergeEggPrototypeService:_startTutorial(record, force)
     then
         record.tutorialActive = false
         record.tutorialStep = nil
+        return
+    end
+    if force ~= true and (progress and progress.tutorial_setup_completed == true) then
+        record.tutorialActive = false
+        record.tutorialStep = "combat_waves"
+        if self:_shouldStartWorkshopTutorial(record) then
+            self:_startWorkshopTutorial(record)
+        elseif self:_shouldStartCannonTutorial(record) then
+            self:_startCannonTutorial(record)
+        end
         return
     end
     record.tutorialActive = true
@@ -678,12 +1266,12 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
     local hasDeployment = self:_initializedHatcherCount(record) >= 1
     if
         step == "collect_setup"
-        and self:_tutorialWallet(record) >= self:_tutorialOpeningCoinTotal()
+        and self:_tutorialCollectedOpeningStash(record)
     then
         self:_setTutorialStep(record, "create_five")
     elseif step == "create_five" and (record.eggsCreated or 0) >= requiredEggs then
         if hasCombination and hasDeployment then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCombat(record)
         elseif hasCombination then
             self:_setTutorialStep(record, "deploy_one")
         else
@@ -691,11 +1279,69 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "combine_once" and hasCombination then
         if hasDeployment then
-            self:_completeTutorial(record)
+            self:_releaseTutorialForCombat(record)
         else
             self:_setTutorialStep(record, "deploy_one")
         end
     elseif step == "deploy_one" and hasCombination and hasDeployment then
+        self:_releaseTutorialForCombat(record)
+    elseif step == "collect_workshop_coins" and self:_tutorialCollectedStageCoin(record) then
+        if self:_tutorialHasWorkshopBulwark(record) then
+            self:_releaseTutorialForWorkshopCombat(record)
+        elseif self:_tutorialOwnsBulwarkFamily(record) then
+            self:_setTutorialStep(record, "install_bulwark")
+        else
+            self:_setTutorialStep(record, "talk_engineer")
+        end
+    elseif step == "talk_engineer" and record.tutorialTalkedEngineer == true then
+        if self:_tutorialHasWorkshopBulwark(record) then
+            self:_releaseTutorialForWorkshopCombat(record)
+        elseif self:_tutorialOwnsBulwarkFamily(record) then
+            self:_setTutorialStep(record, "install_bulwark")
+        else
+            self:_setTutorialStep(record, "unlock_bulwark")
+        end
+    elseif step == "unlock_bulwark" and self:_tutorialOwnsBulwarkFamily(record) then
+        if self:_tutorialHasWorkshopBulwark(record) then
+            self:_releaseTutorialForWorkshopCombat(record)
+        else
+            self:_setTutorialStep(record, "install_bulwark")
+        end
+    elseif step == "install_bulwark" and self:_tutorialHasWorkshopBulwark(record) then
+        self:_releaseTutorialForWorkshopCombat(record)
+    elseif step == "collect_cannon_coins" and self:_tutorialCollectedStageCoin(record) then
+        if self:_tutorialHasWorkshopCannon(record) then
+            self:_completeTutorial(record)
+        elseif not self:_tutorialCollectedCannonGem(record) then
+            self:_setTutorialStep(record, "collect_cannon_gem")
+        elseif self:_tutorialOwnsCannonFamily(record) then
+            self:_setTutorialStep(record, "install_cannon")
+        else
+            self:_setTutorialStep(record, "talk_commander")
+        end
+    elseif step == "collect_cannon_gem" and self:_tutorialCollectedCannonGem(record) then
+        if self:_tutorialHasWorkshopCannon(record) then
+            self:_completeTutorial(record)
+        elseif self:_tutorialOwnsCannonFamily(record) then
+            self:_setTutorialStep(record, "install_cannon")
+        else
+            self:_setTutorialStep(record, "talk_commander")
+        end
+    elseif step == "talk_commander" and record.tutorialTalkedCommander == true then
+        if self:_tutorialHasWorkshopCannon(record) then
+            self:_completeTutorial(record)
+        elseif self:_tutorialOwnsCannonFamily(record) then
+            self:_setTutorialStep(record, "install_cannon")
+        else
+            self:_setTutorialStep(record, "unlock_cannon")
+        end
+    elseif step == "unlock_cannon" and self:_tutorialOwnsCannonFamily(record) then
+        if self:_tutorialHasWorkshopCannon(record) then
+            self:_completeTutorial(record)
+        else
+            self:_setTutorialStep(record, "install_cannon")
+        end
+    elseif step == "install_cannon" and self:_tutorialHasWorkshopCannon(record) then
         self:_completeTutorial(record)
     end
 end
@@ -1862,21 +2508,21 @@ function MergeEggPrototypeService:_spawnOpeningCoinDrops(record)
     end
 
     local currency = tostring(opening.currency or self:_earthEggPricing(record).currency)
-    local options = self:_prototypeCoinDropOptions(record)
-    options.reason = "opening"
     local spawned = 0
     local fallbackAmount = 0
-    for _, offset in ipairs(offsets) do
-        local localOffset =
-            Vector3.new(tonumber(offset.x) or 0, tonumber(offset.y) or 3, tonumber(offset.z) or 0)
-        local position = anchor.CFrame:PointToWorldSpace(localOffset)
+    local spawnAt = function(dropCurrency, dropAmount, position, reason, visualScale)
+        local options = self:_prototypeCoinDropOptions(record)
+        options.reason = reason
+        if visualScale then
+            options.visualScale = visualScale
+        end
         local carried = false
         if self._dropService and self._dropService.SpawnCoinDrop then
             local ok, result = pcall(function()
                 return self._dropService:SpawnCoinDrop(
                     record.player,
-                    currency,
-                    amount,
+                    dropCurrency,
+                    dropAmount,
                     position,
                     options
                 )
@@ -1885,7 +2531,45 @@ function MergeEggPrototypeService:_spawnOpeningCoinDrops(record)
         end
         if carried then
             spawned += 1
-        else
+            return true
+        end
+        return false
+    end
+
+    local spawnOne = function(dropCurrency, dropAmount, offset, reason, visualScale)
+        local localOffset =
+            Vector3.new(tonumber(offset.x) or 0, tonumber(offset.y) or 3, tonumber(offset.z) or 0)
+        return spawnAt(
+            dropCurrency,
+            dropAmount,
+            anchor.CFrame:PointToWorldSpace(localOffset),
+            reason,
+            visualScale
+        )
+    end
+
+    local gem = self:_openingGemSpec()
+    if gem then
+        local gemPosition = self:_openingGemWorldPosition(world, gem)
+        local gemCarried = if gemPosition
+            then spawnAt(gem.currency, gem.amount, gemPosition, "opening_gem", gem.visualScale)
+            else spawnOne(gem.currency, gem.amount, gem.offset, "opening_gem", gem.visualScale)
+        record.openingGemSpawned = gemCarried == true
+        if not gemCarried and self._economyService and self._economyService.AddCurrency then
+            self._economyService:AddCurrency(
+                record.player,
+                gem.currency,
+                gem.amount,
+                "merge_egg_opening_gem_fallback"
+            )
+        end
+    else
+        record.openingGemSpawned = false
+    end
+
+    local optionsReason = "opening"
+    for _, offset in ipairs(offsets) do
+        if not spawnOne(currency, amount, offset, optionsReason, nil) then
             fallbackAmount += amount
         end
     end
@@ -1898,7 +2582,7 @@ function MergeEggPrototypeService:_spawnOpeningCoinDrops(record)
         )
     end
     record.openingPickupsSpawned = spawned
-    record.openingCoinsSpawned = spawned * amount
+    record.openingCoinsSpawned = #offsets * amount
     return spawned > 0
 end
 
@@ -1929,7 +2613,7 @@ function MergeEggPrototypeService:_ensureOpeningCoinLesson(record)
     if (record.openingPickupsSpawned or 0) > 0 then
         return true
     end
-    if self:_tutorialWallet(record) >= self:_tutorialOpeningCoinTotal() then
+    if self:_tutorialCollectedOpeningStash(record) then
         return true
     end
     if self._dropService and self._dropService.DiscardDrops then
@@ -1937,6 +2621,66 @@ function MergeEggPrototypeService:_ensureOpeningCoinLesson(record)
     end
     self:_resetSessionCurrency(record)
     return self:_spawnOpeningCoinDrops(record)
+end
+
+function MergeEggPrototypeService:_ensureCannonGemLesson(record)
+    if not record then
+        return false
+    end
+    local spec = self:_cannonGemSpec()
+    if not spec then
+        return true
+    end
+    if self:_cannonGemDropExists(record) then
+        record.cannonGemSpawned = true
+        return true
+    end
+    if self:_tutorialGemWallet(record) >= spec.amount then
+        return true
+    end
+    if record.cannonGemSpawned == true then
+        return self:_tutorialGemWallet(record) >= spec.amount
+    end
+    local world = self:_worldFor(record)
+    local position = self:_cannonGemWorldPosition(world, spec)
+    if not position then
+        local worldCfg = self._config.world or {}
+        local anchor = findNamedPart(world, worldCfg.bulwark_line)
+            or findNamedPart(world, worldCfg.player_spawn)
+        if anchor then
+            local offset = spec.offset
+            position = anchor.CFrame:PointToWorldSpace(
+                Vector3.new(tonumber(offset.x) or 0, tonumber(offset.y) or 3, tonumber(offset.z) or 0)
+            )
+        end
+    end
+    local carried = false
+    if position and self._dropService and self._dropService.SpawnCoinDrop then
+        local options = self:_prototypeCoinDropOptions(record)
+        options.reason = "cannon_gem"
+        options.visualScale = spec.visualScale
+        local ok, result = pcall(function()
+            return self._dropService:SpawnCoinDrop(
+                record.player,
+                spec.currency,
+                spec.amount,
+                position,
+                options
+            )
+        end)
+        carried = ok and result == true
+    end
+    record.cannonGemSpawned = carried == true
+    if not carried and self._economyService and self._economyService.AddCurrency then
+        self._economyService:AddCurrency(
+            record.player,
+            spec.currency,
+            spec.amount,
+            "merge_egg_cannon_gem_fallback"
+        )
+        record.cannonGemSpawned = true
+    end
+    return record.cannonGemSpawned == true
 end
 
 function MergeEggPrototypeService:_resetSessionCurrency(record)
@@ -3543,6 +4287,43 @@ function MergeEggPrototypeService:_towerRageRadius(cannon)
     return requiredConfigNumber(listed, "team.edge_towers.shot.landing.rage.radius")
 end
 
+function MergeEggPrototypeService:_towerLandingNumber(cannon, role, key)
+    local spec = self:_towerLandingSpec(role)
+    local listed = self:_towerListedNumber(spec and spec[key], self:_towerTierIndex(cannon), nil)
+    return requiredConfigNumber(
+        listed,
+        "team.edge_towers.shot.landing." .. tostring(role) .. "." .. tostring(key)
+    )
+end
+
+function MergeEggPrototypeService:_towerEnemiesInRadius(record, center, radius)
+    local found = {}
+    if typeof(center) ~= "Vector3" then
+        return found
+    end
+    radius = math.max(0, tonumber(radius) or 0)
+    for _, enemy in ipairs(record and record.enemies or {}) do
+        local model = enemy.model
+        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
+            local position = self:_enemyLivePosition(enemy)
+            if typeof(position) == "Vector3" then
+                local offset = Vector3.new(position.X - center.X, 0, position.Z - center.Z)
+                if offset.Magnitude <= radius then
+                    found[#found + 1] = {
+                        model = model,
+                        position = position,
+                    }
+                end
+            end
+        end
+    end
+    return found
+end
+
+function MergeEggPrototypeService:_towerRoleColor(role)
+    return self:_towerShotColor(nil, role)
+end
+
 function MergeEggPrototypeService:_towerPetReady(pet)
     if not (pet and pet:IsA("Model")) or pet:GetAttribute("MergeEggObjective") == true then
         return false
@@ -3852,6 +4633,102 @@ function MergeEggPrototypeService:_castTowerBerserkCircle(flight, position)
     })
 end
 
+function MergeEggPrototypeService:_castTowerWeakenCircle(flight, position)
+    if not (self._powerService and self._powerService.PlaceWeakenCircle) then
+        return
+    end
+    local record = flight and flight.record
+    local role = "debuff"
+    local spec = self:_towerLandingSpec(role)
+    local radius = self:_towerLandingNumber(flight and flight.cannon, role, "radius")
+    local inside = self:_towerEnemiesInRadius(record, position, radius)
+    local enemies = {}
+    for _, item in ipairs(inside) do
+        enemies[#enemies + 1] = item.model
+    end
+    self._powerService:PlaceWeakenCircle(position, {
+        radius = radius,
+        floor_y = self:_towerFloorY(record and record.world),
+        color = self:_towerRoleColor(role),
+        potion_id = spec and spec.cast or "weakening_vial",
+        enemies = enemies,
+    })
+end
+
+function MergeEggPrototypeService:_castTowerFrostBind(flight, position)
+    if not (self._powerService and self._powerService.PlaceFrostBindCircle) then
+        return
+    end
+    local record = flight and flight.record
+    local role = "nullifier"
+    local radius = self:_towerLandingNumber(flight and flight.cannon, role, "radius")
+    local chance = self:_towerLandingNumber(flight and flight.cannon, role, "hit_chance")
+    local inside = self:_towerEnemiesInRadius(record, position, radius)
+    local enemies = {}
+    for _, item in ipairs(inside) do
+        enemies[#enemies + 1] = item.model
+    end
+    self._powerService:PlaceFrostBindCircle(position, {
+        radius = radius,
+        floor_y = self:_towerFloorY(record and record.world),
+        color = self:_towerRoleColor(role),
+        hit_chance = chance,
+        enemies = enemies,
+    })
+end
+
+function MergeEggPrototypeService:_castTowerSeismicShove(flight, position, toward)
+    if not (self._powerService and self._powerService.PlaceDirectedKnockback) then
+        return
+    end
+    local record = flight and flight.record
+    local world = record and record.world
+    local role = string.lower(tostring((flight and flight.role) or ""))
+    local spec = self:_towerLandingSpec(role)
+    local radius = self:_towerLandingNumber(flight and flight.cannon, role, "radius")
+    local distance = self:_towerLandingNumber(flight and flight.cannon, role, "shove")
+    local gate = toward == "gate" and self:_towerTowardGate(world, position) or nil
+    local shoves = {}
+    for _, item in ipairs(self:_towerEnemiesInRadius(record, position, radius)) do
+        local direction = gate
+        if toward == "impact" then
+            direction = Vector3.new(position.X - item.position.X, 0, position.Z - item.position.Z)
+        elseif toward == "outward" then
+            direction = Vector3.new(item.position.X - position.X, 0, item.position.Z - position.Z)
+            if not direction or direction.Magnitude <= 1e-3 then
+                local yaw = math.random() * math.pi * 2
+                direction = Vector3.new(math.cos(yaw), 0, math.sin(yaw))
+            end
+        end
+        if direction and direction.Magnitude > 1e-3 then
+            shoves[#shoves + 1] = {
+                model = item.model,
+                direction = direction.Unit,
+            }
+        end
+    end
+    self._powerService:PlaceDirectedKnockback(position, {
+        radius = radius,
+        floor_y = self:_towerFloorY(world),
+        color = self:_towerRoleColor(role),
+        distance = distance,
+        shoves = shoves,
+        black_hole = spec and spec.black_hole == true,
+        explosion = spec and spec.explosion == true,
+        fling = spec and spec.fling == true,
+        hit_chance = self:_towerListedNumber(
+            spec and spec.hit_chance,
+            self:_towerTierIndex(flight and flight.cannon),
+            nil
+        ),
+        height = self:_towerListedNumber(spec and spec.height, self:_towerTierIndex(flight and flight.cannon), nil),
+        flight = self:_towerListedNumber(spec and spec.flight, self:_towerTierIndex(flight and flight.cannon), nil),
+        recover = self:_towerListedNumber(spec and spec.recover, self:_towerTierIndex(flight and flight.cannon), nil),
+        tumble_spins = tonumber(spec and spec.tumble_spins),
+        wall_inset = tonumber(spec and spec.wall_inset),
+    })
+end
+
 function MergeEggPrototypeService:_playTowerLandingVisual(flight, position)
     if typeof(position) ~= "Vector3" then
         return
@@ -3870,6 +4747,19 @@ function MergeEggPrototypeService:_playTowerLandingVisual(flight, position)
     end
     if visual == "berserk_brew" then
         self:_castTowerBerserkCircle(flight, position)
+        return
+    end
+    if visual == "weakening_vial" then
+        self:_castTowerWeakenCircle(flight, position)
+        return
+    end
+    if visual == "frost_bind" then
+        self:_castTowerFrostBind(flight, position)
+        return
+    end
+    if visual == "seismic_hold" then
+        local toward = string.lower(tostring(spec.toward or "gate"))
+        self:_castTowerSeismicShove(flight, position, toward)
     end
 end
 
@@ -4341,7 +5231,12 @@ end
 
 function MergeEggPrototypeService:_ensureBayTowers(record)
     local world = record and record.world
-    if not world or record.towersReady == true then
+    if not world then
+        return
+    end
+    local folder = self:_towerFolder(world, "MergeEggTowers")
+    if record.towersReady == true then
+        self:_ensureArtilleryCommanders(record, folder)
         return
     end
     local pads = self:_authoredBayArtifact(world, "TowerStations", "TowerPads")
@@ -4349,7 +5244,6 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
         return
     end
     local towerState = self:_normalizeTowerState(record)
-    local folder = self:_towerFolder(world, "MergeEggTowers")
     for _, pad in ipairs(pads:GetChildren()) do
         if pad:IsA("Model") and pad:FindFirstChild("TowerAnchor", true) then
             local slot = MergeTowerSlots.fromPad(pad)
@@ -4777,7 +5671,12 @@ end
 
 function MergeEggPrototypeService:_ensureBayBulwarks(record)
     local world = record and record.world
-    if not world or record.bulwarksReady == true then
+    if not world then
+        return
+    end
+    local folder = self:_towerFolder(world, "MergeEggBulwarks")
+    if record.bulwarksReady == true then
+        self:_ensureBulwarkEngineer(record, folder)
         return
     end
     local cfg = self:_edgeBulwarkConfig()
@@ -4786,7 +5685,6 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
         return
     end
     local state = self:_normalizeBulwarkState(record)
-    local folder = self:_towerFolder(world, "MergeEggBulwarks")
     local ready = true
     local hasSaw = false
     self:_clearBulwarkMenuPrompts(folder)
@@ -4835,7 +5733,7 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         slot = slot,
         family = family,
         tier = tier,
-        owned = state.owned,
+        owned = MergeBulwarkProgression.menuOwned(state, slot),
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
         families = MergeBulwarkProgression.familiesForSlot(slot, self._config.tier_art),
@@ -4851,6 +5749,8 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         actionCost = price.amount,
         currency = price.currency,
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
+        unlockCosts = self:_unlockCostMap(cfg),
+        gemWallet = self:_tutorialGemWallet(record),
     }
 end
 
@@ -4942,7 +5842,10 @@ function MergeEggPrototypeService:_canUseBulwarkMenu(player, slot)
         then
             local hostSlot = child:GetAttribute("MergeBulwarkSlot")
                 or MergeBulwarkProgression.normalizeSlot(engineer.slot or "egg")
-            if wanted == nil or hostSlot == wanted then
+            if
+                (wanted == nil or hostSlot == wanted)
+                and child:GetAttribute("MergeVendorPosted") == true
+            then
                 local part = firstBasePart(child)
                 if part then
                     closest = math.min(closest, (root.Position - part.Position).Magnitude)
@@ -4973,9 +5876,20 @@ function MergeEggPrototypeService:_openBulwarkMenu(player, slot)
         return false, "not_active_encounter"
     end
     slot = MergeBulwarkProgression.normalizeSlot(slot)
+    if not self:_tutorialVendorsReady(record, "bulwark", slot) then
+        return false, "vendor_not_ready"
+    end
     local accessOk, accessReason = self:_canUseBulwarkMenu(player, slot)
     if not accessOk then
         return false, accessReason
+    end
+    if
+        record.tutorialActive == true
+        and record.tutorialStep == "talk_engineer"
+        and slot == self:_tutorialWorkshopSlot()
+    then
+        record.tutorialTalkedEngineer = true
+        self:_updateTutorial(record, os.clock(), true)
     end
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
@@ -5051,14 +5965,18 @@ function MergeEggPrototypeService:_stampBulwarkMenuPrompts(record, anchors, fold
     end
 end
 
-function MergeEggPrototypeService:_clearBulwarkEngineer(folder)
+function MergeEggPrototypeService:_clearBulwarkEngineer(folder, slot)
     if not folder then
         return
     end
+    slot = slot and MergeBulwarkProgression.normalizeSlot(slot) or nil
     for _, child in ipairs(folder:GetChildren()) do
+        local isEngineer = child:GetAttribute("MergeBulwarkEngineer") == true
+            or child.Name == BULWARK_ENGINEER_NAME
+            or string.sub(child.Name, 1, #BULWARK_ENGINEER_NAME) == BULWARK_ENGINEER_NAME
         if
-            child.Name == BULWARK_ENGINEER_NAME
-            or child:GetAttribute("MergeBulwarkEngineer") == true
+            isEngineer
+            and (slot == nil or child:GetAttribute("MergeBulwarkSlot") == slot)
         then
             child:Destroy()
         end
@@ -5139,6 +6057,7 @@ function MergeEggPrototypeService:_setEngineerPassthrough(model)
         if instance:IsA("BasePart") then
             instance.CanCollide = false
             instance.CanTouch = false
+            instance.CanQuery = false
         end
     end
     apply(model)
@@ -5146,6 +6065,50 @@ function MergeEggPrototypeService:_setEngineerPassthrough(model)
         apply(descendant)
     end
     model.DescendantAdded:Connect(apply)
+end
+
+function MergeEggPrototypeService:_setVendorPosted(model, posted)
+    if not model then
+        return
+    end
+    posted = posted == true
+    model:SetAttribute("MergeVendorPosted", posted)
+    local function apply(instance)
+        local livePosted = model:GetAttribute("MergeVendorPosted") == true
+        if instance:IsA("BasePart") or instance:IsA("Decal") or instance:IsA("Texture") then
+            if instance:GetAttribute("MergeVendorBaseTransparency") == nil then
+                instance:SetAttribute("MergeVendorBaseTransparency", instance.Transparency)
+            end
+            instance.Transparency = livePosted and instance:GetAttribute("MergeVendorBaseTransparency")
+                or 1
+            if instance:IsA("BasePart") then
+                instance.CanCollide = false
+                instance.CanTouch = false
+                instance.CanQuery = false
+                instance.CastShadow = livePosted
+            end
+        elseif instance:IsA("ParticleEmitter") or instance:IsA("Beam") or instance:IsA("Trail") then
+            instance.Enabled = livePosted
+        elseif instance:IsA("ProximityPrompt") then
+            instance.Enabled = livePosted
+        elseif instance:IsA("BillboardGui") or instance:IsA("SurfaceGui") then
+            instance.Enabled = livePosted
+        end
+    end
+    apply(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        apply(descendant)
+    end
+    if model:GetAttribute("MergeVendorPostedHooked") ~= true then
+        model:SetAttribute("MergeVendorPostedHooked", true)
+        model.DescendantAdded:Connect(apply)
+    end
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.DisplayDistanceType = posted and Enum.HumanoidDisplayDistanceType.Viewer
+            or Enum.HumanoidDisplayDistanceType.None
+        humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+    end
 end
 
 function MergeEggPrototypeService:_findBulwarkEngineer(folder, slot)
@@ -5176,11 +6139,14 @@ function MergeEggPrototypeService:_ensureBulwarkEngineer(record, folder)
     end
     for _, post in ipairs(self:_engineerPosts()) do
         self:_clearSlotMenuHosts(folder, post.slot)
-        if not self:_findBulwarkEngineer(folder, post.slot) then
+        local live = self:_findBulwarkEngineer(folder, post.slot)
+        if not live then
             local captured = post
             task.spawn(function()
                 self:_spawnBulwarkEngineer(record, folder, captured)
             end)
+        else
+            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "bulwark", post.slot))
         end
     end
 end
@@ -5254,6 +6220,7 @@ function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
             root:SetNetworkOwner(nil)
         end)
     end
+    self:_setVendorPosted(model, false)
     model.Parent = folder
     self:_setEngineerPassthrough(model)
     self:_clearSlotMenuHosts(folder, slot)
@@ -5271,6 +6238,7 @@ function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
         prompt.HoldDuration = 0
         prompt.MaxActivationDistance = math.max(4, tonumber(post.max_distance) or 16)
     end
+    self:_setVendorPosted(model, self:_tutorialVendorsReady(record, "bulwark", slot))
 end
 
 function MergeEggPrototypeService:_commanderConfig()
@@ -5355,6 +6323,21 @@ function MergeEggPrototypeService:_commanderStandCFrame(world, anchor)
     return CFrame.lookAt(stand, stand + look, Vector3.yAxis), floorTop
 end
 
+function MergeEggPrototypeService:_clearArtilleryCommanders(folder)
+    if not folder then
+        return
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if
+            child:GetAttribute("MergeArtilleryCommander") == true
+            or child.Name == ARTILLERY_COMMANDER_NAME
+            or string.sub(child.Name, 1, #ARTILLERY_COMMANDER_NAME) == ARTILLERY_COMMANDER_NAME
+        then
+            child:Destroy()
+        end
+    end
+end
+
 function MergeEggPrototypeService:_ensureArtilleryCommanders(record, folder)
     if not (record and folder) then
         return
@@ -5367,17 +6350,20 @@ function MergeEggPrototypeService:_ensureArtilleryCommanders(record, folder)
         local cannon = self:_cannonForSlot(folder, def.id)
         local pad = self:_padForSlot(record.world, def.id)
         local anchor = cannon or pad
-        if anchor and not self:_findArtilleryCommander(folder, def.id) then
+        local live = self:_findArtilleryCommander(folder, def.id)
+        if anchor and not live then
             local captured = { slot = def.id, cannon = cannon, pad = pad }
             task.spawn(function()
                 self:_spawnArtilleryCommander(record, folder, captured)
             end)
-        elseif anchor then
-            local live = self:_findArtilleryCommander(folder, def.id)
-            local stand = self:_commanderStandCFrame(record.world, anchor)
-            if live and stand then
-                self:_groundEngineerOnFloor(live, stand)
+        elseif live then
+            if anchor then
+                local stand = self:_commanderStandCFrame(record.world, anchor)
+                if stand then
+                    self:_groundEngineerOnFloor(live, stand)
+                end
             end
+            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "artillery", def.id))
         end
     end
 end
@@ -5458,6 +6444,7 @@ function MergeEggPrototypeService:_spawnArtilleryCommander(record, folder, post)
             root:SetNetworkOwner(nil)
         end)
     end
+    self:_setVendorPosted(model, false)
     model.Parent = folder
     self:_setEngineerPassthrough(model)
     local promptHost = root or firstBasePart(model)
@@ -5474,6 +6461,7 @@ function MergeEggPrototypeService:_spawnArtilleryCommander(record, folder, post)
         prompt.HoldDuration = 0
         prompt.MaxActivationDistance = math.max(4, tonumber(commander.max_distance) or 16)
     end
+    self:_setVendorPosted(model, self:_tutorialVendorsReady(record, "artillery", slot))
 end
 
 function MergeEggPrototypeService:_cannonMenuState(record, slot)
@@ -5491,7 +6479,7 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         slot = slot,
         family = family,
         tier = tier,
-        owned = state.owned,
+        owned = MergeTowerProgression.menuOwned(state, slot),
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
         families = MergeTowerProgression.familiesForSlot(slot, self._config.tier_art),
@@ -5507,6 +6495,8 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         actionCost = price.amount,
         currency = price.currency,
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
+        unlockCosts = self:_unlockCostMap(cfg),
+        gemWallet = self:_tutorialGemWallet(record),
     }
 end
 
@@ -5519,7 +6509,10 @@ function MergeEggPrototypeService:_canUseCannonMenu(player, slot)
     end
     local wanted = slot and MergeTowerProgression.normalizeSlot(slot) or nil
     local commander = self:_findArtilleryCommander(folder, wanted)
-    local part = commander and firstBasePart(commander)
+    if not commander or commander:GetAttribute("MergeVendorPosted") ~= true then
+        return false, "cannon_station_unavailable"
+    end
+    local part = firstBasePart(commander)
     if not part then
         return false, "cannon_station_unavailable"
     end
@@ -5537,9 +6530,20 @@ function MergeEggPrototypeService:_openCannonMenu(player, slot)
         return false, "not_active_encounter"
     end
     slot = MergeTowerProgression.normalizeSlot(slot)
+    if not self:_tutorialVendorsReady(record, "artillery", slot) then
+        return false, "vendor_not_ready"
+    end
     local accessOk, accessReason = self:_canUseCannonMenu(player, slot)
     if not accessOk then
         return false, accessReason
+    end
+    if
+        record.tutorialActive == true
+        and record.tutorialStep == "talk_commander"
+        and slot == self:_tutorialWorkshopCannonSlot()
+    then
+        record.tutorialTalkedCommander = true
+        self:_updateTutorial(record, os.clock(), true)
     end
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
@@ -6780,6 +7784,31 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         record and self:_initializedHatcherCount(record) or 0
     )
     world:SetAttribute("MergeEggTutorialCombinationComplete", self:_tutorialHasCombination(record))
+    local engineerAt
+    if record and self:_tutorialVendorsReady(record, "bulwark") then
+        local wanted = self:_tutorialWorkshopSlot()
+        local along = "right"
+        for _, post in ipairs(self:_engineerPosts()) do
+            if post.slot == wanted then
+                along = post.along
+                break
+            end
+        end
+        local stand = self:_engineerStandCFrame(world, wanted, along)
+        if stand then
+            engineerAt = stand.Position
+        end
+    end
+    world:SetAttribute("MergeEggTutorialEngineerAt", engineerAt)
+    local commanderAt
+    if record and self:_tutorialVendorsReady(record, "artillery") then
+        local pad = self:_padForSlot(world, self:_tutorialWorkshopCannonSlot())
+        local stand = pad and self:_commanderStandCFrame(world, pad)
+        if stand then
+            commanderAt = stand.Position
+        end
+    end
+    world:SetAttribute("MergeEggTutorialCommanderAt", commanderAt)
     local rebirth = self:_rebirthStatus(record)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
     local alliedDamage =
@@ -9595,6 +10624,14 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
     end
     local waveCount = self:_waveCount(record)
     if record.waveIndex < waveCount then
+        if self:_shouldStartWorkshopTutorial(record) then
+            self:_startWorkshopTutorial(record)
+            return
+        end
+        if self:_shouldStartCannonTutorial(record) then
+            self:_startCannonTutorial(record)
+            return
+        end
         local resolvedWave = self:_waveFor(record, record.waveIndex) or {}
         local waveGap =
             math.max(0, tonumber(resolvedWave.gap_after) or tonumber(self._config.wave_gap) or 2)
@@ -12728,17 +13765,30 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
 
     local dropCount = 0
     local dropAmount = 0
+    local gemDropCount = 0
+    local gemDropAmount = 0
     local drops = Workspace:FindFirstChild("CoinDrops")
     for _, drop in ipairs(drops and drops:GetChildren() or {}) do
         if
             drop:GetAttribute("DropOwner") == player.UserId
             and drop:GetAttribute("DropSource") == "merge_egg_prototype"
-            and drop:GetAttribute("DropReason") == "opening"
         then
-            dropCount += 1
-            dropAmount += math.max(0, math.floor(tonumber(drop:GetAttribute("DropAmount")) or 0))
+            local reason = drop:GetAttribute("DropReason")
+            local amount = math.max(0, math.floor(tonumber(drop:GetAttribute("DropAmount")) or 0))
+            if reason == "opening" then
+                dropCount += 1
+                dropAmount += amount
+            elseif reason == "opening_gem" then
+                gemDropCount += 1
+                gemDropAmount += amount
+            end
         end
     end
+    local gemSpec = self:_openingGemSpec()
+    local gemWallet = gemSpec
+            and self._economyService
+            and self._economyService:GetCurrency(player, gemSpec.currency)
+        or nil
 
     local durable = progress
             and MergeEggPlaystate.normalize(progress.playstate, self:_checkpointOptions())
@@ -12786,6 +13836,9 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
             deployedTiers = deployedTiers,
             openingDropCount = dropCount,
             openingDropAmount = dropAmount,
+            openingGemCount = gemDropCount,
+            openingGemAmount = gemDropAmount,
+            gemWallet = gemWallet,
             openingPickupsSpawned = record
                     and math.max(0, math.floor(tonumber(record.openingPickupsSpawned) or 0))
                 or 0,
@@ -13502,6 +14555,9 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     end
     local request = type(request) == "table" and request or {}
     local slot = MergeBulwarkProgression.normalizeSlot(request.slot)
+    if not self:_tutorialVendorsReady(record, "bulwark", slot) then
+        return false, "vendor_not_ready"
+    end
     local accessOk, accessReason = self:_canUseBulwarkMenu(player, slot)
     if not accessOk then
         return false, accessReason
@@ -13521,7 +14577,7 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
         return false, progressionReason
     end
 
-    local price = MergeBulwarkProgression.actionCost(cfg)
+    local price = MergeBulwarkProgression.actionCost(cfg, requestedAction, request.family)
     local charged = nextState.charged == true and price.amount or 0
     record.bulwarkActionInProgress = true
     local commitFailure
@@ -13541,7 +14597,9 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
                 return false
             end
             MergeBulwarkPersist.write(record, live, nextState)
-            MergeBulwarkPersist.addSpent(record, live, charged)
+            if price.currency == "hall_coins" then
+                MergeBulwarkPersist.addSpent(record, live, charged)
+            end
             return true
         end,
     })
@@ -13556,6 +14614,7 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     record.bulwarksReady = false
     self:_ensureBayBulwarks(record)
     self:_setWorldState(record.world:GetAttribute("PrototypeState") or "AwaitingFirstEgg", record)
+    self:_updateTutorial(record, os.clock(), true)
     if self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(player, "merge_defense_bulwark", {
             debounceSeconds = 10,
@@ -13594,6 +14653,9 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
     end
     request = type(request) == "table" and request or {}
     local slot = MergeTowerProgression.normalizeSlot(request.slot)
+    if not self:_tutorialVendorsReady(record, "artillery", slot) then
+        return false, "vendor_not_ready"
+    end
     local accessOk, accessReason = self:_canUseCannonMenu(player, slot)
     if not accessOk then
         return false, accessReason
@@ -13613,7 +14675,7 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
         return false, progressionReason
     end
 
-    local price = MergeTowerProgression.actionCost(cfg)
+    local price = MergeTowerProgression.actionCost(cfg, requestedAction, request.family)
     local charged = nextState.charged == true and price.amount or 0
     record.towerActionInProgress = true
     local commitFailure
@@ -13633,7 +14695,9 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
                 return false
             end
             MergeCannonPersist.write(record, live, nextState)
-            MergeCannonPersist.addSpent(record, live, charged)
+            if price.currency == "hall_coins" then
+                MergeCannonPersist.addSpent(record, live, charged)
+            end
             return true
         end,
     })
@@ -13855,6 +14919,9 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
             progress.rebirths = countBefore + 1
             progress.checkpoint = MergeEggCheckpoint.normalize(nil, self:_checkpointOptions())
             progress.playstate = MergeEggPlaystate.normalize(nil, self:_checkpointOptions())
+            -- Unlocks stay (coin and Robux/game-pass). Placements do not.
+            MergeCannonPersist.resetPlacements(nil, progress, self:_edgeTowerConfig())
+            MergeBulwarkPersist.resetPlacements(nil, progress, self:_edgeBulwarkConfig())
             record.rebirthCount = progress.rebirths
             record.durableCheckpoint = progress.checkpoint
             record.durablePlaystate = progress.playstate
@@ -14303,8 +15370,9 @@ end
 -- Admin Reset to Beginning on the dedicated Merge place ends the session without
 -- respawning, so CharacterAdded never re-enters. Re-run the same join path so the
 -- player sits on the hatcher pad instead of wherever the Farm prologue would warp. The durable
--- beginning state has already been committed by AdminToolsService, so this relaunch must not wipe
--- it again or force a completed Merge tutorial to replay.
+-- beginning state has already been committed by AdminToolsService, so this
+-- relaunch must not wipe it again. tutorial_completed is already false, so
+-- _begin starts collect_setup and lays the opening piles.
 function MergeEggPrototypeService:ResumeDedicatedEntry(player)
     if not self:_isDedicatedMergePlace() then
         return false, "not_merge_place"
