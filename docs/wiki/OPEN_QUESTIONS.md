@@ -31,16 +31,32 @@ Status: current
 
 ## Merge Defense
 
+- After playtest, should a placed pad lock until rebirth instead
+  of allowing a paid replace-at-T1 switch? Current rule is paid
+  switch, no refund, no free swap.
+- What should a cannon/bulwark **unlock** cost in production?
+  Playtest keeps unlock, place, and upgrade at one Waycoin.
+  Final unlocks will almost certainly be gems or a Robux game
+  pass. Do not raise the playtest price.
 - Should later bulwark lines use different talkable avatars (Colorado alts,
   one person per line) or one Colorado plus a line-picker in the workshop?
   Current path is one person per line and no menu change.
-- Cannon powers stay after the visual pass except Heal and Rage.
-  Heal places the existing Healing Field. Rage is a one-time Berserk
-  sip on one in-combat pet plus anyone else inside a ruddy
-  MagicCircle (no ticks, no owner broadcast, no idle-pet aim).
-  Which of debuff /
-  gravity / repulsor / nullifier can borrow an existing telegraph
-  versus needing a new effect later?
+- Cannon landings reuse existing powers. Heal = Healing Field. Rage =
+  Berserk circle. Debuff = Weakening Vial on enemies. Gravity =
+  Seismic pull plus a black-hole rune. Repulsor = concussion blast,
+  outward fling, per-enemy hit roll (T4 40%). Live play: T4 is
+  still overpowered but no longer broken. Next knobs are
+  hit_chance, shove, or fire interval — not another rewrite.
+  Nullifier = Frost Bind with a per-enemy hit roll
+  (T1 40%). Tune hit_chance if the lane feels too locked or too
+  loose.
+- Merge first-visit drip is locked: Wave 0 eggs → Wave 2 Impaler (1 Gem)
+  → Wave 4 Heal (1 Gem if wallet is 0) → Wave 6 optional coins + egg
+  upgrades (skip if they already upgraded since Wave 4) → Wave 10
+  Quartermaster (Macros at the Heaven/Hell potion tent). 0 / 2 / 4 / 6 / 10
+  talk are in. After Talk the tent can sell; macros still need design.
+  `tutorial_completed` stamps at the Wave 10 Talk. Do not unlock Impaler
+  and Heal at pickup.
 - Heal fire line is BreachLine (same hard floor as other chassis).
   Tighten to the gold line or the computed mid plane only after live
   shots prove pets sit in a band we do not want to heal?

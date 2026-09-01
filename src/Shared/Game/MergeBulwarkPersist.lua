@@ -44,8 +44,23 @@ function MergeBulwarkPersist.write(record, progress, state)
         for key, value in pairs(persisted) do
             progress[key] = value
         end
+        for _, def in ipairs(MergeBulwarkSlots.all()) do
+            local family, tier = MergeBulwarkProgression.slotFamily(state, def.id)
+            progress[def.persistFamily] = family
+            progress[def.persistTier] = tier
+        end
     end
     return persisted
+end
+
+function MergeBulwarkPersist.resetPlacements(record, progress, config)
+    config = type(config) == "table" and config or {}
+    -- Empties walls only. Unlock flags stay, including future Robux grants.
+    local cleared = MergeBulwarkProgression.clearInstalls(
+        MergeBulwarkPersist.inputFrom(record or progress),
+        config.maximum_tier
+    )
+    return MergeBulwarkPersist.write(record, progress, cleared)
 end
 
 function MergeBulwarkPersist.apply(state, action, family, config, slot)

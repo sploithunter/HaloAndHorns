@@ -64,6 +64,24 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         slots = raw.tower_slots,
         owned = raw.tower_owned,
     })
+    local baselineRaw = type(raw.upgrade_tutorial_baseline) == "table"
+            and raw.upgrade_tutorial_baseline
+        or nil
+    local upgradeBaseline = nil
+    if
+        baselineRaw
+        and (
+            baselineRaw.eggs_merged ~= nil
+            or baselineRaw.eggs_placed ~= nil
+            or baselineRaw.base_egg_tier ~= nil
+        )
+    then
+        upgradeBaseline = {
+            eggs_merged = math.max(0, math.floor(tonumber(baselineRaw.eggs_merged) or 0)),
+            eggs_placed = math.max(0, math.floor(tonumber(baselineRaw.eggs_placed) or 0)),
+            base_egg_tier = math.max(1, math.floor(tonumber(baselineRaw.base_egg_tier) or 1)),
+        }
+    end
     return {
         version = 6,
         visited = raw.visited == true,
@@ -94,6 +112,20 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         tower_waycoins_spent = math.max(0, math.floor(tonumber(raw.tower_waycoins_spent) or 0)),
         bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
+        tutorial_setup_completed = raw.tutorial_setup_completed == true
+            or raw.tutorial_cannon_completed == true
+            or raw.tutorial_upgrade_completed == true
+            or raw.tutorial_completed == true,
+        tutorial_workshop_completed = raw.tutorial_workshop_completed == true
+            or raw.tutorial_cannon_completed == true
+            or raw.tutorial_upgrade_completed == true
+            or raw.tutorial_completed == true,
+        tutorial_cannon_completed = raw.tutorial_cannon_completed == true
+            or raw.tutorial_upgrade_completed == true
+            or raw.tutorial_completed == true,
+        tutorial_upgrade_completed = raw.tutorial_upgrade_completed == true
+            or raw.tutorial_completed == true,
+        upgrade_tutorial_baseline = upgradeBaseline,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),
         -- Current possessions survive logout independently of the last ten-wave combat boundary.
         -- Unlike a checkpoint, Wave 0 is a valid saved playstate.

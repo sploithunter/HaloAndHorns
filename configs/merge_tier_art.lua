@@ -11,6 +11,8 @@ local CANNONS = {
             textureId = "139686347540585",
             previewDecalId = "131061350502690",
             previewImageId = "140470596443446",
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -19,6 +21,8 @@ local CANNONS = {
             textureId = "125180760410565",
             previewDecalId = "114736202970945",
             previewImageId = "101347557630147",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -27,6 +31,8 @@ local CANNONS = {
             textureId = "111446641271808",
             previewDecalId = "114114786954664",
             previewImageId = "130804958725300",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -35,6 +41,8 @@ local CANNONS = {
             textureId = "84388175252193",
             previewDecalId = "136190859893905",
             previewImageId = "93797387348569",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
     rage = {
@@ -45,6 +53,9 @@ local CANNONS = {
             textureId = "120457257412811",
             previewDecalId = "97703672352082",
             previewImageId = "127273182350287",
+            barrelYawDegrees = 270,
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -53,6 +64,8 @@ local CANNONS = {
             textureId = "112130547119678",
             previewDecalId = "138723455258305",
             previewImageId = "98436573644082",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -61,6 +74,8 @@ local CANNONS = {
             textureId = "123219933125620",
             previewDecalId = "89228120329929",
             previewImageId = "86997315038840",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -69,6 +84,8 @@ local CANNONS = {
             textureId = "78472306743043",
             previewDecalId = "74085786829884",
             previewImageId = "84740258362932",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
     debuff = {
@@ -79,6 +96,8 @@ local CANNONS = {
             textureId = "100157293936396",
             previewDecalId = "116137872026567",
             previewImageId = "114989526639600",
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -87,6 +106,8 @@ local CANNONS = {
             textureId = "122268989880172",
             previewDecalId = "119239112022466",
             previewImageId = "97068048523128",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -95,6 +116,8 @@ local CANNONS = {
             textureId = "111095034109245",
             previewDecalId = "84073912433216",
             previewImageId = "110123445517380",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -103,6 +126,8 @@ local CANNONS = {
             textureId = "138671610283207",
             previewDecalId = "84323457769191",
             previewImageId = "97949253508090",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
     gravity = {
@@ -113,6 +138,8 @@ local CANNONS = {
             textureId = "86492725259912",
             previewDecalId = "76934851415383",
             previewImageId = "124941263204546",
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -121,6 +148,8 @@ local CANNONS = {
             textureId = "125199654859868",
             previewDecalId = "93180997121651",
             previewImageId = "129706592743167",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -129,6 +158,8 @@ local CANNONS = {
             textureId = "109547694123216",
             previewDecalId = "74368196545695",
             previewImageId = "140423611144518",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -137,6 +168,8 @@ local CANNONS = {
             textureId = "106500478108571",
             previewDecalId = "126101045930615",
             previewImageId = "133845870981548",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
     repulsor = {
@@ -147,6 +180,8 @@ local CANNONS = {
             textureId = "114202274285615",
             previewDecalId = "75567338164063",
             previewImageId = "78664132786778",
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -155,6 +190,8 @@ local CANNONS = {
             textureId = "80442912867791",
             previewDecalId = "82777233908254",
             previewImageId = "93960838518804",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -163,6 +200,8 @@ local CANNONS = {
             textureId = "99120964974996",
             previewDecalId = "139456211593147",
             previewImageId = "137846028304578",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -171,6 +210,8 @@ local CANNONS = {
             textureId = "113912676709629",
             previewDecalId = "121947038866815",
             previewImageId = "98525459206885",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
     nullifier = {
@@ -181,6 +222,8 @@ local CANNONS = {
             textureId = "92158246124108",
             previewDecalId = "114731624008606",
             previewImageId = "71926315712224",
+            worldScale = 0.375,
+            seatOffsetY = 0.55,
         },
         {
             tier = 2,
@@ -189,6 +232,8 @@ local CANNONS = {
             textureId = "98389823322538",
             previewDecalId = "104079595660601",
             previewImageId = "139249289854894",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 3,
@@ -197,6 +242,8 @@ local CANNONS = {
             textureId = "80720189474681",
             previewDecalId = "110943468496381",
             previewImageId = "118241568011792",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
         {
             tier = 4,
@@ -205,6 +252,8 @@ local CANNONS = {
             textureId = "92959528373062",
             previewDecalId = "112219060751717",
             previewImageId = "112661243422932",
+            worldScale = 0.5,
+            seatOffsetY = 0.733,
         },
     },
 }

@@ -30,6 +30,8 @@ local CombatAllies = require(ReplicatedStorage.Shared.Game.CombatAllies) -- team
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
+local MergeCannonFling = require(ReplicatedStorage.Shared.Game.MergeCannonFling)
+local CombatFX = require(ReplicatedStorage.Shared.Effects.CombatFX)
 local FocusFire = require(ReplicatedStorage.Shared.Game.FocusFire)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-revive heal clamp
 local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalette)
@@ -1594,6 +1596,174 @@ function PowerService:PlaceBerserkCircle(center, opts)
     end
 
     return { ok = true, sipped = sipped, radius = radius }
+end
+
+local function laneRuneOpts(center, radius, color, name, floorY)
+    return center,
+        radius,
+        color,
+        {
+            name = name,
+            fade_in = 0.18,
+            hold = 1.35,
+            fade_out = 0.55,
+            bright = 0,
+            spin = true,
+            spin_deg = 90,
+            floor_y = floorY,
+        }
+end
+
+-- Weakening Vial on every enemy in the circle. Same brew meter as a
+-- thrown flask; no consume, no Focus. Rage's sibling, aimed at enemies.
+function PowerService:PlaceWeakenCircle(center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local potions = self._potionService
+    if not (potions and potions.SipBrewOn) then
+        return nil, "potion_service_missing"
+    end
+    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local color = opts.color
+    if typeof(color) ~= "Color3" then
+        color = Color3.fromRGB(174, 100, 235)
+    end
+    self:_spawnGroundRune(laneRuneOpts(center, radius, color, opts.name or "WeakenCircle", opts.floor_y))
+    local sipped = 0
+    for _, enemy in ipairs(opts.enemies or {}) do
+        if enemy and enemy:IsA("Model") and enemy.Parent then
+            local result = potions:SipBrewOn(enemy, opts.potion_id or "weakening_vial")
+            if result and result.ok then
+                sipped += 1
+            end
+        end
+    end
+    return { ok = true, sipped = sipped, radius = radius }
+end
+
+-- Frost Bind at a world point. Same RootedUntil as the player power.
+-- Each enemy rolls hit_chance — a 2.4s circle must not auto-lock the wave.
+function PowerService:PlaceFrostBindCircle(center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local kinds = self._powersConfig and self._powersConfig.effect_kinds or {}
+    local kind = kinds.root
+    if type(kind) ~= "table" or kind.family ~= "root" then
+        return nil, "frost_bind_missing"
+    end
+    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local color = opts.color
+    if typeof(color) ~= "Color3" then
+        color = Color3.fromRGB(120, 200, 255)
+    end
+    self:_spawnGroundRune(laneRuneOpts(center, radius, color, opts.name or "FrostBindCircle", opts.floor_y))
+    local chance = tonumber(opts.hit_chance)
+    local now = os.time()
+    local duration = tonumber(kind.duration) or 5
+    local bound = 0
+    for _, enemy in ipairs(opts.enemies or {}) do
+        if enemy and enemy:IsA("Model") and enemy.Parent then
+            if MergeCannonFling.hitRoll(chance, math.random()) then
+                local untilTime = now + duration
+                enemy:SetAttribute("RootedUntil", untilTime)
+                enemy:SetAttribute("DebuffPowerId", "frost_bind")
+                enemy:SetAttribute("DebuffUntil", untilTime)
+                self:_stampPowerBadge(enemy, "frost_bind", untilTime)
+                bound += 1
+            end
+        end
+    end
+    return { ok = true, bound = bound, radius = radius }
+end
+
+-- Seismic displacement, plus optional black-hole rune or air fling.
+function PowerService:PlaceDirectedKnockback(center, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(center) ~= "Vector3" then
+        return nil, "invalid_center"
+    end
+    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local color = opts.color
+    if typeof(color) ~= "Color3" then
+        color = Color3.fromRGB(76, 165, 245)
+    end
+    if opts.explosion == true then
+        CombatFX.detonate(center, radius, {
+            element = opts.element or "lava",
+            floor_y = opts.floor_y,
+            color = color,
+        })
+    elseif opts.black_hole == true then
+        self:_spawnBlackHole(center, radius, color, opts.floor_y)
+    else
+        self:_spawnGroundRune(
+            laneRuneOpts(center, radius, color, opts.name or "SeismicCircle", opts.floor_y)
+        )
+    end
+    local enemyService = self._enemyService
+    local distance = math.max(0, tonumber(opts.distance) or 0)
+    if distance <= 0 or not enemyService then
+        return { ok = true, shoved = 0, radius = radius }
+    end
+    local shoved = 0
+    local chance = tonumber(opts.hit_chance)
+    local fling = opts.fling == true and enemyService.ApplyAirFling
+    for _, item in ipairs(opts.shoves or {}) do
+        local model = type(item) == "table" and item.model or nil
+        local direction = type(item) == "table" and item.direction or nil
+        local ok = false
+        if model and not MergeCannonFling.hitRoll(chance, math.random()) then
+            ok = false
+        elseif model and fling then
+            ok = enemyService:ApplyAirFling(model, direction, distance, {
+                height = opts.height,
+                duration = opts.flight,
+                recover = opts.recover,
+                spins = opts.tumble_spins,
+                leash_inset = opts.wall_inset,
+            })
+        elseif model and enemyService.ApplyDirectedKnockback then
+            ok = enemyService:ApplyDirectedKnockback(model, direction, distance)
+        end
+        if ok then
+            shoved += 1
+        end
+    end
+    return { ok = true, shoved = shoved, radius = radius }
+end
+
+function PowerService:_spawnBlackHole(center, radius, color, floorY)
+    self:_spawnGroundRune(center, radius, color, {
+        name = "GravityWell",
+        fade_in = 0.12,
+        hold = 0.55,
+        fade_out = 0.45,
+        bright = 0,
+        spin = true,
+        spin_deg = 220,
+        floor_y = floorY,
+    })
+    local hole = Instance.new("Part")
+    hole.Name = "GravityWellCore"
+    hole.Anchored = true
+    hole.CanCollide = false
+    hole.CanQuery = false
+    hole.CastShadow = false
+    hole.Material = Enum.Material.Neon
+    hole.Color = Color3.fromRGB(8, 6, 16)
+    hole.Shape = Enum.PartType.Ball
+    hole.Size = Vector3.new(radius * 0.55, radius * 0.55, radius * 0.55)
+    hole.CFrame = CFrame.new(center.X, (tonumber(floorY) or center.Y) + 1.2, center.Z)
+    hole.Parent = Workspace
+    TweenService:Create(hole, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        Size = Vector3.new(0.4, 0.4, 0.4),
+        Transparency = 0.35,
+    }):Play()
+    Debris:AddItem(hole, 0.85)
 end
 
 function PowerService:_healOverTime(player, perTick, tickSeconds, totalSeconds)

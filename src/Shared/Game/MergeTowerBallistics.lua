@@ -69,6 +69,43 @@ function MergeTowerBallistics.midpoint(ax, az, bx, bz)
         ((tonumber(az) or 0) + (tonumber(bz) or 0)) * 0.5
 end
 
+-- Short fire kick. 0 and 1 sit on the rest pose. peakAt is the lurch
+-- (ease-out up, ease-in down). shake is a decaying ripple, not a second hop.
+function MergeTowerBallistics.recoilHeight(alpha, height, peakAt, shake)
+    alpha = clamp01(alpha)
+    height = math.max(0, tonumber(height) or 0)
+    peakAt = tonumber(peakAt) or 0.32
+    if peakAt < 0.05 then
+        peakAt = 0.05
+    end
+    if peakAt > 0.95 then
+        peakAt = 0.95
+    end
+    local envelope
+    if alpha <= peakAt then
+        local t = alpha / peakAt
+        envelope = 1 - (1 - t) * (1 - t)
+    else
+        local t = (alpha - peakAt) / (1 - peakAt)
+        envelope = (1 - t) * (1 - t)
+    end
+    local wobble = (tonumber(shake) or 0) * math.sin(alpha * math.pi * 4) * (1 - alpha)
+    return height * envelope + wobble
+end
+
+-- Quiet ability bloom: the ball grows and fades. 0 is the landed size, 1 is gone.
+function MergeTowerBallistics.bloomScale(alpha, startDiameter, peakScale)
+    alpha = clamp01(alpha)
+    startDiameter = math.max(0, tonumber(startDiameter) or 0)
+    peakScale = math.max(1, tonumber(peakScale) or 2)
+    local t = 1 - (1 - alpha) * (1 - alpha)
+    return startDiameter * (1 + (peakScale - 1) * t)
+end
+
+function MergeTowerBallistics.bloomFade(alpha)
+    return clamp01(alpha)
+end
+
 function MergeTowerBallistics.barrelBasis(dx, dy, dz)
     local rx, ry, rz = unitOrNil(dx, dy, dz)
     if not rx then

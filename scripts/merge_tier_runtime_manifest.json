@@ -34,7 +34,10 @@
       "textureId": "139686347540585",
       "previewDecalId": "131061350502690",
       "previewImageId": "140470596443446",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "heal",
@@ -44,7 +47,10 @@
       "textureId": "125180760410565",
       "previewDecalId": "114736202970945",
       "previewImageId": "101347557630147",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "heal",
@@ -54,7 +60,10 @@
       "textureId": "111446641271808",
       "previewDecalId": "114114786954664",
       "previewImageId": "130804958725300",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "heal",
@@ -64,7 +73,10 @@
       "textureId": "84388175252193",
       "previewDecalId": "136190859893905",
       "previewImageId": "93797387348569",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -74,7 +86,10 @@
       "textureId": "120457257412811",
       "previewDecalId": "97703672352082",
       "previewImageId": "127273182350287",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 270,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "rage",
@@ -84,7 +99,10 @@
       "textureId": "112130547119678",
       "previewDecalId": "138723455258305",
       "previewImageId": "98436573644082",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -94,7 +112,10 @@
       "textureId": "123219933125620",
       "previewDecalId": "89228120329929",
       "previewImageId": "86997315038840",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "rage",
@@ -104,7 +125,10 @@
       "textureId": "78472306743043",
       "previewDecalId": "74085786829884",
       "previewImageId": "84740258362932",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -114,7 +138,10 @@
       "textureId": "100157293936396",
       "previewDecalId": "116137872026567",
       "previewImageId": "114989526639600",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "debuff",
@@ -124,7 +151,10 @@
       "textureId": "122268989880172",
       "previewDecalId": "119239112022466",
       "previewImageId": "97068048523128",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -134,7 +164,10 @@
       "textureId": "111095034109245",
       "previewDecalId": "84073912433216",
       "previewImageId": "110123445517380",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "debuff",
@@ -144,7 +177,10 @@
       "textureId": "138671610283207",
       "previewDecalId": "84323457769191",
       "previewImageId": "97949253508090",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -154,7 +190,10 @@
       "textureId": "86492725259912",
       "previewDecalId": "76934851415383",
       "previewImageId": "124941263204546",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "gravity",
@@ -164,7 +203,10 @@
       "textureId": "125199654859868",
       "previewDecalId": "93180997121651",
       "previewImageId": "129706592743167",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -174,7 +216,10 @@
       "textureId": "109547694123216",
       "previewDecalId": "74368196545695",
       "previewImageId": "140423611144518",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "gravity",
@@ -184,7 +229,10 @@
       "textureId": "106500478108571",
       "previewDecalId": "126101045930615",
       "previewImageId": "133845870981548",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -194,7 +242,10 @@
       "textureId": "114202274285615",
       "previewDecalId": "75567338164063",
       "previewImageId": "78664132786778",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "repulsor",
@@ -204,7 +255,10 @@
       "textureId": "80442912867791",
       "previewDecalId": "82777233908254",
       "previewImageId": "93960838518804",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -214,7 +268,10 @@
       "textureId": "99120964974996",
       "previewDecalId": "139456211593147",
       "previewImageId": "137846028304578",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "repulsor",
@@ -224,7 +281,10 @@
       "textureId": "113912676709629",
       "previewDecalId": "121947038866815",
       "previewImageId": "98525459206885",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -234,7 +294,10 @@
       "textureId": "92158246124108",
       "previewDecalId": "114731624008606",
       "previewImageId": "71926315712224",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.375,
+      "seatOffsetY": 0.55
     },
     {
       "family": "nullifier",
@@ -244,7 +307,10 @@
       "textureId": "98389823322538",
       "previewDecalId": "104079595660601",
       "previewImageId": "139249289854894",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -254,7 +320,10 @@
       "textureId": "80720189474681",
       "previewDecalId": "110943468496381",
       "previewImageId": "118241568011792",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     },
     {
       "family": "nullifier",
@@ -264,7 +333,10 @@
       "textureId": "92959528373062",
       "previewDecalId": "112219060751717",
       "previewImageId": "112661243422932",
-      "templateScale": 1
+      "templateScale": 1,
+      "barrelYawDegrees": 0,
+      "worldScale": 0.5,
+      "seatOffsetY": 0.733
     }
   ],
   "bulwarks": [

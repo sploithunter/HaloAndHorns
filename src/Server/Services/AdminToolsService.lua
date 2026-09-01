@@ -623,10 +623,6 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
 
     local playerData = self._dataService:GetData(targetPlayer)
     local inMerge = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
-    local priorMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(
-        playerData and playerData.GameData and playerData.GameData.MergeDefense
-    )
-    local preserveMergeTutorial = inMerge and priorMergeDefense.tutorial_completed == true
     local pets = playerData and playerData.Inventory and playerData.Inventory.pets
     if type(pets) ~= "table" or type(pets.items) ~= "table" then
         self:_sendResult(adminPlayer, {
@@ -744,8 +740,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
             )
         end
     end
-    -- Merge's Wave-1 lesson lays 600 Waycoins on the ground from a zero wallet. The hall_coins
-    -- profile default is 100 and must not survive this reset or collect_setup has nothing to pick up.
+    -- Merge's Wave-1 lesson lays 600 Waycoins and one Gem on the ground from a
+    -- zero wallet. The hall_coins profile default is 100 and must not survive
+    -- this reset or collect_setup has nothing to pick up. Gems already reset
+    -- to their config default (0) in the loop above.
     if inMerge then
         self._economyService:SetCurrency(targetPlayer, "hall_coins", 0, "admin_reset_to_beginning")
     end
@@ -769,12 +767,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
     playerData.GameData.PromoCodes = { claims = {}, attribution = {} }
-    -- Merge Defense playstate, checkpoints, prestige, upgrades, and currency spending all reset.
-    -- A player who already learned the dedicated Merge loop does not repeat that tutorial merely
-    -- because an administrator cleared this play session.
-    local resetMergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
-    resetMergeDefense.tutorial_completed = preserveMergeTutorial
-    playerData.GameData.MergeDefense = resetMergeDefense
+    -- Merge Defense playstate, checkpoints, prestige, upgrades, and currency
+    -- spending all reset. tutorial_completed stays false so stage 1
+    -- (collect the opening piles) runs again.
+    playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
     playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
     playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService
@@ -964,9 +960,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         playerData.Settings.AutoSystems = nil
     end
     if self._settingsService and self._settingsService.ResetMergeDefenseForBeginning then
-        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer, {
-            preserveTutorialCompleted = preserveMergeTutorial,
-        })
+        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer)
     else
         targetPlayer:SetAttribute("MergeDefenseFullEligible", false)
         targetPlayer:SetAttribute("MergeDefenseModeChoicePending", false)

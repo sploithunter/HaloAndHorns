@@ -34,6 +34,7 @@ return function()
         it("allows gradual terrain climbs without jump-assisting onto walls", function()
             local engagement = combatConfig.engagement
             expect(engagement.ground_jump_max <= engagement.ground_climb_max).to.equal(true)
+            expect(engagement.ground_drop_max).to.equal(10)
         end)
     end)
 

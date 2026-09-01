@@ -43,6 +43,7 @@ local Allegiance = require(ReplicatedStorage.Shared.Game.Allegiance)
 local AggroLeash = require(ReplicatedStorage.Shared.Game.AggroLeash)
 local AggroModel = require(ReplicatedStorage.Shared.Game.AggroModel) -- unified aggro game (configs/aggro.lua)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local MergeCannonFling = require(ReplicatedStorage.Shared.Game.MergeCannonFling)
 local PowerIcons = require(ReplicatedStorage.Configs:WaitForChild("power_icons")) -- world debuff disc
 local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds")) -- positional hold/freeze SFX
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
@@ -547,11 +548,12 @@ end
 -- a per-spawn box supplied by MissionInstanceService; overworld enemies then use their resolved
 -- home-area union (e.g. Grass mesh ∪ Spawn circle). Y is untouched. This one path is shared by
 -- chase, flee, loiter, and knockback, so a new movement mode cannot quietly bypass room bounds.
-function EnemyService:_leashToHomeArea(entry, pos)
+function EnemyService:_leashToHomeArea(entry, pos, extraInset)
     local movement = entry and entry.movementLeash
     local movementShapes = movement and movement.shapes
     if movementShapes and #movementShapes > 0 then
-        local x, z = EnemyLeash.clamp(pos.X, pos.Z, movementShapes, tonumber(movement.inset) or 0)
+        local inset = (tonumber(movement.inset) or 0) + math.max(0, tonumber(extraInset) or 0)
+        local x, z = EnemyLeash.clamp(pos.X, pos.Z, movementShapes, inset)
         pos = Vector3.new(x, pos.Y, z)
     end
 
@@ -2644,6 +2646,41 @@ end
 -- knockdown (no fall-over animations yet — flagged as future polish). Same server-move rules as
 -- every other step: grounded (a wall shortens the shove — slammed into it), home-area leashed,
 -- published via MoveTarget so the client lerps the anchored model.
+-- Leash XZ first, then snap Y at the clamped point. Grounding the raw shove
+-- (past WallBack / ArenaBounds) hits the stock baseplate; a later leash
+-- kept that buried Y and pets chased the MoveTarget under the playfield.
+function EnemyService:_resolvePlanarDest(entry, ePos, away, distance, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not (entry and ePos) then
+        return nil
+    end
+    local dist = tonumber(distance) or 0
+    if dist <= 0 then
+        return nil
+    end
+    local planar = Vector3.new(away.X, 0, away.Z)
+    if planar.Magnitude <= 1e-3 then
+        return nil
+    end
+    planar = planar.Unit
+    local eng = (self._combatConfig and self._combatConfig.engagement) or {}
+    local climbMax = tonumber(opts.climb_max) or tonumber(eng.ground_climb_max) or 10
+    local dropMax = tonumber(opts.drop_max) or tonumber(eng.ground_drop_max) or 10
+    local extraInset = math.max(0, tonumber(opts.leash_inset) or 0)
+    local flyer = (entry.hoverHeight or 0) > 0
+    local step = dist
+    while step >= 1 do
+        local raw = Vector3.new(ePos.X + planar.X * step, ePos.Y, ePos.Z + planar.Z * step)
+        local clamped = self:_leashToHomeArea(entry, raw, extraInset)
+        local groundedY = self:_groundedY(entry, clamped.X, clamped.Z, ePos.Y)
+        if flyer or MergeCannonFling.keepStep(ePos.Y, groundedY, climbMax, dropMax) then
+            return Vector3.new(clamped.X, groundedY, clamped.Z), planar
+        end
+        step = step / 2
+    end
+    return nil
+end
+
 function EnemyService:_displaceEnemy(entry, targetId, enemyModel, away, distance)
     local ePos = entry.pos
     if not ePos then
@@ -2656,32 +2693,13 @@ function EnemyService:_displaceEnemy(entry, targetId, enemyModel, away, distance
             "knockback found enemy outside authored movement room"
         )
     end
-    local dist = tonumber(distance) or 12
-    if dist <= 0 or away.Magnitude <= 1e-3 then
+    local dest, unit = self:_resolvePlanarDest(entry, ePos, away, tonumber(distance) or 12)
+    if not dest then
         return false
     end
-    away = Vector3.new(away.X, 0, away.Z).Unit
-    local eng = (self._combatConfig and self._combatConfig.engagement) or {}
-    local climbMax = tonumber(eng.ground_climb_max) or 10
-    local newPos
-    local step = dist
-    while step >= 1 do
-        local nx, nz = ePos.X + away.X * step, ePos.Z + away.Z * step
-        local groundedY = self:_groundedY(entry, nx, nz, ePos.Y)
-        local flyer = (entry.hoverHeight or 0) > 0
-        if flyer or (groundedY - ePos.Y) <= climbMax then
-            newPos = Vector3.new(nx, groundedY, nz)
-            break
-        end
-        step = step / 2
-    end
-    if not newPos then
-        return false
-    end
-    newPos = self:_leashToHomeArea(entry, newPos)
-    entry.pos = newPos
-    enemyModel:SetAttribute("MoveTarget", newPos)
-    enemyModel:SetAttribute("MoveFace", newPos - away * 4)
+    entry.pos = dest
+    enemyModel:SetAttribute("MoveTarget", dest)
+    enemyModel:SetAttribute("MoveFace", dest - unit * 4)
     return true
 end
 
@@ -2745,6 +2763,99 @@ end
 
 -- Same shove as the tank Seismic knockback, but along an authored direction (Merge gate, not
 -- "away from the nearest pet"). Used by the Impaler Palisade stop wall.
+function EnemyService:ApplyAirFling(enemyModel, direction, distance, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(direction) ~= "Vector3" then
+        return false
+    end
+    local away = Vector3.new(direction.X, 0, direction.Z)
+    if away.Magnitude <= 1e-3 then
+        return false
+    end
+    away = away.Unit
+    local dist = tonumber(distance) or 0
+    if dist <= 0 then
+        return false
+    end
+    for targetId, entry in pairs(self._enemies) do
+        if entry.model == enemyModel then
+            local ePos = entry.pos
+            if not ePos then
+                return false
+            end
+            local dest
+            dest, away = self:_resolvePlanarDest(entry, ePos, away, dist, {
+                leash_inset = opts.leash_inset,
+                drop_max = opts.drop_max,
+            })
+            if not dest then
+                return false
+            end
+            local duration = math.max(0.2, tonumber(opts.duration) or 0.55)
+            local recover = math.max(0, tonumber(opts.recover) or 0.45)
+            entry.fling = {
+                start = ePos,
+                dest = dest,
+                height = math.max(1, tonumber(opts.height) or 10),
+                startedAt = os.clock(),
+                duration = duration,
+                recover = recover,
+                spins = math.max(0.5, tonumber(opts.spins) or 1.25),
+                sign = (math.random() < 0.5) and 1 or -1,
+            }
+            local hold = math.ceil(duration + recover + 0.05)
+            enemyModel:SetAttribute(
+                "HeldUntil",
+                CrowdControl.extend(enemyModel:GetAttribute("HeldUntil"), os.time(), hold)
+            )
+            enemyModel:SetAttribute("FlingTumble", 0)
+            enemyModel:SetAttribute("MoveFace", dest - away * 4)
+            return true
+        end
+    end
+    return false
+end
+
+function EnemyService:_stepAirFling(entry, targetId, now)
+    local fling = entry and entry.fling
+    if not fling then
+        return false
+    end
+    local model = entry.model
+    if not (model and model.Parent) then
+        entry.fling = nil
+        return false
+    end
+    local elapsed = (tonumber(now) or os.clock()) - (tonumber(fling.startedAt) or 0)
+    local duration = tonumber(fling.duration) or 0.55
+    if elapsed < duration then
+        local alpha = elapsed / duration
+        local x, y, z = MergeCannonFling.point(
+            fling.start.X,
+            fling.start.Y,
+            fling.start.Z,
+            fling.dest.X,
+            fling.dest.Y,
+            fling.dest.Z,
+            fling.height,
+            alpha
+        )
+        local pos = Vector3.new(x, y, z)
+        entry.pos = Vector3.new(fling.dest.X, fling.dest.Y, fling.dest.Z)
+        model:SetAttribute("MoveTarget", pos)
+        model:SetAttribute("FlingTumble", MergeCannonFling.tumble(alpha, fling.spins, fling.sign))
+        return true
+    end
+    entry.pos = fling.dest
+    model:SetAttribute("MoveTarget", fling.dest)
+    model:SetAttribute("FlingTumble", 0)
+    if elapsed < duration + (tonumber(fling.recover) or 0) then
+        return true
+    end
+    entry.fling = nil
+    return false
+end
+
 function EnemyService:ApplyDirectedKnockback(enemyModel, direction, distance)
     if typeof(direction) ~= "Vector3" then
         return false
@@ -7621,7 +7732,9 @@ function EnemyService:_combatTick(dt)
                         "authoritative position left authored mission room"
                     )
                 else
-                    self:_engageEnemy(entry, targetId, now, eng, dt)
+                    if not self:_stepAirFling(entry, targetId, now) then
+                        self:_engageEnemy(entry, targetId, now, eng, dt)
+                    end
                 end
                 if self._enemies[targetId] then
                     self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy

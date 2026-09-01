@@ -3,6 +3,10 @@
 -- Rebirth ranks are deliberately authored rather than extrapolated. Players begin at Rank 1 for
 -- free; the persisted count records paid rebirths, so count 0 is Rank 1, count 1 is Rank 2, and so
 -- on. Keeping those concepts separate preserves existing saves without exposing a Rank 0.
+--
+-- Hard rule: rebirth never wipes a Robux purchase or unlock flag. Only
+-- authored developer consumables (potions) are spent. Placements reset;
+-- entitlements stay.
 
 local MergeEggRebirth = {}
 

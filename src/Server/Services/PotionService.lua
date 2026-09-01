@@ -311,8 +311,16 @@ function PotionService:SipBrewOn(target, potionId)
     end
     local meterId = pcfg.meter
     local m = self:_meterCfg(meterId)
-    if not m or m.target == "enemy" then
+    if not m then
         return nil, "bad_meter"
+    end
+    if m.target == "enemy" then
+        -- Debuff cannon: same weaken meter a thrown vial writes, no flask.
+        self._enemyMeters[target] = self._enemyMeters[target] or {}
+        local charge = BrewMeter.sip(self._enemyMeters[target][meterId] or 0, pcfg.sip_fraction)
+        self._enemyMeters[target][meterId] = charge
+        self:_applyEnemyMeter(target, meterId, charge)
+        return { ok = true, charge = charge, meter = meterId }
     end
     self._instanceMeters[target] = self._instanceMeters[target] or {}
     local charge = BrewMeter.sip(self._instanceMeters[target][meterId] or 0, pcfg.sip_fraction)

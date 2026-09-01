@@ -124,5 +124,29 @@ return function()
 
             expect(previewCount).to.equal(24)
         end)
+
+        it("gives every cannon tier its own worldScale and only Rage T1 a barrel yaw", function()
+            local families = { "heal", "rage", "debuff", "gravity", "repulsor", "nullifier" }
+            local count = 0
+            for _, family in ipairs(families) do
+                for tier = 1, 4 do
+                    local art = MergeTierArt.entry(tierArtConfig, "cannon", family, tier)
+                    if tier == 1 then
+                        expect(art.worldScale).to.equal(0.375)
+                        expect(art.seatOffsetY).to.equal(0.55)
+                    else
+                        expect(art.worldScale).to.equal(0.5)
+                        expect(art.seatOffsetY).to.equal(0.733)
+                    end
+                    if family == "rage" and tier == 1 then
+                        expect(art.barrelYawDegrees).to.equal(270)
+                    else
+                        expect(art.barrelYawDegrees).to.equal(nil)
+                    end
+                    count += 1
+                end
+            end
+            expect(count).to.equal(24)
+        end)
     end)
 end
