@@ -7,9 +7,9 @@
 ]]
 return {
     version = "0.3.0",
-    commit = "02f67b3",
-    branch = "game/merge-bulwark-upgrades",
-    commit_date = "2026-09-01 10:03 AM MDT", -- when the running code was committed
-    built_at = "2026-09-01 10:23 AM MDT", -- when this build was stamped (publish time)
-    dirty = true, -- uncommitted changes present at stamp time
+    commit = "ad586a9",
+    branch = "main",
+    commit_date = "2026-08-31 07:07 AM MDT", -- when the running code was committed
+    built_at = "2026-08-31 07:09 AM MDT", -- when this build was stamped (publish time)
+    dirty = false, -- uncommitted changes present at stamp time
 }
