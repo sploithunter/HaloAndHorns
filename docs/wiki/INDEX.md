@@ -12,8 +12,12 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 ## Start Here
 
 - [Current Status](CURRENT_STATUS.md) — what exists right now.
-- [Decisions](DECISIONS.md) — durable decisions and rationale.
+- [Decisions](DECISIONS.md) — durable decisions and rationale. **Config as
+  code:** IDs, art, and tuning live in `configs/` only. Never hardcode
+  model/asset numbers in `src/`.
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
+- [Configuration-As-Code Audit](CONFIG_AS_CODE_AUDIT.md) — complete runtime literal/fallback
+  inventory, CI ratchet, and remediation priorities.
 - [Console Support](CONSOLE_SUPPORT.md) — controller mapping, semantic input routing, modal focus,
   ten-foot HUD behavior, and the console QA matrix.
 - [UI Layout Policy](UI_LAYOUT_POLICY.md) — responsive placement, the narrow role of pixel offsets,

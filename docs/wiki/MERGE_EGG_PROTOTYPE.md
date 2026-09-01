@@ -1049,6 +1049,11 @@ clean.
   `scripts/merge_cannon_model_ids.json`; `scripts/merge_cannon_pipeline.js audit` verifies the
   complete local chain. The concept briefs live beside the art in
   `assets/concepts/merge_cannons/prompts.json`.
+- Runtime identity is config-owned: `scripts/sync_merge_tier_art.js` deterministically generates
+  `configs/merge_tier_art.lua` and `scripts/merge_tier_runtime_manifest.json` from the cannon,
+  bulwark-model, and bulwark-preview manifests. Workshop cards and world spawns consume that same
+  table. A cached instance is replaced when its Model/Mesh/Texture identity or cannon scale differs
+  from the selected family/tier, even if its tier attributes look current.
 - Cannon visuals are repo-owned spawnable assets under
   `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
@@ -1134,6 +1139,10 @@ clean.
   `scripts/prebake/add_merge_bulwark_assets.luau`; maps should own only placement anchors.
   `src/Shared/Game/MergeBulwarkModels.lua` supplies clone/spawn access and grounds a template at a
   supplied CFrame or `BulwarkAnchor`.
+- `MergeBulwarkProgression.combatEffect` no longer owns a duplicate balance table. Every tiered
+  charge, damage, cadence, radius, control, and movement value is read from
+  `configs/merge_egg_prototype.lua`; missing entries fail loudly instead of selecting hidden code
+  defaults.
 - The lossless Roblox-upload snapshots under
   `assets/source/props/merge_bulwarks/roblox_originals/` are the authoritative source for all 24
   runtime templates. Do not reconstruct them from only MeshId, TextureId, or a canonical Size:

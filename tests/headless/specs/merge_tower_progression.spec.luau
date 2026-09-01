@@ -1,4 +1,5 @@
 local Progression = loadModule("src/Shared/Game/MergeTowerProgression.lua")
+local mergeConfig = loadModule("configs/merge_egg_prototype.lua")
 
 return function()
     describe("Merge tower progression", function()
@@ -110,12 +111,34 @@ return function()
         end)
 
         it("lists every authored cannon role and persists per-pad installs", function()
-            local families = Progression.families()
+            local families = Progression.families(mergeConfig.tier_art)
+            local manifest = readFile("scripts/merge_cannon_model_ids.json")
+            local seenPreviewIds = {}
             expect(#families).to.equal(6)
             expect(families[1].id).to.equal("heal")
             expect(families[5].id).to.equal("repulsor")
             expect(Progression.isFamily("gravity")).to.equal(true)
             expect(Progression.isFamily("impaler_palisade")).to.equal(false)
+            for _, family in ipairs(families) do
+                expect(#family.previewAssetIds).to.equal(4)
+                expect(family.description:find("size-only", 1, true)).to.equal(nil)
+                for _, previewAssetId in ipairs(family.previewAssetIds) do
+                    expect(seenPreviewIds[previewAssetId]).to.equal(nil)
+                    seenPreviewIds[previewAssetId] = true
+                    expect(
+                        manifest:find(
+                            '"modelAssetId": "' .. tostring(previewAssetId) .. '"',
+                            1,
+                            true
+                        )
+                    ).to.be.ok()
+                end
+                for _, upgradeNotes in ipairs(family.upgradeNotes) do
+                    expect(table.concat(upgradeNotes, " "):find("Distinct art later", 1, true)).to.equal(
+                        nil
+                    )
+                end
+            end
 
             local Slots = Progression.slots
             expect(#Slots.ids()).to.equal(2)

@@ -5,6 +5,7 @@
 -- install slot with its own Artillery Commander.
 
 local MergeTowerSlots = require(script.Parent.MergeTowerSlots)
+local MergeTierArt = require(script.Parent.MergeTierArt)
 
 local MergeTowerProgression = {}
 
@@ -13,36 +14,24 @@ local FAMILIES = {
         id = "heal",
         name = "Heal Cannon",
         role = "Mend",
-        description = "A support piece on the pad. Landing casts a Healing Field at the impact. Tiers are size-only until distinct meshes land.",
-        previewAssetIds = {
-            "139934426250291",
-            "139934426250291",
-            "139934426250291",
-            "139934426250291",
-        },
+        description = "A support piece on the pad. Landing casts a Healing Field at the impact. Every tier has its own chassis.",
         upgradeNotes = {
             { "+ Starter Heal chassis", "+ Sits on this pad", "+ Lands a Healing Field" },
-            { "+ Larger Heal chassis", "+ Same current-art mesh", "+ Same Healing Field" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Same Healing Field" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Same Healing Field" },
+            { "+ Reinforced Heal chassis", "+ Distinct Tier 2 model", "+ Healing Field" },
+            { "+ Advanced Heal chassis", "+ Distinct Tier 3 model", "+ Healing Field" },
+            { "+ Mythic Heal chassis", "+ Distinct Tier 4 model", "+ Healing Field" },
         },
     },
     {
         id = "rage",
         name = "Rage Cannon",
         role = "Fury",
-        description = "A fury piece on the pad. Landing drops a Berserk circle at the impact. Tiers are size-only until distinct meshes land.",
-        previewAssetIds = {
-            "100102545353592",
-            "100102545353592",
-            "100102545353592",
-            "100102545353592",
-        },
+        description = "A fury piece on the pad. Landing drops a Berserk circle at the impact. Every tier has its own chassis.",
         upgradeNotes = {
             { "+ Starter Rage chassis", "+ Sits on this pad", "+ Lands a Berserk circle" },
-            { "+ Larger Rage chassis", "+ Same current-art mesh", "+ Same Berserk circle" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Same Berserk circle" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Same Berserk circle" },
+            { "+ Reinforced Rage chassis", "+ Distinct Tier 2 model", "+ Berserk circle" },
+            { "+ Advanced Rage chassis", "+ Distinct Tier 3 model", "+ Berserk circle" },
+            { "+ Mythic Rage chassis", "+ Distinct Tier 4 model", "+ Berserk circle" },
         },
     },
     {
@@ -50,17 +39,11 @@ local FAMILIES = {
         name = "Debuff Cannon",
         role = "Hex",
         description = "A hex piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
-        previewAssetIds = {
-            "98058587937305",
-            "98058587937305",
-            "98058587937305",
-            "98058587937305",
-        },
         upgradeNotes = {
             { "+ Starter Debuff chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Larger Debuff chassis", "+ Same current-art mesh", "+ Still visual shots" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Still visual shots" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Still visual shots" },
+            { "+ Reinforced Debuff chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
+            { "+ Advanced Debuff chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
+            { "+ Mythic Debuff chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
         },
     },
     {
@@ -68,17 +51,11 @@ local FAMILIES = {
         name = "Gravity Cannon",
         role = "Pull",
         description = "A pull piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
-        previewAssetIds = {
-            "117227343235730",
-            "117227343235730",
-            "117227343235730",
-            "117227343235730",
-        },
         upgradeNotes = {
             { "+ Starter Gravity chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Larger Gravity chassis", "+ Same current-art mesh", "+ Still visual shots" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Still visual shots" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Still visual shots" },
+            { "+ Reinforced Gravity chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
+            { "+ Advanced Gravity chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
+            { "+ Mythic Gravity chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
         },
     },
     {
@@ -86,17 +63,11 @@ local FAMILIES = {
         name = "Repulsor Cannon",
         role = "Push",
         description = "The playtest starter. Knocks the look of a shove down the lane; shot damage is still later.",
-        previewAssetIds = {
-            "121632029834795",
-            "121632029834795",
-            "121632029834795",
-            "121632029834795",
-        },
         upgradeNotes = {
             { "+ Starter Repulsor chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Larger Repulsor chassis", "+ Same current-art mesh", "+ Still visual shots" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Still visual shots" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Still visual shots" },
+            { "+ Reinforced Repulsor chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
+            { "+ Advanced Repulsor chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
+            { "+ Mythic Repulsor chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
         },
     },
     {
@@ -104,17 +75,11 @@ local FAMILIES = {
         name = "Nullifier Cannon",
         role = "Silence",
         description = "A silence piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
-        previewAssetIds = {
-            "97270924486976",
-            "97270924486976",
-            "97270924486976",
-            "97270924486976",
-        },
         upgradeNotes = {
             { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Larger Nullifier chassis", "+ Same current-art mesh", "+ Still visual shots" },
-            { "+ Held at the playtest size", "+ Distinct art later", "+ Still visual shots" },
-            { "+ Top playtest rank", "+ Distinct art later", "+ Still visual shots" },
+            { "+ Reinforced Nullifier chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
+            { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
+            { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
         },
     },
 }
@@ -163,11 +128,11 @@ MergeTowerProgression.SLOT_LEFT = "left"
 MergeTowerProgression.SLOT_RIGHT = "right"
 MergeTowerProgression.slots = MergeTowerSlots
 
-function MergeTowerProgression.families()
+function MergeTowerProgression.families(tierArt)
     local result = {}
     for index, family in ipairs(FAMILIES) do
         result[index] = table.clone(family)
-        result[index].previewAssetIds = table.clone(family.previewAssetIds)
+        result[index].previewAssetIds = MergeTierArt.previewAssetIds(tierArt, "cannon", family.id)
         result[index].upgradeNotes = {}
         for step, lines in ipairs(family.upgradeNotes) do
             result[index].upgradeNotes[step] = table.clone(lines)
@@ -176,9 +141,9 @@ function MergeTowerProgression.families()
     return result
 end
 
-function MergeTowerProgression.familiesForSlot(slot)
+function MergeTowerProgression.familiesForSlot(slot, tierArt)
     slot = normalizeSlot(slot)
-    local result = MergeTowerProgression.families()
+    local result = MergeTowerProgression.families(tierArt)
     for _, family in ipairs(result) do
         family.canInstall = MergeTowerProgression.canInstall(family.id, slot)
         family.slotFor = "any"

@@ -3,6 +3,8 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local MergeTierArt = require(script.Parent.MergeTierArt)
+
 local MergeTowerModels = {}
 
 local ROLE_NAMES = {
@@ -21,6 +23,10 @@ local function templatesRoot(rootOverride)
     local assets = ReplicatedStorage:FindFirstChild("Assets")
     local models = assets and assets:FindFirstChild("Models")
     return models and models:FindFirstChild("MergeCannons")
+end
+
+local function contentId(value)
+    return string.match(tostring(value or ""), "(%d+)$") or ""
 end
 
 local function anchorPart(pad)
@@ -49,12 +55,59 @@ function MergeTowerModels.GetTemplate(role, tier, rootOverride)
     return nil
 end
 
-function MergeTowerModels.Clone(role, tier, rootOverride)
+function MergeTowerModels.MatchesTemplate(model, role, tier, rootOverride, tierArt)
+    if not (model and model:IsA("Model")) then
+        return false
+    end
+    local expected = MergeTierArt.entry(tierArt, "cannon", role, tier)
+    local template = MergeTowerModels.GetTemplate(role, tier, rootOverride)
+    if not (expected and template) then
+        return false
+    end
+    if math.abs(model:GetScale() - 1) > 1e-3 then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxModelAssetId")) ~= expected.modelAssetId then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxMeshAssetId")) ~= expected.meshId then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxTextureAssetId")) ~= expected.textureId then
+        return false
+    end
+    local meshCount = 0
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("MeshPart") then
+            meshCount += 1
+            if
+                contentId(descendant.MeshId) ~= expected.meshId
+                or contentId(descendant.TextureID) ~= expected.textureId
+            then
+                return false
+            end
+        end
+    end
+    return meshCount == 1
+end
+
+function MergeTowerModels.Clone(role, tier, rootOverride, tierArt)
     local normalizedRole = string.lower(tostring(role or ""))
     local resolvedTier = math.max(1, math.floor(tonumber(tier) or 1))
     local template = MergeTowerModels.GetTemplate(role, tier, rootOverride)
     if not template then
         return nil, "tower_template_missing"
+    end
+    if
+        not MergeTowerModels.MatchesTemplate(
+            template,
+            normalizedRole,
+            resolvedTier,
+            rootOverride,
+            tierArt
+        )
+    then
+        return nil, "tower_template_manifest_mismatch"
     end
     local clone = template:Clone()
     clone.Name = string.format("%sCannon_Tier%d", ROLE_NAMES[normalizedRole], resolvedTier)
@@ -70,12 +123,12 @@ function MergeTowerModels.Clone(role, tier, rootOverride)
     return clone
 end
 
-function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride)
+function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride, tierArt)
     local anchor = anchorPart(pad)
     if not anchor then
         return nil, "tower_anchor_missing"
     end
-    local model, reason = MergeTowerModels.Clone(role, tier, rootOverride)
+    local model, reason = MergeTowerModels.Clone(role, tier, rootOverride, tierArt)
     if not model then
         return nil, reason
     end

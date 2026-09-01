@@ -6850,3 +6850,27 @@ first-session cohort rates.
   `AggroTargetRef`); that pet and any other ally in the landing
   circle each get `SipBrewOn`. No idle-pet or empty-lane shot. Not
   Play-confirmed.
+
+## 2026-09-01 — Config is the only place for model IDs
+
+- Swapping model configuration did nothing because asset / model
+  numbers were hardcoded in Lua (`*Progression.lua` preview IDs and
+  similar). Restated: this is configuration-as-code. IDs, art, and
+  tuning live in `configs/`. Services only read. Another agent is
+  moving the hardcoded numbers back to config. Do not add new
+  hardcoded `rbxassetid` / previewAssetIds in `src/`.
+
+## 2026-09-01 — Tier art runtime wiring and config audit
+
+- Moved all Merge cannon/bulwark runtime art identity into generated
+  `configs/merge_tier_art.lua`; menus, clone validation, and stale-instance replacement consume the
+  same table. `scripts/merge_tier_runtime_manifest.json` proves 24 cannon, 24 bulwark-model, and 24
+  bulwark-preview mappings.
+- Removed the duplicate bulwark combat tables and size-preview path. Cannon shot tuning and Land
+  Shark presentation values touched by this slice now require config instead of silently selecting
+  code defaults.
+- Fresh Studio Edit and Play audits passed 48/48 templates and 48/48 transient runtime spawns; a
+  deliberately stale model ID was rejected with `tower_template_manifest_mismatch`.
+- The full tracked `src/` audit found 138 runtime asset/content literals across 36 files and 1,642
+  numeric tuning fallbacks across 239 files. CI now ratchets the complete inventory; remediation is
+  tracked in issue #343.

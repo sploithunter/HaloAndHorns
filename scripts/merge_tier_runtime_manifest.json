@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "status": "COMPLETE",
+  "sourceManifests": [
+    "scripts/merge_cannon_model_ids.json",
+    "scripts/merge_bulwark_model_ids.json",
+    "scripts/merge_bulwark_preview_ids.json"
+  ],
+  "runtimeConfig": "configs/merge_tier_art.lua",
+  "runtimeConsumers": [
+    "src/Shared/Game/MergeTowerProgression.lua",
+    "src/Shared/Game/MergeBulwarkProgression.lua",
+    "src/Shared/Game/MergeTowerModels.lua",
+    "src/Shared/Game/MergeBulwarkModels.lua"
+  ],
+  "counts": {
+    "cannonFamilies": 6,
+    "cannonTierMappings": 24,
+    "bulwarkFamilies": 6,
+    "bulwarkTierMappings": 24,
+    "bulwarkPreviewMappings": 24,
+    "distinctModelAssets": 48
+  },
+  "cannons": [
+    {
+      "family": "heal",
+      "tier": 1,
+      "modelAssetId": "83384749432985",
+      "meshId": "114650833232709",
+      "textureId": "139686347540585",
+      "templateScale": 1
+    },
+    {
+      "family": "heal",
+      "tier": 2,
+      "modelAssetId": "139934426250291",
+      "meshId": "101416290536855",
+      "textureId": "125180760410565",
+      "templateScale": 1
+    },
+    {
+      "family": "heal",
+      "tier": 3,
+      "modelAssetId": "108940380608596",
+      "meshId": "70463710680411",
+      "textureId": "111446641271808",
+      "templateScale": 1
+    },
+    {
+      "family": "heal",
+      "tier": 4,
+      "modelAssetId": "124634979760401",
+      "meshId": "100407635866251",
+      "textureId": "84388175252193",
+      "templateScale": 1
+    },
+    {
+      "family": "rage",
+      "tier": 1,
+      "modelAssetId": "74085555919304",
+      "meshId": "140445830725136",
+      "textureId": "120457257412811",
+      "templateScale": 1
+    },
+    {
+      "family": "rage",
+      "tier": 2,
+      "modelAssetId": "100102545353592",
+      "meshId": "122743079797635",
+      "textureId": "112130547119678",
+      "templateScale": 1
+    },
+    {
+      "family": "rage",
+      "tier": 3,
+      "modelAssetId": "102457421153837",
+      "meshId": "138331655618830",
+      "textureId": "123219933125620",
+      "templateScale": 1
+    },
+    {
+      "family": "rage",
+      "tier": 4,
+      "modelAssetId": "87762252278760",
+      "meshId": "127623585613419",
+      "textureId": "78472306743043",
+      "templateScale": 1
+    },
+    {
+      "family": "debuff",
+      "tier": 1,
+      "modelAssetId": "90303291334041",
+      "meshId": "101528155910040",
+      "textureId": "100157293936396",
+      "templateScale": 1
+    },
+    {
+      "family": "debuff",
+      "tier": 2,
+      "modelAssetId": "98058587937305",
+      "meshId": "79845338311693",
+      "textureId": "122268989880172",
+      "templateScale": 1
+    },
+    {
+      "family": "debuff",
+      "tier": 3,
+      "modelAssetId": "108380777646775",
+      "meshId": "119280408890657",
+      "textureId": "111095034109245",
+      "templateScale": 1
+    },
+    {
+      "family": "debuff",
+      "tier": 4,
+      "modelAssetId": "88248287711565",
+      "meshId": "122588599717914",
+      "textureId": "138671610283207",
+      "templateScale": 1
+    },
+    {
+      "family": "gravity",
+      "tier": 1,
+      "modelAssetId": "77152402298985",
+      "meshId": "127753732493357",
+      "textureId": "86492725259912",
+      "templateScale": 1
+    },
+    {
+      "family": "gravity",
+      "tier": 2,
+      "modelAssetId": "117227343235730",
+      "meshId": "84216404542389",
+      "textureId": "125199654859868",
+      "templateScale": 1
+    },
+    {
+      "family": "gravity",
+      "tier": 3,
+      "modelAssetId": "122229990932951",
+      "meshId": "103722578550022",
+      "textureId": "109547694123216",
+      "templateScale": 1
+    },
+    {
+      "family": "gravity",
+      "tier": 4,
+      "modelAssetId": "74242056171109",
+      "meshId": "75538738354253",
+      "textureId": "106500478108571",
+      "templateScale": 1
+    },
+    {
+      "family": "repulsor",
+      "tier": 1,
+      "modelAssetId": "97936800984221",
+      "meshId": "86200070009329",
+      "textureId": "114202274285615",
+      "templateScale": 1
+    },
+    {
+      "family": "repulsor",
+      "tier": 2,
+      "modelAssetId": "121632029834795",
+      "meshId": "123147846691160",
+      "textureId": "80442912867791",
+      "templateScale": 1
+    },
+    {
+      "family": "repulsor",
+      "tier": 3,
+      "modelAssetId": "85711564245566",
+      "meshId": "130732092642003",
+      "textureId": "99120964974996",
+      "templateScale": 1
+    },
+    {
+      "family": "repulsor",
+      "tier": 4,
+      "modelAssetId": "81406275628540",
+      "meshId": "82000379884068",
+      "textureId": "113912676709629",
+      "templateScale": 1
+    },
+    {
+      "family": "nullifier",
+      "tier": 1,
+      "modelAssetId": "79964691038207",
+      "meshId": "112018017672665",
+      "textureId": "92158246124108",
+      "templateScale": 1
+    },
+    {
+      "family": "nullifier",
+      "tier": 2,
+      "modelAssetId": "97270924486976",
+      "meshId": "125200316700851",
+      "textureId": "98389823322538",
+      "templateScale": 1
+    },
+    {
+      "family": "nullifier",
+      "tier": 3,
+      "modelAssetId": "73215093759999",
+      "meshId": "84856296327141",
+      "textureId": "80720189474681",
+      "templateScale": 1
+    },
+    {
+      "family": "nullifier",
+      "tier": 4,
+      "modelAssetId": "74540150269159",
+      "meshId": "95125160919558",
+      "textureId": "92959528373062",
+      "templateScale": 1
+    }
+  ],
+  "bulwarks": [
+    {
+      "family": "impaler_palisade",
+      "tier": 1,
+      "modelAssetId": "129803988118337",
+      "meshId": "76163496810386",
+      "textureId": "126253121847299",
+      "previewDecalId": "116860085128235",
+      "previewImageId": "124546646970176"
+    },
+    {
+      "family": "impaler_palisade",
+      "tier": 2,
+      "modelAssetId": "98392384350392",
+      "meshId": "102732595920719",
+      "textureId": "134661997604664",
+      "previewDecalId": "97859864666503",
+      "previewImageId": "121896745166839"
+    },
+    {
+      "family": "impaler_palisade",
+      "tier": 3,
+      "modelAssetId": "102201870134911",
+      "meshId": "74302782582425",
+      "textureId": "100382602593832",
+      "previewDecalId": "129822630921173",
+      "previewImageId": "120324773127269"
+    },
+    {
+      "family": "impaler_palisade",
+      "tier": 4,
+      "modelAssetId": "125827629437462",
+      "meshId": "94757438630447",
+      "textureId": "86361958044478",
+      "previewDecalId": "74198495305059",
+      "previewImageId": "111261492473917"
+    },
+    {
+      "family": "concertina_line",
+      "tier": 1,
+      "modelAssetId": "136599170104983",
+      "meshId": "111330428166791",
+      "textureId": "108189607885632",
+      "previewDecalId": "113357672010171",
+      "previewImageId": "95976103236128"
+    },
+    {
+      "family": "concertina_line",
+      "tier": 2,
+      "modelAssetId": "114115802025357",
+      "meshId": "74843098629487",
+      "textureId": "99167815320482",
+      "previewDecalId": "105913949349922",
+      "previewImageId": "78607657186991"
+    },
+    {
+      "family": "concertina_line",
+      "tier": 3,
+      "modelAssetId": "97116236163143",
+      "meshId": "80816346293978",
+      "textureId": "99150354324159",
+      "previewDecalId": "72955017349938",
+      "previewImageId": "96796451629095"
+    },
+    {
+      "family": "concertina_line",
+      "tier": 4,
+      "modelAssetId": "127236634177361",
+      "meshId": "90707388654221",
+      "textureId": "79948185954313",
+      "previewDecalId": "90245489274928",
+      "previewImageId": "132184842471879"
+    },
+    {
+      "family": "land_shark",
+      "tier": 1,
+      "modelAssetId": "93689656194809",
+      "meshId": "128216715877968",
+      "textureId": "132397400798858",
+      "previewDecalId": "113908496978867",
+      "previewImageId": "125485642403832"
+    },
+    {
+      "family": "land_shark",
+      "tier": 2,
+      "modelAssetId": "75537065187935",
+      "meshId": "115036197732596",
+      "textureId": "124669711917497",
+      "previewDecalId": "88409379844802",
+      "previewImageId": "75259312220377"
+    },
+    {
+      "family": "land_shark",
+      "tier": 3,
+      "modelAssetId": "104209939997210",
+      "meshId": "104649906954156",
+      "textureId": "116420781292623",
+      "previewDecalId": "111766652323283",
+      "previewImageId": "132132639576751"
+    },
+    {
+      "family": "land_shark",
+      "tier": 4,
+      "modelAssetId": "75511812682521",
+      "meshId": "108597500652609",
+      "textureId": "109519840530880",
+      "previewDecalId": "108251207551720",
+      "previewImageId": "97340483579848"
+    },
+    {
+      "family": "saw_blade",
+      "tier": 1,
+      "modelAssetId": "135106892647800",
+      "meshId": "104093127042296",
+      "textureId": "84458906695568",
+      "previewDecalId": "121529052464390",
+      "previewImageId": "111871737979481"
+    },
+    {
+      "family": "saw_blade",
+      "tier": 2,
+      "modelAssetId": "127121637387172",
+      "meshId": "128921664841893",
+      "textureId": "140701611784496",
+      "previewDecalId": "77664713466251",
+      "previewImageId": "125065754759272"
+    },
+    {
+      "family": "saw_blade",
+      "tier": 3,
+      "modelAssetId": "95208080901306",
+      "meshId": "77098799705669",
+      "textureId": "98100761815658",
+      "previewDecalId": "72827689088718",
+      "previewImageId": "116501721382158"
+    },
+    {
+      "family": "saw_blade",
+      "tier": 4,
+      "modelAssetId": "75817556345709",
+      "meshId": "119945939136906",
+      "textureId": "131957368405481",
+      "previewDecalId": "112838270832676",
+      "previewImageId": "130501614859479"
+    },
+    {
+      "family": "grasping_hedge",
+      "tier": 1,
+      "modelAssetId": "124036242227752",
+      "meshId": "115445049845745",
+      "textureId": "84474357651286",
+      "previewDecalId": "85025651891171",
+      "previewImageId": "120101571433380"
+    },
+    {
+      "family": "grasping_hedge",
+      "tier": 2,
+      "modelAssetId": "88689523917752",
+      "meshId": "83916034332808",
+      "textureId": "106584352977376",
+      "previewDecalId": "80372327819409",
+      "previewImageId": "104866667075819"
+    },
+    {
+      "family": "grasping_hedge",
+      "tier": 3,
+      "modelAssetId": "105129779394582",
+      "meshId": "96072955882186",
+      "textureId": "99733800678351",
+      "previewDecalId": "90028794177150",
+      "previewImageId": "138597207745165"
+    },
+    {
+      "family": "grasping_hedge",
+      "tier": 4,
+      "modelAssetId": "95382045660111",
+      "meshId": "78283914955317",
+      "textureId": "112884011715994",
+      "previewDecalId": "87259173917660",
+      "previewImageId": "90653615288915"
+    },
+    {
+      "family": "wardstone_barrier",
+      "tier": 1,
+      "modelAssetId": "78858133707824",
+      "meshId": "71504920218357",
+      "textureId": "130129100435769",
+      "previewDecalId": "135466894164464",
+      "previewImageId": "118563591065821"
+    },
+    {
+      "family": "wardstone_barrier",
+      "tier": 2,
+      "modelAssetId": "130243428103758",
+      "meshId": "118434526595247",
+      "textureId": "131459054840425",
+      "previewDecalId": "115291422790551",
+      "previewImageId": "129836621723708"
+    },
+    {
+      "family": "wardstone_barrier",
+      "tier": 3,
+      "modelAssetId": "111395473839332",
+      "meshId": "107807407106973",
+      "textureId": "82676390051285",
+      "previewDecalId": "138858336514150",
+      "previewImageId": "92762146050724"
+    },
+    {
+      "family": "wardstone_barrier",
+      "tier": 4,
+      "modelAssetId": "82814362109464",
+      "meshId": "95672653521928",
+      "textureId": "91724475662630",
+      "previewDecalId": "100267714245380",
+      "previewImageId": "128541077916592"
+    }
+  ]
+}
