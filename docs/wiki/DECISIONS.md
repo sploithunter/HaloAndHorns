@@ -38,7 +38,21 @@ The game is **Halo & Horns** (working codename "Pet Realm"). Core fantasy: hatch
 
 ## Config As Code
 
-Content and tuning should live in `configs/*.lua`. Services should consume config rather than hardcoding content. Adding areas, breakables, eggs, pets, achievements, events, rewards, and similar content should usually be a config edit plus Studio markers, not a new script.
+This is a configuration-as-code game. **Everything** that is content,
+art, or tuning lives in `configs/*.lua` (or a file those configs
+already name). Services consume config. They do not own a second copy.
+
+Adding areas, breakables, eggs, pets, achievements, events, rewards,
+cannon/bulwark art, and similar content is a config edit plus Studio
+markers, not a new script and not a hardcoded id in `src/`.
+
+**Hard rule (restated 2026-09-01):** Model IDs, Mesh IDs, Texture IDs,
+Animation IDs, Sound IDs, and workshop `previewAssetIds` never live in
+Lua services or `*Progression.lua` tables. Swapping the configuration
+for new models must change what the game loads. It did not, because
+those numbers were hardcoded in code. That is a defect. If a value is
+missing from config, add the config key; do not paste `rbxassetid://…`
+into the caller. See `.cursor/rules/configuration-as-code.mdc`.
 
 ## Rojo And Studio Boundary
 

@@ -62,11 +62,35 @@ self-contained tasks suitable for a fast delegated agent.
 - `mise run ci` passes.
 - Wiki updated per the rules below (dated `docs/wiki/LOG.md` entry; relevant page).
 
+## Configuration As Code — Non-Negotiable
+
+This is a configuration-as-code game. **Everything** that is content,
+art, or tuning lives in `configs/` (or a file those configs already
+name). **Nothing** of that kind is hardcoded in `src/`.
+
+- Model IDs, Mesh IDs, Texture IDs, Animation IDs, Sound IDs, workshop
+  preview asset IDs — config only.
+- Palettes, intervals, radii, prices, catalogs, upgrade copy — config
+  only.
+- Services consume config. They do not keep a second copy of the
+  numbers. Swapping a config file must be enough to change what the
+  game loads.
+- If a value is missing from config, **add the config key**. Do not
+  paste `rbxassetid://…` or a numeric asset id into a service or
+  `*Progression.lua` module.
+- The 2026-09-01 failure: new model configs were swapped and nothing
+  changed because IDs were hardcoded in Lua. Do not recreate that.
+
+See `.cursor/rules/configuration-as-code.mdc` and
+`docs/wiki/DECISIONS.md` (Config As Code).
+
 ## Start Of Work
 
 1. Read `docs/wiki/INDEX.md`.
 2. Read any linked wiki page relevant to the task before making architectural or gameplay changes.
 3. Prefer the wiki for current project decisions, but verify against source files before editing code.
+4. Before writing an asset id, model number, palette, or tunable into
+   `src/`, stop. Put it in `configs/` and read it from there.
 
 ## During Work
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -129,6 +130,30 @@ RULES = (
         owner="configuration",
         reason="Existing permissive configs must gain explicit schemas and version policy.",
     ),
+    RuleSpec(
+        key="runtime-asset-literal",
+        title="long numeric asset/content identifier under src/",
+        pattern="8+ digit numeric literal under src/",
+        owner="configuration",
+        reason="Existing runtime-owned asset/content ids must migrate into configs; new ids are forbidden in src/.",
+        expressions=(r"(?<![A-Za-z0-9_])\d{8,}(?![A-Za-z0-9_])",),
+    ),
+    RuleSpec(
+        key="numeric-tuning-fallback",
+        title="silent numeric fallback for config or tuning input",
+        pattern="config/tuning lookup followed by `or <number>` under src/",
+        owner="configuration",
+        reason="Existing numeric fallbacks must migrate to validated config or explicit required-value contracts.",
+        expressions=(
+            r"(?i)(?:"
+            r"tonumber\s*\([^)]*(?:cfg|config|kind|def|opts|settings|tuning|presentation|layout|"
+            r"shot|combat|power|scale|focus|damage|radius|interval|duration|seconds|speed|range|"
+            r"magnitude|mult|cost|cooldown|chance|rate|health|distance|height|width|depth|stud)[^)]*\)"
+            r"|\b(?:cfg|config|kind|def|opts|settings|tuning|presentation|layout|shot|combat|power)\w*"
+            r"(?:\s*\.\s*\w+|\s*\[[^\]]+\])"
+            r")\s*\)?\s*or\s*-?\d+(?:\.\d+)?",
+        ),
+    ),
 )
 
 RULE_BY_KEY = {rule.key: rule for rule in RULES}
@@ -137,6 +162,7 @@ SHORTCUTS = {
     "mutations": ("pet-record-mutation", "currency-persistence-call"),
     "timing": ("runtime-wait",),
     "configs": ("config-without-schema",),
+    "content": ("runtime-asset-literal", "numeric-tuning-fallback"),
     "services": ("service-global-locator",),
 }
 
@@ -185,6 +211,19 @@ def strip_lua_comments(text: str) -> str:
 
 
 def runtime_files(root: Path) -> list[Path]:
+    versioned = subprocess.run(
+        ["git", "ls-files", "--cached", "--", "src"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if versioned.returncode == 0:
+        return sorted(
+            root / relative
+            for relative in versioned.stdout.splitlines()
+            if relative.endswith((".lua", ".luau"))
+        )
     src = root / "src"
     return sorted((*src.rglob("*.lua"), *src.rglob("*.luau")))
 
@@ -388,7 +427,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--allowlist", type=Path, default=DEFAULT_ALLOWLIST)
     parser.add_argument("--rule", action="append", choices=sorted(RULE_BY_KEY))
     parser.add_argument("--print-baseline", action="store_true")
-    parser.add_argument("--tracking", default="https://github.com/sploithunter/HaloAndHorns/issues/3")
+    parser.add_argument("--write-baseline", action="store_true")
+    parser.add_argument("--tracking", default="https://github.com/sploithunter/HaloAndHorns/issues/343")
     for shortcut in SHORTCUTS:
         parser.add_argument(f"--{shortcut}", action="store_true")
     return parser.parse_args()
@@ -398,8 +438,13 @@ def main() -> int:
     args = parse_args()
     chosen = selected_rules(args)
     findings = collect_findings(ROOT, chosen)
-    if args.print_baseline:
-        print(json.dumps(baseline_document(findings, args.tracking), indent=2, sort_keys=True))
+    if args.print_baseline or args.write_baseline:
+        rendered = json.dumps(baseline_document(findings, args.tracking), indent=2, sort_keys=True)
+        if args.write_baseline:
+            args.allowlist.write_text(rendered + "\n", encoding="utf-8")
+            print(f"architecture: wrote reviewed baseline to {args.allowlist}")
+            return 0
+        print(rendered)
         return 0
 
     try:

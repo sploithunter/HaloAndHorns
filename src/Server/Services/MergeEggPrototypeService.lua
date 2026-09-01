@@ -68,10 +68,8 @@ local TOWER_SIZE_LABEL_NAME = "MergeEggTowerSizeLabel"
 local BULWARK_MENU_PROMPT_NAME = "MergeEggBulwarkMenuPrompt"
 local BULWARK_MENU_HOST_PREFIX = "MergeEggBulwarkMenuHost_"
 local BULWARK_ENGINEER_NAME = "MergeBulwarkEngineer"
-local BULWARK_ENGINEER_IDLE = "rbxassetid://507766388"
 local ARTILLERY_COMMANDER_NAME = "MergeArtilleryCommander"
 local ARTILLERY_COMMANDER_PROMPT_NAME = "MergeEggArtilleryCommanderPrompt"
-local ARTILLERY_COMMANDER_IDLE = BULWARK_ENGINEER_IDLE
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
     power = true,
@@ -122,6 +120,18 @@ end
 local function characterRoot(player)
     local character = player and player.Character
     return character and character:FindFirstChild("HumanoidRootPart") or nil
+end
+
+local function requiredConfigNumber(value, path)
+    local resolved = tonumber(value)
+    assert(resolved ~= nil, "Missing or invalid numeric config: " .. tostring(path))
+    return resolved
+end
+
+local function requiredAssetUri(value, path)
+    local assetId = string.match(tostring(value or ""), "(%d+)$")
+    assert(assetId ~= nil, "Missing or invalid asset config: " .. tostring(path))
+    return "rbxassetid://" .. assetId
 end
 
 local function stationXOffset(config, teamConfig, fallbackSlot)
@@ -1281,7 +1291,10 @@ end
 
 function MergeEggPrototypeService:_isPrototypeHugeTier(tier)
     local cfg = (self._config.team or {}).prototype_huge_progression or {}
-    local startTier = math.max(1, math.floor(tonumber(cfg.start_tier) or 2147483647))
+    local startTier = math.max(
+        1,
+        math.floor(requiredConfigNumber(cfg.start_tier, "prototype_huge_progression.start_tier"))
+    )
     return math.max(1, math.floor(tonumber(tier) or 1)) >= startTier
 end
 
@@ -3473,28 +3486,20 @@ function MergeEggPrototypeService:_towerFireInterval(cannon, shot)
     local spec = type(shot.landing) == "table" and shot.landing[role] or nil
     local interval =
         self:_towerListedNumber(spec and spec.interval, self:_towerTierIndex(cannon), shot.interval)
-    return math.max(0.4, interval or 2.4)
+    return requiredConfigNumber(interval, "team.edge_towers.shot interval")
 end
 
 function MergeEggPrototypeService:_towerHealMagnitude(cannon)
     local spec, _ = self:_towerLandingSpec("heal")
     local listed =
         self:_towerListedNumber(spec and spec.magnitude, self:_towerTierIndex(cannon), nil)
-    if listed then
-        return math.max(0, listed)
-    end
-    if self._powerService and self._powerService._powersConfig then
-        local kind = self._powerService._powersConfig.effect_kinds
-        kind = type(kind) == "table" and kind.healing_field or nil
-        return math.max(0, tonumber(kind and kind.magnitude) or 110)
-    end
-    return 110
+    return requiredConfigNumber(listed, "team.edge_towers.shot.landing.heal.magnitude")
 end
 
 function MergeEggPrototypeService:_towerRageRadius(cannon)
     local spec = self:_towerLandingSpec("rage")
     local listed = self:_towerListedNumber(spec and spec.radius, self:_towerTierIndex(cannon), nil)
-    return math.max(4, listed or 28)
+    return requiredConfigNumber(listed, "team.edge_towers.shot.landing.rage.radius")
 end
 
 function MergeEggPrototypeService:_towerPetReady(pet)
@@ -3578,7 +3583,8 @@ function MergeEggPrototypeService:_towerAllowsFireAt(world, position, role)
         return true
     end
     local _, shot = self:_edgeTowerConfig()
-    local epsilon = math.max(0, tonumber(shot.fire_line_epsilon) or 2)
+    local epsilon =
+        requiredConfigNumber(shot.fire_line_epsilon, "team.edge_towers.shot.fire_line_epsilon")
     local towardGate = self:_towerTowardGate(world, position)
     if not towardGate then
         return true
@@ -3751,15 +3757,14 @@ function MergeEggPrototypeService:_playCannonImpact(position, parent)
     Debris:AddItem(emitter, math.max(2, (tonumber(def.duration_seconds) or 1.28) + 0.6))
 end
 
-function MergeEggPrototypeService:_towerShotColor(world, role)
+function MergeEggPrototypeService:_towerShotColor(_world, role)
     local towers, shot = self:_edgeTowerConfig()
     local colors = type(shot.role_colors) == "table" and shot.role_colors or towers.role_colors
     local triplet = type(colors) == "table" and colors[string.lower(tostring(role or ""))] or nil
     if type(triplet) == "table" then
         return rgbTriplet(triplet)
     end
-    local side = tostring(world and world:GetAttribute("MergeEggBaySide") or "")
-    return side == "hell" and Color3.fromRGB(255, 72, 28) or Color3.fromRGB(255, 148, 36)
+    error("Missing team.edge_towers.shot.role_colors." .. string.lower(tostring(role or "")))
 end
 
 function MergeEggPrototypeService:_castTowerHealingField(flight, position)
@@ -4140,11 +4145,13 @@ end
 
 function MergeEggPrototypeService:_towerLaneRange(record, origin)
     local _, shot = self:_edgeTowerConfig()
-    local range = math.max(8, tonumber(shot.range) or 90)
+    local range = requiredConfigNumber(shot.range, "team.edge_towers.shot.range")
+    local gatePadding =
+        requiredConfigNumber(shot.range_gate_padding, "team.edge_towers.shot.range_gate_padding")
     local portalPosition = self:_towerGatePosition(record and record.world)
     if portalPosition and origin then
         local planar = Vector3.new(portalPosition.X - origin.X, 0, portalPosition.Z - origin.Z)
-        range = math.max(range, planar.Magnitude + 16)
+        range = math.max(range, planar.Magnitude + gatePadding)
     end
     return range
 end
@@ -4278,13 +4285,27 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                         or existing:GetAttribute("MergeTowerRole") ~= family
                         or existing:GetAttribute("MergeTowerSlot") ~= slot
                         or existing:GetAttribute("MergeTowerArtTier") ~= gameplayTier
+                        or not MergeTowerModels.MatchesTemplate(
+                            existing,
+                            family,
+                            gameplayTier,
+                            nil,
+                            self._config.tier_art
+                        )
                     )
                 then
                     existing:Destroy()
                     existing = nil
                 end
                 if not existing then
-                    local model, reason = MergeTowerModels.Spawn(family, gameplayTier, pad, folder)
+                    local model, reason = MergeTowerModels.Spawn(
+                        family,
+                        gameplayTier,
+                        pad,
+                        folder,
+                        nil,
+                        self._config.tier_art
+                    )
                     if model then
                         model.Name = name
                         model:SetAttribute(
@@ -4374,8 +4395,15 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
             Vector3.new(last.Position.X - first.Position.X, 0, last.Position.Z - first.Position.Z)
         local along = planarUnit(span, nil)
         if along then
-            local tile = tonumber(first:GetAttribute("MergeBulwarkTileLength")) or 9.4
-            local margin = math.max(4, tonumber(cfg.land_shark_field_margin_studs) or 8)
+            local tile = tonumber(first:GetAttribute("MergeBulwarkTileLength"))
+                or requiredConfigNumber(
+                    cfg.canonical_tile_length_studs,
+                    "team.edge_bulwarks.canonical_tile_length_studs"
+                )
+            local margin = requiredConfigNumber(
+                cfg.land_shark_field_margin_studs,
+                "team.edge_bulwarks.land_shark_field_margin_studs"
+            )
             local depthDir = planarUnit(first.CFrame.LookVector, Vector3.new(-along.Z, 0, along.X))
             depthDir = planarUnit(
                 depthDir - along * depthDir:Dot(along),
@@ -4385,8 +4413,17 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
                 center = (first.Position + last.Position) * 0.5,
                 along = along,
                 depth = depthDir,
-                width = math.max(24, span.Magnitude + tile - margin * 2),
-                depthStuds = math.max(3, tonumber(cfg.land_shark_field_depth_studs) or 7),
+                width = math.max(
+                    requiredConfigNumber(
+                        cfg.land_shark_min_field_width_studs,
+                        "team.edge_bulwarks.land_shark_min_field_width_studs"
+                    ),
+                    span.Magnitude + tile - margin * 2
+                ),
+                depthStuds = requiredConfigNumber(
+                    cfg.land_shark_field_depth_studs,
+                    "team.edge_bulwarks.land_shark_field_depth_studs"
+                ),
             }
         end
     end
@@ -4399,8 +4436,7 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
     elseif family == "land_shark" and #allAnchors > 0 then
         presentationAnchors = {}
         local hunt = MergeBulwarkProgression.combatEffect(family, tier, cfg)
-        local count =
-            math.clamp(math.floor(tonumber(hunt and hunt.sharkCount) or 4), 1, #allAnchors)
+        local count = math.clamp(math.floor(hunt.sharkCount), 1, #allAnchors)
         for patrolIndex = 1, count do
             local anchorIndex = math.clamp(
                 math.floor((patrolIndex * (#allAnchors + 1)) / (count + 1) + 0.5),
@@ -4446,6 +4482,13 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
                 existing:GetAttribute("MergeBulwarkSlot") ~= slot
                 or existing:GetAttribute("MergeBulwarkFamily") ~= family
                 or existing:GetAttribute("MergeBulwarkTier") ~= tier
+                or not MergeBulwarkModels.MatchesTemplate(
+                    existing,
+                    family,
+                    tier,
+                    nil,
+                    self._config.tier_art
+                )
                 or math.abs(
                         (tonumber(existing:GetAttribute("MergeBulwarkSpawnScale")) or 1)
                             - expectedScale
@@ -4457,8 +4500,15 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
             existing = nil
         end
         if not existing and family then
-            local model, reason =
-                MergeBulwarkModels.Spawn(family, tier, anchor, folder, nil, expectedScale)
+            local model, reason = MergeBulwarkModels.Spawn(
+                family,
+                tier,
+                anchor,
+                folder,
+                nil,
+                expectedScale,
+                self._config.tier_art
+            )
             if model then
                 model.Name = name
                 model:SetAttribute("MergeBulwarkTileIndex", index)
@@ -4470,7 +4520,10 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
                     model:PivotTo(model:GetPivot() * CFrame.Angles(0, math.rad(90), 0))
                     local _, boundsSize = model:GetBoundingBox()
                     local finExposure = math.clamp(
-                        tonumber(cfg.land_shark_fin_exposure_studs) or 1,
+                        requiredConfigNumber(
+                            cfg.land_shark_fin_exposure_studs,
+                            "team.edge_bulwarks.land_shark_fin_exposure_studs"
+                        ),
                         0.25,
                         math.max(0.25, boundsSize.Y)
                     )
@@ -4493,42 +4546,33 @@ function MergeEggPrototypeService:_spawnBulwarkSlot(
                         model:SetAttribute("MergeLandSharkFieldWidth", sharkField.width)
                         model:SetAttribute("MergeLandSharkFieldDepth", sharkField.depthStuds)
                     end
-                    model:SetAttribute(
-                        "MergeLandSharkTrackStuds",
-                        math.max(4, tonumber(cfg.land_shark_track_studs) or 28)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkSpeedStuds",
-                        math.max(1, tonumber(cfg.land_shark_speed_studs) or 10)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkSurfaceDistance",
-                        math.max(2, tonumber(cfg.land_shark_surface_distance) or 8)
-                    )
+                    local sharkTuning = {
+                        MergeLandSharkTrackStuds = "land_shark_track_studs",
+                        MergeLandSharkSpeedStuds = "land_shark_speed_studs",
+                        MergeLandSharkTempoDivisor = "land_shark_tempo_divisor",
+                        MergeLandSharkChaseSpeedStuds = "land_shark_chase_speed_studs",
+                        MergeLandSharkDragSpeedStuds = "land_shark_drag_speed_studs",
+                        MergeLandSharkReturnSpeedStuds = "land_shark_return_speed_studs",
+                        MergeLandSharkHuntBlendRate = "land_shark_hunt_blend_rate",
+                        MergeLandSharkSampleLeadSeconds = "land_shark_sample_lead_seconds",
+                        MergeLandSharkProximityPollSeconds = "land_shark_proximity_poll_seconds",
+                        MergeLandSharkSurfaceDistance = "land_shark_surface_distance",
+                        MergeLandSharkBitePeriodSeconds = "land_shark_bite_period_seconds",
+                        MergeLandSharkBreachPeriodSeconds = "land_shark_breach_period_seconds",
+                        MergeLandSharkBreachDurationSeconds = "land_shark_breach_duration_seconds",
+                        MergeLandSharkBreachRiseStuds = "land_shark_breach_rise_studs",
+                        MergeLandSharkBreachPitchDegrees = "land_shark_breach_pitch_degrees",
+                    }
+                    for attribute, key in pairs(sharkTuning) do
+                        model:SetAttribute(
+                            attribute,
+                            requiredConfigNumber(cfg[key], "team.edge_bulwarks." .. key)
+                        )
+                    end
                     model:SetAttribute("MergeLandSharkSurfaceRise", boundsSize.Y * 0.5)
-                    model:SetAttribute(
-                        "MergeLandSharkBitePeriodSeconds",
-                        math.max(0.5, tonumber(cfg.land_shark_bite_period_seconds) or 1.4)
-                    )
                     model:SetAttribute(
                         "MergeLandSharkPhase",
                         (patrolIndex - 1) / math.max(1, #presentationAnchors)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkBreachPeriodSeconds",
-                        math.max(3, tonumber(cfg.land_shark_breach_period_seconds) or 7.5)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkBreachDurationSeconds",
-                        math.max(0.6, tonumber(cfg.land_shark_breach_duration_seconds) or 1.55)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkBreachRiseStuds",
-                        math.max(0.5, tonumber(cfg.land_shark_breach_rise_studs) or 2.3)
-                    )
-                    model:SetAttribute(
-                        "MergeLandSharkBreachPitchDegrees",
-                        math.max(0, tonumber(cfg.land_shark_breach_pitch_degrees) or 14)
                     )
                 end
                 spawned += 1
@@ -4554,6 +4598,7 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
     if not (world and def) then
         return nil
     end
+    local cfg = self:_edgeBulwarkConfig()
     local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
     local laneLines = map and map:FindFirstChild("LaneLines")
     local playFields = map and map:FindFirstChild("PlayFields")
@@ -4584,16 +4629,22 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
     if existing then
         return existing
     end
-    local TILE_COUNT = 10
-    local WALL_INSET = 1
-    local CANONICAL_TILE_LENGTH = 10
+    local tileCount = requiredConfigNumber(cfg.tile_count, "team.edge_bulwarks.tile_count")
+    local wallInset = requiredConfigNumber(
+        cfg.wall_inset_studs,
+        "team.edge_bulwarks.wall_inset_studs"
+    )
+    local canonicalTileLength = requiredConfigNumber(
+        cfg.canonical_tile_length_studs,
+        "team.edge_bulwarks.canonical_tile_length_studs"
+    )
     local longIsX = line.Size.X >= line.Size.Z
     local markerLength = longIsX and line.Size.X or line.Size.Z
-    local usableLength = markerLength - WALL_INSET * 2
+    local usableLength = markerLength - wallInset * 2
     if usableLength <= 0 then
         return nil
     end
-    local tileLength = usableLength / TILE_COUNT
+    local tileLength = usableLength / tileCount
     local direction = longIsX and line.CFrame.RightVector or line.CFrame.LookVector
     local bayId = string.format("%s_%02d", side, column)
     local portableBays = Workspace:FindFirstChild("Maps")
@@ -4608,7 +4659,7 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
     bayFolder:SetAttribute("MergeEggBayId", bayId)
     bayFolder:SetAttribute("MergeBulwarkSlot", def.id)
     bayFolder.Parent = stations
-    for index = 1, TILE_COUNT do
+    for index = 1, tileCount do
         local offset = -usableLength * 0.5 + tileLength * (index - 0.5)
         local center = line.Position + direction * offset
         local anchor = Instance.new("Part")
@@ -4628,7 +4679,7 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
         anchor:SetAttribute("MergeEggBayId", bayId)
         anchor:SetAttribute("MergeBulwarkTileIndex", index)
         anchor:SetAttribute("MergeBulwarkTileLength", tileLength)
-        anchor:SetAttribute("MergeBulwarkScale", tileLength / CANONICAL_TILE_LENGTH)
+        anchor:SetAttribute("MergeBulwarkScale", tileLength / canonicalTileLength)
         anchor:SetAttribute("MergeBulwarkSlot", def.id)
         anchor.Parent = bayFolder
     end
@@ -4698,7 +4749,7 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         owned = state.owned,
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
-        families = MergeBulwarkProgression.familiesForSlot(slot),
+        families = MergeBulwarkProgression.familiesForSlot(slot, self._config.tier_art),
         unlocked = MergeBulwarkProgression.isUnlocked(MergeBulwarkProgression.unlockWave(cfg), cfg),
         unlockWave = MergeBulwarkProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 20)),
@@ -4738,6 +4789,7 @@ function MergeEggPrototypeService:_engineerPosts()
                     display_name = row.display_name or engineer.display_name,
                     object_text = row.object_text or engineer.object_text,
                     action_text = row.action_text or engineer.action_text,
+                    idle_animation = row.idle_animation or engineer.idle_animation,
                     max_distance = tonumber(row.max_distance)
                         or tonumber(engineer.max_distance)
                         or 16,
@@ -4752,6 +4804,7 @@ function MergeEggPrototypeService:_engineerPosts()
             display_name = engineer.display_name,
             object_text = engineer.object_text,
             action_text = engineer.action_text,
+            idle_animation = engineer.idle_animation,
             max_distance = tonumber(engineer.max_distance) or 16,
         }
     end
@@ -5094,7 +5147,8 @@ function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
         local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
         animator.Parent = humanoid
         local idle = Instance.new("Animation")
-        idle.AnimationId = BULWARK_ENGINEER_IDLE
+        idle.AnimationId =
+            requiredAssetUri(post.idle_animation, "team.edge_bulwarks.engineer.idle_animation")
         local ok, track = pcall(function()
             return animator:LoadAnimation(idle)
         end)
@@ -5297,7 +5351,8 @@ function MergeEggPrototypeService:_spawnArtilleryCommander(record, folder, post)
         local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
         animator.Parent = humanoid
         local idle = Instance.new("Animation")
-        idle.AnimationId = ARTILLERY_COMMANDER_IDLE
+        idle.AnimationId =
+            requiredAssetUri(commander.idle_animation, "team.edge_towers.commander.idle_animation")
         local ok, track = pcall(function()
             return animator:LoadAnimation(idle)
         end)
@@ -5350,7 +5405,7 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         owned = state.owned,
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
-        families = MergeTowerProgression.familiesForSlot(slot),
+        families = MergeTowerProgression.familiesForSlot(slot, self._config.tier_art),
         unlocked = MergeTowerProgression.isUnlocked(MergeTowerProgression.unlockWave(cfg), cfg),
         unlockWave = MergeTowerProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 10)),
@@ -5405,145 +5460,6 @@ function MergeEggPrototypeService:_openCannonMenu(player, slot)
     return true
 end
 
-function MergeEggPrototypeService:_towerSizePreviewScales()
-    local towersCfg = self:_edgeTowerConfig()
-    local preview = type(towersCfg.size_preview) == "table" and towersCfg.size_preview or {}
-    local scales = {}
-    for _, value in ipairs(type(preview.scales) == "table" and preview.scales or {}) do
-        local scale = tonumber(value)
-        if scale and scale > 0 then
-            scales[#scales + 1] = scale
-        end
-    end
-    if #scales == 0 then
-        scales = { 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.85 }
-    end
-    return scales, preview.enabled ~= false
-end
-
-function MergeEggPrototypeService:_towerPromptHost(cannon)
-    local folder = cannon and cannon.Parent
-    if not folder then
-        return nil
-    end
-    local name = cannon.Name .. "_Preview"
-    local host = folder:FindFirstChild(name)
-    if host and not host:IsA("BasePart") then
-        host:Destroy()
-        host = nil
-    end
-    if not host then
-        host = Instance.new("Part")
-        host.Name = name
-        host.Anchored = true
-        host.CanCollide = false
-        host.CanTouch = false
-        host.CanQuery = true
-        host.CastShadow = false
-        host.Transparency = 1
-        host.Size = Vector3.new(1.2, 1.2, 1.2)
-        host.Parent = folder
-    end
-    local box, size = cannon:GetBoundingBox()
-    host.CFrame = CFrame.new(box.Position + Vector3.new(0, size.Y * 0.5 + 1.6, 0))
-    return host
-end
-
-function MergeEggPrototypeService:_refreshTowerSizeLabel(cannon)
-    local host = self:_towerPromptHost(cannon)
-    if not host then
-        return
-    end
-    local scale = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 1
-    local _, size = cannon:GetBoundingBox()
-    local label = host:FindFirstChild(TOWER_SIZE_LABEL_NAME)
-    if label and not label:IsA("BillboardGui") then
-        label:Destroy()
-        label = nil
-    end
-    if not label then
-        label = Instance.new("BillboardGui")
-        label.Name = TOWER_SIZE_LABEL_NAME
-        label.AlwaysOnTop = true
-        label.LightInfluence = 0
-        label.MaxDistance = 90
-        label.Size = UDim2.fromOffset(180, 72)
-        label.Parent = host
-        local text = Instance.new("TextLabel")
-        text.Name = "Label"
-        text.BackgroundTransparency = 1
-        text.Size = UDim2.fromScale(1, 1)
-        text.Font = Enum.Font.GothamBlack
-        text.TextColor3 = Color3.new(1, 1, 1)
-        text.TextScaled = true
-        text.TextStrokeColor3 = Color3.fromRGB(18, 28, 48)
-        text.TextStrokeTransparency = 0
-        text.Parent = label
-    end
-    label.Adornee = host
-    label.StudsOffsetWorldSpace = Vector3.new(0, size.Y * 0.5 + 2.2, 0)
-    local text = label:FindFirstChild("Label")
-    if text and text:IsA("TextLabel") then
-        text.Text = string.format("%.2f\n%.1f studs", scale, size.X)
-    end
-    local prompt = host:FindFirstChild(TOWER_SIZE_PROMPT_NAME)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        prompt.ObjectText = string.format("Size %.2f", scale)
-    end
-end
-
-function MergeEggPrototypeService:_setTowerPreviewScale(cannon, scale)
-    if not cannon then
-        return
-    end
-    scale = math.max(0.1, tonumber(scale) or 0.4)
-    local rest = cannon:GetAttribute("MergeTowerRestCFrame")
-    if typeof(rest) ~= "CFrame" then
-        rest = flattenTowerLook(cannon:GetPivot())
-    else
-        rest = flattenTowerLook(rest)
-    end
-    local padTop = tonumber(cannon:GetAttribute("MergeTowerPadTopY"))
-    if not padTop then
-        local box, size = cannon:GetBoundingBox()
-        padTop = box.Position.Y - size.Y * 0.5
-        cannon:SetAttribute("MergeTowerPadTopY", padTop)
-    end
-    cannon:ScaleTo(scale)
-    cannon:SetAttribute("MergeTowerSpawnScale", scale)
-    cannon:PivotTo(rest)
-    local box, size = cannon:GetBoundingBox()
-    local bottom = box.Position.Y - size.Y * 0.5
-    cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, padTop - bottom, 0))
-    local grounded = flattenTowerLook(cannon:GetPivot())
-    cannon:SetAttribute("MergeTowerRestCFrame", grounded)
-    box, size = cannon:GetBoundingBox()
-    cannon:SetAttribute("MergeTowerRestBottomY", box.Position.Y - size.Y * 0.5)
-    self:_refreshTowerSizeLabel(cannon)
-end
-
-function MergeEggPrototypeService:_cycleTowerSize(_player, cannon)
-    if not (cannon and cannon.Parent) then
-        return
-    end
-    local scales = self:_towerSizePreviewScales()
-    local current = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.4
-    local index = 0
-    for i, value in ipairs(scales) do
-        if math.abs(value - current) < 1e-3 then
-            index = i
-            break
-        end
-    end
-    local nextScale = scales[(index % #scales) + 1]
-    local folder = cannon.Parent
-    for _, sibling in ipairs(folder and folder:GetChildren() or { cannon }) do
-        if sibling:IsA("Model") and sibling:GetAttribute("MergeTowerSpawned") == true then
-            self:_setTowerPreviewScale(sibling, nextScale)
-        end
-    end
-end
-
 function MergeEggPrototypeService:_clearTowerTestPrompts(cannon)
     if not cannon then
         return
@@ -5579,7 +5495,7 @@ function MergeEggPrototypeService:_aimCannonAtLaneTarget(record, cannon)
     local look = self:_towerGateLook(world, origin)
     local role = string.lower(tostring(cannon:GetAttribute("MergeTowerRole") or ""))
     local target = self:_towerAimTarget(record, origin, look, role)
-    local apex = math.max(0, tonumber(shot.apex_height) or 14)
+    local apex = requiredConfigNumber(shot.apex_height, "team.edge_towers.shot.apex_height")
     if target then
         self:_aimTowerCannon(cannon, origin, target, apex)
         origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
@@ -5602,10 +5518,6 @@ function MergeEggPrototypeService:_stepTowerAim(record)
     end
 end
 
--- Roblox Fire is always orange. Heal uses the same rising-flame mote as
--- CombatFX burns so the shot and muzzle read as green fire.
-local HEAL_FIRE_TEXTURE = "rbxassetid://83142936306716"
-
 function MergeEggPrototypeService:_attachHealFire(host, color, opts)
     opts = type(opts) == "table" and opts or {}
     local emitter = Instance.new("ParticleEmitter")
@@ -5613,7 +5525,9 @@ function MergeEggPrototypeService:_attachHealFire(host, color, opts)
     emitter.Color = ColorSequence.new(color, Color3.fromRGB(210, 255, 180))
     emitter.LightEmission = 0.9
     emitter.LightInfluence = 0
-    emitter.Texture = HEAL_FIRE_TEXTURE
+    local _, shot = self:_edgeTowerConfig()
+    emitter.Texture =
+        requiredAssetUri(shot.heal_fire_texture, "team.edge_towers.shot.heal_fire_texture")
     emitter.Size = NumberSequence.new({
         NumberSequenceKeypoint.new(0, opts.size0 or 1.1),
         NumberSequenceKeypoint.new(0.3, opts.size1 or 1.7),
@@ -5723,11 +5637,11 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         return false
     end
     cannon:SetAttribute("MergeTowerSkipReason", "")
-    local apex = math.max(0, tonumber(shot.apex_height) or 14)
+    local apex = requiredConfigNumber(shot.apex_height, "team.edge_towers.shot.apex_height")
     self:_aimTowerCannon(cannon, origin, target, apex)
     origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
     local folder = self:_towerFolder(world, "MergeEggTowerShots")
-    local diameter = math.max(0.4, tonumber(shot.diameter) or 1.2)
+    local diameter = requiredConfigNumber(shot.diameter, "team.edge_towers.shot.diameter")
     local part = Instance.new("Part")
     part.Name = "MergeEggTowerFireball"
     part.Shape = Enum.PartType.Ball
@@ -5760,8 +5674,11 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         record = record,
         cannon = cannon,
         startedAt = now,
-        duration = math.max(0.2, tonumber(shot.flight_seconds) or 0.85),
-        landSeconds = math.max(0.2, tonumber(shot.land_seconds) or 0.55),
+        duration = requiredConfigNumber(
+            shot.flight_seconds,
+            "team.edge_towers.shot.flight_seconds"
+        ),
+        landSeconds = requiredConfigNumber(shot.land_seconds, "team.edge_towers.shot.land_seconds"),
     }
     self._towerShots = self._towerShots or {}
     self._towerShots[#self._towerShots + 1] = flight
@@ -5780,14 +5697,15 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
         return
     end
     local _, shot = self:_edgeTowerConfig()
-    local jitter = math.max(0, tonumber(shot.interval_jitter) or 0.05)
+    local jitter =
+        requiredConfigNumber(shot.interval_jitter, "team.edge_towers.shot.interval_jitter")
     local rng = record.random or Random.new()
     local function fireDelay(cannon)
         local interval = self:_towerFireInterval(cannon, shot)
         if jitter <= 0 then
             return interval
         end
-        return math.max(0.4, interval + rng:NextNumber(-jitter, jitter))
+        return math.max(0, interval + rng:NextNumber(-jitter, jitter))
     end
     local index = 0
     for _, cannon in ipairs(folder:GetChildren()) do
@@ -5815,13 +5733,13 @@ function MergeEggPrototypeService:_stepTowerShots(now)
         local part = flight.part
         if part and part.Parent then
             if flight.landedAt then
-                if now < flight.landedAt + (flight.landSeconds or 0.55) then
+                if now < flight.landedAt + flight.landSeconds then
                     remaining[#remaining + 1] = flight
                 else
                     part:Destroy()
                 end
             else
-                local duration = math.max(0.05, tonumber(flight.duration) or 0.85)
+                local duration = flight.duration
                 local alpha = (now - flight.startedAt) / duration
                 local origin = flight.origin
                 local target = flight.target

@@ -2,11 +2,25 @@
 -- the list is cannons and each commander opens one pad. All state and
 -- purchases remain server-authoritative.
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+
+local CURRENCIES = require(ReplicatedStorage.Configs:WaitForChild("currencies"))
 
 local MergeCannonMenu = {}
 
-local WAYCOIN_ICON = "rbxthumb://type=Asset&id=124447234465235&w=150&h=150"
+local function currencyThumbnail(currencyId)
+    for _, currency in ipairs(CURRENCIES) do
+        if currency.id == currencyId then
+            local assetId = string.match(tostring(currency.icon or ""), "(%d+)$")
+            assert(assetId ~= nil, "Currency icon is not an asset id: " .. currencyId)
+            return string.format("rbxthumb://type=Asset&id=%s&w=150&h=150", assetId)
+        end
+    end
+    error("Currency config is missing: " .. currencyId)
+end
+
+local WAYCOIN_ICON = currencyThumbnail("hall_coins")
 local FAMILY_COLORS = {
     Color3.fromRGB(210, 145, 55),
     Color3.fromRGB(125, 135, 155),
@@ -78,8 +92,7 @@ local function label(parent, name, text, size, bold)
     return value
 end
 
--- Cannon previews use the current-art Model asset IDs. Distinct tier art is
--- later; every rank currently shows the same chassis thumbnail.
+-- Cannon previews use the manifest-generated Model asset id for the selected gameplay tier.
 local function makePreviewImage(parent, name)
     local pane = Instance.new("Frame")
     pane.Name = name
@@ -111,7 +124,8 @@ local function showPreview(slot, family, tier)
     local resolvedTier = math.max(0, math.floor(tonumber(tier) or 0))
     local previewIds = type(family) == "table" and family.previewAssetIds or nil
     local assetId = type(previewIds) == "table" and previewIds[resolvedTier] or nil
-    local key = string.format("%s:%d:%s", tostring(familyId or ""), resolvedTier, tostring(assetId or ""))
+    local key =
+        string.format("%s:%d:%s", tostring(familyId or ""), resolvedTier, tostring(assetId or ""))
     if key == slot.key then
         return
     end
@@ -764,7 +778,8 @@ function MergeCannonMenu.new(parent, onAction)
                 card.swatch.BackgroundColor3 = FAMILY_COLORS[((index - 1) % #FAMILY_COLORS) + 1]
                 card.pointer.BackgroundTransparency = chosen and 0 or 1
                 if locked then
-                    card.statusText.Text = string.upper(tostring(family.installHint or "LOCKED LINE"))
+                    card.statusText.Text =
+                        string.upper(tostring(family.installHint or "LOCKED LINE"))
                     card.statusText.TextColor3 = Color3.fromRGB(196, 150, 255)
                     card.statusIcon.Visible = false
                     card.statusMark.Text = "!"

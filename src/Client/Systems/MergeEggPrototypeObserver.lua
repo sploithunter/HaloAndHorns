@@ -1215,6 +1215,12 @@ local function landSharkWander(time, phase, seed)
     return along, depth
 end
 
+local function requiredLandSharkNumber(model, attribute)
+    local value = tonumber(model:GetAttribute(attribute))
+    assert(value ~= nil, "Missing Land Shark tuning attribute: " .. attribute)
+    return value
+end
+
 local function registerLandSharkRig(model)
     local direction =
         planarUnit(model:GetAttribute("MergeLandSharkTrackDirection"), Vector3.new(1, 0, 0))
@@ -1234,50 +1240,26 @@ local function registerLandSharkRig(model)
         center = Vector3.new(center.X, pivotY, center.Z),
         direction = direction,
         depth = depth,
-        halfWidth = math.max(
-            8,
-            (
-                tonumber(model:GetAttribute("MergeLandSharkFieldWidth"))
-                or (field and field.width)
-                or 78
-            ) * 0.5
-        ),
-        halfDepth = math.max(
-            1,
-            (
-                tonumber(model:GetAttribute("MergeLandSharkFieldDepth"))
-                or (field and field.depthStuds)
-                or 7
-            ) * 0.5
-        ),
+        halfWidth = requiredLandSharkNumber(model, "MergeLandSharkFieldWidth") * 0.5,
+        halfDepth = requiredLandSharkNumber(model, "MergeLandSharkFieldDepth") * 0.5,
         seed = tonumber(model:GetAttribute("MergeLandSharkPatrolIndex")) or 1,
-        trackStuds = math.max(4, tonumber(model:GetAttribute("MergeLandSharkTrackStuds")) or 28),
-        speedStuds = math.max(1, tonumber(model:GetAttribute("MergeLandSharkSpeedStuds")) or 10),
-        surfaceDistance = math.max(
-            2,
-            tonumber(model:GetAttribute("MergeLandSharkSurfaceDistance")) or 8
-        ),
-        surfaceRise = math.max(0, tonumber(model:GetAttribute("MergeLandSharkSurfaceRise")) or 2),
-        bitePeriod = math.max(
-            0.5,
-            tonumber(model:GetAttribute("MergeLandSharkBitePeriodSeconds")) or 1.4
-        ),
+        trackStuds = requiredLandSharkNumber(model, "MergeLandSharkTrackStuds"),
+        speedStuds = requiredLandSharkNumber(model, "MergeLandSharkSpeedStuds"),
+        tempoDivisor = requiredLandSharkNumber(model, "MergeLandSharkTempoDivisor"),
+        chaseSpeedStuds = requiredLandSharkNumber(model, "MergeLandSharkChaseSpeedStuds"),
+        dragSpeedStuds = requiredLandSharkNumber(model, "MergeLandSharkDragSpeedStuds"),
+        returnSpeedStuds = requiredLandSharkNumber(model, "MergeLandSharkReturnSpeedStuds"),
+        huntBlendRate = requiredLandSharkNumber(model, "MergeLandSharkHuntBlendRate"),
+        sampleLeadSeconds = requiredLandSharkNumber(model, "MergeLandSharkSampleLeadSeconds"),
+        proximityPollSeconds = requiredLandSharkNumber(model, "MergeLandSharkProximityPollSeconds"),
+        surfaceDistance = requiredLandSharkNumber(model, "MergeLandSharkSurfaceDistance"),
+        surfaceRise = requiredLandSharkNumber(model, "MergeLandSharkSurfaceRise"),
+        bitePeriod = requiredLandSharkNumber(model, "MergeLandSharkBitePeriodSeconds"),
         phase = tonumber(model:GetAttribute("MergeLandSharkPhase")) or 0,
-        breachPeriod = math.max(
-            3,
-            tonumber(model:GetAttribute("MergeLandSharkBreachPeriodSeconds")) or 7.5
-        ),
-        breachDuration = math.max(
-            0.6,
-            tonumber(model:GetAttribute("MergeLandSharkBreachDurationSeconds")) or 1.55
-        ),
-        breachRise = math.max(
-            0.5,
-            tonumber(model:GetAttribute("MergeLandSharkBreachRiseStuds")) or 2.3
-        ),
-        breachPitch = math.rad(
-            math.max(0, tonumber(model:GetAttribute("MergeLandSharkBreachPitchDegrees")) or 14)
-        ),
+        breachPeriod = requiredLandSharkNumber(model, "MergeLandSharkBreachPeriodSeconds"),
+        breachDuration = requiredLandSharkNumber(model, "MergeLandSharkBreachDurationSeconds"),
+        breachRise = requiredLandSharkNumber(model, "MergeLandSharkBreachRiseStuds"),
+        breachPitch = math.rad(requiredLandSharkNumber(model, "MergeLandSharkBreachPitchDegrees")),
         surfaced = 0,
         proximityElapsed = 0,
         nearestEnemy = math.huge,
@@ -1321,9 +1303,10 @@ local function updateLandSharkRigs(dt)
         if not model.Parent then
             landSharkRigs[model] = nil
         else
-            local tempo = rig.speedStuds / 10
+            local tempo = rig.speedStuds / rig.tempoDivisor
             local along, across = landSharkWander(now * tempo, rig.phase, rig.seed)
-            local nextAlong, nextAcross = landSharkWander(now * tempo + 0.12, rig.phase, rig.seed)
+            local nextAlong, nextAcross =
+                landSharkWander(now * tempo + rig.sampleLeadSeconds, rig.phase, rig.seed)
             local patrolPosition = rig.center
                 + rig.direction * (along * rig.halfWidth)
                 + rig.depth * (across * rig.halfDepth)
@@ -1350,13 +1333,18 @@ local function updateLandSharkRigs(dt)
             end
             local hunting = typeof(huntAim) == "Vector3"
             rig.huntBlend = rig.huntBlend or 0
-            rig.huntBlend += ((hunting and 1 or 0) - rig.huntBlend) * math.min(1, dt * 5)
+            rig.huntBlend += ((hunting and 1 or 0) - rig.huntBlend) * math.min(
+                1,
+                dt * rig.huntBlendRate
+            )
             if hunting then
                 if typeof(rig.huntPos) ~= "Vector3" then
                     rig.huntPos = patrolPosition
                 end
                 local dest = Vector3.new(huntAim.X, rig.center.Y, huntAim.Z)
-                local chaseSpeed = if huntState == "drag" then 16 else 26
+                local chaseSpeed = if huntState == "drag"
+                    then rig.dragSpeedStuds
+                    else rig.chaseSpeedStuds
                 local to = dest - rig.huntPos
                 if to.Magnitude > 0.05 then
                     rig.huntPos += to.Unit * math.min(to.Magnitude, chaseSpeed * dt)
@@ -1370,7 +1358,7 @@ local function updateLandSharkRigs(dt)
                 if back.Magnitude <= 0.4 then
                     rig.huntPos = nil
                 else
-                    rig.huntPos += back.Unit * math.min(back.Magnitude, 18 * dt)
+                    rig.huntPos += back.Unit * math.min(back.Magnitude, rig.returnSpeedStuds * dt)
                 end
             end
             local position = patrolPosition
@@ -1382,7 +1370,7 @@ local function updateLandSharkRigs(dt)
             local patrolCFrame = CFrame.lookAt(position, position + heading, Vector3.yAxis)
             rig.proximityElapsed -= dt
             if rig.proximityElapsed <= 0 then
-                rig.proximityElapsed = 0.1
+                rig.proximityElapsed = rig.proximityPollSeconds
                 rig.nearestEnemy = nearestEnemyDistance(patrolCFrame.Position)
             end
             local wantsSurface = (not hunting) and rig.nearestEnemy <= rig.surfaceDistance

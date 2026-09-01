@@ -1,5 +1,45 @@
 ---
-description: This is a configuation as code project.  We want to apply configuation as code whenever possible.  To add an item, currency, power-up, etc, should be a configuation change.  Scripts should loop though this configuration file to generate code to handle their saves, tracking, etc.
-globs:
+description: Configuration-as-code only. Never hardcode content, model IDs, asset IDs, palettes, or tuning in Lua services or progression modules. Configs are the SSOT; swapping a config must change what the game loads.
 alwaysApply: true
 ---
+
+# Configuration As Code — Non-Negotiable
+
+This is a **configuration-as-code** game. Everything that can change without a logic rewrite lives in `configs/*.lua` (or the authored JSON/manifest that config already points at). **Nothing of that kind is hardcoded in `src/`.**
+
+## The failure this rule exists to stop
+
+Swapping all the configuration for new models did nothing, because model / asset numbers were hardcoded in Lua (`previewAssetIds`, `rbxassetid://…`, MeshId, TextureId). Config was not the source of truth. That is a defect. Do not repeat it.
+
+## Must live in config (or a file config already names)
+
+- Roblox Model / Mesh / Image / Animation / Sound IDs
+- Workshop preview asset IDs and per-tier art
+- Palettes, materials, scales, intervals, radii, magnitudes
+- Catalog rows: pets, eggs, powers, potions, cannons, bulwarks, rewards
+- Copy that is content (names, descriptions, upgrade notes) unless it is a code-path error string
+- Unlock waves, prices, currencies, slot lists
+
+Services **read** those values. They do not own a second copy.
+
+## Forbidden
+
+- `previewAssetIds = { "1399…" }` (or any asset number) inside `src/Shared/Game/*Progression.lua` or any service
+- `rbxassetid://<digits>` in gameplay/art-path code when a config key exists or should exist
+- Duplicating a config table into a Lua module "for convenience"
+- Shipping a new mesh by editing a service instead of `configs/` + the id manifest config already loads
+
+## Required shape
+
+1. Author or update `configs/<system>.lua` (and `scripts/*_model_ids.json` only when that pipeline is the documented writer **into config**).
+2. Code loops `pairs`/`ipairs` over that table.
+3. Changing the config file — and only that — is enough for the new models/numbers to appear after the usual Rojo/Play refresh.
+
+If you need a value and it is not in config yet, **add the config key**. Do not paste the number into the caller.
+
+## Exceptions (narrow)
+
+- Roblox engine enums and API names
+- Math that is the algorithm itself (not a tunable)
+- One-off debug leftovers you are deleting in the same change
+- Error strings that name a *code* contract (`no_combat_pet`), not player-facing content

@@ -2,6 +2,16 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge tier art is config-owned and runtime-verified (2026-09-01)
+
+`configs/merge_tier_art.lua` is generated from the committed cannon, bulwark-model, and bulwark-
+preview manifests. It is the single runtime authority for both workshop previews and spawned model
+identity. `scripts/merge_tier_runtime_manifest.json` proves 24 cannon mappings, 24 bulwark mappings,
+24 bulwark preview mappings, and 48 distinct model assets. Fresh Studio Edit and Play audits passed
+all 48 templates, all 48 transient runtime clones/spawns, and fail-closed rejection of a deliberately
+stale model ID. Existing world instances are replaced when their manifest identity or cannon scale
+does not match, rather than trusting tier attributes alone.
+
 ## Artillery Commander workshop (2026-09-01)
 
 SploitHunter stands behind each pad. Talk opens an artillery workshop
@@ -17,7 +27,7 @@ toast was that compare; it is no longer returned. Bulwark install
 is the same cut (`MergeBulwarkPersist`). Egg create/merge already
 mutated the board without that compare. Waves stay start → result
 → optional pause → start. Headless covers both persist modules.
-Not Play-confirmed yet.
+The tier-art menu/template/clone path is Play-confirmed; cannon combat behavior below is not.
 Heal aims injured pets (`CombatDamageTaken` or `HP`/`MaxHP`,
 including the player's real pets) and places the existing Healing
 Field at impact (same rune and ticks; no rebuilt visual). Heal tiers
@@ -195,13 +205,8 @@ All six families now have distinct Tier 1–4 concepts, Meshy geometry, manifold
 prebaked runtime templates. The 24-way manifest and audit live in
 `scripts/merge_cannon_model_ids.json` and `scripts/merge_cannon_pipeline.js`; Roblox
 ownership verification covers all 72 component assets. Runtime selects the gameplay tier
-directly at uniform template scale. The old scaled-copy fallback is removed.
-
-## Merge tower E cycles size previews (2026-08-30)
-
-Walk up to a pad cannon and press E to cycle 0.20–0.85. Both bay cannons take the new
-scale and show `0.40` / studs-wide overhead. E does not need a combat session.
-Temporary authoring prompt; later E will cycle models instead.
+directly from `configs/merge_tier_art.lua` at uniform template scale. The old scaled-copy fallback
+is removed; `scripts/merge_tier_runtime_manifest.json` is the menu/world wiring proof.
 
 ## Merge edge towers fire a sphere and aim (2026-08-30)
 

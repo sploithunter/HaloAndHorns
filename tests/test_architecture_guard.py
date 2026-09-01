@@ -164,6 +164,28 @@ class ArchitectureGuardTest(unittest.TestCase):
             findings = architecture_guard.collect_runtime_waits(root, rule)
             self.assertEqual(1, findings["src/Clock.lua"].count)
 
+    def test_config_as_code_rules_find_asset_ids_and_tuning_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src" / "Feature.lua").write_text(
+                '-- local ignored = "rbxassetid://123456789"\n'
+                'local icon = "rbxassetid://987654321"\n'
+                "local radius = tonumber(config.radius) or 28\n"
+                "local scale = tonumber(model:GetAttribute(\"RenderScale\")) or 1\n",
+                encoding="utf-8",
+            )
+
+            findings = architecture_guard.collect_findings(
+                root, ("runtime-asset-literal", "numeric-tuning-fallback")
+            )
+            asset = findings["runtime-asset-literal"]["src/Feature.lua"]
+            tuning = findings["numeric-tuning-fallback"]["src/Feature.lua"]
+            self.assertEqual(1, asset.count)
+            self.assertEqual((2,), asset.lines)
+            self.assertEqual(2, tuning.count)
+            self.assertEqual((3, 4), tuning.lines)
+
 
 if __name__ == "__main__":
     unittest.main()

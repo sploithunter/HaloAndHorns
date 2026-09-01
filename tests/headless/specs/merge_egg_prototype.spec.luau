@@ -1549,6 +1549,8 @@ return function()
             expect(towers.tier_scales).to.equal(nil)
             expect(#towers.available_roles).to.equal(6)
             expect(factory:find('models:FindFirstChild("MergeCannons")', 1, true)).to.be.ok()
+            expect(factory:find("MergeTierArt", 1, true)).to.be.ok()
+            expect(factory:find("function MergeTowerModels.MatchesTemplate", 1, true)).to.be.ok()
             expect(factory:find("template:Clone()", 1, true)).to.be.ok()
             expect(factory:find('FindFirstChild("TowerAnchor", true)', 1, true)).to.be.ok()
             expect(factory:find("model:GetBoundingBox()", 1, true)).to.be.ok()
@@ -1731,7 +1733,8 @@ return function()
             expect(service:find('Instance.new("Fire")', 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_attachHealFire", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_playHealMuzzleFlame", 1, true)).to.be.ok()
-            expect(service:find("rbxassetid://83142936306716", 1, true)).to.be.ok()
+            expect(towers.shot.heal_fire_texture).to.equal("83142936306716")
+            expect(service:find("shot.heal_fire_texture", 1, true)).to.be.ok()
             expect(
                 service:find(
                     'self:_authoredBayArtifact(world, "TowerStations", "TowerPads")',
@@ -1745,9 +1748,8 @@ return function()
             expect(service:find("function MergeEggPrototypeService:_towerScaleForTier", 1, true)).to.equal(
                 nil
             )
-            expect(
-                service:find("MergeTowerModels.Spawn(family, gameplayTier, pad, folder)", 1, true)
-            ).to.be.ok()
+            expect(service:find("MergeTowerModels.Spawn(", 1, true)).to.be.ok()
+            expect(service:find("self._config.tier_art", 1, true)).to.be.ok()
             expect(service:find('model:SetAttribute("MergeTowerArtTier", gameplayTier)', 1, true)).to.be.ok()
         end)
 
@@ -1755,7 +1757,7 @@ return function()
             local towers = config.team.edge_towers
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
 
-            expect(towers.size_preview.enabled).to.equal(false)
+            expect(towers.size_preview).to.equal(nil)
             expect(
                 service:find("function MergeEggPrototypeService:_clearTowerTestPrompts", 1, true)
             ).to.be.ok()
@@ -1767,6 +1769,13 @@ return function()
             )
             expect(service:find("self:_attachPrompt(", 1, true)).to.be.ok()
             expect(service:find('"Next Size"', 1, true)).to.equal(nil)
+            expect(service:find("function MergeEggPrototypeService:_setTowerPreviewScale", 1, true)).to.equal(
+                nil
+            )
+            expect(service:find("function MergeEggPrototypeService:_cycleTowerSize", 1, true)).to.equal(
+                nil
+            )
+            expect(service:find("MergeTowerModels.MatchesTemplate", 1, true)).to.be.ok()
             expect(service:find("self:_towerGateLook", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_towerEnemyTarget", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_enemyLivePosition", 1, true)).to.be.ok()
@@ -1831,6 +1840,9 @@ return function()
             expect(bulwarks.engineer.display_name).to.equal("Bulwark Engineer")
             expect(bulwarks.engineer.object_text).to.equal("Bulwark Engineer")
             expect(bulwarks.engineer.action_text).to.equal("Talk")
+            expect(bulwarks.engineer.idle_animation).to.equal("507766388")
+            expect(config.team.edge_towers.commander.idle_animation).to.equal("507766388")
+            expect(service:find("requiredAssetUri", 1, true)).to.be.ok()
             expect(bulwarks.combat.land_shark.bite_period[1]).to.equal(0.575)
             expect(bulwarks.combat.land_shark.bite_period[4]).to.equal(0.175)
             expect(bulwarks.combat.land_shark.bite_damage[1]).to.equal(36)
@@ -1894,7 +1906,7 @@ return function()
                 observer:find("CFrame.lookAt(position, position + heading, Vector3.yAxis)", 1, true)
             ).to.be.ok()
             expect(observer:find("landSharkWander", 1, true)).to.be.ok()
-            expect(observer:find("proximityElapsed = 0.1", 1, true)).to.be.ok()
+            expect(observer:find("rig.proximityPollSeconds", 1, true)).to.be.ok()
             expect(observer:find("math.sin(math.pi * bitePhase) ^ 2", 1, true)).to.be.ok()
             expect(observer:find("rig.breachRise * breach", 1, true)).to.be.ok()
             expect(menu:find("atMaximum", 1, true)).to.be.ok()

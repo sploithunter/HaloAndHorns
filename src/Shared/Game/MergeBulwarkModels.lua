@@ -5,6 +5,8 @@ local AssetService = game:GetService("AssetService")
 local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local MergeTierArt = require(script.Parent.MergeTierArt)
+
 local MergeBulwarkModels = {}
 
 local FAMILY_NAMES = {
@@ -39,6 +41,10 @@ local function templatesRoot(rootOverride)
     return models and models:FindFirstChild("MergeBulwarks")
 end
 
+local function contentId(value)
+    return string.match(tostring(value or ""), "(%d+)$") or ""
+end
+
 local function resolveAnchor(anchor)
     if typeof(anchor) == "CFrame" then
         return anchor
@@ -67,12 +73,60 @@ function MergeBulwarkModels.GetTemplate(family, tier, rootOverride)
     return nil
 end
 
-function MergeBulwarkModels.Clone(family, tier, rootOverride)
+function MergeBulwarkModels.MatchesTemplate(model, family, tier, rootOverride, tierArt)
+    if not (model and model:IsA("Model")) then
+        return false
+    end
+    local normalizedFamily = string.lower(tostring(family or ""))
+    local expected = MergeTierArt.entry(tierArt, "bulwark", normalizedFamily, tier)
+    local template = MergeBulwarkModels.GetTemplate(normalizedFamily, tier, rootOverride)
+    if not (expected and template) then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxModelAssetId")) ~= expected.modelAssetId then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxMeshAssetId")) ~= expected.meshId then
+        return false
+    end
+    if contentId(model:GetAttribute("RobloxTextureAssetId")) ~= expected.textureId then
+        return false
+    end
+    if normalizedFamily == "saw_blade" then
+        return true
+    end
+    local matched = false
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("MeshPart") then
+            if
+                contentId(descendant.MeshId) ~= expected.meshId
+                or contentId(descendant.TextureID) ~= expected.textureId
+            then
+                return false
+            end
+            matched = true
+        end
+    end
+    return matched
+end
+
+function MergeBulwarkModels.Clone(family, tier, rootOverride, tierArt)
     local normalizedFamily = string.lower(tostring(family or ""))
     local resolvedTier = math.clamp(math.floor(tonumber(tier) or 1), 1, 4)
     local template = MergeBulwarkModels.GetTemplate(normalizedFamily, resolvedTier, rootOverride)
     if not template then
         return nil, "bulwark_template_missing"
+    end
+    if
+        not MergeBulwarkModels.MatchesTemplate(
+            template,
+            normalizedFamily,
+            resolvedTier,
+            rootOverride,
+            tierArt
+        )
+    then
+        return nil, "bulwark_template_manifest_mismatch"
     end
     local clone = template:Clone()
     clone.Name = string.format("%s_Tier%d", FAMILY_NAMES[normalizedFamily], resolvedTier)
@@ -246,12 +300,20 @@ local function refitWhenMeshesLoad(model, placementScale)
     end)
 end
 
-function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride, scaleOverride)
+function MergeBulwarkModels.Spawn(
+    family,
+    tier,
+    anchor,
+    parent,
+    rootOverride,
+    scaleOverride,
+    tierArt
+)
     local target = resolveAnchor(anchor)
     if not target then
         return nil, "bulwark_anchor_missing"
     end
-    local model, reason = MergeBulwarkModels.Clone(family, tier, rootOverride)
+    local model, reason = MergeBulwarkModels.Clone(family, tier, rootOverride, tierArt)
     if not model then
         return nil, reason
     end

@@ -10,6 +10,7 @@ local RunService = game:GetService("RunService")
 assert(RunService:IsStudio(), "Merge bulwark fit automation is Studio-only")
 
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
+local MergeTierArt = require(ReplicatedStorage.Configs.merge_tier_art)
 local map = assert(
     workspace:FindFirstChild("GeneratedMap_MergeEggVoxel"),
     "Workspace.GeneratedMap_MergeEggVoxel is missing"
@@ -155,7 +156,8 @@ for _, bayFolder in ipairs(bayFolders) do
                 end
             end
             for _, anchor in ipairs(presentationAnchors) do
-                local model, reason = MergeBulwarkModels.Spawn(family, tier, anchor, scratch)
+                local model, reason =
+                    MergeBulwarkModels.Spawn(family, tier, anchor, scratch, nil, nil, MergeTierArt)
                 assert(
                     model,
                     string.format("%s Tier %d failed to spawn: %s", family, tier, tostring(reason))

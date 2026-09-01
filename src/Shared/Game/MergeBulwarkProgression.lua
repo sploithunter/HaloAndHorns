@@ -4,6 +4,7 @@
 -- Lane = gold BulwarkLine. Egg = red BreachLine. Wardstone is egg-only.
 
 local MergeBulwarkSlots = require(script.Parent.MergeBulwarkSlots)
+local MergeTierArt = require(script.Parent.MergeTierArt)
 
 local MergeBulwarkProgression = {}
 
@@ -13,12 +14,6 @@ local FAMILIES = {
         name = "Impaler Palisade",
         role = "Stop",
         description = "Stakes the strip. Marchers that hit the line get shoved back toward the gate. No damage — after enough hits they walk through.",
-        previewAssetIds = {
-            "116860085128235",
-            "97859864666503",
-            "129822630921173",
-            "74198495305059",
-        },
         upgradeNotes = {
             {
                 "+ Timber stakes on the strip",
@@ -35,12 +30,6 @@ local FAMILIES = {
         name = "Concertina Line",
         role = "Bleed",
         description = "Razor wire across the lane. Marchers on the strip bleed and slow. Higher tiers linger after they leave; the top rank stacks and does not wear off.",
-        previewAssetIds = {
-            "113357672010171",
-            "105913949349922",
-            "72955017349938",
-            "90245489274928",
-        },
         upgradeNotes = {
             {
                 "+ Razor wire on the strip",
@@ -57,12 +46,6 @@ local FAMILIES = {
         name = "Land Sharks",
         role = "Hunt",
         description = "Sharks leave the strip to chase a marcher, bite it, and drag it under. When it dies, it sinks.",
-        previewAssetIds = {
-            "113908496978867",
-            "88409379844802",
-            "111766652323283",
-            "108251207551720",
-        },
         upgradeNotes = {
             {
                 "+ Four sharks on the strip",
@@ -79,12 +62,6 @@ local FAMILIES = {
         name = "Saw Blades",
         role = "Shred",
         description = "Spinning blades chew anything on the line. Highest raw damage, no control.",
-        previewAssetIds = {
-            "121529052464390",
-            "77664713466251",
-            "72827689088718",
-            "112838270832676",
-        },
         upgradeNotes = {
             {
                 "+ One saw on the line",
@@ -101,12 +78,6 @@ local FAMILIES = {
         name = "Grasping Hedge",
         role = "Hold",
         description = "Thorns root the front of the wave and slow the pile so your pets can finish it. Hands stay free. The root wears off so they can break through; walking back in roots them again.",
-        previewAssetIds = {
-            "85025651891171",
-            "80372327819409",
-            "90028794177150",
-            "87259173917660",
-        },
         upgradeNotes = {
             {
                 "+ Thorn hedge on the strip",
@@ -123,12 +94,6 @@ local FAMILIES = {
         name = "Wardstone Barrier",
         role = "Ward",
         description = "Wards the hatcher eggs, not the lane. Cuts damage that gets past the fight and hits an installed egg.",
-        previewAssetIds = {
-            "135466894164464",
-            "115291422790551",
-            "138858336514150",
-            "100267714245380",
-        },
         upgradeNotes = {
             { "+ Two ward stones", "+ Cuts hatcher-egg damage", "+ Not a lane trap" },
             { "+ Fortified obelisks", "+ Stronger ward", "+ Crystal cores" },
@@ -182,11 +147,11 @@ MergeBulwarkProgression.SLOT_LANE = "lane"
 MergeBulwarkProgression.SLOT_EGG = "egg"
 MergeBulwarkProgression.slots = MergeBulwarkSlots
 
-function MergeBulwarkProgression.families()
+function MergeBulwarkProgression.families(tierArt)
     local result = {}
     for index, family in ipairs(FAMILIES) do
         result[index] = table.clone(family)
-        result[index].previewAssetIds = table.clone(family.previewAssetIds)
+        result[index].previewAssetIds = MergeTierArt.previewAssetIds(tierArt, "bulwark", family.id)
         result[index].upgradeNotes = {}
         for step, lines in ipairs(family.upgradeNotes) do
             result[index].upgradeNotes[step] = table.clone(lines)
@@ -195,9 +160,9 @@ function MergeBulwarkProgression.families()
     return result
 end
 
-function MergeBulwarkProgression.familiesForSlot(slot)
+function MergeBulwarkProgression.familiesForSlot(slot, tierArt)
     slot = normalizeSlot(slot)
-    local result = MergeBulwarkProgression.families()
+    local result = MergeBulwarkProgression.families(tierArt)
     for _, family in ipairs(result) do
         family.canInstall = MergeBulwarkProgression.canInstall(family.id, slot)
         family.slotFor = MergeBulwarkProgression.slotForFamily(family.id)
@@ -376,85 +341,24 @@ function MergeBulwarkProgression.actionCost(config)
     }
 end
 
--- Impaler Palisade is a stop wall, not a damage trap. Each marcher gets a small shove budget,
--- then walks through. Five bounces on Tier 1 would farm-lock the wave; T1 is one bounce.
-local STOP_SHOVE = {
-    charges = { 1, 2, 3, 4 },
-    shove_studs = { 16, 20, 24, 28 },
-    root_seconds = { 0.4, 0.45, 0.55, 0.7 },
-    -- T3 coats the bounce with a permanent DoT. T4 adds contagion hops; those stay on too.
-    -- Wave fights end, so a lasting burn does not leak into later content.
-    venom_damage = { 0, 0, 12, 18 },
-    venom_period = { 1, 1, 0.7, 0.55 },
-    venom_permanent = { false, false, true, true },
-    contagion_radius = { 0, 0, 0, 12 },
-    contagion_interval = { 1, 1, 1, 1.0 },
-    contagion_hops = { 0, 0, 0, 4 },
-}
-
--- Concertina Line is a lane DoT plus a graded slow. T1 only while on the wire; later tiers
--- linger after they walk off. T4 stacks and does not wear off for the rest of the wave.
-local BLEED_SLOW = {
-    bleed_damage = { 8, 14, 20, 16 },
-    bleed_period = { 0.9, 0.75, 0.55, 0.4 },
-    slow_factor = { 0.8, 0.7, 0.58, 0.45 },
-    linger_seconds = { 0, 1.5, 3.5, 0 },
-    bleed_permanent = { false, false, false, true },
-    bleed_stacks = { false, false, false, true },
-    stack_cap = { 1, 1, 1, 4 },
-    strip_depth_studs = { 8, 8, 10, 12 },
-}
-
--- Land Sharks leave the patrol to bite and drag a marcher under. Damage is pet-like ticks,
--- not a lane DoT: one shark, one target. Periods are 2x the original cadence so DPS doubles.
-local HUNT_DRAG = {
-    shark_count = { 4, 5, 6, 7 },
-    bite_damage = { 36, 90, 130, 190 },
-    bite_period = { 0.575, 0.25, 0.21, 0.175 },
-    hunt_range_studs = { 16, 18, 20, 22 },
-    grab_range_studs = { 7, 7, 8, 8 },
-    sink_studs = { 8, 9, 10, 12 },
-    -- T3 venom is a proximity aura, not a second bite. One cloud per marcher so a pack
-    -- swimming past does not stack per-shark ticks. T4 prefers an unclaimed boss, then trash.
-    venom_damage = { 0, 0, 10, 14 },
-    venom_period = { 0.5, 0.5, 0.35, 0.275 },
-    venom_range_studs = { 0, 0, 8, 9 },
-    prefer_bosses = { false, false, false, true },
-}
-
--- Saw Blade is the shred line: high raw damage, no control, on the blades only. Ticks stay
--- faster than Concertina so a marcher crossing the six-stud deck actually gets chewed.
-local SHRED_LINE = {
-    shred_damage = { 16, 24, 30, 42 },
-    shred_period = { 0.16, 0.13, 0.10, 0.08 },
-    strip_depth_studs = { 6, 6, 6, 6 },
-    chunk_count = { 6, 7, 8, 10 },
-}
-
--- Grasping Hedge roots the front of the wave (feet stuck, hands free) and slows the pile.
--- The root is timed and not refreshed, so they can walk off. Leaving and walking back in
--- is a new grab — not a lifetime counter.
-local GRAB_ROOT = {
-    grab_count = { 1, 2, 3, 4 },
-    root_seconds = { 0.9, 1.2, 1.6, 2.2 },
-    slow_factor = { 0.7, 0.6, 0.5, 0.42 },
-    slow_seconds = { 0.8, 1.1, 1.6, 2.0 },
-    venom_damage = { 0, 0, 10, 14 },
-    venom_period = { 1, 1, 0.7, 0.55 },
-    venom_duration = { 0, 0, 4, 5 },
-    strip_depth_studs = { 8, 8, 8, 10 },
-    -- Must travel this far past the strip on the march axis before a new grab.
-    -- Lateral shuffle and a one-stud flicker do not count as leaving.
-    exit_buffer_studs = { 6, 6, 6, 6 },
-}
-
-local function tierPick(source, defaults, tier)
-    local list = type(source) == "table" and source or defaults
-    local value = list[tier]
-    if value == nil then
-        value = defaults[tier]
+local function tierValue(combat, family, key, tier)
+    local list = type(combat) == "table" and combat[key] or nil
+    local value = nil
+    if type(list) == "table" then
+        value = list[tier]
     end
+    assert(value ~= nil, string.format("Missing edge_bulwarks.combat.%s.%s[%d]", family, key, tier))
     return value
+end
+
+local function tierNumber(combat, family, key, tier)
+    local value = tonumber(tierValue(combat, family, key, tier))
+    assert(value ~= nil, string.format("Invalid edge_bulwarks.combat.%s.%s[%d]", family, key, tier))
+    return value
+end
+
+local function tierWhole(combat, family, key, tier)
+    return math.floor(tierNumber(combat, family, key, tier))
 end
 
 function MergeBulwarkProgression.combatEffect(family, tier, config)
@@ -465,180 +369,66 @@ function MergeBulwarkProgression.combatEffect(family, tier, config)
     if id == "impaler_palisade" then
         return {
             kind = "stop_shove",
-            charges = math.max(1, whole(tierPick(combat.charges, STOP_SHOVE.charges, step), 1)),
-            shoveStuds = math.max(
-                4,
-                tonumber(tierPick(combat.shove_studs, STOP_SHOVE.shove_studs, step)) or 16
-            ),
-            rootSeconds = math.max(
-                0,
-                tonumber(tierPick(combat.root_seconds, STOP_SHOVE.root_seconds, step)) or 0.4
-            ),
-            venomDamage = math.max(
-                0,
-                whole(tierPick(combat.venom_damage, STOP_SHOVE.venom_damage, step), 0)
-            ),
-            venomPeriod = math.max(
-                0.35,
-                tonumber(tierPick(combat.venom_period, STOP_SHOVE.venom_period, step)) or 0.7
-            ),
-            venomPermanent = tierPick(combat.venom_permanent, STOP_SHOVE.venom_permanent, step)
-                == true,
-            contagionRadius = math.max(
-                0,
-                tonumber(tierPick(combat.contagion_radius, STOP_SHOVE.contagion_radius, step)) or 0
-            ),
-            contagionInterval = math.max(
-                0.2,
-                tonumber(tierPick(combat.contagion_interval, STOP_SHOVE.contagion_interval, step))
-                    or 1.2
-            ),
-            contagionHops = math.max(
-                0,
-                whole(tierPick(combat.contagion_hops, STOP_SHOVE.contagion_hops, step), 0)
-            ),
+            charges = tierWhole(combat, id, "charges", step),
+            shoveStuds = tierNumber(combat, id, "shove_studs", step),
+            rootSeconds = tierNumber(combat, id, "root_seconds", step),
+            venomDamage = tierWhole(combat, id, "venom_damage", step),
+            venomPeriod = tierNumber(combat, id, "venom_period", step),
+            venomPermanent = tierValue(combat, id, "venom_permanent", step) == true,
+            contagionRadius = tierNumber(combat, id, "contagion_radius", step),
+            contagionInterval = tierNumber(combat, id, "contagion_interval", step),
+            contagionHops = tierWhole(combat, id, "contagion_hops", step),
         }
     end
     if id == "concertina_line" then
         return {
             kind = "bleed_slow",
-            bleedDamage = math.max(
-                1,
-                whole(tierPick(combat.bleed_damage, BLEED_SLOW.bleed_damage, step), 1)
-            ),
-            bleedPeriod = math.max(
-                0.25,
-                tonumber(tierPick(combat.bleed_period, BLEED_SLOW.bleed_period, step)) or 0.9
-            ),
-            slowFactor = math.clamp(
-                tonumber(tierPick(combat.slow_factor, BLEED_SLOW.slow_factor, step)) or 0.8,
-                0.2,
-                1
-            ),
-            lingerSeconds = math.max(
-                0,
-                tonumber(tierPick(combat.linger_seconds, BLEED_SLOW.linger_seconds, step)) or 0
-            ),
-            bleedPermanent = tierPick(combat.bleed_permanent, BLEED_SLOW.bleed_permanent, step)
-                == true,
-            bleedStacks = tierPick(combat.bleed_stacks, BLEED_SLOW.bleed_stacks, step) == true,
-            stackCap = math.max(
-                1,
-                whole(tierPick(combat.stack_cap, BLEED_SLOW.stack_cap, step), 1)
-            ),
-            stripDepthStuds = math.max(
-                4,
-                tonumber(tierPick(combat.strip_depth_studs, BLEED_SLOW.strip_depth_studs, step))
-                    or 8
-            ),
+            bleedDamage = tierWhole(combat, id, "bleed_damage", step),
+            bleedPeriod = tierNumber(combat, id, "bleed_period", step),
+            slowFactor = tierNumber(combat, id, "slow_factor", step),
+            lingerSeconds = tierNumber(combat, id, "linger_seconds", step),
+            bleedPermanent = tierValue(combat, id, "bleed_permanent", step) == true,
+            bleedStacks = tierValue(combat, id, "bleed_stacks", step) == true,
+            stackCap = tierWhole(combat, id, "stack_cap", step),
+            stripDepthStuds = tierNumber(combat, id, "strip_depth_studs", step),
         }
     end
     if id == "land_shark" then
         return {
             kind = "hunt_drag",
-            sharkCount = math.clamp(
-                whole(tierPick(combat.shark_count, HUNT_DRAG.shark_count, step), 4),
-                1,
-                10
-            ),
-            biteDamage = math.max(
-                1,
-                whole(tierPick(combat.bite_damage, HUNT_DRAG.bite_damage, step), 1)
-            ),
-            bitePeriod = math.max(
-                0.15,
-                tonumber(tierPick(combat.bite_period, HUNT_DRAG.bite_period, step)) or 0.575
-            ),
-            huntRangeStuds = math.max(
-                8,
-                tonumber(tierPick(combat.hunt_range_studs, HUNT_DRAG.hunt_range_studs, step)) or 16
-            ),
-            grabRangeStuds = math.max(
-                4,
-                tonumber(tierPick(combat.grab_range_studs, HUNT_DRAG.grab_range_studs, step)) or 7
-            ),
-            sinkStuds = math.max(
-                4,
-                tonumber(tierPick(combat.sink_studs, HUNT_DRAG.sink_studs, step)) or 8
-            ),
-            venomDamage = math.max(
-                0,
-                whole(tierPick(combat.venom_damage, HUNT_DRAG.venom_damage, step), 0)
-            ),
-            venomPeriod = math.max(
-                0.15,
-                tonumber(tierPick(combat.venom_period, HUNT_DRAG.venom_period, step)) or 0.5
-            ),
-            venomRangeStuds = math.max(
-                0,
-                tonumber(tierPick(combat.venom_range_studs, HUNT_DRAG.venom_range_studs, step)) or 0
-            ),
-            preferBosses = tierPick(combat.prefer_bosses, HUNT_DRAG.prefer_bosses, step) == true,
+            sharkCount = tierWhole(combat, id, "shark_count", step),
+            biteDamage = tierWhole(combat, id, "bite_damage", step),
+            bitePeriod = tierNumber(combat, id, "bite_period", step),
+            huntRangeStuds = tierNumber(combat, id, "hunt_range_studs", step),
+            grabRangeStuds = tierNumber(combat, id, "grab_range_studs", step),
+            sinkStuds = tierNumber(combat, id, "sink_studs", step),
+            venomDamage = tierWhole(combat, id, "venom_damage", step),
+            venomPeriod = tierNumber(combat, id, "venom_period", step),
+            venomRangeStuds = tierNumber(combat, id, "venom_range_studs", step),
+            preferBosses = tierValue(combat, id, "prefer_bosses", step) == true,
         }
     end
     if id == "saw_blade" then
         return {
             kind = "shred_line",
-            shredDamage = math.max(
-                1,
-                whole(tierPick(combat.shred_damage, SHRED_LINE.shred_damage, step), 1)
-            ),
-            shredPeriod = math.max(
-                0.06,
-                tonumber(tierPick(combat.shred_period, SHRED_LINE.shred_period, step)) or 0.16
-            ),
-            stripDepthStuds = math.max(
-                4,
-                tonumber(tierPick(combat.strip_depth_studs, SHRED_LINE.strip_depth_studs, step))
-                    or 6
-            ),
-            chunkCount = math.clamp(
-                whole(tierPick(combat.chunk_count, SHRED_LINE.chunk_count, step), 6),
-                4,
-                14
-            ),
+            shredDamage = tierWhole(combat, id, "shred_damage", step),
+            shredPeriod = tierNumber(combat, id, "shred_period", step),
+            stripDepthStuds = tierNumber(combat, id, "strip_depth_studs", step),
+            chunkCount = tierWhole(combat, id, "chunk_count", step),
         }
     end
     if id == "grasping_hedge" then
         return {
             kind = "grab_root",
-            grabCount = math.max(
-                1,
-                whole(tierPick(combat.grab_count, GRAB_ROOT.grab_count, step), 1)
-            ),
-            rootSeconds = math.max(
-                0.25,
-                tonumber(tierPick(combat.root_seconds, GRAB_ROOT.root_seconds, step)) or 0.9
-            ),
-            slowFactor = math.clamp(
-                tonumber(tierPick(combat.slow_factor, GRAB_ROOT.slow_factor, step)) or 0.7,
-                0.2,
-                1
-            ),
-            slowSeconds = math.max(
-                0.25,
-                tonumber(tierPick(combat.slow_seconds, GRAB_ROOT.slow_seconds, step)) or 0.8
-            ),
-            venomDamage = math.max(
-                0,
-                whole(tierPick(combat.venom_damage, GRAB_ROOT.venom_damage, step), 0)
-            ),
-            venomPeriod = math.max(
-                0.35,
-                tonumber(tierPick(combat.venom_period, GRAB_ROOT.venom_period, step)) or 0.7
-            ),
-            venomDuration = math.max(
-                0,
-                tonumber(tierPick(combat.venom_duration, GRAB_ROOT.venom_duration, step)) or 0
-            ),
-            stripDepthStuds = math.max(
-                4,
-                tonumber(tierPick(combat.strip_depth_studs, GRAB_ROOT.strip_depth_studs, step)) or 8
-            ),
-            exitBufferStuds = math.max(
-                2,
-                tonumber(tierPick(combat.exit_buffer_studs, GRAB_ROOT.exit_buffer_studs, step)) or 6
-            ),
+            grabCount = tierWhole(combat, id, "grab_count", step),
+            rootSeconds = tierNumber(combat, id, "root_seconds", step),
+            slowFactor = tierNumber(combat, id, "slow_factor", step),
+            slowSeconds = tierNumber(combat, id, "slow_seconds", step),
+            venomDamage = tierWhole(combat, id, "venom_damage", step),
+            venomPeriod = tierNumber(combat, id, "venom_period", step),
+            venomDuration = tierNumber(combat, id, "venom_duration", step),
+            stripDepthStuds = tierNumber(combat, id, "strip_depth_studs", step),
+            exitBufferStuds = tierNumber(combat, id, "exit_buffer_studs", step),
         }
     end
     return nil

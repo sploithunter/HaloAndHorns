@@ -55,10 +55,13 @@ for pass = 1, 2 do
     end
 end
 
+local MERGE_TIER_ART = require(script.Parent.merge_tier_art)
+
 return {
     version = 6,
     enabled = true,
     stream_timeout = 8,
+    tier_art = MERGE_TIER_ART,
 
     gate = {
         hook_name = "HallOfWorldsPortal",
@@ -482,24 +485,20 @@ return {
                 "repulsor",
                 "nullifier",
             },
-            -- First combat slice: an installed chassis lofts a sphere toward the nearest
-            -- in-lane enemy. Pads stay empty until Buy/Install. Upgrades stay unwired.
+            -- An installed chassis lofts a sphere toward the nearest in-lane enemy.
+            -- Pads stay empty until Buy/Install; the installed gameplay tier selects art and tuning.
             starter_role = "repulsor",
             starter_tier = 1,
-            -- Size-preview cycle is locked; E now fires a cannonball. Keep the scale list so
-            -- we can restore a preview if the chassis needs another pass.
-            size_preview = {
-                enabled = false,
-                scales = { 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.85 },
-            },
             shot = {
                 interval = 2.4,
                 interval_jitter = 0.05,
                 flight_seconds = 0.85,
                 apex_height = 14,
                 range = 90,
+                range_gate_padding = 16,
                 diameter = 1.2,
                 land_seconds = 0.55,
+                heal_fire_texture = "83142936306716",
                 -- Heal landing casts the real Healing Field at impact (same
                 -- kind numbers, no Focus/cooldown). Rage landing is a one-time
                 -- Berserk sip in a ruddy MagicCircle — no tick loop.
@@ -551,6 +550,7 @@ return {
                 display_name = "Artillery Commander",
                 action_text = "Talk",
                 object_text = "Artillery Commander",
+                idle_animation = "507766388",
                 max_distance = 16,
                 stand_behind_studs = 7,
             },
@@ -558,14 +558,24 @@ return {
         edge_bulwarks = {
             enabled = true,
             tile_count = 10,
+            wall_inset_studs = 1,
+            canonical_tile_length_studs = 10,
             -- Land Sharks are a moving field hazard, not a wall tile. Count scales by tier
             -- (4/5/6/7). They wander the full strip width and only a few studs off the
             -- bulwark line, then occasionally porpoise so a sliver of body breaks the playfield.
             land_shark_count = { 4, 5, 6, 7 },
             land_shark_track_studs = 28,
+            land_shark_min_field_width_studs = 24,
             land_shark_field_depth_studs = 7,
             land_shark_field_margin_studs = 8,
             land_shark_speed_studs = 10,
+            land_shark_tempo_divisor = 10,
+            land_shark_chase_speed_studs = 26,
+            land_shark_drag_speed_studs = 16,
+            land_shark_return_speed_studs = 18,
+            land_shark_hunt_blend_rate = 5,
+            land_shark_sample_lead_seconds = 0.12,
+            land_shark_proximity_poll_seconds = 0.1,
             land_shark_surface_distance = 8,
             land_shark_fin_exposure_studs = 1,
             land_shark_bite_period_seconds = 1.4,
@@ -594,6 +604,7 @@ return {
                 display_name = "Bulwark Engineer",
                 action_text = "Talk",
                 object_text = "Bulwark Engineer",
+                idle_animation = "507766388",
                 max_distance = 16,
                 posts = {
                     { slot = "egg", along = "left" },

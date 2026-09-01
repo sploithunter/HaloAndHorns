@@ -233,11 +233,13 @@ local SCHEMAS = {
     merge_egg_prototype = schema({
         version = "number",
         enabled = "boolean",
+        tier_art = "table",
         gate = "table",
         world = "table",
         squad = "table",
         enemy = "table",
     }),
+    merge_tier_art = schema({ cannons = "table", bulwarks = "table" }),
     ui_theme = schema({ default_color = "string", areas = "table", palettes = "table" }),
     veteran = schema({ xp_per_level = "number", rewards = "table" }),
     zone_tracker = schema({
