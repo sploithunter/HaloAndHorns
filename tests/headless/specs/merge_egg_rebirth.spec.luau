@@ -69,13 +69,20 @@ return function()
             end
         end)
 
-        it("supports multiplicative factors and safe unconfigured axes", function()
+        it("supports multiplicative factors and requires every live axis", function()
             local multiplied = table.clone(config)
             multiplied.per_rebirth_factors = table.clone(config.per_rebirth_factors)
             multiplied.per_rebirth_factors.stacking = "multiplicative"
             expect(Rebirth.scalingMultiplier(multiplied, 2, "bulwarks", "power")).to.equal(4)
-            expect(Rebirth.scalingMultiplier(config, 2, "cannons", "unknown")).to.equal(1)
-            expect(Rebirth.scalingMultiplier(config, 2, "unknown", "power")).to.equal(1)
+            local knownSystemMissingAxis = pcall(function()
+                Rebirth.scalingMultiplier(config, 2, "cannons", "unknown")
+            end)
+            local missingSystem = pcall(function()
+                Rebirth.scalingMultiplier(config, 2, "unknown", "power")
+            end)
+            expect(knownSystemMissingAxis).to.equal(false)
+            expect(missingSystem).to.equal(false)
+            expect(Rebirth.scalingMultiplier({}, 2, "unknown", "power")).to.equal(1)
         end)
 
         it("keeps the legacy pet damage field compatible", function()

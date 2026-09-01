@@ -3521,8 +3521,9 @@ function MergeEggPrototypeService:_towerFireInterval(record, cannon, shot)
     local spec = type(shot.landing) == "table" and shot.landing[role] or nil
     local interval =
         self:_towerListedNumber(spec and spec.interval, self:_towerTierIndex(cannon), shot.interval)
-    return requiredConfigNumber(interval, "team.edge_towers.shot interval")
-        / self:_rebirthScalingMultiplier(record, "cannons", "cadence")
+    local cadenceMultiplier = self:_rebirthScalingMultiplier(record, "cannons", "cadence")
+    assert(cadenceMultiplier > 0, "Rebirth cannon cadence multiplier must be greater than zero")
+    return requiredConfigNumber(interval, "team.edge_towers.shot interval") / cadenceMultiplier
 end
 
 function MergeEggPrototypeService:_towerHealMagnitude(record, cannon)

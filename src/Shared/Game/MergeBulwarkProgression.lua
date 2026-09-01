@@ -468,7 +468,11 @@ local function requiredMultiplier(multipliers, axis)
 end
 
 local function scaleFields(result, keys, multiplier, inverse, wholeNumbers)
-    multiplier = inverse and math.max(0.001, multiplier) or math.max(0, multiplier)
+    if inverse then
+        assert(multiplier > 0, "Rebirth cadence multiplier must be greater than zero")
+    else
+        multiplier = math.max(0, multiplier)
+    end
     for _, key in ipairs(keys) do
         local value = tonumber(result[key])
         if value ~= nil then

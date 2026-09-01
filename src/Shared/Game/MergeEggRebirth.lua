@@ -38,14 +38,26 @@ end
 -- services (for example cannon power can grow while cannon radius remains exactly 1x).
 function MergeEggRebirth.scalingMultiplier(config, count, system, axis)
     config = type(config) == "table" and config or {}
-    local factors = type(config.per_rebirth_factors) == "table" and config.per_rebirth_factors or {}
-    local systemFactors = type(factors[tostring(system or "")]) == "table"
-            and factors[tostring(system or "")]
-        or {}
-    local perRebirthFactor = math.max(0, tonumber(systemFactors[tostring(axis or "")]) or 1)
+    local factors = config.per_rebirth_factors
+    if type(factors) ~= "table" then
+        return 1
+    end
+    local systemName = tostring(system or "")
+    local axisName = tostring(axis or "")
+    local systemFactors = factors[systemName]
+    assert(type(systemFactors) == "table", "Missing rebirth factors for " .. systemName)
+    local perRebirthFactor = tonumber(systemFactors[axisName])
+    assert(
+        perRebirthFactor ~= nil,
+        string.format("Missing rebirth factor for %s.%s", systemName, axisName)
+    )
+    perRebirthFactor = math.max(0, perRebirthFactor)
     local ranks = MergeEggRebirth.normalizeCount(count)
-    local stacking =
-        tostring(systemFactors.stacking or factors.stacking or config.damage_stacking or "additive")
+    local stacking = systemFactors.stacking or factors.stacking
+    assert(
+        stacking == "additive" or stacking == "multiplicative",
+        "Missing or invalid rebirth factor stacking"
+    )
     if stacking == "multiplicative" then
         return perRebirthFactor ^ ranks
     end
