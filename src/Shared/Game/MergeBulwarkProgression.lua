@@ -461,8 +461,13 @@ local CAPACITY_FIELDS = {
 }
 local CONTROL_FIELDS = { "shoveStuds", "sinkStuds" }
 
+local function requiredMultiplier(multipliers, axis)
+    local multiplier = tonumber(multipliers[axis])
+    assert(multiplier ~= nil, string.format("Missing rebirth bulwark %s multiplier", axis))
+    return multiplier
+end
+
 local function scaleFields(result, keys, multiplier, inverse, wholeNumbers)
-    multiplier = tonumber(multiplier) or 1
     multiplier = inverse and math.max(0.001, multiplier) or math.max(0, multiplier)
     for _, key in ipairs(keys) do
         local value = tonumber(result[key])
@@ -481,15 +486,15 @@ function MergeBulwarkProgression.scaleCombatEffect(effect, multipliers)
     end
     multipliers = type(multipliers) == "table" and multipliers or {}
     local result = table.clone(effect)
-    scaleFields(result, POWER_FIELDS, multipliers.power, false, false)
-    scaleFields(result, RADIUS_FIELDS, multipliers.radius, false, false)
-    scaleFields(result, CADENCE_FIELDS, multipliers.cadence, true, false)
-    scaleFields(result, DURATION_FIELDS, multipliers.duration, false, false)
-    scaleFields(result, CAPACITY_FIELDS, multipliers.capacity, false, true)
-    scaleFields(result, CONTROL_FIELDS, multipliers.control, false, false)
+    scaleFields(result, POWER_FIELDS, requiredMultiplier(multipliers, "power"), false, false)
+    scaleFields(result, RADIUS_FIELDS, requiredMultiplier(multipliers, "radius"), false, false)
+    scaleFields(result, CADENCE_FIELDS, requiredMultiplier(multipliers, "cadence"), true, false)
+    scaleFields(result, DURATION_FIELDS, requiredMultiplier(multipliers, "duration"), false, false)
+    scaleFields(result, CAPACITY_FIELDS, requiredMultiplier(multipliers, "capacity"), false, true)
+    local control = requiredMultiplier(multipliers, "control")
+    scaleFields(result, CONTROL_FIELDS, control, false, false)
     if tonumber(result.slowFactor) ~= nil then
-        local control = math.max(0, tonumber(multipliers.control) or 1)
-        result.slowFactor = math.clamp(1 - (1 - result.slowFactor) * control, 0, 1)
+        result.slowFactor = math.clamp(1 - (1 - result.slowFactor) * math.max(0, control), 0, 1)
     end
     return result
 end
