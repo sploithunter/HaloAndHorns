@@ -231,6 +231,44 @@ return function()
             expect(saw4.chunkCount).to.equal(10)
         end)
 
+        it("scales power without widening bulwark combat radii", function()
+            local base = Progression.combatEffect("land_shark", 3, combatConfig)
+            local scaled = Progression.scaleCombatEffect(base, {
+                power = 3,
+                radius = 1,
+                cadence = 1,
+                duration = 1,
+                capacity = 1,
+                control = 1,
+            })
+            expect(scaled.biteDamage).to.equal(390)
+            expect(scaled.venomDamage).to.equal(30)
+            expect(scaled.huntRangeStuds).to.equal(base.huntRangeStuds)
+            expect(scaled.grabRangeStuds).to.equal(base.grabRangeStuds)
+            expect(scaled.venomRangeStuds).to.equal(base.venomRangeStuds)
+            expect(scaled.bitePeriod).to.equal(base.bitePeriod)
+            expect(scaled.sharkCount).to.equal(base.sharkCount)
+            expect(base.biteDamage).to.equal(130)
+        end)
+
+        it("keeps cadence, duration, capacity, and control on independent axes", function()
+            local base = Progression.combatEffect("impaler_palisade", 4, combatConfig)
+            local scaled = Progression.scaleCombatEffect(base, {
+                power = 2,
+                radius = 1,
+                cadence = 2,
+                duration = 2,
+                capacity = 2,
+                control = 2,
+            })
+            expect(scaled.venomDamage).to.equal(36)
+            expect(scaled.contagionRadius).to.equal(base.contagionRadius)
+            expect(scaled.venomPeriod).to.equal(base.venomPeriod / 2)
+            expect(scaled.rootSeconds).to.equal(base.rootSeconds * 2)
+            expect(scaled.charges).to.equal(base.charges * 2)
+            expect(scaled.shoveStuds).to.equal(base.shoveStuds * 2)
+        end)
+
         it("keeps combat planes named and install slots repeatable", function()
             local Slots = Progression.slots
             expect(#Slots.ids()).to.equal(4)

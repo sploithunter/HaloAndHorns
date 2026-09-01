@@ -9,8 +9,22 @@ return function()
                 [2] = 50000,
                 [3] = 200000,
             },
-            allied_damage_bonus_per_rebirth = 1,
             damage_stacking = "additive",
+            per_rebirth_factors = {
+                stacking = "additive",
+                pets = { power = 2 },
+                cannons = { power = 2, radius = 1, cadence = 1 },
+                bulwarks = {
+                    power = 2,
+                    radius = 1,
+                    cadence = 1,
+                    duration = 1,
+                    capacity = 1,
+                    control = 1,
+                },
+                coins = { amount = 2 },
+                gems = { amount = 2, chance = 1 },
+            },
             requirements = {
                 minimum_deployed_egg_tier_by_rank = {},
             },
@@ -34,6 +48,49 @@ return function()
             expect(Rebirth.damageMultiplier(config, 0)).to.equal(1)
             expect(Rebirth.damageMultiplier(config, 1)).to.equal(2)
             expect(Rebirth.damageMultiplier(config, 2)).to.equal(3)
+        end)
+
+        it("scales defenses and currency while keeping radii fixed at one", function()
+            for count = 0, 2 do
+                local growing = count + 1
+                expect(Rebirth.scalingMultiplier(config, count, "cannons", "power")).to.equal(
+                    growing
+                )
+                expect(Rebirth.scalingMultiplier(config, count, "bulwarks", "power")).to.equal(
+                    growing
+                )
+                expect(Rebirth.scalingMultiplier(config, count, "coins", "amount")).to.equal(
+                    growing
+                )
+                expect(Rebirth.scalingMultiplier(config, count, "gems", "amount")).to.equal(growing)
+                expect(Rebirth.scalingMultiplier(config, count, "cannons", "radius")).to.equal(1)
+                expect(Rebirth.scalingMultiplier(config, count, "bulwarks", "radius")).to.equal(1)
+                expect(Rebirth.scalingMultiplier(config, count, "gems", "chance")).to.equal(1)
+            end
+        end)
+
+        it("supports multiplicative factors and requires every live axis", function()
+            local multiplied = table.clone(config)
+            multiplied.per_rebirth_factors = table.clone(config.per_rebirth_factors)
+            multiplied.per_rebirth_factors.stacking = "multiplicative"
+            expect(Rebirth.scalingMultiplier(multiplied, 2, "bulwarks", "power")).to.equal(4)
+            local knownSystemMissingAxis = pcall(function()
+                Rebirth.scalingMultiplier(config, 2, "cannons", "unknown")
+            end)
+            local missingSystem = pcall(function()
+                Rebirth.scalingMultiplier(config, 2, "unknown", "power")
+            end)
+            expect(knownSystemMissingAxis).to.equal(false)
+            expect(missingSystem).to.equal(false)
+            expect(Rebirth.scalingMultiplier({}, 2, "unknown", "power")).to.equal(1)
+        end)
+
+        it("keeps the legacy pet damage field compatible", function()
+            local legacy = {
+                allied_damage_bonus_per_rebirth = 1,
+                damage_stacking = "additive",
+            }
+            expect(Rebirth.damageMultiplier(legacy, 2)).to.equal(3)
         end)
 
         it("keeps future deployed-egg requirements data driven", function()
