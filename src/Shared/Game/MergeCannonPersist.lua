@@ -23,10 +23,8 @@ end
 
 function MergeCannonPersist.read(source, config)
     config = type(config) == "table" and config or {}
-    local state = MergeTowerProgression.normalize(
-        MergeCannonPersist.inputFrom(source),
-        config.maximum_tier
-    )
+    local state =
+        MergeTowerProgression.normalize(MergeCannonPersist.inputFrom(source), config.maximum_tier)
     if config.visual_catalog_owned == true then
         return MergeTowerProgression.withCatalogOwned(
             state,
@@ -68,8 +66,10 @@ end
 function MergeCannonPersist.addSpent(record, progress, charged)
     charged = math.max(0, math.floor(tonumber(charged) or 0))
     if record then
-        record.towerWaycoinsSpent = math.max(0, math.floor(tonumber(record.towerWaycoinsSpent) or 0))
-            + charged
+        record.towerWaycoinsSpent = math.max(
+            0,
+            math.floor(tonumber(record.towerWaycoinsSpent) or 0)
+        ) + charged
     end
     if progress then
         progress.tower_waycoins_spent = math.max(
