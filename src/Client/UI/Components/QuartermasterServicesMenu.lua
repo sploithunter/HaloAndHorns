@@ -117,7 +117,7 @@ function QuartermasterServicesMenu.show(payload, respond)
     local panel = Instance.new("Frame")
     panel.Name = "Services"
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
-    panel.Position = UDim2.fromScale(0.5, 0.5)
+    panel.Position = UDim2.fromScale(0.5, 0.54)
     panel.Size = UDim2.fromOffset(680, 410)
     panel.BackgroundColor3 = Color3.fromRGB(20, 25, 36)
     panel.BorderSizePixel = 0
