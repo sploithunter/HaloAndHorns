@@ -122,6 +122,9 @@ return function()
             expect(mergeService:find("trainingAvailable = not done", 1, true)).to.be.ok()
             expect(mergeService:find('return false, "combat_tutorial_complete"', 1, true)).to.be.ok()
             expect(config.quartermaster.services.training_redo_label).to.equal(nil)
+            expect(config.quartermaster.services.body_complete).to.equal(
+                "Stock your pets or strengthen your command."
+            )
             expect(
                 mergeService:find(
                     "self._combatTrainingReturns[player] = { bayId = bayId }",

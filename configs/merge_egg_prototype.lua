@@ -551,6 +551,7 @@ return {
         services = {
             title = "QUARTERMASTER",
             body = "Stock your pets, strengthen your command, or train for combat.",
+            body_complete = "Stock your pets or strengthen your command.",
             game_passes_label = "GAME PASSES",
             game_passes_body = "Permanent upgrades for speed, pets, hatches, and recovery.",
             game_passes_shop_title = "QUARTERMASTER PASSES",

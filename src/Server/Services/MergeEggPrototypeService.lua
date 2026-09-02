@@ -6971,7 +6971,7 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
         operation = "quartermaster_services",
         greeting = tostring(post.greeting or "I'll get you whatever you need."),
         title = tostring(services.title or "QUARTERMASTER"),
-        body = tostring(services.body or "Choose a service."),
+        body = tostring((done and services.body_complete) or services.body or "Choose a service."),
         gamePassesLabel = tostring(services.game_passes_label or "GAME PASSES"),
         gamePassesBody = tostring(
             services.game_passes_body or "Permanent upgrades for Merge Defense."
