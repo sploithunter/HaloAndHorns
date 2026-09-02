@@ -7531,3 +7531,10 @@ first-session cohort rates.
 - Removed the separate footer Install control from both cannon and bulwark workshops. The action in
   the lower Next card now transitions through UNLOCK → INSTALL → UPGRADE (then MAXED), and both
   tutorial cue stages point at that same live button.
+
+## 2026-09-02 — Merge Focus Regen correction
+
+- Replaced the unreleased Merge management `player_focus` upgrade with `focus_regen` end to end.
+  Each level now multiplies base Focus regeneration by +5% while the pool maximum remains unchanged;
+  the wall card, world attributes, player runtime attribute, save key, and tests use the corrected
+  identity with no pre-release migration alias.

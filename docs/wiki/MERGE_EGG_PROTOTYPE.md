@@ -601,16 +601,17 @@ team and queue model:
   rejects another base egg; merging or placing frees a cell.
 - The former side-wall auto-combine sign now hosts two adjacent, equal-height panels. The left action
   panel gives Rebirth and Buy Egg one large row each. The right panel is a 2×4 grid containing Coin
-  Value, Damage, Fire Rate, Active Slots, Egg HP, Spawn Level, Pet Endurance, and Player Focus.
+  Value, Damage, Fire Rate, Active Slots, Egg HP, Spawn Level, Pet Endurance, and Focus Regen.
   Auto-Combine moved to a floor control immediately outside Equip Best; both plates derive their
   spacing from the authored board transform, so mirrored bays keep the same relationship.
-  Coin Value, Damage, Fire Rate, Active Slots, Egg HP, Pet Endurance, and Player Focus are durable
+  Coin Value, Damage, Fire Rate, Active Slots, Egg HP, Pet Endurance, and Focus Regen are durable
   Gem upgrades. Spawn Level and Buy Egg remain Waycoin progression. Each percentage card advertises
   its fixed `+5%` purchase rather than a before/after total. These bonuses are additive by level
   (`1 + 0.05 × level`), never compounded. Pet Endurance multiplies the Merge-only rebirth defense
-  curve for every live and replacement player pet. Player Focus sets a transient contextual maximum
-  for the shared runtime Focus pool and does not persist the resource itself. Damage's accumulated
-  percentage adds to Rebirth's percentage on that same base rather than multiplying the two systems.
+  curve for every live and replacement player pet. Focus Regen multiplies the shared pool's base
+  regeneration rate while leaving its maximum unchanged; the resource itself remains transient.
+  Damage's accumulated percentage adds to Rebirth's percentage on that same base rather than
+  multiplying the two systems.
   Each card is a colored rounded frame around a dark inset panel. Its purchase price sits in a
   separate overlapping pill: purple with the authored amethyst icon for Gem costs, gold with the
   Waycoin icon for Waycoin costs, and a red action pill for Rebirth. Both wall panels and the floor

@@ -1985,8 +1985,8 @@ function MergeEggPrototypeService:_petDefenseMultiplier(record)
         * self:_managementUpgradeMultiplier(record, "pet_endurance")
 end
 
-function MergeEggPrototypeService:_playerFocusMultiplier(record)
-    return self:_managementUpgradeMultiplier(record, "player_focus")
+function MergeEggPrototypeService:_focusRegenMultiplier(record)
+    return self:_managementUpgradeMultiplier(record, "focus_regen")
 end
 
 function MergeEggPrototypeService:_activeSlotCount(record)
@@ -2188,7 +2188,7 @@ function MergeEggPrototypeService:_stampUpgradeExperiment(record)
     )
     local power = self:_upgradeExperimentMultiplier(record, "power") * persistentDamage
     local defenseMultiplier = self:_petDefenseMultiplier(record)
-    local focusMultiplier = self:_playerFocusMultiplier(record)
+    local focusRegenMultiplier = self:_focusRegenMultiplier(record)
     for _, team in ipairs(record.teams or {}) do
         local teamPower = math.max(0, tonumber(team.originPowerMultiplier) or 1) * power
         for _, model in ipairs(team.units or {}) do
@@ -2208,7 +2208,7 @@ function MergeEggPrototypeService:_stampUpgradeExperiment(record)
     end
     if record.player then
         record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", defenseMultiplier)
-        record.player:SetAttribute("FocusMaxMultiplier", focusMultiplier)
+        record.player:SetAttribute("FocusRegenMultiplier", focusRegenMultiplier)
     end
 end
 
@@ -9135,7 +9135,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     local rebirth = self:_rebirthStatus(record)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
     local managementPetEndurance = self:_managementUpgradeMultiplier(record, "pet_endurance")
-    local managementPlayerFocus = self:_playerFocusMultiplier(record)
+    local managementFocusRegen = self:_focusRegenMultiplier(record)
     local petDefenseMultiplier = self:_petDefenseMultiplier(record)
     local alliedDamage =
         MergeEggDamageScope.additiveUpgradeMultiplier(managementDamage, rebirth.damageMultiplier)
@@ -9149,7 +9149,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", rebirth.scaling.petDefense)
     world:SetAttribute("MergeDefenseManagementPetEnduranceMultiplier", managementPetEndurance)
     world:SetAttribute("MergeDefensePetDefenseMultiplier", petDefenseMultiplier)
-    world:SetAttribute("MergeDefenseManagementPlayerFocusMultiplier", managementPlayerFocus)
+    world:SetAttribute("MergeDefenseManagementFocusRegenMultiplier", managementFocusRegen)
     world:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
     world:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
     world:SetAttribute("MergeDefenseNextRebirthDamageMultiplier", nextRebirthDamage)
@@ -9209,7 +9209,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", petDefenseMultiplier)
         record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
         record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
-        record.player:SetAttribute("FocusMaxMultiplier", managementPlayerFocus)
+        record.player:SetAttribute("FocusRegenMultiplier", managementFocusRegen)
         record.player:SetAttribute("MergeDefensePersonalEggTier", personalTier)
         record.player:SetAttribute("MergeDefensePersonalEggId", personalEggId)
     end
@@ -9220,7 +9220,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         active_slots = "ActiveSlots",
         egg_health = "EggHealth",
         pet_endurance = "PetEndurance",
-        player_focus = "PlayerFocus",
+        focus_regen = "FocusRegen",
     }
     for upgradeId, attributeName in pairs(upgradeAttributeNames) do
         local level = self:_managementUpgradeLevel(record, upgradeId)
@@ -11448,7 +11448,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", nil)
     record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", nil)
     record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", nil)
-    record.player:SetAttribute("FocusMaxMultiplier", nil)
+    record.player:SetAttribute("FocusRegenMultiplier", nil)
 
     if departing then
         if record.parked then
@@ -16961,7 +16961,7 @@ function MergeEggPrototypeService:ResetForBeginning(player)
         player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", 1)
         player:SetAttribute("MergeDefenseManagementDamageMultiplier", 1)
         player:SetAttribute("MergeDefenseAlliedDamageMultiplier", 1)
-        player:SetAttribute("FocusMaxMultiplier", nil)
+        player:SetAttribute("FocusRegenMultiplier", nil)
     end
     return true
 end

@@ -308,8 +308,8 @@ return {
                 step = 0.05,
                 max_level = 20,
             },
-            player_focus = {
-                display_name = "Player Focus",
+            focus_regen = {
+                display_name = "Focus Regen",
                 base_cost = 100,
                 cost_growth = 1.75,
                 step = 0.05,

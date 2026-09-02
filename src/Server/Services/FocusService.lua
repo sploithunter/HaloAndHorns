@@ -25,6 +25,7 @@ local FocusMath = require(ReplicatedStorage.Shared.Game.FocusMath)
 -- Runtime-only state means NO per-tick save cost, so we can tick as fine as we like — 0.2s = +1/tick.
 local REGEN_INTERVAL = 0.2
 local MAX_MULTIPLIER_ATTRIBUTE = "FocusMaxMultiplier"
+local REGEN_MULTIPLIER_ATTRIBUTE = "FocusRegenMultiplier"
 
 local FocusService = {}
 FocusService.__index = FocusService
@@ -42,10 +43,18 @@ local function maximumFor(self, player)
     return FocusMath.maximum(self._config, player and player:GetAttribute(MAX_MULTIPLIER_ATTRIBUTE))
 end
 
+local function regenMultiplierFor(player)
+    local multiplier = player and tonumber(player:GetAttribute(REGEN_MULTIPLIER_ATTRIBUTE))
+    if multiplier == nil then
+        return 1
+    end
+    return math.max(0, multiplier)
+end
+
 local function runtimeConfig(self, player)
     return {
         focus_max = maximumFor(self, player),
-        regen_per_second = self._config.regen_per_second,
+        regen_per_second = self._config.regen_per_second * regenMultiplierFor(player),
         regen_pauses_at_zero = self._config.regen_pauses_at_zero,
     }
 end
