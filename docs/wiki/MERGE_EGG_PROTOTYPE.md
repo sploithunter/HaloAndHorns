@@ -678,7 +678,9 @@ team and queue model:
   first 1,000 Waycoins earned in a session, and the Quartermaster tutorial arrival. Routine
   creation, merging, deployment, installation, and management purchases do not toast, and Gem
   pickups never toast. Distinct milestones can queue without turning normal play into an activity
-  feed. After Wave 10 the potion tent and Macros
+  feed. Auto-Combine returns every new egg-tier and pet-capacity discovery from its cascade through
+  the same queue, so automatic merges cannot silently consume a first-time milestone. After Wave 10
+  the potion tent and Macros
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
   hidden transparency as the reveal value. Talk completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when

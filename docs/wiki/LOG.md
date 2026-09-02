@@ -7248,3 +7248,5 @@ first-session cohort rates.
   Hell 1 five, Heaven 2 six, Hell 2 seven, Heaven 3 eight, and Hell 3 nine. The ground roster panel
   reserves the nine-row final footprint, and a newly reached capacity queues an ordinal milestone
   such as `4TH PET SLOT UNLOCKED` exactly once per run.
+- Auto-Combine now returns every first-time tier and capacity produced by its merge cascade, so an
+  automatic Ice Egg (or later tier) queues the same milestone as a manual merge.

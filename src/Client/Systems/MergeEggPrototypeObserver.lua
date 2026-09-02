@@ -4128,6 +4128,30 @@ function MergeEggPrototypeObserver.start()
                 TUTORIAL_ACTIVITY_DEFAULT_SECONDS
             )
         end
+        for _, automaticMilestone in
+            ipairs(type(value.milestones) == "table" and value.milestones or {})
+        do
+            if type(automaticMilestone) == "table" then
+                local automaticKey, automaticCopy = milestoneResultFeedback(automaticMilestone)
+                if automaticKey then
+                    enqueueFeedback(
+                        automaticKey,
+                        automaticCopy,
+                        true,
+                        TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+                    )
+                end
+                local automaticPetSlots = tonumber(automaticMilestone.petSlotMilestone)
+                if automaticPetSlots then
+                    enqueueFeedback(
+                        "pet_slot_unlocked:" .. tostring(automaticPetSlots),
+                        tutorialActivityCopy("pet_slot_unlocked", ordinal(automaticPetSlots)),
+                        true,
+                        TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+                    )
+                end
+            end
+        end
     end)
     Signals.CurrencyUpdate.OnClientEvent:Connect(function(data)
         if not milestoneFeedbackAllowed() or type(data) ~= "table" then
