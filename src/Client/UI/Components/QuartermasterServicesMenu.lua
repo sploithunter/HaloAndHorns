@@ -44,7 +44,7 @@ local function serviceButton(parent, name, titleText, bodyText, color, position)
     title.BackgroundTransparency = 1
     title.Text = titleText
     title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextSize = 23
+    title.TextSize = 25
     title.Font = Enum.Font.GothamBlack
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 6
@@ -57,7 +57,7 @@ local function serviceButton(parent, name, titleText, bodyText, color, position)
     body.BackgroundTransparency = 1
     body.Text = bodyText
     body.TextColor3 = Color3.fromRGB(229, 237, 247)
-    body.TextSize = 17
+    body.TextSize = 20
     body.Font = Enum.Font.GothamMedium
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
@@ -176,7 +176,7 @@ function QuartermasterServicesMenu.show(payload, respond)
     body.BackgroundTransparency = 1
     body.Text = tostring(payload.body or payload.greeting or "Choose a service.")
     body.TextColor3 = Color3.fromRGB(218, 226, 240)
-    body.TextSize = 18
+    body.TextSize = 20
     body.Font = Enum.Font.GothamMedium
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
@@ -249,7 +249,7 @@ function QuartermasterServicesMenu.show(payload, respond)
     end)
 
     gui.Parent = playerGui
-    UIViewportScale.attach(panel, { min = 0.5 })
+    UIViewportScale.attach(panel, { min = 0.65 })
     if player:GetAttribute("InputMode") == "gamepad" then
         GuiService.SelectedObject = potions
     end
