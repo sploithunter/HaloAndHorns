@@ -10,6 +10,7 @@
       regen(focus, elapsed, config)   -> focus (clamped to [0, focus_max])
       sunder(focus, amount, config)   -> focus (never below 0, never above max)
       clampFocus(focus, config)       -> focus in [0, focus_max]
+      maximum(config, multiplier)     -> positive runtime maximum
 ]]
 
 local FocusMath = {}
@@ -21,6 +22,18 @@ local function clamp(value, min, max)
         return max
     end
     return value
+end
+
+-- Modes may temporarily expand the Focus pool without mutating the shared config or persisting a
+-- volatile resource. Missing/invalid multipliers preserve the authored maximum.
+function FocusMath.maximum(config, multiplier)
+    local base = tonumber(config and config.focus_max)
+    assert(base ~= nil, "focus.focus_max is required")
+    local resolvedMultiplier = tonumber(multiplier)
+    if resolvedMultiplier == nil then
+        resolvedMultiplier = 1
+    end
+    return math.max(1, math.max(1, base) * math.max(0.01, resolvedMultiplier))
 end
 
 function FocusMath.clampFocus(focus, config)

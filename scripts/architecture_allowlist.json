@@ -105,7 +105,7 @@
         "src/Server/Services/EnhancementService.lua": 2,
         "src/Server/Services/EventService.lua": 3,
         "src/Server/Services/FloraService.lua": 1,
-        "src/Server/Services/FocusService.lua": 5,
+        "src/Server/Services/FocusService.lua": 4,
         "src/Server/Services/FoundersChoiceService.lua": 2,
         "src/Server/Services/FriendBoostService.lua": 1,
         "src/Server/Services/FusionService.lua": 2,

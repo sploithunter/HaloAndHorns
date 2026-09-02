@@ -7500,3 +7500,10 @@ first-session cohort rates.
   `egg creation value at proposed rank × 200`. Rank 2 remains 50,000 and Rank 10 is 12,800,000;
   live egg upgrades and hatcher purchases cannot move the quote. The indexed tier, egg value, and
   multiplier are published separately for inspection.
+
+## 2026-09-02 — Contextual Focus capacity
+
+- Added a generic transient `FocusMaxMultiplier` seam to `FocusService`. Mode-owned progression can
+  expand a player's Focus ceiling while active; cast, restore, regen, bonus regen, and HUD values
+  all share the derived cap, while the runtime resource remains unsaved and the base config stays
+  unchanged.
