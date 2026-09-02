@@ -7473,3 +7473,9 @@ first-session cohort rates.
   chassis from the bay. Family unlock flags remain permanent, but every pad/wall must be installed
   and upgraded again after rebirth.
 2026-09-02 — Fixed unlocked Heal rejecting a level-granted slot with `slot_target_not_owned` by routing picker state, casts, level commit, and augmentation placement through one contextual `PowerService:IsPowerOwned` rule. Heal stays unavailable before Combat Training and Resonance stays unavailable inside it.
+
+## 2026-09-02 — Hatcher Captains no longer block the lane
+
+- Added a config-owned non-collidable character contract for Merge Defense Hatcher Captains. Every
+  current and late-added R15 body part remains visible/queryable but cannot physically obstruct a
+  player moving between a crowded line of deployed eggs.
