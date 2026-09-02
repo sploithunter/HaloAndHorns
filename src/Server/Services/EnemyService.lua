@@ -1831,6 +1831,25 @@ function EnemyService:_petPower(pet)
     return p
 end
 
+-- Merge Defense rebirths widen a pet's endurance pool without mutating its durable Power or
+-- affecting combat in another place. Ephemeral hatcher/reserve units carry the multiplier on the
+-- model; durable Full-mode pets inherit it from their owning player only while that player is in
+-- Merge Defense.
+function EnemyService:_petEnduranceFactor(pet)
+    local base = tonumber(self._combatConfig and self._combatConfig.pet_down_threshold_factor)
+    assert(base ~= nil, "Missing combat.pet_down_threshold_factor")
+    base = math.max(0.01, base)
+    local multiplier = tonumber(pet and pet:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+    if not multiplier and pet then
+        local folder = pet.Parent
+        local owner = folder and Players:FindFirstChild(folder.Name)
+        if owner and owner:GetAttribute("InMergeEggPrototype") == true then
+            multiplier = tonumber(owner:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+        end
+    end
+    return base * math.max(1, multiplier or 1)
+end
+
 function EnemyService:_petAbilityProfile(pet)
     local profile = self._abilityProfiles[pet]
     if not profile then
@@ -2220,7 +2239,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     -- actual landed hit so no attack family can poison ordinary pet regeneration again.
     local hitClock = os.clock()
     local power = self:_petPower(pet)
-    local factor = self._combatConfig.pet_down_threshold_factor or 1
+    local factor = self:_petEnduranceFactor(pet)
     local dmg = (def.attack and def.attack.damage) or 0
     -- CURSE (Hell combat-debuff supports): a cursed enemy DEALS less. WeakenMult is stamped on the
     -- enemy by the curse aura (_auraEnemyDebuff); consume it here on its own WeakenUntil/os.time seam.
@@ -4472,7 +4491,6 @@ function EnemyService:_regenPass(now, dt, eng)
     end
     local delay = (eng.regen and eng.regen.delay_seconds) or 3
     local regenConfig = eng.regen or {}
-    local factor = self._combatConfig.pet_down_threshold_factor or 1
     for _, folder in ipairs(playerPets:GetChildren()) do
         local player = Players:FindFirstChild(folder.Name)
         local squadOutOfCombat = player ~= nil and player:GetAttribute("InCombat") ~= true
@@ -4485,6 +4503,7 @@ function EnemyService:_regenPass(now, dt, eng)
             then
                 local taken = pet:GetAttribute("CombatDamageTaken") or 0
                 if taken > 0 then
+                    local factor = self:_petEnduranceFactor(pet)
                     local pc = self._petCombat[pet]
                     local lastHit = (pc and pc.lastHit) or 0
                     if PetEndurance.canRegen(now, lastHit, delay) then
@@ -4588,7 +4607,7 @@ function EnemyService:NotePetHit(pet)
         pet,
         tonumber(pet:GetAttribute("CombatDamageTaken")) or 0,
         self:_petPower(pet),
-        (self._combatConfig and self._combatConfig.pet_down_threshold_factor) or 1
+        self:_petEnduranceFactor(pet)
     )
 end
 
@@ -4814,7 +4833,6 @@ end
 -- accumulated CombatDamageTaken. The squad healer keeps the tank up. Healers themselves are NOT
 -- valid targets (no passive self-heal), so a lone support pet can still go down.
 function EnemyService:_auraHeal(folder, heal, vmult)
-    local factor = self._combatConfig.pet_down_threshold_factor or 1
     local target, worst
     for _, ally in ipairs(folder:GetChildren()) do
         if
@@ -4832,6 +4850,7 @@ function EnemyService:_auraHeal(folder, heal, vmult)
     if not target then
         return
     end
+    local factor = self:_petEnduranceFactor(target)
     -- Heal a FRACTION of the target's pool (keeps numbers proportional on the ~100 scale)
     -- — or a flat `amount` if configured instead.
     local pool = PetEndurance.maxEndurance(self:_petPower(target), factor)
@@ -5544,7 +5563,6 @@ function EnemyService:_supportPass(now)
                     -- The buff/FX expire via Until, so cooling off (regen above the
                     -- threshold) lets rage fade on its own. Consumer: PetFollowService
                     -- adds RageDamageBuff to the additive pet_damage axis.
-                    local factor = self._combatConfig.pet_down_threshold_factor or 1
                     local until_ = os.time() + (tonumber(aura.duration) or 3)
                     for _, ally in ipairs(folder:GetChildren()) do
                         if
@@ -5552,6 +5570,7 @@ function EnemyService:_supportPass(now)
                             and not ally:GetAttribute("CombatDowned")
                             and ally:GetAttribute("NoPetSupport") ~= true
                         then
+                            local factor = self:_petEnduranceFactor(ally)
                             local frac = PetEndurance.healthFraction(
                                 ally:GetAttribute("CombatDamageTaken") or 0,
                                 self:_petPower(ally),
@@ -6453,7 +6472,6 @@ function EnemyService:_enemyPetDotPass(now)
     if not playerPets then
         return
     end
-    local factor = self._combatConfig.pet_down_threshold_factor or 1
     local eng = self._combatConfig.engagement or {}
     local pfs = self:_petFollowService()
     for _, folder in ipairs(playerPets:GetChildren()) do
@@ -6461,6 +6479,7 @@ function EnemyService:_enemyPetDotPass(now)
             if pet:IsA("Model") and pet.Parent and not pet:GetAttribute("CombatDowned") then
                 local perTick = math.max(0, tonumber(pet:GetAttribute("EnemyDotPerTick")) or 0)
                 if perTick > 0 then
+                    local factor = self:_petEnduranceFactor(pet)
                     local expires = tonumber(pet:GetAttribute("EnemyDotExpireAt")) or 0
                     if DamageOverTime.isExpired(expires, now) then
                         pet:SetAttribute("EnemyDotPerTick", 0)

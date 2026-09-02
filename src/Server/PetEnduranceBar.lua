@@ -7,6 +7,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar)
@@ -15,6 +16,18 @@ local PetEnduranceBar = {}
 
 local boundPets = setmetatable({}, { __mode = "k" })
 local watchedRoots = setmetatable({}, { __mode = "k" })
+
+local function contextualFactor(pet, factor)
+    local multiplier = tonumber(pet and pet:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+    if not multiplier and pet then
+        local folder = pet.Parent
+        local owner = folder and Players:FindFirstChild(folder.Name)
+        if owner and owner:GetAttribute("InMergeEggPrototype") == true then
+            multiplier = tonumber(owner:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+        end
+    end
+    return math.max(0.01, tonumber(factor) or 1) * math.max(1, multiplier or 1)
+end
 
 local function enduranceBar(pet)
     local primary = pet and pet.PrimaryPart
@@ -58,7 +71,7 @@ function PetEnduranceBar.sync(pet, factor)
     local power = (powerValue and tonumber(powerValue.Value))
         or tonumber(pet:GetAttribute("Power"))
         or 0
-    local fraction = PetEndurance.healthFraction(taken, power, factor)
+    local fraction = PetEndurance.healthFraction(taken, power, contextualFactor(pet, factor))
     OverheadBar.setFraction(
         OverheadBar.fillOf(primary, "EnduranceBar"),
         fraction,
@@ -111,6 +124,7 @@ function PetEnduranceBar.bind(pet, factor)
 
     connect(pet:GetAttributeChangedSignal("CombatDamageTaken"), sync)
     connect(pet:GetAttributeChangedSignal("CombatDowned"), sync)
+    connect(pet:GetAttributeChangedSignal("MergeDefenseRebirthPetDefenseMultiplier"), sync)
     connect(pet:GetPropertyChangedSignal("PrimaryPart"), sync)
     connect(pet.ChildAdded, function(child)
         if child.Name == "Power" then
