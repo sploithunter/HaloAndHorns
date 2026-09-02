@@ -91,6 +91,20 @@ local function placeButton(btn, name, cfg, compact)
     btn.Size = UDim2.fromOffset(cfg.size, cfg.size)
 end
 
+local function placeClassicPetsBesidePane(petsButton, pane, bar, cfg)
+    if pane.AbsoluteSize.X <= 0 or bar.AbsoluteSize.X <= 0 then
+        return
+    end
+
+    -- Classic exposes the full utility tray. Reserve Pets immediately beside its measured live edge
+    -- instead of letting the tray paint over the ordinary left hotbar flank on a short viewport.
+    local targetLeft = pane.AbsolutePosition.X + pane.AbsoluteSize.X + cfg.inner
+    petsButton.AnchorPoint = Vector2.new(0, 0.5)
+    petsButton.Position =
+        UDim2.fromOffset(targetLeft - bar.AbsolutePosition.X, bar.AbsoluteSize.Y * 0.5)
+    petsButton.Size = UDim2.fromOffset(cfg.size, cfg.size)
+end
+
 function HotbarFlank.start()
     if started then
         return
@@ -121,6 +135,9 @@ function HotbarFlank.start()
                 if btn.Parent then
                     placeButton(btn, name, cfg, compact)
                 end
+            end
+            if not compact and adopted.PetsButton then
+                placeClassicPetsBesidePane(adopted.PetsButton, pane, bar, cfg)
             end
         end
 
@@ -154,6 +171,10 @@ function HotbarFlank.start()
         end
 
         player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyLayout)
+        pane:GetPropertyChangedSignal("AbsolutePosition"):Connect(applyLayout)
+        pane:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
+        bar:GetPropertyChangedSignal("AbsolutePosition"):Connect(applyLayout)
+        bar:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
     end)
 end
 

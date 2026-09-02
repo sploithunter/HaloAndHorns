@@ -367,6 +367,10 @@ return {
         card_layout = {
             menu_gap = 8,
             minimum_width = 280,
+            left_clearance_controls = {
+                "PetsButton",
+                "CompactMenuButton",
+            },
         },
         click_cue_purchase_count = 3,
         click_cue = {

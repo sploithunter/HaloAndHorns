@@ -7326,3 +7326,11 @@ first-session cohort rates.
   This protects explicit Classic layout selections on short laptop and device-emulator viewports.
 - Corrected the compact utility popup from three allocated rows to all four required rows for its
   eight actions. Its config-owned minimum scale retains the 44px mobile touch-target floor.
+
+## 2026-09-01 — Classic tray reserves the Pets control
+
+- The Pets button is adopted out of the classic utility tray into the hotbar, so clearing only the
+  tray from the tutorial still left Pets underneath the six tray actions. Classic now docks Pets
+  immediately beside the tray's measured live right edge.
+- The Merge tutorial explicitly includes the rendered Pets and compact Menu flank controls in its
+  blocker set, including ancestor visibility, yielding tray → Pets → tutorial on narrow screens.
