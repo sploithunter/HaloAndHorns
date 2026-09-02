@@ -531,20 +531,32 @@ return {
         },
     },
 
-    -- Macros sits at the bay potion tent. Hidden with the tent until
-    -- Wave 10, then Talk. Greeting is the whole beat for now.
+    -- Macros sits at the bay supply booth. Hidden with the booth until Wave 10, then owns both
+    -- potion sales and the full Combat Training mission. The authored tent remains scenery only;
+    -- its legacy Browse Potions prompt is deliberately disabled by the Merge service.
     quartermaster = {
         enabled = true,
         user_id = 873359641,
         name = "MacrosGodOfMagic",
         display_name = "Macros",
-        action_text = "Talk",
+        action_text = "Services",
         object_text = "Quartermaster",
         idle_animation = "507766388",
         max_distance = 16,
         stand_front_studs = 8,
         shop_visible_transparency = 0,
         greeting = "I'll get you whatever you need.",
+        services = {
+            title = "QUARTERMASTER",
+            body = "Stock your pets or learn to command them in combat.",
+            potions_label = "BROWSE POTIONS",
+            potions_body = "Buy supplies for your own pets.",
+            training_label = "COMBAT TRAINING",
+            training_resume_label = "RESUME COMBAT TRAINING",
+            training_redo_label = "REDO COMBAT TRAINING",
+            training_body = "Learn powers, targeting, healing, and team tactics.",
+            close_label = "NOT NOW",
+        },
     },
 
     -- The existing Future Self / Colorado NPC-principal lifecycle consumes this base definition.
