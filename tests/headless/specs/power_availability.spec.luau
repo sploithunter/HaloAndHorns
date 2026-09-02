@@ -58,5 +58,47 @@ return function()
             expect(graduated[2]).to.equal("heal")
             expect(graduated[3]).to.equal("magnet")
         end)
+
+        it("single-sources selected and gated-innate ownership", function()
+            local definitions = powers.powers
+            local data = { Powers = { "magnet" } }
+
+            expect(PowerAvailability.isOwned("magnet", data, definitions, {})).to.equal(true)
+            expect(PowerAvailability.isOwned("swift", data, definitions, {})).to.equal(false)
+            expect(PowerAvailability.isOwned("unknown", data, definitions, {})).to.equal(false)
+
+            expect(PowerAvailability.isOwned("resonance", data, definitions, {})).to.equal(true)
+            expect(
+                PowerAvailability.isOwned(
+                    "resonance",
+                    data,
+                    definitions,
+                    { inCombatTutorial = true }
+                )
+            ).to.equal(false)
+
+            expect(PowerAvailability.isOwned("heal", data, definitions, {})).to.equal(false)
+            expect(
+                PowerAvailability.isOwned(
+                    "heal",
+                    data,
+                    definitions,
+                    { combatTutorialHealUnlocked = true }
+                )
+            ).to.equal(true)
+        end)
+
+        it("routes slot commit and placement through PowerService ownership", function()
+            local api = readFile("src/Server/Services/GameAPIService.lua")
+            local augmentation = readFile("src/Server/Services/AugmentationService.lua")
+            expect(api:find("powerSvc:IsPowerOwned(context.player, id)", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                augmentation:find("self._powerService:IsPowerOwned(player, powerId)", 1, true)
+                    ~= nil
+            ).to.equal(true)
+            expect(api:find("local owned = {}", 1, true)).to.equal(nil)
+        end)
     end)
 end

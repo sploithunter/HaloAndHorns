@@ -7472,3 +7472,4 @@ first-session cohort rates.
   encounter, invalidates the runtime reconciliation caches, and immediately removes the installed
   chassis from the bay. Family unlock flags remain permanent, but every pad/wall must be installed
   and upgraded again after rebirth.
+2026-09-02 — Fixed unlocked Heal rejecting a level-granted slot with `slot_target_not_owned` by routing picker state, casts, level commit, and augmentation placement through one contextual `PowerService:IsPowerOwned` rule. Heal stays unavailable before Combat Training and Resonance stays unavailable inside it.

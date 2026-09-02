@@ -22,7 +22,6 @@ function AugmentationService:Init()
     self._enhancementService = self._modules and self._modules.EnhancementService
     self._powerService = self._modules and self._modules.PowerService
     self._config = self._configLoader:LoadConfig("augmentation")
-    self._powersConfig = self._configLoader:LoadConfig("powers") -- innate-power check (slottable w/o being in data.Powers)
 end
 
 function AugmentationService:_level(player, override)
@@ -59,21 +58,6 @@ local function allocatedCount(slots)
         end
     end
     return total
-end
-
-local function isPowerUnlocked(data, powerId, powersConfig)
-    -- INNATE powers (Resonance) are owned by everyone from spawn but NOT written to data.Powers (so
-    -- they don't cost a level-up pick) — they're still slottable, so treat them as unlocked.
-    local def = powersConfig and powersConfig.powers and powersConfig.powers[tostring(powerId)]
-    if def and def.innate then
-        return true
-    end
-    for _, id in ipairs(data.Powers or {}) do
-        if id == powerId then
-            return true
-        end
-    end
-    return false
 end
 
 function AugmentationService:GetState(player, levelOverride)
@@ -118,7 +102,7 @@ function AugmentationService:Place(player, powerId, _slotType, levelOverride)
     )
 
     local decision = Augmentation.canPlace(
-        isPowerUnlocked(data, powerId, self._powersConfig),
+        self._powerService:IsPowerOwned(player, powerId),
         onPower,
         unallocated,
         self._config

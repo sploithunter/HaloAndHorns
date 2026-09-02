@@ -3267,26 +3267,8 @@ function PowerService:Cast(player, powerId, opts)
         if not ChallengeRun.allowsPower(challengeAllow, powerId) then
             return { ok = false, reason = "not_owned" }
         end
-    elseif not adminBypass and def.innate then
-        if not PowerAvailability.isAvailable(def, PowerAvailability.snapshotForPlayer(player)) then
-            return { ok = false, reason = "not_available" }
-        end
-    elseif not adminBypass and not def.innate then
-        -- INNATE powers (e.g. Resonance) are owned by EVERYONE by default — they're never written to
-        -- data.Powers (so they don't consume a level-grant slot or appear in the picker), so the
-        -- owned-list gate would wrongly refuse them outside a catalog run.
-        local data = self._dataService and self._dataService:GetData(player)
-        local owned = (data and type(data.Powers) == "table") and data.Powers or {}
-        local has = false
-        for _, id in ipairs(owned) do
-            if tostring(id) == tostring(powerId) then
-                has = true
-                break
-            end
-        end
-        if not has then
-            return { ok = false, reason = "not_owned" }
-        end
+    elseif not adminBypass and not self:IsPowerOwned(player, powerId) then
+        return { ok = false, reason = def.innate and "not_available" or "not_owned" }
     end
     local now = os.time()
     local cds = self._cooldowns[player]
@@ -3616,6 +3598,22 @@ function PowerService:_level(player, override)
     return 1
 end
 
+-- Authoritative ownership query shared by menu state, casting, augmentation placement, and the
+-- atomic level-claim boundary. Innates do not live in profile.Powers; their config-authored
+-- availability (Heal unlock / Resonance training hide) is part of ownership.
+function PowerService:IsPowerOwned(player, powerId)
+    local data = self._dataService and self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    return PowerAvailability.isOwned(
+        powerId,
+        data,
+        self._powersConfig and self._powersConfig.powers,
+        PowerAvailability.snapshotForPlayer(player)
+    )
+end
+
 local function powersList(data)
     if type(data.Powers) ~= "table" then
         data.Powers = {}
@@ -3653,12 +3651,13 @@ function PowerService:GetState(player, levelOverride)
     local ownedForDisplay = {}
     local seen = {}
     for _, s in ipairs(selected) do
-        ownedForDisplay[#ownedForDisplay + 1] = s
-        seen[s] = true
+        if self:IsPowerOwned(player, s) then
+            ownedForDisplay[#ownedForDisplay + 1] = s
+            seen[s] = true
+        end
     end
-    local availability = PowerAvailability.snapshotForPlayer(player)
     for id, def in pairs(self._powersConfig.powers or {}) do
-        if def.innate and not seen[id] and PowerAvailability.isAvailable(def, availability) then
+        if def.innate and not seen[id] and self:IsPowerOwned(player, id) then
             ownedForDisplay[#ownedForDisplay + 1] = id
             seen[id] = true
         end

@@ -287,4 +287,6 @@ Heal and Resonance both belong to the shared NATURAL catalog as innate, slottabl
 Choice menu applies `PowerAvailability` before rendering that catalog: Heal is hidden until Combat
 Training begins, Resonance is hidden during Combat Training, and unlocked Heal remains available in
 both Merge Defense and Farm & Fight afterward. Innates are server-rejected as level-up selections,
-so neither power consumes a pick.
+so neither power consumes a pick. `PowerService:IsPowerOwned` is the authoritative ownership query
+for picker state, casts, level-grant slot commits, and augmentation placement; do not reconstruct
+ownership from `profile.Powers`, because innates deliberately do not live in that selected-power list.

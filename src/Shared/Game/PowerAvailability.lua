@@ -30,6 +30,27 @@ function PowerAvailability.isAvailable(def, snapshot)
     return not PowerAvailability.isHidden(def, snapshot)
 end
 
+-- One ownership rule for every server boundary. Selected powers live in profile.Powers, while
+-- innate powers deliberately do not consume that list. A context-gated innate (Heal/Resonance)
+-- is owned only while its authored availability rule permits it.
+function PowerAvailability.isOwned(powerId, data, definitions, snapshot)
+    local id = tostring(powerId or "")
+    local def = type(definitions) == "table" and definitions[id] or nil
+    if type(def) ~= "table" then
+        return false
+    end
+    if def.innate == true then
+        return PowerAvailability.isAvailable(def, snapshot)
+    end
+    local selected = type(data) == "table" and type(data.Powers) == "table" and data.Powers or {}
+    for _, ownedId in ipairs(selected) do
+        if tostring(ownedId) == id then
+            return true
+        end
+    end
+    return false
+end
+
 -- Preserve config order while removing powers hidden in the current player context. Keeping this
 -- pure lets every catalog surface share the same rule instead of independently special-casing Heal
 -- or Resonance in UI code.
