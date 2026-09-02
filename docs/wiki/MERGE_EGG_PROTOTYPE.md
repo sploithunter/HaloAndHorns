@@ -409,8 +409,11 @@ team and queue model:
   is inside Merge Defense and is never written into durable pet records, so it cannot affect combat
   elsewhere. The rank is durable; the
   active wave/checkpoint, board, deployed eggs, and Merge wallet reset, while player pets, level,
-  world unlocks, and the durable Gem-upgrade table remain untouched. Management upgrade ranks and
-  cumulative Gem spend now live in the Merge-defense profile record rather than only the session.
+  prior world unlocks, and the durable Gem-upgrade table remain untouched. Each rank also owns one
+  more personal hatch source in canonical egg order: Rank 1 starts with Grass, Rank 2 adds Ice, and
+  Rank 3 adds Lava. No Rank 4 cost is inferred; adding a future authored price automatically extends
+  the same one-egg-per-rank ladder. Management upgrade ranks and cumulative Gem spend now live in
+  the Merge-defense profile record rather than only the session.
 - A ninth management-board card shows the next exact price and total damage. Rebirth requires a
   second confirmation click because it clears the current run. Future anti-spam progression gates
   use `rebirth.requirements.minimum_deployed_egg_tier_by_rank`; the list is deliberately empty
@@ -434,11 +437,19 @@ team and queue model:
   empty unlocked equip slots. They never replace a chosen pet or a downed pet, so normal combat,
   targeting, defeat, and revive management remain authoritative. Full mode does not create or park
   synthetic reserve ghosts.
-- The defense hatch source is the highest canonical egg the player has unlocked in Halo & Horns,
-  capped by the egg installed at the producing hatcher. Grass/Earth is the ungated floor. Thus an
-  early player with an Aurora hatcher still receives an Earth hatch, while a player who has unlocked
-  Aurora may receive Aurora pets from that same hatcher. This is an independent canonical hatch,
-  not the hatcher team's draft winner or cast-off.
+- The personal defense-hatch source is derived from durable Merge rebirth count, then capped by the
+  egg installed at the producing hatcher. Farm & Fight purchases no longer decide what Merge owns.
+  Rank 1 owns Grass, Rank 2 Ice, Rank 3 Lava, and future authored ranks continue in the same canonical
+  order. This is an independent canonical hatch, not the hatcher team's draft winner or cast-off.
+- A personal hatch cannot enter inventory until `CombatTutorial.done == true`, even though the
+  existing earned-Level-10 route may make Full combat mode available earlier. Rebirth ownership is
+  retained while delivery is gated; completing Combat Training enables later hatches rather than
+  fabricating missed pets.
+- Every rebirth-owned egg also grants its mapped Farm & Fight area through `ZoneService`. The grant
+  is reconciled on Merge entry and immediately after rebirth, so older rebirthed profiles and
+  interrupted saves self-heal without another purchase. This is area ownership only: the independent
+  `LayerService` earned-level requirements still gate realm travel (Layer 2 at Level 14, Layer 3 at
+  Level 21).
 - Both modes keep player combat pets at the breach-line escort anchor while the player manages the
   board behind it. Crossing forward restores the existing follow/heel behavior; entering combat
   still allows ordinary combat choreography to take control. The Auto Collector remains outside

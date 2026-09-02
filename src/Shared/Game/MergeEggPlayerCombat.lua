@@ -189,50 +189,53 @@ function MergeEggPlayerCombat.applyNoticeResponse(raw, action)
     return state, nil, false
 end
 
-local function unlockedSet(unlockedAreas)
-    local set = {}
-    if type(unlockedAreas) ~= "table" then
-        return set
+-- Personal hatch ownership is derived from Merge prestige only. Rank 1 is paid-rebirth count 0;
+-- the default policy therefore owns Grass at count 0, Ice at count 1, Lava at count 2, and so on.
+-- Keeping this arithmetic config-owned lets future rebirth prices extend the same ladder without a
+-- profile migration.
+function MergeEggPlayerCombat.highestPersonalHatchTier(progression, rebirthCount, rules)
+    progression = type(progression) == "table" and progression or {}
+    rules = type(rules) == "table" and rules or {}
+    if #progression == 0 then
+        return 0
     end
-    for key, value in pairs(unlockedAreas) do
-        if type(key) == "number" and type(value) == "string" then
-            set[value] = true
-        elseif type(key) == "string" and value == true then
-            set[key] = true
-        end
-    end
-    return set
+    local startingTier = math.max(1, math.floor(tonumber(rules.starting_tier) or 1))
+    local tiersPerRebirth = math.max(1, math.floor(tonumber(rules.tiers_per_rebirth) or 1))
+    local count = math.max(0, math.floor(tonumber(rebirthCount) or 0))
+    return math.clamp(startingTier + count * tiersPerRebirth, 1, #progression)
 end
 
--- Progression order is the cap order. An egg without an authored unlock requirement is available;
--- this deliberately makes the Earth/Grass starting egg work for fresh profiles.
-function MergeEggPlayerCombat.highestUnlockedTier(progression, unlockedAreas, unlockAreaByEgg)
+function MergeEggPlayerCombat.resolveHatchTier(progression, rebirthCount, deployedTier, rules)
     progression = type(progression) == "table" and progression or {}
-    unlockAreaByEgg = type(unlockAreaByEgg) == "table" and unlockAreaByEgg or {}
-    local areas = unlockedSet(unlockedAreas)
-    local highest = 0
-    for tier, eggId in ipairs(progression) do
-        local requiredArea = unlockAreaByEgg[tostring(eggId)]
-        if requiredArea == nil or requiredArea == "" or areas[tostring(requiredArea)] == true then
-            highest = tier
-        end
-    end
-    return highest
-end
-
-function MergeEggPlayerCombat.resolveHatchTier(
-    progression,
-    unlockedAreas,
-    unlockAreaByEgg,
-    deployedTier
-)
-    progression = type(progression) == "table" and progression or {}
-    local highest =
-        MergeEggPlayerCombat.highestUnlockedTier(progression, unlockedAreas, unlockAreaByEgg)
+    local highest = MergeEggPlayerCombat.highestPersonalHatchTier(progression, rebirthCount, rules)
     local deployed =
         math.clamp(math.floor(tonumber(deployedTier) or 1), 1, math.max(1, #progression))
     local tier = math.min(math.max(1, highest), deployed)
     return tier, progression[tier]
+end
+
+-- Area grants are a derived entitlement. Returning the complete ordered set makes reconciliation
+-- idempotent for existing profiles and heals any interrupted grant on the next Merge entry.
+function MergeEggPlayerCombat.personalHatchAreas(progression, rebirthCount, rules)
+    progression = type(progression) == "table" and progression or {}
+    rules = type(rules) == "table" and rules or {}
+    local areaByEgg = type(rules.unlock_area_by_egg) == "table" and rules.unlock_area_by_egg or {}
+    local highest = MergeEggPlayerCombat.highestPersonalHatchTier(progression, rebirthCount, rules)
+    local areas = {}
+    local seen = {}
+    for tier = 1, highest do
+        local areaId = areaByEgg[tostring(progression[tier] or "")]
+        if type(areaId) == "string" and areaId ~= "" and seen[areaId] ~= true then
+            seen[areaId] = true
+            areas[#areas + 1] = areaId
+        end
+    end
+    return areas
+end
+
+function MergeEggPlayerCombat.canAwardPersonalHatch(combatTutorialDone, rules)
+    rules = type(rules) == "table" and rules or {}
+    return rules.inventory_requires_combat_tutorial == false or combatTutorialDone == true
 end
 
 return MergeEggPlayerCombat

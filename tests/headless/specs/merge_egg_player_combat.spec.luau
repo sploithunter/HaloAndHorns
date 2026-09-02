@@ -188,7 +188,7 @@ return function()
             expect(duplicateMode).to.equal(nil)
         end)
 
-        it("caps a durable hatch by both the player's unlock and deployed egg", function()
+        it("caps a personal hatch by both Merge rebirth and deployed egg", function()
             local progression = {
                 "grass_egg",
                 "ice_egg",
@@ -197,29 +197,38 @@ return function()
                 "bloom_egg",
                 "aurora_egg",
             }
-            local gates = {
-                ice_egg = "Ice",
-                lava_egg = "Lava",
-                desert_egg = "Desert",
-                bloom_egg = "Heaven_1_Grass",
-                aurora_egg = "Heaven_1_Ice",
+            local rules = {
+                starting_tier = 1,
+                tiers_per_rebirth = 1,
+                inventory_requires_combat_tutorial = true,
+                unlock_area_by_egg = {
+                    ice_egg = "Ice",
+                    lava_egg = "Lava",
+                    desert_egg = "Desert",
+                    bloom_egg = "Heaven_1_Grass",
+                    aurora_egg = "Heaven_1_Ice",
+                },
             }
 
-            local freshTier, freshEgg =
-                PlayerCombat.resolveHatchTier(progression, { "Spawn" }, gates, 6)
+            local freshTier, freshEgg = PlayerCombat.resolveHatchTier(progression, 0, 6, rules)
             expect(freshTier).to.equal(1)
             expect(freshEgg).to.equal("grass_egg")
 
-            local veteranAreas = { "Spawn", "Ice", "Lava", "Heaven_1_Ice" }
-            local cappedTier, cappedEgg =
-                PlayerCombat.resolveHatchTier(progression, veteranAreas, gates, 3)
+            local cappedTier, cappedEgg = PlayerCombat.resolveHatchTier(progression, 5, 3, rules)
             expect(cappedTier).to.equal(3)
             expect(cappedEgg).to.equal("lava_egg")
 
             local unlockedTier, unlockedEgg =
-                PlayerCombat.resolveHatchTier(progression, veteranAreas, gates, 6)
+                PlayerCombat.resolveHatchTier(progression, 5, 6, rules)
             expect(unlockedTier).to.equal(6)
             expect(unlockedEgg).to.equal("aurora_egg")
+
+            local areas = PlayerCombat.personalHatchAreas(progression, 2, rules)
+            expect(#areas).to.equal(2)
+            expect(areas[1]).to.equal("Ice")
+            expect(areas[2]).to.equal("Lava")
+            expect(PlayerCombat.canAwardPersonalHatch(false, rules)).to.equal(false)
+            expect(PlayerCombat.canAwardPersonalHatch(true, rules)).to.equal(true)
         end)
     end)
 end
