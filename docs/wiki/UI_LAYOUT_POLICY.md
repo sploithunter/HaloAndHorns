@@ -22,10 +22,14 @@ Responsive relationships—not guessed screen coordinates—own placement.
 - When one responsive surface replaces another, copy the live surface's measured final bounds after
   its constraints/UIScale have resolved. Do not duplicate its nominal design pixels in a second
   config. The Merge tutorial card replacing the central hotbar is the reference implementation.
-- `FullscreenExtension` can shift a direct `ScreenGui` child by the live CoreGui inset even when
-  `IgnoreGuiInset` is true. When targeting absolute screen coordinates, correct against the final
-  rendered bounds; the Merge tutorial does this, while the People list adds the live top inset to
-  its responsive dock.
+- `FullscreenExtension` can shift a direct `ScreenGui` child by the live safe-area origin even when
+  `IgnoreGuiInset` is true. When targeting absolute screen coordinates, derive that origin from the
+  object's current assigned offset and rendered anchor, then make one idempotent assignment. The
+  Merge tutorial uses this rule to avoid alternating between raw and corrected positions.
+- When one independent HUD surface must follow another, use the leader's live rendered edge. In the
+  Merge place, the People list docks beneath `MergeWaveBar.WaveMeter` with a viewport-relative gap;
+  its per-device `merge_top` values are startup fallbacks only. Clamp followers to the viewport when
+  the leader's safe-area coordinate extends slightly beyond an edge on a small device.
 
 The quest/tutorial upper-right surfaces illustrate the boundary: their shared `{1,0},{0,0}` dock and
 right anchor perform placement. The quest tracker's measured 14px top and 4px right adjustments only

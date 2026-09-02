@@ -7175,3 +7175,10 @@ first-session cohort rates.
 - Corrected the live `FullscreenExtension` top-inset displacement so the Wave 0–10 tutorial matches
   the hidden hotbar's rendered bounds exactly and the responsive People list is not clipped above
   the phone viewport.
+
+## 2026-09-01 — Merge mobile HUD follows live geometry without oscillation
+
+- The Merge People list now docks beneath the wave meter's rendered bottom edge with a
+  viewport-relative gap instead of estimating that edge from a device-class top ratio.
+- The Wave 0–10 tutorial card resolves its ScreenGui coordinate origin before assignment, so its
+  recurring layout pass no longer exposes alternating pre-inset and corrected frames.

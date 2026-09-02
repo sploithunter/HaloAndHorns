@@ -74,6 +74,9 @@ return {
                 card_viewport_height = 0.207,
             },
         },
+        -- When the live Merge wave meter exists, dock beneath its rendered bottom with a
+        -- viewport-relative breathing gap. merge_top remains the startup fallback.
+        merge_wave_gap = 0.006,
         column_header_to_header = 0.67,
         column_gutter = 0.012,
     },
