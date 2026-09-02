@@ -18,6 +18,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
+local UI_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("ui"))
+local COMPACT_MENU_DISPLAY_ORDER = assert(
+    tonumber(UI_CONFIG.display_order and UI_CONFIG.display_order.compact_menu_overlay),
+    "configs/ui.lua display_order.compact_menu_overlay is required"
+)
 
 local MenuTrayStyle = {}
 local started = false
@@ -165,6 +170,17 @@ function MenuTrayStyle.start()
             local adopting = false
             local adopted = {}
 
+            -- ZIndex cannot order descendants across separate ScreenGuis. Keep only the expanded
+            -- popup in a config-ordered overlay so SquadHud pets remain visible underneath without
+            -- painting over the menu or intercepting its buttons.
+            local overlayGui = Instance.new("ScreenGui")
+            overlayGui.Name = "CompactMenuOverlayGui"
+            overlayGui.DisplayOrder = COMPACT_MENU_DISPLAY_ORDER
+            overlayGui.IgnoreGuiInset = base.IgnoreGuiInset
+            overlayGui.ResetOnSpawn = base.ResetOnSpawn
+            overlayGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            overlayGui.Parent = pg
+
             local popup = Instance.new("Frame")
             popup.Name = "CompactMenuPopup"
             popup.AnchorPoint = Vector2.new(0, 1)
@@ -173,7 +189,7 @@ function MenuTrayStyle.start()
             popup.BackgroundTransparency = 1
             popup.Visible = false
             popup.ZIndex = 19
-            popup.Parent = mc
+            popup.Parent = overlayGui
             require(script.Parent.Parent.UI.UIViewportScale).attach(popup, { min = 0.78 })
             local popupGrid = Instance.new("UIGridLayout")
             popupGrid.CellSize = UDim2.fromOffset(66, 66)
