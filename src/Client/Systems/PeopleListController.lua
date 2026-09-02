@@ -7,6 +7,7 @@
 ]]
 
 local ContextActionService = game:GetService("ContextActionService")
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
@@ -41,6 +42,11 @@ local tooltip
 local expanded = true
 local rowGuis = {}
 local watches = {}
+
+local function insetTop(top)
+    local topLeft = GuiService:GetGuiInset()
+    return top + topLeft.Y
+end
 
 local function rgb(color)
     if type(color) ~= "table" then
@@ -121,7 +127,7 @@ local function showTooltip(rowGui, text)
         rowMid = (rowGui.AbsolutePosition.Y + rowGui.AbsoluteSize.Y * 0.5) - root.AbsolutePosition.Y
     end
     local place = PeopleList.hoverPlacement(config, dockState(), rowMid)
-    tooltip.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+    tooltip.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
     tooltip.Visible = true
 end
 
@@ -168,8 +174,9 @@ local function slideCard(visible)
         return
     end
     local place = PeopleList.cardPlacement(config, dockState())
-    local shown = UDim2.new(1 - place.rightScale, 0, 0, place.top)
-    local tucked = UDim2.new(1 - place.rightScale + place.widthScale, 0, 0, place.top)
+    local top = insetTop(place.top)
+    local shown = UDim2.new(1 - place.rightScale, 0, 0, top)
+    local tucked = UDim2.new(1 - place.rightScale + place.widthScale, 0, 0, top)
     if cardTween then
         cardTween:Cancel()
         cardTween = nil
@@ -733,7 +740,7 @@ local function dockLayout()
     local player = Players.LocalPlayer
     local state = dockState()
     local dimensions = PeopleList.layout(config, state)
-    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
+    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, insetTop(dimensions.top))
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, dimensions.headerHeight)
     player:SetAttribute("PeopleListTop", dimensions.top)
     if headerBar then
@@ -757,7 +764,7 @@ local function dockLayout()
     end
     if card then
         local place = PeopleList.cardPlacement(config, state)
-        card.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+        card.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
         card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     end
     refreshRows()
@@ -866,7 +873,7 @@ local function build()
     root.Name = "Root"
     root.AnchorPoint = Vector2.new(1, 0)
     -- Under the quest pill. Tip may draw over this; quest tracker stays on top.
-    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
+    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, insetTop(dimensions.top))
     player:SetAttribute("PeopleListTop", dimensions.top)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, headerH)
     root.AutomaticSize = Enum.AutomaticSize.Y
@@ -1014,7 +1021,7 @@ local function build()
     card.AnchorPoint = Vector2.new(1, 0)
     -- Sibling of Root so Root's UIListLayout cannot pull it into the row stack.
     -- Right inset is list width + gap + list right inset (PeopleList.cardPlacement).
-    card.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+    card.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
     card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     card.AutomaticSize = Enum.AutomaticSize.Y
     card.BackgroundColor3 = rgb(knobs.background)

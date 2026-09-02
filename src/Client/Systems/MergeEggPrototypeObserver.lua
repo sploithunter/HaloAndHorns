@@ -270,6 +270,15 @@ local function layoutTutorialCardOverHotbar(card)
     end
     card.frame.Position = UDim2.fromOffset(position.X, position.Y)
     card.frame.Size = UDim2.fromOffset(size.X, size.Y)
+
+    -- FullscreenExtension shifts direct ScreenGui children upward by the live CoreGui inset even
+    -- when IgnoreGuiInset is true. Correct from the rendered bounds so notches, device simulation,
+    -- and future inset changes cannot move this replacement away from the hotbar it covers.
+    local positionDelta = position - card.frame.AbsolutePosition
+    local sizeDelta = size - card.frame.AbsoluteSize
+    card.frame.Position =
+        UDim2.fromOffset(position.X + positionDelta.X, position.Y + positionDelta.Y)
+    card.frame.Size = UDim2.fromOffset(size.X + sizeDelta.X, size.Y + sizeDelta.Y)
     return true
 end
 
