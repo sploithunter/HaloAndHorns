@@ -268,17 +268,30 @@ local function layoutTutorialCardOverHotbar(card)
         card.frame.Visible = false
         return false
     end
-    card.frame.Position = UDim2.fromOffset(position.X, position.Y)
-    card.frame.Size = UDim2.fromOffset(size.X, size.Y)
+    local currentPosition = card.frame.Position
+    local nextPosition = UDim2.fromOffset(
+        MergeTutorialHud.stableScreenOffset(
+            position.X,
+            card.frame.AbsolutePosition.X,
+            currentPosition.X.Offset
+        ),
+        MergeTutorialHud.stableScreenOffset(
+            position.Y,
+            card.frame.AbsolutePosition.Y,
+            currentPosition.Y.Offset
+        )
+    )
+    local nextSize = UDim2.fromOffset(size.X, size.Y)
 
-    -- FullscreenExtension shifts direct ScreenGui children upward by the live CoreGui inset even
-    -- when IgnoreGuiInset is true. Correct from the rendered bounds so notches, device simulation,
-    -- and future inset changes cannot move this replacement away from the hotbar it covers.
-    local positionDelta = position - card.frame.AbsolutePosition
-    local sizeDelta = size - card.frame.AbsoluteSize
-    card.frame.Position =
-        UDim2.fromOffset(position.X + positionDelta.X, position.Y + positionDelta.Y)
-    card.frame.Size = UDim2.fromOffset(size.X + sizeDelta.X, size.Y + sizeDelta.Y)
+    -- FullscreenExtension changes the ScreenGui coordinate origin. Resolve that origin from the
+    -- current rendered bounds and assign each property only once, so the 10 Hz layout pass cannot
+    -- alternate between pre-inset and corrected positions.
+    if card.frame.Position ~= nextPosition then
+        card.frame.Position = nextPosition
+    end
+    if card.frame.Size ~= nextSize then
+        card.frame.Size = nextSize
+    end
     return true
 end
 

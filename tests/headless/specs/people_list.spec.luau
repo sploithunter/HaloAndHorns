@@ -23,6 +23,7 @@ return function()
             expect(people.layout.modes.phone.width).to.equal(0.36)
             expect(people.layout.modes.tablet.width).to.equal(0.30)
             expect(people.layout.modes.desktop.width).to.equal(0.221)
+            expect(people.layout.merge_wave_gap).to.equal(0.006)
             expect(people.columns[1].width).to.equal(0.43)
             expect(people.columns[4].width).to.equal(0.20)
             expect(people.toggle.key).to.equal("Tab")
@@ -200,6 +201,17 @@ return function()
             expect(PeopleList.topOffset(cfg(), merge)).to.equal(102)
             merge.tutorialOwnsCorner = true
             expect(PeopleList.topOffset(cfg(), merge)).to.equal(151)
+        end)
+
+        it("docks beneath the live Merge wave meter instead of a guessed top", function()
+            local merge = table.clone(desktop)
+            merge.mergePlace = true
+            merge.mergeWaveBottom = 92
+            expect(PeopleList.topOffset(cfg(), merge)).to.equal(97)
+
+            merge.viewportHeight = 361
+            merge.mergeWaveBottom = -5
+            expect(PeopleList.topOffset(cfg(), merge)).to.equal(0)
         end)
 
         it("keeps phone and tablet rows proportional to their viewports", function()
@@ -385,8 +397,8 @@ return function()
             expect(client:find("PeopleListController", 1, true)).to.be.ok()
             local controller = readFile("src/Client/Systems/PeopleListController.lua")
             expect(controller:find("inst.TextScaled = true", 1, true)).to.be.ok()
-            expect(controller:find('game:GetService("GuiService")', 1, true)).to.be.ok()
-            expect(controller:find("insetTop(dimensions.top)", 1, true)).to.be.ok()
+            expect(controller:find("absoluteAnchorYOffset", 1, true)).to.be.ok()
+            expect(controller:find("mergeWaveBottom", 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("ClaimedLevel")', 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("AscensionUnlocked")', 1, true)).to.be.ok()
             expect(controller:find("PromptSendFriendRequest", 1, true)).to.be.ok()

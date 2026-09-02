@@ -371,10 +371,24 @@ function PeopleList.layout(config, state)
     local mode, layout = layoutMode(config, state)
     requiredNumber(state.viewportWidth, "viewportWidth")
     local viewportHeight = requiredNumber(state.viewportHeight, "viewportHeight")
-    local topScale = if state.tutorialOwnsCorner == true
-        then requiredNumber(mode.tutorial_top, "tutorial_top")
-        elseif state.mergePlace == true then requiredNumber(mode.merge_top, "merge_top")
-        else requiredNumber(mode.top, "top")
+    local top
+    if state.tutorialOwnsCorner == true then
+        top = math.floor(viewportHeight * requiredNumber(mode.tutorial_top, "tutorial_top") + 0.5)
+    elseif state.mergePlace == true and tonumber(state.mergeWaveBottom) ~= nil then
+        top = math.max(
+            0,
+            math.floor(
+                requiredNumber(state.mergeWaveBottom, "mergeWaveBottom")
+                    + viewportHeight * requiredNumber(layout.merge_wave_gap, "merge_wave_gap")
+                    + 0.5
+            )
+        )
+    else
+        local topScale = if state.mergePlace == true
+            then requiredNumber(mode.merge_top, "merge_top")
+            else requiredNumber(mode.top, "top")
+        top = math.floor(viewportHeight * topScale + 0.5)
+    end
     return {
         widthScale = requiredNumber(mode.width, "width"),
         headerHeight = math.floor(
@@ -386,7 +400,7 @@ function PeopleList.layout(config, state)
         maximumBodyHeight = math.floor(
             viewportHeight * requiredNumber(mode.max_body_height, "max_body_height") + 0.5
         ),
-        top = math.floor(viewportHeight * topScale + 0.5),
+        top = top,
         rightScale = requiredNumber(mode.right, "right"),
         cardWidthScale = requiredNumber(mode.card_width, "card_width"),
         cardGapScale = requiredNumber(mode.card_gap, "card_gap"),

@@ -7,7 +7,6 @@
 ]]
 
 local ContextActionService = game:GetService("ContextActionService")
-local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
@@ -43,9 +42,16 @@ local expanded = true
 local rowGuis = {}
 local watches = {}
 
-local function insetTop(top)
-    local topLeft = GuiService:GetGuiInset()
-    return top + topLeft.Y
+local function absoluteAnchorYOffset(guiObject, targetY)
+    local currentPosition = guiObject.Position
+    local renderedAnchorY = guiObject.AbsolutePosition.Y
+        + guiObject.AnchorPoint.Y * guiObject.AbsoluteSize.Y
+    local screenGuiOriginY = renderedAnchorY - currentPosition.Y.Offset
+    return targetY - screenGuiOriginY
+end
+
+local function positionedAtAbsoluteY(guiObject, xScale, targetY)
+    return UDim2.new(xScale, 0, 0, absoluteAnchorYOffset(guiObject, targetY))
 end
 
 local function rgb(color)
@@ -86,9 +92,28 @@ local function dockState()
     local player = Players.LocalPlayer
     local camera = assert(Workspace.CurrentCamera, "People list requires CurrentCamera")
     local viewport = camera.ViewportSize
+    local mergePlace = isMergePlace()
+    local mergeWaveBottom = nil
+    if mergePlace then
+        local playerGui = player:FindFirstChildOfClass("PlayerGui")
+        local waveGui = playerGui and playerGui:FindFirstChild("MergeWaveBar")
+        local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
+        if
+            waveGui
+            and waveGui:IsA("ScreenGui")
+            and waveGui.Enabled
+            and waveMeter
+            and waveMeter:IsA("GuiObject")
+            and waveMeter.Visible
+            and waveMeter.AbsoluteSize.Y > 0
+        then
+            mergeWaveBottom = waveMeter.AbsolutePosition.Y + waveMeter.AbsoluteSize.Y
+        end
+    end
     return {
         tutorialOwnsCorner = player:GetAttribute("TutorialCornerOwned") == true,
-        mergePlace = isMergePlace(),
+        mergePlace = mergePlace,
+        mergeWaveBottom = mergeWaveBottom,
         displayClass = tostring(player:GetAttribute("DisplayClass") or "desktop"),
         viewportWidth = viewport.X,
         viewportHeight = viewport.Y,
@@ -127,7 +152,7 @@ local function showTooltip(rowGui, text)
         rowMid = (rowGui.AbsolutePosition.Y + rowGui.AbsoluteSize.Y * 0.5) - root.AbsolutePosition.Y
     end
     local place = PeopleList.hoverPlacement(config, dockState(), rowMid)
-    tooltip.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
+    tooltip.Position = positionedAtAbsoluteY(tooltip, 1 - place.rightScale, place.top)
     tooltip.Visible = true
 end
 
@@ -174,7 +199,7 @@ local function slideCard(visible)
         return
     end
     local place = PeopleList.cardPlacement(config, dockState())
-    local top = insetTop(place.top)
+    local top = absoluteAnchorYOffset(card, place.top)
     local shown = UDim2.new(1 - place.rightScale, 0, 0, top)
     local tucked = UDim2.new(1 - place.rightScale + place.widthScale, 0, 0, top)
     if cardTween then
@@ -740,7 +765,7 @@ local function dockLayout()
     local player = Players.LocalPlayer
     local state = dockState()
     local dimensions = PeopleList.layout(config, state)
-    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, insetTop(dimensions.top))
+    root.Position = positionedAtAbsoluteY(root, 1 - dimensions.rightScale, dimensions.top)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, dimensions.headerHeight)
     player:SetAttribute("PeopleListTop", dimensions.top)
     if headerBar then
@@ -764,10 +789,61 @@ local function dockLayout()
     end
     if card then
         local place = PeopleList.cardPlacement(config, state)
-        card.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
+        card.Position = positionedAtAbsoluteY(card, 1 - place.rightScale, place.top)
         card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     end
     refreshRows()
+end
+
+local function watchMergeWaveDock()
+    if not isMergePlace() then
+        return
+    end
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local watchedMeter = nil
+    local watchedGui = nil
+    local connections = {}
+
+    local function disconnectCurrent()
+        for _, connection in ipairs(connections) do
+            connection:Disconnect()
+        end
+        table.clear(connections)
+    end
+
+    local function bindCurrent()
+        local waveGui = playerGui:FindFirstChild("MergeWaveBar")
+        local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
+        if waveMeter == watchedMeter and waveGui == watchedGui then
+            return
+        end
+        disconnectCurrent()
+        watchedMeter = if waveMeter and waveMeter:IsA("GuiObject") then waveMeter else nil
+        watchedGui = if waveGui and waveGui:IsA("ScreenGui") then waveGui else nil
+        if watchedMeter then
+            for _, propertyName in ipairs({ "AbsolutePosition", "AbsoluteSize", "Visible" }) do
+                connections[#connections + 1] =
+                    watchedMeter:GetPropertyChangedSignal(propertyName):Connect(dockLayout)
+            end
+        end
+        if watchedGui then
+            connections[#connections + 1] =
+                watchedGui:GetPropertyChangedSignal("Enabled"):Connect(dockLayout)
+        end
+        dockLayout()
+    end
+
+    playerGui.DescendantAdded:Connect(function(descendant)
+        if descendant.Name == "WaveMeter" or descendant.Name == "MergeWaveBar" then
+            task.defer(bindCurrent)
+        end
+    end)
+    playerGui.DescendantRemoving:Connect(function(descendant)
+        if descendant == watchedMeter or descendant == watchedGui then
+            task.defer(bindCurrent)
+        end
+    end)
+    bindCurrent()
 end
 
 local function applyVisibility()
@@ -873,7 +949,7 @@ local function build()
     root.Name = "Root"
     root.AnchorPoint = Vector2.new(1, 0)
     -- Under the quest pill. Tip may draw over this; quest tracker stays on top.
-    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, insetTop(dimensions.top))
+    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
     player:SetAttribute("PeopleListTop", dimensions.top)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, headerH)
     root.AutomaticSize = Enum.AutomaticSize.Y
@@ -1021,7 +1097,7 @@ local function build()
     card.AnchorPoint = Vector2.new(1, 0)
     -- Sibling of Root so Root's UIListLayout cannot pull it into the row stack.
     -- Right inset is list width + gap + list right inset (PeopleList.cardPlacement).
-    card.Position = UDim2.new(1 - place.rightScale, 0, 0, insetTop(place.top))
+    card.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
     card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     card.AutomaticSize = Enum.AutomaticSize.Y
     card.BackgroundColor3 = rgb(knobs.background)
@@ -1285,6 +1361,7 @@ function PeopleListController.start()
     build()
     applyExpanded()
     applyVisibility()
+    watchMergeWaveDock()
     bindToggle()
 
     local localPlayer = Players.LocalPlayer
