@@ -7525,3 +7525,9 @@ first-session cohort rates.
 - Validate the required Auto-Combine floor gap before calling `math.max`; Luau `assert(value,
   message)` returns both arguments, so nesting it in a variadic numeric function leaked the message
   string into the calculation and stopped `MergeEggPrototypeService` during startup.
+
+## 2026-09-02 — Contextual workshop action
+
+- Removed the separate footer Install control from both cannon and bulwark workshops. The action in
+  the lower Next card now transitions through UNLOCK → INSTALL → UPGRADE (then MAXED), and both
+  tutorial cue stages point at that same live button.

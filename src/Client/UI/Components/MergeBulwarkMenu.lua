@@ -365,8 +365,7 @@ function MergeBulwarkMenu.new(parent, onAction)
     ownedPreview.pane.LayoutOrder = 2
     fill(ownedPreview.pane)
 
-    local ownedEmpty =
-        label(ownedPreview.pane, "OwnedEmpty", "LOCKED", UDim2.fromScale(1, 1), true)
+    local ownedEmpty = label(ownedPreview.pane, "OwnedEmpty", "LOCKED", UDim2.fromScale(1, 1), true)
     ownedEmpty.TextXAlignment = Enum.TextXAlignment.Center
     ownedEmpty.TextColor3 = Color3.fromRGB(132, 146, 164)
     textLimit(ownedEmpty, 18)
@@ -571,8 +570,7 @@ function MergeBulwarkMenu.new(parent, onAction)
         statusSplit.Padding = UDim.new(0.06, 0)
         statusSplit.SortOrder = Enum.SortOrder.LayoutOrder
         statusSplit.Parent = status
-        local statusText =
-            label(status, "StatusText", "LOCKED", UDim2.new(0.72, 0, 0.7, 0), true)
+        local statusText = label(status, "StatusText", "LOCKED", UDim2.new(0.72, 0, 0.7, 0), true)
         statusText.LayoutOrder = 1
         statusText.TextXAlignment = Enum.TextXAlignment.Right
         statusText.TextColor3 = Color3.fromRGB(175, 190, 208)
@@ -695,35 +693,17 @@ function MergeBulwarkMenu.new(parent, onAction)
                 family = controller.selectedFamily.id,
                 slot = controller.state and controller.state.slot,
             })
+        elseif controller.installActive then
+            onAction({
+                action = "bulwark",
+                bulwarkAction = "select",
+                family = controller.selectedFamily.id,
+                slot = controller.state and controller.state.slot,
+            })
         elseif controller.upgradeActive then
             onAction({
                 action = "bulwark",
                 bulwarkAction = "upgrade",
-                family = controller.selectedFamily.id,
-                slot = controller.state and controller.state.slot,
-            })
-        end
-    end)
-
-    local install = Instance.new("TextButton")
-    install.Name = "Install"
-    install.Size = UDim2.new(1, 0, 0.078, 0)
-    install.BackgroundColor3 = Color3.fromRGB(225, 151, 22)
-    install.BorderSizePixel = 0
-    install.Font = Enum.Font.GothamBlack
-    install.Text = ""
-    install.TextColor3 = Color3.fromRGB(26, 18, 4)
-    install.TextScaled = true
-    install.LayoutOrder = 5
-    install.Parent = panel
-    corner(install, 14)
-    local installStroke = stroke(install, Color3.fromRGB(255, 229, 110), 3)
-    local installPurchase = pricedContents(install, "Purchase")
-    install.Activated:Connect(function()
-        if controller.installActive and controller.selectedFamily then
-            onAction({
-                action = "bulwark",
-                bulwarkAction = "select",
                 family = controller.selectedFamily.id,
                 slot = controller.state and controller.state.slot,
             })
@@ -896,13 +876,17 @@ function MergeBulwarkMenu.new(parent, onAction)
             controller.buyActive = unlocked and ownedTier == 0 and canInstall
             controller.upgradeActive = unlocked and current and not atMaximum
             controller.installActive = unlocked and ownedTier > 0 and not current and canInstall
-            local purchaseActive = controller.buyActive or controller.upgradeActive
+            local purchaseActive = controller.buyActive
+                or controller.installActive
+                or controller.upgradeActive
             if atMaximum and current then
                 paintPriced(purchase, "MAXED", false, cost, Color3.fromRGB(213, 219, 227))
             elseif current and ownedTier > 0 then
                 paintPriced(purchase, "UPGRADE", true, cost, Color3.fromRGB(26, 18, 4))
+            elseif controller.installActive then
+                paintPriced(purchase, "INSTALL", true, cost, Color3.fromRGB(26, 18, 4))
             elseif ownedTier > 0 then
-                paintPriced(purchase, "", false, cost, Color3.fromRGB(213, 219, 227))
+                paintPriced(purchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
             else
                 paintPriced(
                     purchase,
@@ -915,19 +899,12 @@ function MergeBulwarkMenu.new(parent, onAction)
             end
             upgrade.Active = purchaseActive
             upgrade.AutoButtonColor = purchaseActive
-            upgrade.BackgroundColor3 = purchaseActive
-                    and (ownedTier > 0 and Color3.fromRGB(75, 175, 95) or Color3.fromRGB(225, 151, 22))
+            upgrade.BackgroundColor3 = controller.upgradeActive and Color3.fromRGB(75, 175, 95)
+                or purchaseActive and Color3.fromRGB(225, 151, 22)
                 or Color3.fromRGB(68, 74, 86)
-            upgradeStroke.Color = purchaseActive
-                    and (ownedTier > 0 and Color3.fromRGB(180, 255, 195) or Color3.fromRGB(255, 229, 110))
+            upgradeStroke.Color = controller.upgradeActive and Color3.fromRGB(180, 255, 195)
+                or purchaseActive and Color3.fromRGB(255, 229, 110)
                 or Color3.fromRGB(110, 118, 132)
-            if current then
-                paintPriced(installPurchase, "INSTALLED", false, cost, Color3.fromRGB(213, 219, 227))
-            elseif controller.installActive then
-                paintPriced(installPurchase, "INSTALL", true, cost, Color3.fromRGB(26, 18, 4))
-            else
-                paintPriced(installPurchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
-            end
         else
             showPreview(ownedPreview, nil, 0)
             showPreview(nextPreview, nil, 0)
@@ -950,14 +927,7 @@ function MergeBulwarkMenu.new(parent, onAction)
             upgrade.AutoButtonColor = false
             upgrade.BackgroundColor3 = Color3.fromRGB(68, 74, 86)
             upgradeStroke.Color = Color3.fromRGB(110, 118, 132)
-            paintPriced(installPurchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
         end
-        install.Active = controller.installActive == true
-        install.AutoButtonColor = controller.installActive == true
-        install.BackgroundColor3 = controller.installActive == true and Color3.fromRGB(225, 151, 22)
-            or Color3.fromRGB(68, 74, 86)
-        installStroke.Color = controller.installActive == true and Color3.fromRGB(255, 229, 110)
-            or Color3.fromRGB(110, 118, 132)
     end
 
     function controller:isOpen()
@@ -965,10 +935,8 @@ function MergeBulwarkMenu.new(parent, onAction)
     end
 
     function controller:tutorialCueButton(kind)
-        if kind == "unlock" then
+        if kind == "unlock" or kind == "install" then
             return upgrade
-        elseif kind == "install" then
-            return install
         end
         return nil
     end
