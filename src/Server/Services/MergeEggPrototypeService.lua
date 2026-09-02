@@ -12236,6 +12236,10 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
             self:_prototypeBaseLevel(record),
             (self._config.combat_level or {}).rank_tiers
         ),
+        -- Preserve the canonical Farm & Fight reward definition separately. The combat clone above
+        -- still clears its drop table, so autonomous NPC kills remain on Merge's Waycoin/Gem path;
+        -- EnemyService may read this only for a trained durable-player-pet final hit.
+        combatRewardDef = spec.enemyDef,
         position = position,
         home = position,
         movementLeash = self:_movementLeash(record, position),

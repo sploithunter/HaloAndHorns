@@ -40,9 +40,10 @@ progression, procedural layout, and multiplayer occupancy.
   live tracing measured alert-to-target assignment at about 0.1–0.25 seconds. Distant combat pursuit
   and post-combat return both use bounded pet travel rather than the formation catch-up teleport;
   principal/portal teleports, Rally, and explicit teleport abilities retain their snap behavior.
-- Enemies use `rewardPolicy = "none"`, so the ordinary combat award path grants no shared XP,
-  potion, enhancement, or exclusive egg. The prototype's server-only defeat callback provides the
-  physical Waycoin/Gem pickup exception and the narrowly attributed Full-mode pet-kill exception.
+- Enemies use `rewardPolicy = "none"`, so the ordinary contributor/team combat award path grants no
+  shared XP or loot. The prototype's server-only defeat callback provides physical Waycoin/Gem
+  pickups, while a separate reward definition supports the narrowly attributed trained Full-mode
+  durable-pet final-hit exception described below.
   Defeat and finish-line arrival are counted separately; after every enemy in a wave is resolved,
   the next larger wave starts automatically.
 - The red control resets every prototype unit/enemy and makes the hatch repeatable. The blue control
@@ -477,10 +478,14 @@ team and queue model:
   `enemies_defeated` counter or publish the ordinary `enemy_defeated` event. A durable Full-mode pet
   may earn exactly one global kill only when it lands the final damaging hit; participation and
   nearby-team credit do not qualify. Direct, AoE, aura, burn, and contagion final hits preserve this
-  real-pet attribution. That qualifying final hit runs through the ordinary combat XP curve only
-  after `CombatTutorial.done` publishes `CombatTutorialDone = true`; Home onboarding or Ascension
-  alone is intentionally insufficient because powers and targeting have not been taught. Before
-  Combat Training completion, Merge grants no XP; autonomous and Simple-mode combat never grants it.
+  real-pet attribution. After `CombatTutorial.done` publishes `CombatTutorialDone = true`, that
+  qualifying final hit runs the complete per-player Farm & Fight defeat path: the canonical enemy
+  currency/token table (or the normal level-scaled area-coin fallback), combat XP, enhancement and
+  potion rolls, boss-exclusive egg roll, `enemy_defeated`, and `enemies_defeated`. Home onboarding or
+  Ascension alone is intentionally insufficient because powers and targeting have not been taught.
+  Before Combat Training completion, Merge grants none of those ordinary rewards; autonomous and
+  Simple-mode combat never grants them. Merge's own physical Waycoin/Gem callback remains separate,
+  so reusing the combat reward path neither duplicates it nor gives NPCs contributor credit.
 
 ## Simple-mode session reserve roster (2026-08-26)
 
