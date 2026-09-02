@@ -11,6 +11,20 @@ local ArchetypeLogic = loadModule("src/Shared/Game/ArchetypeLogic.lua")
 local geoPowers = ArchetypeLogic.availablePowers("geomancer", archetypes)
 
 return function()
+    describe("Merge tutorial hotbar coverage", function()
+        it("hides the rendered bar and blocks every activation path", function()
+            local controller = readFile("src/Client/Systems/HotbarBar.lua")
+            expect(controller:find('"MergeTutorialHotbarCovered"', 1, true)).to.be.ok()
+            expect(controller:find("root.Visible = not tutorialCoversHotbar()", 1, true)).to.be.ok()
+            expect(controller:find("local function activateHotbarSlot", 1, true)).to.be.ok()
+
+            local _, activationCount = controller:gsub("activateHotbarSlot%(", "")
+            expect(activationCount).to.equal(5)
+            local _, directFireCount = controller:gsub("Hotbar_Activate:FireServer", "")
+            expect(directFireCount).to.equal(1)
+        end)
+    end)
+
     describe("hotbar auto-cast tell", function()
         it("authors a ring around the disc, not a corner glyph", function()
             local look = config.auto_cast

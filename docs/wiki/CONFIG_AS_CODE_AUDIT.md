@@ -13,7 +13,7 @@ contract.
 reviewed inventories:
 
 - `runtime-asset-literal`: 133 existing 8+-digit literals across 33 files.
-- `numeric-tuning-fallback`: 1,641 existing `config/tuning lookup or <number>` fallbacks across 239
+- `numeric-tuning-fallback`: 1,621 existing `config/tuning lookup or <number>` fallbacks across 238
   files.
 
 The exact per-file counts are checked into `scripts/architecture_allowlist.json`. New files, moved
@@ -34,7 +34,7 @@ required-config rule.
 ## Priority debt
 
 The largest tuning-fallback owners are `MergeEggPrototypeService` (213), `EnemyService` (168),
-`MergeEggRealmBuilder` (57), `PowerService` (55), and `EggHatchingService` (47). The largest
+`MergeEggRealmBuilder` (57), `PowerService` (54), and `EggHatchingService` (47). The largest
 asset-literal owners are `DecorFingerprints` (40), `LandmarkAssets` (18), `CurrencyStyle` (7), and
 `ConfigLoader` (7). These counts identify migration order; they do not imply every match is a
 gameplay defect. Each value still needs classification as content/tuning, algorithmic constant, or

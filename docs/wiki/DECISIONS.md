@@ -82,20 +82,15 @@ Cannons and bulwarks use the same three-step tower-defense loop.
   `{ family, tier }`. Old saves that only have a global owned
   tier copy that number onto each installed slot once.
 
-## Cannon Workshop Previews Are Live Side Views (2026-09-01)
+## Cannon Workshop Previews Are Manifest-Owned Flat Art (2026-09-01)
 
 The two artillery-workshop windows (Currently Owned and Next Upgrade)
-clone `ReplicatedStorage.Assets.Models.MergeCannons` into a
-per-window ViewportFrame that fills the existing preview pane.
-Each window frames its own chassis: eye-level (camera Y equals bbox
-center), 90° to the long silhouette, filled to
-`team.edge_towers.workshop_preview.fill` with the rest as padding.
-The two windows scale independently. Do not inset a smaller
-aspect-locked frame inside the card.
-Do not use Roblox `rbxthumb` of the Model asset — those cameras
-are arbitrary and often top-down. Bulwark workshop cards stay
-flat authored `previewDecalId` art; do not put ViewportFrames
-in `MergeBulwarkMenu`.
+render the exact family/tier preview ID from `configs/merge_tier_art.lua`.
+All 24 cannon previews are normalized transparent PNGs with a common
+silhouette footprint. Do not clone gameplay models into WorldModels or
+ViewportFrames, and do not fall back to Roblox model thumbnails: those
+paths are heavier, choose inconsistent cameras, and caused ornate tiers
+to crowd the menu. Bulwark cards follow the same flat-art rule.
 
 ## Game Identity
 

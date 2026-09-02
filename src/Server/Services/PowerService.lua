@@ -1526,7 +1526,8 @@ function PowerService:PlaceBerserkCircle(center, opts)
     if typeof(center) ~= "Vector3" then
         return nil, "invalid_center"
     end
-    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local radius = assert(tonumber(opts.radius), "PlaceBerserkCircle requires opts.radius")
+    radius = math.max(1, radius)
     local color = opts.color
     if typeof(color) ~= "Color3" then
         color = BERSERK_CIRCLE_COLOR
@@ -1625,12 +1626,15 @@ function PowerService:PlaceWeakenCircle(center, opts)
     if not (potions and potions.SipBrewOn) then
         return nil, "potion_service_missing"
     end
-    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local radius = assert(tonumber(opts.radius), "PlaceWeakenCircle requires opts.radius")
+    radius = math.max(1, radius)
     local color = opts.color
     if typeof(color) ~= "Color3" then
         color = Color3.fromRGB(174, 100, 235)
     end
-    self:_spawnGroundRune(laneRuneOpts(center, radius, color, opts.name or "WeakenCircle", opts.floor_y))
+    self:_spawnGroundRune(
+        laneRuneOpts(center, radius, color, opts.name or "WeakenCircle", opts.floor_y)
+    )
     local sipped = 0
     for _, enemy in ipairs(opts.enemies or {}) do
         if enemy and enemy:IsA("Model") and enemy.Parent then
@@ -1655,15 +1659,19 @@ function PowerService:PlaceFrostBindCircle(center, opts)
     if type(kind) ~= "table" or kind.family ~= "root" then
         return nil, "frost_bind_missing"
     end
-    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local radius = assert(tonumber(opts.radius), "PlaceFrostBindCircle requires opts.radius")
+    radius = math.max(1, radius)
     local color = opts.color
     if typeof(color) ~= "Color3" then
         color = Color3.fromRGB(120, 200, 255)
     end
-    self:_spawnGroundRune(laneRuneOpts(center, radius, color, opts.name or "FrostBindCircle", opts.floor_y))
+    self:_spawnGroundRune(
+        laneRuneOpts(center, radius, color, opts.name or "FrostBindCircle", opts.floor_y)
+    )
     local chance = tonumber(opts.hit_chance)
     local now = os.time()
-    local duration = tonumber(kind.duration) or 5
+    local duration =
+        assert(tonumber(kind.duration), "powers.effect_kinds.root.duration is required")
     local bound = 0
     for _, enemy in ipairs(opts.enemies or {}) do
         if enemy and enemy:IsA("Model") and enemy.Parent then
@@ -1686,7 +1694,8 @@ function PowerService:PlaceDirectedKnockback(center, opts)
     if typeof(center) ~= "Vector3" then
         return nil, "invalid_center"
     end
-    local radius = math.max(1, tonumber(opts.radius) or 28)
+    local radius = assert(tonumber(opts.radius), "PlaceDirectedKnockback requires opts.radius")
+    radius = math.max(1, radius)
     local color = opts.color
     if typeof(color) ~= "Color3" then
         color = Color3.fromRGB(76, 165, 245)
@@ -1705,7 +1714,10 @@ function PowerService:PlaceDirectedKnockback(center, opts)
         )
     end
     local enemyService = self._enemyService
-    local distance = math.max(0, tonumber(opts.distance) or 0)
+    local distance = math.max(
+        0,
+        assert(tonumber(opts.distance), "PlaceDirectedKnockback requires opts.distance")
+    )
     if distance <= 0 or not enemyService then
         return { ok = true, shoved = 0, radius = radius }
     end

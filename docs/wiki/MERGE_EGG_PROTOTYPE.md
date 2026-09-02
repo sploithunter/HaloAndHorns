@@ -590,6 +590,11 @@ team and queue model:
   are rejected by configured movement/duration thresholds. The server remains authoritative for
   distance, inventory, and live destination tier. The tutorial and result cards use viewport-width
   sizing with desktop caps so those cues stay on-screen on phones and tablets.
+- From setup through Wave 10, Merge suppresses the central power hotbar and blocks click, keyboard,
+  controller, and auto-cast activation through the same local coverage attribute. When a tutorial
+  instruction is active, its card copies the live hotbar `PillFrame`'s final absolute bounds after
+  phone/tablet scaling, so it replaces that footprint exactly instead of owning another pixel size.
+  Wave 11 restores the hotbar. The side Pets/Powers controls are separate from this central bar.
 - The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,
@@ -1154,10 +1159,9 @@ clean.
   unlock, place, and upgrade stay one Waycoin; final unlocks will
   almost certainly be gems or a Robux game pass. The workshop
   shows LOCKED until that flag is set. Currently Owned and Next
-  Upgrade each clone that pane's chassis into its own ViewportFrame
-  and frame it independently (viewport fills the existing preview
-  pane; eye-level, 90° side, padded fill from
-  `team.edge_towers.workshop_preview`). Install pays to place
+  Upgrade each render the family/tier's config-owned transparent PNG
+  from the generated preview manifest. The menu owns no live model,
+  WorldModel, ViewportFrame, or model-thumbnail fallback. Install pays to place
   Tier 1 on that pad. Upgrade pays to advance only that pad. Persist is `MergeCannonPersist`: owned + per-pad
   slots only. Purchase does not compare the bay record to a rebuilt
   MergeDefense table and does not read the live wave. Board-action toasts use DisplayOrder 130 so they

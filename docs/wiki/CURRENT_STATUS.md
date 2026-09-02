@@ -22,13 +22,11 @@ that matches the bulwark panel (six roles, unlock / upgrade / install).
 Unlock is global and one-time; each commander places and upgrades
 only that pad. Pads start empty and keep their own tier. The
 workshop shows LOCKED until that family is unlocked — the catalog
-is not granted for free. Currently Owned and Next Upgrade each clone
-that pane's chassis into its own ViewportFrame and frame it
-independently: the viewport fills the existing preview pane,
-eye-level, 90° to the long silhouette, filling most of that pane
-(`team.edge_towers.workshop_preview`). Roblox model
-thumbnails are not used there — they pick their own camera and often
-read top-down. Playtest unlock/place/upgrade are one
+is not granted for free. Currently Owned and Next Upgrade use that
+family/tier's config-owned transparent preview image. The 24 previews
+are normalized flat PNGs; the menu does not clone live models, create
+ViewportFrames, or depend on Roblox's arbitrary model-thumbnail camera.
+Playtest unlock/place/upgrade are one
 Waycoin each. All six families use distinct Tier 1–4 models. Each of the 24
 cannon entries has its own `worldScale` (0.375 on every Tier 1,
 0.5 on Tiers 2–4). Every chassis uses `seatOffsetY` so wheels sit
@@ -448,6 +446,10 @@ VIP/staff sit as one name badge. Persist `GameData.CombatRank`.
 People list (2026-08-25): custom smoked list replaces CoreGui. Tab or
 the header collapses it. One name badge (owner Colorado C+blaster,
 then developer / content creator / official tester / founder ⭐ / VIP).
+Its dock width, top/right position, header/row/body heights, columns, and
+profile-card footprint are viewport ratios selected by DisplayClass
+(phone/tablet/desktop/ten-foot); no fixed 397px screen-width contract remains.
+Viewport and orientation changes relayout the live list.
 Rank is the claimed/Ascended level, not the potentially-ahead earned level. The Rank cell and
 Ascension nudge stay hidden until either the crystal/Homeworld introduction or the independent
 Combat Training tutorial is complete; older players who already claimed a level remain unlocked.
@@ -2162,6 +2164,7 @@ The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left
 ## Merge HUD (2026-08-30)
 
 Dedicated Merge place hides the Farm quest tracker. Wave status lives in
-`MergeWaveBar` in that same upper-right chrome slot. The People list uses
-`merge_top_inset` 98 so it sits under the wave bar. Hatcher captains stand on
+`MergeWaveBar` in that same upper-right chrome slot. The People list selects
+its configured Merge top ratio for the current DisplayClass so it sits under
+the wave bar on phone, tablet, desktop, and ten-foot displays. Hatcher captains stand on
 the floor on the gate side of their egg; new slots get a cloned `EggStand`.

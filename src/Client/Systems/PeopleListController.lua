@@ -13,6 +13,7 @@ local StarterGui = game:GetService("StarterGui")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PeopleList = require(ReplicatedStorage.Shared.Game.PeopleList)
@@ -28,7 +29,9 @@ local gui
 local root
 local header
 local headerLabel
+local headerBar
 local body
+local columnHeader
 local rowsFrame
 local card
 local cardPlayer
@@ -75,9 +78,14 @@ end
 
 local function dockState()
     local player = Players.LocalPlayer
+    local camera = assert(Workspace.CurrentCamera, "People list requires CurrentCamera")
+    local viewport = camera.ViewportSize
     return {
         tutorialOwnsCorner = player:GetAttribute("TutorialCornerOwned") == true,
         mergePlace = isMergePlace(),
+        displayClass = tostring(player:GetAttribute("DisplayClass") or "desktop"),
+        viewportWidth = viewport.X,
+        viewportHeight = viewport.Y,
     }
 end
 
@@ -113,7 +121,7 @@ local function showTooltip(rowGui, text)
         rowMid = (rowGui.AbsolutePosition.Y + rowGui.AbsoluteSize.Y * 0.5) - root.AbsolutePosition.Y
     end
     local place = PeopleList.hoverPlacement(config, dockState(), rowMid)
-    tooltip.Position = UDim2.new(1, -place.right, 0, place.top)
+    tooltip.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
     tooltip.Visible = true
 end
 
@@ -160,8 +168,8 @@ local function slideCard(visible)
         return
     end
     local place = PeopleList.cardPlacement(config, dockState())
-    local shown = UDim2.new(1, -place.right, 0, place.top)
-    local tucked = UDim2.new(1, -place.right + place.width + 4, 0, place.top)
+    local shown = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+    local tucked = UDim2.new(1 - place.rightScale + place.widthScale, 0, 0, place.top)
     if cardTween then
         cardTween:Cancel()
         cardTween = nil
@@ -548,23 +556,14 @@ end
 
 local function columnWidths()
     local cols = (config and config.columns) or {}
-    local width = tonumber(config and config.width) or 397
-    local fixed = 0
-    local flex = 0
+    local total = 0
     for _, col in ipairs(cols) do
-        local w = math.max(0, math.floor(tonumber(col.width) or 0))
-        if w == 0 then
-            flex += 1
-        else
-            fixed += w
-        end
+        total += math.max(0, tonumber(col.width) or 0)
     end
-    local leftover = math.max(80, width - 8 - fixed)
-    local flexWidth = flex > 0 and math.floor(leftover / flex) or leftover
+    assert(total > 0, "people_list.columns must contain positive viewport shares")
     local out = {}
     for _, col in ipairs(cols) do
-        local w = math.max(0, math.floor(tonumber(col.width) or 0))
-        table.insert(out, w == 0 and flexWidth or w)
+        table.insert(out, math.max(0, tonumber(col.width) or 0) / total)
     end
     return out
 end
@@ -575,7 +574,7 @@ local function makeText(className, name, parent, props)
     inst.BackgroundTransparency = 1
     inst.BorderSizePixel = 0
     inst.Font = Enum.Font.Gotham
-    inst.TextSize = 12
+    inst.TextScaled = true
     inst.TextColor3 = rgb(look().text)
     inst.TextTruncate = Enum.TextTruncate.AtEnd
     inst.TextXAlignment = Enum.TextXAlignment.Left
@@ -587,16 +586,17 @@ local function makeText(className, name, parent, props)
 end
 
 local function layoutRow(holder, widths)
-    local x = 4
+    local gutter = PeopleList.layout(config, dockState()).columnGutter
+    local x = gutter
     local kids = { "Name", "Rank", "Status", "Location" }
     for i, name in ipairs(kids) do
         local child = holder:FindFirstChild(name)
-        local w = widths[i] or 60
+        local width = widths[i]
         if child then
-            child.Position = UDim2.fromOffset(x, 0)
-            child.Size = UDim2.new(0, w - 4, 1, 0)
+            child.Position = UDim2.fromScale(x, 0.1)
+            child.Size = UDim2.new(width - gutter, 0, 0.8, 0)
         end
-        x += w
+        x += width
     end
 end
 
@@ -606,7 +606,7 @@ local function ensureRow(player)
         applyRow(existing, player)
         return existing
     end
-    local height = tonumber(config and config.row_height) or 22
+    local height = PeopleList.layout(config, dockState()).rowHeight
     local widths = columnWidths()
     local row = Instance.new("Frame")
     row.Name = "Row_" .. player.UserId
@@ -693,8 +693,9 @@ local function refreshRows()
         headerLabel.Text = ("Players  %d"):format(count)
     end
     if rowsFrame then
-        local rowH = tonumber(config and config.row_height) or 22
-        local maxBody = tonumber(config and config.max_body_height) or 240
+        local dimensions = PeopleList.layout(config, dockState())
+        local rowH = dimensions.rowHeight
+        local maxBody = dimensions.maximumBodyHeight
         rowsFrame.Size = UDim2.new(1, 0, 0, math.clamp(count * rowH, rowH, maxBody))
     end
 end
@@ -731,14 +732,35 @@ local function dockLayout()
     end
     local player = Players.LocalPlayer
     local state = dockState()
-    local top = PeopleList.topOffset(config, state)
-    local right = tonumber(config.right_inset) or 4
-    root.Position = UDim2.new(1, -right, 0, top)
-    player:SetAttribute("PeopleListTop", top)
+    local dimensions = PeopleList.layout(config, state)
+    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
+    root.Size = UDim2.new(dimensions.widthScale, 0, 0, dimensions.headerHeight)
+    player:SetAttribute("PeopleListTop", dimensions.top)
+    if headerBar then
+        headerBar.Size = UDim2.new(1, 0, 0, dimensions.headerHeight)
+    end
+    if columnHeader then
+        columnHeader.Size = UDim2.new(1, 0, 0, dimensions.columnHeaderHeight)
+    end
+    if rowsFrame then
+        rowsFrame.Position = UDim2.new(0, 0, 0, dimensions.columnHeaderHeight)
+    end
+    local widths = columnWidths()
+    if columnHeader then
+        layoutRow(columnHeader, widths)
+    end
+    for _, row in pairs(rowGuis) do
+        if row.Parent then
+            row.Size = UDim2.new(1, 0, 0, dimensions.rowHeight)
+            layoutRow(row, widths)
+        end
+    end
     if card then
         local place = PeopleList.cardPlacement(config, state)
-        card.Position = UDim2.new(1, -place.right, 0, place.top)
+        card.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+        card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     end
+    refreshRows()
 end
 
 local function applyVisibility()
@@ -825,11 +847,10 @@ local function build()
     local player = Players.LocalPlayer
     local pg = player:WaitForChild("PlayerGui")
     local knobs = look()
-    local width = tonumber(config.width) or 397
-    local headerH = tonumber(config.header_height) or 24
-    local top = PeopleList.topOffset(config, dockState())
-    local right = tonumber(config.right_inset) or 4
-    local maxBody = tonumber(config.max_body_height) or 240
+    local state = dockState()
+    local dimensions = PeopleList.layout(config, state)
+    local headerH = dimensions.headerHeight
+    local maxBody = dimensions.maximumBodyHeight
 
     gui = Instance.new("ScreenGui")
     gui.Name = "PeopleListGui"
@@ -845,9 +866,9 @@ local function build()
     root.Name = "Root"
     root.AnchorPoint = Vector2.new(1, 0)
     -- Under the quest pill. Tip may draw over this; quest tracker stays on top.
-    root.Position = UDim2.new(1, -right, 0, top)
-    player:SetAttribute("PeopleListTop", top)
-    root.Size = UDim2.fromOffset(width, headerH)
+    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
+    player:SetAttribute("PeopleListTop", dimensions.top)
+    root.Size = UDim2.new(dimensions.widthScale, 0, 0, headerH)
     root.AutomaticSize = Enum.AutomaticSize.Y
     root.BackgroundColor3 = rgb(knobs.background)
     root.BackgroundTransparency = tonumber(knobs.background_transparency) or 0.42
@@ -903,15 +924,15 @@ local function build()
     header.Name = "ToggleHint"
     header.AutoButtonColor = false
     header.BackgroundTransparency = 1
-    header.Size = UDim2.new(0, 18, 1, 0)
-    header.Position = UDim2.new(1, -20, 0, 0)
+    header.Size = UDim2.new(0.05, 0, 1, 0)
+    header.Position = UDim2.fromScale(0.95, 0)
     header.Font = Enum.Font.GothamBold
-    header.TextSize = 12
+    header.TextScaled = true
     header.TextColor3 = rgb(knobs.muted)
     header.Text = "  ▾"
     header.ZIndex = 2
 
-    local headerBar = Instance.new("TextButton")
+    headerBar = Instance.new("TextButton")
     headerBar.Name = "Header"
     headerBar.AutoButtonColor = false
     headerBar.BackgroundColor3 = rgb(knobs.background)
@@ -923,20 +944,20 @@ local function build()
     header.Parent = headerBar
     headerLabel = Instance.new("TextLabel")
     headerLabel.BackgroundTransparency = 1
-    headerLabel.Size = UDim2.new(1, -28, 1, 0)
-    headerLabel.Position = UDim2.fromOffset(8, 0)
+    headerLabel.Size = UDim2.new(0.88, 0, 1, 0)
+    headerLabel.Position = UDim2.fromScale(0.02, 0)
     headerLabel.Font = Enum.Font.GothamBold
-    headerLabel.TextSize = 13
+    headerLabel.TextScaled = true
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     headerLabel.TextColor3 = rgb(knobs.text)
     headerLabel.Text = "Players"
     headerLabel.Parent = headerBar
     local tabHint = Instance.new("TextLabel")
     tabHint.BackgroundTransparency = 1
-    tabHint.Size = UDim2.fromOffset(28, headerH)
-    tabHint.Position = UDim2.new(1, -48, 0, 0)
+    tabHint.Size = UDim2.new(0.08, 0, 1, 0)
+    tabHint.Position = UDim2.fromScale(0.87, 0)
     tabHint.Font = Enum.Font.Gotham
-    tabHint.TextSize = 11
+    tabHint.TextScaled = true
     tabHint.TextColor3 = rgb(knobs.muted)
     tabHint.Text = "Tab"
     tabHint.Parent = headerBar
@@ -950,25 +971,21 @@ local function build()
     body.AutomaticSize = Enum.AutomaticSize.Y
     body.Parent = root
 
-    local colHeader = Instance.new("Frame")
-    colHeader.Name = "Columns"
-    colHeader.BackgroundTransparency = 1
-    colHeader.Size = UDim2.new(1, 0, 0, 16)
-    colHeader.Parent = body
+    columnHeader = Instance.new("Frame")
+    columnHeader.Name = "Columns"
+    columnHeader.BackgroundTransparency = 1
+    columnHeader.Size = UDim2.new(1, 0, 0, dimensions.columnHeaderHeight)
+    columnHeader.Parent = body
     local widths = columnWidths()
     local labels = { "Name", "Rank", "Status", "Location" }
-    local x = 4
     for i, name in ipairs(labels) do
-        local label = makeText("TextLabel", name, colHeader, {
+        makeText("TextLabel", name, columnHeader, {
             Text = name,
-            TextSize = 11,
             TextColor3 = rgb(knobs.muted),
             TextXAlignment = i == 2 and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left,
         })
-        label.Position = UDim2.fromOffset(x, 0)
-        label.Size = UDim2.new(0, (widths[i] or 60) - 4, 1, 0)
-        x += widths[i] or 60
     end
+    layoutRow(columnHeader, widths)
 
     rowsFrame = Instance.new("ScrollingFrame")
     rowsFrame.Name = "Rows"
@@ -979,7 +996,7 @@ local function build()
     rowsFrame.ScrollBarThickness = 4
     rowsFrame.ScrollBarImageTransparency = 0.3
     rowsFrame.Size = UDim2.new(1, 0, 0, maxBody)
-    rowsFrame.Position = UDim2.fromOffset(0, 16)
+    rowsFrame.Position = UDim2.new(0, 0, 0, dimensions.columnHeaderHeight)
     rowsFrame.Parent = body
     local rowList = Instance.new("UIListLayout")
     rowList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -987,8 +1004,8 @@ local function build()
 
     local place = PeopleList.cardPlacement(config, dockState())
     local spec = cardSpec()
-    local headshotSize = tonumber(spec.headshot) or 56
-    local viewH = tonumber(spec.viewport_height) or 180
+    local headshotSize = place.headshotHeight
+    local viewH = place.viewportHeight
 
     card = Instance.new("Frame")
     card.Name = "ProfileCard"
@@ -997,8 +1014,8 @@ local function build()
     card.AnchorPoint = Vector2.new(1, 0)
     -- Sibling of Root so Root's UIListLayout cannot pull it into the row stack.
     -- Right inset is list width + gap + list right inset (PeopleList.cardPlacement).
-    card.Position = UDim2.new(1, -place.right, 0, place.top)
-    card.Size = UDim2.fromOffset(place.width, 0)
+    card.Position = UDim2.new(1 - place.rightScale, 0, 0, place.top)
+    card.Size = UDim2.new(place.widthScale, 0, 0, 0)
     card.AutomaticSize = Enum.AutomaticSize.Y
     card.BackgroundColor3 = rgb(knobs.background)
     card.BackgroundTransparency = 0.12
@@ -1264,9 +1281,29 @@ function PeopleListController.start()
     bindToggle()
 
     local localPlayer = Players.LocalPlayer
-    for _, name in ipairs({ "LargeMenuOpen", "TutorialCornerOwned", "PeopleListPeek" }) do
+    for _, name in ipairs({
+        "LargeMenuOpen",
+        "TutorialCornerOwned",
+        "PeopleListPeek",
+        "DisplayClass",
+    }) do
         localPlayer:GetAttributeChangedSignal(name):Connect(applyVisibility)
     end
+    local viewportConnection
+    local function watchCamera(camera)
+        if viewportConnection then
+            viewportConnection:Disconnect()
+            viewportConnection = nil
+        end
+        if camera then
+            viewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(dockLayout)
+        end
+        dockLayout()
+    end
+    watchCamera(Workspace.CurrentCamera)
+    Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+        watchCamera(Workspace.CurrentCamera)
+    end)
 
     Players.PlayerAdded:Connect(function(player)
         watchPlayer(player)

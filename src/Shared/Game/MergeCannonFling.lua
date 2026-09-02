@@ -11,7 +11,8 @@ function MergeCannonFling.point(startX, startY, startZ, destX, destY, destZ, hei
     elseif alpha > 1 then
         alpha = 1
     end
-    height = math.max(0, tonumber(height) or 0)
+    height = assert(tonumber(height), "air fling height is required")
+    height = math.max(0, height)
     startX, startY, startZ = tonumber(startX) or 0, tonumber(startY) or 0, tonumber(startZ) or 0
     destX, destY, destZ = tonumber(destX) or 0, tonumber(destY) or 0, tonumber(destZ) or 0
     local x = startX + (destX - startX) * alpha

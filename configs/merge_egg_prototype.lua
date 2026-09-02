@@ -625,17 +625,6 @@ return {
             -- All six families ship distinct Tier 1–4 meshes at a uniform template scale.
             -- Per-tier presentation size lives on merge_tier_art.worldScale.
             distinct_art_tiers = true,
-            -- Currently Owned and Next Upgrade each clone that pane's chassis
-            -- and frame it independently. The viewport fills the existing
-            -- preview pane; the camera fills that pane with padding. Camera
-            -- is eye-level (no pitch) and 90° to the long silhouette.
-            workshop_preview = {
-                fill = 0.9,
-                fov_degrees = 35,
-                ambient = { 168, 178, 198 },
-                light_color = { 255, 250, 240 },
-                light_direction = { -0.45, -0.8, -0.4 },
-            },
             available_roles = {
                 "heal",
                 "rage",

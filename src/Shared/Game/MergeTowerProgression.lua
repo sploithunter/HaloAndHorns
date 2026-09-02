@@ -77,7 +77,11 @@ local FAMILIES = {
         description = "A silence piece on the pad. Landing rolls Frost Bind on each enemy in the circle. Every tier has its own chassis.",
         upgradeNotes = {
             { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Frost Bind (40% hit)" },
-            { "+ Reinforced Nullifier chassis", "+ Distinct Tier 2 model", "+ Frost Bind (50% hit)" },
+            {
+                "+ Reinforced Nullifier chassis",
+                "+ Distinct Tier 2 model",
+                "+ Frost Bind (50% hit)",
+            },
             { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Frost Bind (60% hit)" },
             { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Frost Bind (70% hit)" },
         },

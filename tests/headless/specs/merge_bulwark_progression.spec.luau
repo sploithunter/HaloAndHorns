@@ -53,7 +53,8 @@ return function()
             expect(upgraded.owned.impaler_palisade).to.equal(1)
             expect(upgraded.eggFamily).to.equal(nil)
 
-            local sharkUnlock = Progression.apply(upgraded, "unlock", "land_shark", 1, config, "lane")
+            local sharkUnlock =
+                Progression.apply(upgraded, "unlock", "land_shark", 1, config, "lane")
             local switched =
                 Progression.apply(sharkUnlock, "select", "land_shark", 1, config, "lane")
             expect(switched.family).to.equal("land_shark")
@@ -126,10 +127,12 @@ return function()
             local price = Progression.actionCost(config)
             expect(price.currency).to.equal("hall_coins")
             expect(price.amount).to.equal(1)
-            local unlock = Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "impaler_palisade")
+            local unlock =
+                Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "impaler_palisade")
             expect(unlock.currency).to.equal("gems")
             expect(unlock.amount).to.equal(1)
-            local other = Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "concertina_line")
+            local other =
+                Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "concertina_line")
             expect(other.currency).to.equal("hall_coins")
             local families = Progression.families(mergeConfig.tier_art)
             local modelManifest = readFile("scripts/merge_bulwark_model_ids.json")

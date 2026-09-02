@@ -11,8 +11,32 @@ local draft = loadModule("src/Shared/Game/MergeEggDraft.lua")
 local enemyRoster = loadModule("src/Shared/Game/MergeEggEnemyRoster.lua")
 local placeRuntime = loadModule("src/Shared/Game/PlaceRuntime.lua")
 local pricing = loadModule("src/Shared/Game/MergeEggPricing.lua")
+local tutorialHud = loadModule("src/Shared/Game/MergeTutorialHud.lua")
 
 return function()
+    describe("Merge tutorial HUD", function()
+        it("reserves the hotbar footprint from setup through Wave 10", function()
+            expect(tutorialHud.coversHotbar(true, 0, 10)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 1, 10)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 10, 10)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 11, 10)).to.equal(false)
+            expect(tutorialHud.coversHotbar(false, 4, 10)).to.equal(false)
+        end)
+
+        it("copies the responsive hotbar footprint instead of owning another size", function()
+            local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
+            expect(observer:find("layoutTutorialCardOverHotbar", 1, true)).to.be.ok()
+            expect(observer:find('hotbarRoot:FindFirstChild("PillFrame")', 1, true)).to.be.ok()
+            expect(observer:find("footprint.AbsolutePosition", 1, true)).to.be.ok()
+            expect(observer:find("footprint.AbsoluteSize", 1, true)).to.be.ok()
+            expect(observer:find("pause_after_quartermaster_wave", 1, true)).to.be.ok()
+            expect(observer:find("tutorialGui.IgnoreGuiInset = true", 1, true)).to.be.ok()
+            expect(observer:find("sizeConstraint.MinSize = Vector2.new(270, 126)", 1, true)).to.equal(
+                nil
+            )
+        end)
+    end)
+
     describe("Merge an Egg Phase 5", function()
         it("binds one permanent authored Studio realm with no tile-system dependency", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
@@ -191,7 +215,9 @@ return function()
             expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
             expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
             expect(config.tutorial.steps.collect_setup.target).to.equal("coins")
-            expect(config.tutorial.steps.collect_setup.title).to.equal("COLLECT 600 WAYCOINS AND 1 GEM")
+            expect(config.tutorial.steps.collect_setup.title).to.equal(
+                "COLLECT 600 WAYCOINS AND 1 GEM"
+            )
             expect(config.tutorial.steps.collect_setup.body).to.equal(
                 "Follow the chevrons to the closest Waycoin stack. After all five, pick up the gem."
             )
@@ -201,19 +227,17 @@ return function()
             expect(config.tutorial.steps.collect_workshop_coins.target).to.equal("stage_coins")
             expect(config.tutorial.steps.collect_cannon_coins.target).to.equal("stage_coins")
             expect(config.tutorial.stage_coins).to.equal(nil)
-            expect(service:find("function MergeEggPrototypeService:_ensureStageCoinCredit", 1, true)).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_ensureStageCoinCredit", 1, true)
+            ).to.be.ok()
             expect(service:find("merge_egg_stage_coin_fallback", 1, true)).to.be.ok()
             expect(observer:find("nearestOwnedWaycoinDrop", 1, true)).to.be.ok()
             expect(config.tutorial.steps.talk_engineer.target).to.equal("engineer")
             expect(config.tutorial.steps.talk_engineer.title).to.equal(
                 "THE ENGINEER TOOK THE GOLD LINE"
             )
-            expect(
-                service:find("function MergeEggPrototypeService:_tutorialVendorsReady", 1, true)
-            ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_setVendorPosted", 1, true)
-            ).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_tutorialVendorsReady", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_setVendorPosted", 1, true)).to.be.ok()
             expect(service:find("instance.CanQuery = false", 1, true)).to.be.ok()
             expect(service:find("instance.Enabled = livePosted", 1, true)).to.be.ok()
             expect(service:find('return false, "vendor_not_ready"', 1, true)).to.be.ok()
@@ -221,9 +245,7 @@ return function()
             expect(service:find('self:_tutorialVendorsReady(record, "artillery")', 1, true)).to.be.ok()
             expect(observer:find("MergeVendorPosted", 1, true)).to.be.ok()
             expect(service:find("if record.bulwarksReady == true then", 1, true)).to.be.ok()
-            expect(
-                service:find('world:SetAttribute("MergeEggTutorialEngineerAt"', 1, true)
-            ).to.be.ok()
+            expect(service:find('world:SetAttribute("MergeEggTutorialEngineerAt"', 1, true)).to.be.ok()
             expect(observer:find("MergeEggTutorialEngineerAt", 1, true)).to.be.ok()
             expect(config.tutorial.steps.unlock_bulwark.target).to.equal("bulwark_unlock")
             expect(config.tutorial.steps.install_bulwark.target).to.equal("bulwark_install")
@@ -247,7 +269,9 @@ return function()
             expect(config.tutorial.steps.talk_quartermaster.target).to.equal("quartermaster")
             expect(config.opening_economy.cannon_gem.currency).to.equal("gems")
             expect(config.opening_economy.cannon_gem.amount).to.equal(1)
-            expect(config.team.edge_bulwarks.unlock_costs.impaler_palisade.currency).to.equal("gems")
+            expect(config.team.edge_bulwarks.unlock_costs.impaler_palisade.currency).to.equal(
+                "gems"
+            )
             expect(config.team.edge_bulwarks.unlock_costs.impaler_palisade.amount).to.equal(1)
             expect(config.team.edge_towers.unlock_costs.heal.currency).to.equal("gems")
             expect(config.team.edge_towers.unlock_costs.heal.amount).to.equal(1)
@@ -264,26 +288,42 @@ return function()
                 service:find("function MergeEggPrototypeService:_startWorkshopTutorial", 1, true)
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_shouldStartWorkshopTutorial", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_shouldStartWorkshopTutorial",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_releaseTutorialForWorkshopCombat", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_releaseTutorialForWorkshopCombat",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_startCannonTutorial", 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    "function MergeEggPrototypeService:_shouldStartCannonTutorial",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_startCannonTutorial", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_releaseTutorialForCannonCombat",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_shouldStartCannonTutorial", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_shouldStartUpgradeTutorial",
+                    1,
+                    true
+                )
             ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_releaseTutorialForCannonCombat", 1, true)
-            ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_shouldStartUpgradeTutorial", 1, true)
-            ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_startUpgradeTutorial", 1, true)
-            ).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_startUpgradeTutorial", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_hasUpgradedSinceCannon", 1, true)
             ).to.be.ok()
@@ -291,13 +331,25 @@ return function()
                 service:find("function MergeEggPrototypeService:_ensureUpgradeCoinLesson", 1, true)
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_shouldStartQuartermasterTutorial", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_shouldStartQuartermasterTutorial",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
-                service:find("function MergeEggPrototypeService:_startQuartermasterTutorial", 1, true)
+                service:find(
+                    "function MergeEggPrototypeService:_startQuartermasterTutorial",
+                    1,
+                    true
+                )
             ).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureBayQuartermaster", 1, true)
@@ -309,7 +361,7 @@ return function()
             expect(
                 service:find("function MergeEggPrototypeService:_cannonGemWorldPosition", 1, true)
             ).to.be.ok()
-            expect(service:find("worldCfg.bulwark_line or \"BulwarkLine\"", 1, true)).to.be.ok()
+            expect(service:find('worldCfg.bulwark_line or "BulwarkLine"', 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureCannonGemLesson", 1, true)
             ).to.be.ok()
@@ -353,9 +405,7 @@ return function()
                     true
                 )
             ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_openingGemDropExists", 1, true)
-            ).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_openingGemDropExists", 1, true)).to.be.ok()
             expect(service:find("record.openingGemSpawned = gemCarried == true", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_openingGemWorldPosition", 1, true)
@@ -829,9 +879,7 @@ return function()
             expect(
                 service:find("function MergeEggPrototypeService:_spawnOpeningCoinDrops", 1, true)
             ).to.be.ok()
-            expect(
-                service:find("function MergeEggPrototypeService:_openingGemSpec", 1, true)
-            ).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_openingGemSpec", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureOpeningCoinLesson", 1, true)
             ).to.be.ok()
@@ -1678,9 +1726,7 @@ return function()
             expect(observer:find('waitingForCollect and "COLLECT WAYCOINS"', 1, true)).to.be.ok()
             expect(observer:find('state == "TutorialIntermission"', 1, true)).to.be.ok()
             expect(observer:find("ENGINEER ARRIVED", 1, true)).to.be.ok()
-            expect(
-                observer:find('waitingForFirstEgg and "INSTALL FIRST EGG"', 1, true)
-            ).to.be.ok()
+            expect(observer:find('waitingForFirstEgg and "INSTALL FIRST EGG"', 1, true)).to.be.ok()
             expect(observer:find('world:GetAttribute("ProgressionStageName")', 1, true)).to.be.ok()
             expect(observer:find('attackGroups == 1 and "FRONT" or "FRONTS"', 1, true)).to.be.ok()
         end)
@@ -1802,8 +1848,6 @@ return function()
             expect(towers.starter_tier).to.equal(1)
             expect(towers.playtest_spawn_enabled).to.equal(false)
             expect(towers.visual_catalog_owned).to.equal(false)
-            expect(towers.workshop_preview.fill).to.equal(0.9)
-            expect(towers.workshop_preview.fov_degrees).to.equal(35)
             expect(towers.shot.landing.heal.cast).to.equal("healing_field")
             expect(towers.shot.landing.heal.magnitude[1]).to.equal(110)
             expect(towers.shot.landing.heal.interval[1]).to.equal(2.4)
@@ -1903,7 +1947,9 @@ return function()
             expect(powerService:find("function PowerService:PlaceWeakenCircle", 1, true)).to.be.ok()
             expect(powerService:find("function PowerService:PlaceFrostBindCircle", 1, true)).to.be.ok()
             expect(powerService:find("function PowerService:PlaceDirectedKnockback", 1, true)).to.be.ok()
-            expect(powerService:find('SipBrewOn(enemy, opts.potion_id or "weakening_vial")', 1, true)).to.be.ok()
+            expect(
+                powerService:find('SipBrewOn(enemy, opts.potion_id or "weakening_vial")', 1, true)
+            ).to.be.ok()
             expect(powerService:find('"frost_bind"', 1, true)).to.be.ok()
             expect(powerService:find("ApplyAirFling", 1, true)).to.be.ok()
             expect(powerService:find("opts.explosion == true", 1, true)).to.be.ok()
@@ -2075,10 +2121,14 @@ return function()
             )
             expect(service:find("MergeTowerModels.MatchesTemplate", 1, true)).to.be.ok()
             expect(service:find("MergeTowerModels.entryWorldScale", 1, true)).to.be.ok()
-            expect(service:find("function MergeEggPrototypeService:_towerBarrelYawDegrees", 1, true)).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_towerBarrelYawDegrees", 1, true)
+            ).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_towerSeatOffsetY", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_towerPlanarAim", 1, true)).to.be.ok()
-            expect(service:find("function MergeEggPrototypeService:_towerWorldScale", 1, true)).to.equal(nil)
+            expect(service:find("function MergeEggPrototypeService:_towerWorldScale", 1, true)).to.equal(
+                nil
+            )
             expect(service:find("cannon:GetPivot().RightVector", 1, true)).to.equal(nil)
             expect(service:find("self:_towerGateLook", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_towerEnemyTarget", 1, true)).to.be.ok()
@@ -2176,15 +2226,6 @@ return function()
             expect(observer:find('operation == "installed"', 1, true)).to.be.ok()
             local cannonMenu = readFile("src/Client/UI/Components/MergeCannonMenu.lua")
             expect(cannonMenu:find('"ARTILLERY WORKSHOP"', 1, true)).to.be.ok()
-            expect(cannonMenu:find('Instance.new("ViewportFrame")', 1, true)).to.be.ok()
-            expect(cannonMenu:find('Instance.new("WorldModel")', 1, true)).to.be.ok()
-            expect(cannonMenu:find("viewport.AbsoluteSize", 1, true)).to.be.ok()
-            expect(cannonMenu:find("MergeCannonPreview", 1, true)).to.be.ok()
-            expect(cannonMenu:find("MergeTowerModels.GetTemplate", 1, true)).to.be.ok()
-            expect(cannonMenu:find("workshop_preview", 1, true)).to.be.ok()
-            expect(cannonMenu:find('"rbxthumb://type=Asset&id=%s&w=420&h=420"', 1, true)).to.equal(
-                nil
-            )
             expect(cannonMenu:find('cannonAction = "unlock"', 1, true)).to.be.ok()
             expect(cannonMenu:find('cannonAction = "select"', 1, true)).to.be.ok()
             expect(cannonMenu:find('cannonAction = "upgrade"', 1, true)).to.be.ok()

@@ -54,6 +54,18 @@ end
 local HotbarBar = {}
 
 local localPlayer = Players.LocalPlayer
+local TUTORIAL_HOTBAR_COVER_ATTRIBUTE = "MergeTutorialHotbarCovered"
+
+local function tutorialCoversHotbar()
+    return localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) == true
+end
+
+local function activateHotbarSlot(slot)
+    if tutorialCoversHotbar() then
+        return
+    end
+    Signals.Hotbar_Activate:FireServer({ slot = slot })
+end
 
 local ITEM_BY_ID = {}
 for _, item in ipairs(ITEMS) do
@@ -284,6 +296,14 @@ function HotbarBar.start()
     UIViewportScale.attach(root)
     root.BackgroundTransparency = 1
     root.Parent = gui
+
+    local function applyTutorialCoverage()
+        root.Visible = not tutorialCoversHotbar()
+    end
+    localPlayer
+        :GetAttributeChangedSignal(TUTORIAL_HOTBAR_COVER_ATTRIBUTE)
+        :Connect(applyTutorialCoverage)
+    applyTutorialCoverage()
 
     local controllerLegend = Instance.new("TextLabel")
     controllerLegend.Name = "ControllerLegend"
@@ -943,7 +963,7 @@ function HotbarBar.start()
                 if editMode then
                     openPicker(slot)
                 else
-                    Signals.Hotbar_Activate:FireServer({ slot = slot })
+                    activateHotbarSlot(slot)
                 end
             end)
             -- AUTO-CAST LOCK toggle: a locked slot re-fires itself the moment its power is off
@@ -1288,7 +1308,7 @@ function HotbarBar.start()
                 if locked[slot] and b and not editMode and ready then
                     if nowC - (lastAuto[slot] or 0) > 0.5 then
                         lastAuto[slot] = nowC
-                        Signals.Hotbar_Activate:FireServer({ slot = slot })
+                        activateHotbarSlot(slot)
                     end
                 end
                 if card.lockRing and card.lockRing.Visible then
@@ -1331,7 +1351,7 @@ function HotbarBar.start()
             GuiService.MenuIsOpen
         )
         if slot then
-            Signals.Hotbar_Activate:FireServer({ slot = slot })
+            activateHotbarSlot(slot)
         end
     end)
 
@@ -1938,7 +1958,7 @@ function HotbarBar.start()
     end
     function controller:ActivateSelection()
         if selectedSlot and currentHotbar[selectedSlot] then
-            Signals.Hotbar_Activate:FireServer({ slot = selectedSlot })
+            activateHotbarSlot(selectedSlot)
         end
     end
     function controller:ToggleSelectionAutocast()

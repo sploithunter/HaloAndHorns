@@ -25,6 +25,7 @@ local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMe
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
+local MergeTutorialHud = require(ReplicatedStorage.Shared.Game.MergeTutorialHud)
 local MergeEggBoardTapPolicy = require(script.Parent.MergeEggBoardTapPolicy)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
@@ -184,25 +185,26 @@ local TUTORIAL_QUARTERMASTER_ORDER = {
     talk_quartermaster = 1,
 }
 local TUTORIAL_QUARTERMASTER_COUNT = 1
+local TUTORIAL_FINAL_WAVE = assert(
+    tonumber((CONFIG.tutorial or {}).pause_after_quartermaster_wave),
+    "merge_egg_prototype.tutorial.pause_after_quartermaster_wave is required"
+)
+local TUTORIAL_HOTBAR_COVER_ATTRIBUTE = "MergeTutorialHotbarCovered"
 
 local function createTutorialCard(parent)
     local frame = Instance.new("Frame")
     frame.Name = "MergeEggTutorial"
-    frame.AnchorPoint = Vector2.new(0, 0.5)
-    frame.Position = UDim2.new(0, 18, 0.5, -40)
-    frame.Size = UDim2.new(0.86, 0, 0, 126)
+    frame.AnchorPoint = Vector2.zero
+    frame.Position = UDim2.fromScale(0.2, 0.78)
+    frame.Size = UDim2.fromScale(0.6, 0.18)
     frame.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
     frame.BackgroundTransparency = 0.04
     frame.BorderSizePixel = 0
     frame.Visible = false
     frame.ZIndex = 30
     frame.Parent = parent
-    local sizeConstraint = Instance.new("UISizeConstraint")
-    sizeConstraint.MinSize = Vector2.new(270, 126)
-    sizeConstraint.MaxSize = Vector2.new(430, 126)
-    sizeConstraint.Parent = frame
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
+    corner.CornerRadius = UDim.new(0.09, 0)
     corner.Parent = frame
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(255, 194, 62)
@@ -211,43 +213,73 @@ local function createTutorialCard(parent)
 
     local progress = Instance.new("TextLabel")
     progress.Name = "Progress"
-    progress.Position = UDim2.fromOffset(18, 10)
-    progress.Size = UDim2.new(1, -36, 0, 20)
+    progress.Position = UDim2.fromScale(0.035, 0.08)
+    progress.Size = UDim2.fromScale(0.93, 0.17)
     progress.BackgroundTransparency = 1
     progress.Font = Enum.Font.GothamBold
     progress.Text = "MERGE DEFENSE TUTORIAL"
     progress.TextColor3 = Color3.fromRGB(255, 194, 62)
-    progress.TextSize = 14
+    progress.TextScaled = true
     progress.TextXAlignment = Enum.TextXAlignment.Left
     progress.ZIndex = 31
     progress.Parent = frame
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Position = UDim2.fromOffset(18, 31)
-    title.Size = UDim2.new(1, -36, 0, 32)
+    title.Position = UDim2.fromScale(0.035, 0.27)
+    title.Size = UDim2.fromScale(0.93, 0.25)
     title.BackgroundTransparency = 1
     title.Font = Enum.Font.GothamBlack
     title.TextColor3 = Color3.fromRGB(245, 248, 255)
-    title.TextSize = 23
+    title.TextScaled = true
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 31
     title.Parent = frame
 
     local body = Instance.new("TextLabel")
     body.Name = "Body"
-    body.Position = UDim2.fromOffset(18, 65)
-    body.Size = UDim2.new(1, -36, 1, -75)
+    body.Position = UDim2.fromScale(0.035, 0.55)
+    body.Size = UDim2.fromScale(0.93, 0.35)
     body.BackgroundTransparency = 1
     body.Font = Enum.Font.GothamMedium
     body.TextColor3 = Color3.fromRGB(218, 226, 240)
-    body.TextSize = 16
+    body.TextScaled = true
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
     body.TextYAlignment = Enum.TextYAlignment.Top
     body.ZIndex = 31
     body.Parent = frame
     return { frame = frame, progress = progress, title = title, body = body }
+end
+
+local function layoutTutorialCardOverHotbar(card)
+    local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+    local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
+    local hotbarRoot = hotbarGui and hotbarGui:FindFirstChild("Bar")
+    local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame")
+    if not (footprint and footprint:IsA("GuiObject")) then
+        card.frame.Visible = false
+        return false
+    end
+
+    local position = footprint.AbsolutePosition
+    local size = footprint.AbsoluteSize
+    if size.X <= 0 or size.Y <= 0 then
+        card.frame.Visible = false
+        return false
+    end
+    card.frame.Position = UDim2.fromOffset(position.X, position.Y)
+    card.frame.Size = UDim2.fromOffset(size.X, size.Y)
+    return true
+end
+
+local function setTutorialHotbarCovered(world, observing)
+    local currentWave = world and world:GetAttribute("CurrentWave") or 0
+    local covered = MergeTutorialHud.coversHotbar(observing, currentWave, TUTORIAL_FINAL_WAVE)
+    if localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) ~= covered then
+        localPlayer:SetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE, covered)
+    end
+    return covered
 end
 
 local function setTutorialMarkerVisible(marker, visible)
@@ -491,7 +523,8 @@ local function nearestOwnedOpeningDrop(reason)
     for _, drop in ipairs(drops and drops:GetChildren() or {}) do
         if isOwnedOpeningDrop(drop, reason) then
             local part = openingDropPart(drop)
-            local distance = root and part and (part.Position - root.Position).Magnitude or math.huge
+            local distance = root and part and (part.Position - root.Position).Magnitude
+                or math.huge
             if distance < nearestDistance then
                 nearest = part
                 nearestDistance = distance
@@ -538,7 +571,8 @@ local function nearestOwnedWaycoinDrop()
             and drop:GetAttribute("DropCurrency") == "hall_coins"
         then
             local part = openingDropPart(drop)
-            local distance = root and part and (part.Position - root.Position).Magnitude or math.huge
+            local distance = root and part and (part.Position - root.Position).Magnitude
+                or math.huge
             if distance < nearestDistance then
                 nearest = part
                 nearestDistance = distance
@@ -590,7 +624,8 @@ local function tutorialTarget(world, targetKind)
             return named
         end
         for _, child in ipairs(folder and folder:GetChildren() or {}) do
-            if child:GetAttribute("MergeBulwarkEngineer") == true
+            if
+                child:GetAttribute("MergeBulwarkEngineer") == true
                 and tostring(child:GetAttribute("MergeBulwarkSlot") or "") == slot
                 and child:GetAttribute("MergeVendorPosted") == true
             then
@@ -614,7 +649,8 @@ local function tutorialTarget(world, targetKind)
             return named
         end
         for _, child in ipairs(folder and folder:GetChildren() or {}) do
-            if child:GetAttribute("MergeArtilleryCommander") == true
+            if
+                child:GetAttribute("MergeArtilleryCommander") == true
                 and tostring(child:GetAttribute("MergeTowerSlot") or "") == slot
                 and child:GetAttribute("MergeVendorPosted") == true
             then
@@ -633,7 +669,8 @@ local function tutorialTarget(world, targetKind)
             return named
         end
         for _, child in ipairs(folder and folder:GetChildren() or {}) do
-            if child:GetAttribute("MergeQuartermaster") == true
+            if
+                child:GetAttribute("MergeQuartermaster") == true
                 and child:GetAttribute("MergeVendorPosted") == true
             then
                 return child
@@ -736,8 +773,10 @@ local function tutorialBuyEggCueAllowed(world)
         return false
     end
     if step == "upgrade_eggs" then
-        local created =
-            math.max(0, math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreated")) or 0))
+        local created = math.max(
+            0,
+            math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreated")) or 0)
+        )
         local need = math.max(
             1,
             math.floor(tonumber(world:GetAttribute("MergeEggTutorialUpgradeCreateNeed")) or 2)
@@ -764,8 +803,8 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         card.frame.Visible = false
         clearTutorialEggFocus()
         clearTutorialClickChevron()
-        local autoCollector = world and world:GetAttribute("MergeEggTutorialUsesAutoCollector")
-            == true
+        local autoCollector = world
+            and world:GetAttribute("MergeEggTutorialUsesAutoCollector") == true
         local drop = not autoCollector and openingCollectTarget() or nil
         if drop then
             tutorialPathTarget = drop
@@ -788,24 +827,21 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                 workshopOrder,
                 TUTORIAL_WORKSHOP_COUNT
             )
-        or cannonOrder
-            and string.format(
-                "CANNON TUTORIAL  •  %d / %d",
-                cannonOrder,
-                TUTORIAL_CANNON_COUNT
-            )
-        or upgradeOrder
-            and string.format(
-                "EGG UPGRADES  •  %d / %d",
-                upgradeOrder,
-                TUTORIAL_UPGRADE_COUNT
-            )
-        or quartermasterOrder
-            and string.format(
-                "QUARTERMASTER  •  %d / %d",
-                quartermasterOrder,
-                TUTORIAL_QUARTERMASTER_COUNT
-            )
+        or cannonOrder and string.format(
+            "CANNON TUTORIAL  •  %d / %d",
+            cannonOrder,
+            TUTORIAL_CANNON_COUNT
+        )
+        or upgradeOrder and string.format(
+            "EGG UPGRADES  •  %d / %d",
+            upgradeOrder,
+            TUTORIAL_UPGRADE_COUNT
+        )
+        or quartermasterOrder and string.format(
+            "QUARTERMASTER  •  %d / %d",
+            quartermasterOrder,
+            TUTORIAL_QUARTERMASTER_COUNT
+        )
         or string.format(
             "MERGE DEFENSE TUTORIAL  •  %d / %d",
             TUTORIAL_STEP_ORDER[step] or 1,
@@ -824,7 +860,8 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
             card.body.Text = "Follow the chevrons to the closest stack."
         elseif gemsLeft > 0 then
             card.title.Text = "NOW PICK UP THE GEM"
-            card.body.Text = "Follow the chevrons to the gem in front of the second Bulwark Engineer."
+            card.body.Text =
+                "Follow the chevrons to the gem in front of the second Bulwark Engineer."
         end
     end
     if step == "collect_upgrade_coins" and not autoCollector then
@@ -839,7 +876,8 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         local remaining = math.max(0, target - wallet)
         if remaining > 0 then
             card.title.Text = string.format("PICK UP %d MORE WAYCOINS", remaining)
-            card.body.Text = "Follow the chevrons to coins on the field. About 600 is enough for six eggs."
+            card.body.Text =
+                "Follow the chevrons to coins on the field. About 600 is enough for six eggs."
         end
     end
     if step == "create_five" then
@@ -872,8 +910,7 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         )
         local remaining = math.max(0, need - created)
         if remaining > 0 then
-            card.title.Text = remaining == 1
-                    and "CREATE ONE MORE EGG"
+            card.title.Text = remaining == 1 and "CREATE ONE MORE EGG"
                 or string.format("CREATE %d MORE EGGS", remaining)
             card.body.Text = "Click BUY EGG. Then upgrade one or place one on the line."
         else
@@ -919,13 +956,13 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
             targetKind = "commander"
         end
         tutorialPathTarget = tutorialTarget(world, targetKind)
-            tutorialClickTarget = (
-                (targetKind == "buy_egg" and tutorialBuyEggCueAllowed(world))
-                or targetKind == "engineer"
-                or targetKind == "commander"
-                or targetKind == "quartermaster"
-            )
-            and tutorialPathTarget
+        tutorialClickTarget = (
+            (targetKind == "buy_egg" and tutorialBuyEggCueAllowed(world))
+            or targetKind == "engineer"
+            or targetKind == "commander"
+            or targetKind == "quartermaster"
+        )
+                and tutorialPathTarget
             or nil
         if tutorialClickTarget then
             updateTutorialClickChevron()
@@ -1099,10 +1136,7 @@ local function boardActionResultCopy(result)
             elseif value.operation == "replaced" then
                 return "CANNON REPLACED AT TIER 1"
             elseif value.operation == "upgraded" then
-                return string.format(
-                    "CANNON UPGRADED TO TIER %d",
-                    tonumber(value.tier) or 1
-                )
+                return string.format("CANNON UPGRADED TO TIER %d", tonumber(value.tier) or 1)
             end
             return "CANNON UPDATED"
         end
@@ -1960,8 +1994,7 @@ local function updateWaveMeter(
             meter.title.Text = string.upper(stageName) .. " • COMMANDER ARRIVED"
             meter.detail.Text = step == "collect_cannon_coins"
                     and "WAVES PAUSED — PICK UP A WAYCOIN PILE"
-                or step == "collect_cannon_gem"
-                    and "WAVES PAUSED — PICK UP THE GEM"
+                or step == "collect_cannon_gem" and "WAVES PAUSED — PICK UP THE GEM"
                 or "WAVES PAUSED — TALK TO THE ARTILLERY COMMANDER"
         elseif TUTORIAL_UPGRADE_ORDER[step] then
             meter.title.Text = string.upper(stageName) .. " • STRENGTHEN THE LINE"
@@ -1982,10 +2015,7 @@ local function updateWaveMeter(
     if wave <= 0 then
         local waitingForFirstEgg = state == "AwaitingFirstEgg"
         local waitingForCollect = world
-                and (
-                    world:GetAttribute("MergeEggTutorialStep") == "collect_setup"
-                    or openingCollectTarget() ~= nil
-                )
+                and (world:GetAttribute("MergeEggTutorialStep") == "collect_setup" or openingCollectTarget() ~= nil)
             or false
         meter.title.Text = string.upper(stageName)
             .. " • "
@@ -1999,20 +2029,19 @@ local function updateWaveMeter(
             endless and "ENDLESS DEFENSE" or string.format("%d-WAVE ENDURANCE TEST", waveCount),
             COMBAT_CADENCE_MULTIPLIER,
             waitingForCollect and "PICK UP THE PILES — KEEP DOING THIS"
-                or waitingForFirstEgg
-                    and string.format(
-                        "WAVE 1 HELD • %d/%d HATCHERS ONLINE",
-                        initializedHatchers,
-                        math.max(
-                            1,
-                            math.floor(
-                                tonumber(
-                                    prototypeWorld()
-                                        and prototypeWorld():GetAttribute("OwnedHatcherSlots")
-                                ) or 4
-                            )
+                or waitingForFirstEgg and string.format(
+                    "WAVE 1 HELD • %d/%d HATCHERS ONLINE",
+                    initializedHatchers,
+                    math.max(
+                        1,
+                        math.floor(
+                            tonumber(
+                                prototypeWorld()
+                                    and prototypeWorld():GetAttribute("OwnedHatcherSlots")
+                            ) or 4
                         )
                     )
+                )
                 or "HATCHER EGG TIERS",
             eggsRemaining,
             eggsStarting
@@ -3264,10 +3293,7 @@ local function deploymentTargetAtScreenPoint(screenPoint)
     local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
     local includedPads = {}
     for _, pad in ipairs(pads and pads:GetChildren() or {}) do
-        if
-            pad:IsA("BasePart")
-            and pad:GetAttribute("MergeEggDeploymentAvailable") == true
-        then
+        if pad:IsA("BasePart") and pad:GetAttribute("MergeEggDeploymentAvailable") == true then
             includedPads[#includedPads + 1] = pad
         end
     end
@@ -3696,10 +3722,12 @@ local function handleBoardTap(input)
         return
     end
     local target = tapTargetAtScreenPoint(input.Position)
-    local selection = interaction and {
-        sourceSlot = interaction.sourceSlot,
-        sourceTier = interaction.sourceTier,
-    } or nil
+    local selection = interaction
+            and {
+                sourceSlot = interaction.sourceSlot,
+                sourceTier = interaction.sourceTier,
+            }
+        or nil
     local result = MergeEggBoardTapPolicy.resolve(selection, target)
     if interaction then
         destroyBoardDrag(interaction, true)
@@ -3759,6 +3787,15 @@ function MergeEggPrototypeObserver.start()
     gui.DisplayOrder = 41
     gui.Enabled = false
     gui.Parent = pg
+    -- The tutorial replaces the central hotbar during the opening ten waves. This inset-ignored
+    -- sibling can copy the hotbar's final, viewport-scaled PillFrame bounds exactly.
+    local tutorialGui = Instance.new("ScreenGui")
+    tutorialGui.Name = "MergeEggTutorialHud"
+    tutorialGui.ResetOnSpawn = false
+    tutorialGui.IgnoreGuiInset = true
+    tutorialGui.DisplayOrder = 100
+    tutorialGui.Enabled = false
+    tutorialGui.Parent = pg
     -- Own inset-ignored surface so the wave bar can sit in the quest-pill
     -- slot (DisplayOrder 90) without shifting the rest of this observer HUD.
     local waveGui = Instance.new("ScreenGui")
@@ -3778,7 +3815,7 @@ function MergeEggPrototypeObserver.start()
     feedbackGui.Enabled = false
     feedbackGui.Parent = pg
     local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(feedbackGui)
-    local tutorialCard = createTutorialCard(gui)
+    local tutorialCard = createTutorialCard(tutorialGui)
     local boardActionFeedbackUntil = 0
     local bulwarkMenu = MergeBulwarkMenu.new(gui, function(action)
         Signals.MergeEggPrototypeBoardAction:FireServer(action)
@@ -3978,6 +4015,7 @@ function MergeEggPrototypeObserver.start()
         elapsed = 0
 
         gui.Enabled = observing
+        tutorialGui.Enabled = observing
         waveGui.Enabled = observing
         feedbackGui.Enabled = observing
         if not boardWallControls or not boardWallControls.world.Parent then
@@ -3985,6 +4023,7 @@ function MergeEggPrototypeObserver.start()
         end
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
+            setTutorialHotbarCovered(nil, false)
             boardActionFeedback.Visible = false
             updateTutorialCard(tutorialCard, nil, false)
             clearTutorialClickCue()
@@ -4001,7 +4040,11 @@ function MergeEggPrototypeObserver.start()
         end
 
         local world = prototypeWorld()
+        setTutorialHotbarCovered(world, true)
         updateTutorialCard(tutorialCard, world, true, bulwarkMenu, cannonMenu)
+        if tutorialCard.frame.Visible then
+            layoutTutorialCardOverHotbar(tutorialCard)
+        end
         local tutorialStep = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "")
         if
             tutorialStep ~= "unlock_bulwark"

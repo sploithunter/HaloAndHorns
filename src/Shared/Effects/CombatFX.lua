@@ -797,12 +797,18 @@ function CombatFX.detonate(origin, radius, opts)
     if typeof(origin) ~= "Vector3" then
         return false
     end
-    radius = math.max(1, tonumber(radius) or 12)
+    radius = tonumber(radius)
+    if radius == nil then
+        return false
+    end
+    radius = math.max(1, radius)
     local bopt = type(opts.burst) == "table" and opts.burst or nil
     if not bopt then
         local element = tostring(opts.element or "lava")
         local themes = config.attached and config.attached.themes
-        local field = themes and themes[element] and (themes[element].field or themes[element].aurafield)
+        local field = themes
+            and themes[element]
+            and (themes[element].field or themes[element].aurafield)
         bopt = (type(field) == "table" and field.burst) or {}
     end
     local color = toColor(opts.color or bopt.sphere_color, Color3.fromRGB(255, 130, 40))

@@ -7154,3 +7154,16 @@ first-session cohort rates.
 - Creating eggs alone no longer leaves the Wave 6 card stuck. After
   two creates, chevrons leave Buy Egg. One merge, base-egg raise, or
   placement finishes the beat. Not Play-confirmed.
+
+## 2026-09-01 — Mobile People list and Merge tutorial replace fixed HUD geometry
+
+- The custom People list now derives its dock, rows, columns, body cap, and profile card from
+  DisplayClass-specific viewport ratios and relayouts on camera-size/orientation changes. The
+  fixed 397px list-width contract is retired.
+- From Merge setup through Wave 10, the central hotbar is hidden and all activation paths are
+  blocked. An active tutorial card copies the live, already-scaled hotbar PillFrame bounds exactly;
+  Wave 11 restores the bar.
+- Consolidation removed the superseded live cannon-preview helper/tests and retained the 24
+  manifest-owned transparent PNG previews. New cannon/fling/effect code now requires its authored
+  config values instead of restoring silent numeric fallbacks. The architecture ratchet fell from
+  1,641 fallbacks in 239 files to 1,621 in 238 files.

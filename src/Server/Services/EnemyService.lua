@@ -2654,7 +2654,10 @@ function EnemyService:_resolvePlanarDest(entry, ePos, away, distance, opts)
     if not (entry and ePos) then
         return nil
     end
-    local dist = tonumber(distance) or 0
+    local dist = tonumber(distance)
+    if dist == nil then
+        return nil
+    end
     if dist <= 0 then
         return nil
     end
@@ -2666,7 +2669,8 @@ function EnemyService:_resolvePlanarDest(entry, ePos, away, distance, opts)
     local eng = (self._combatConfig and self._combatConfig.engagement) or {}
     local climbMax = tonumber(opts.climb_max) or tonumber(eng.ground_climb_max) or 10
     local dropMax = tonumber(opts.drop_max) or tonumber(eng.ground_drop_max) or 10
-    local extraInset = math.max(0, tonumber(opts.leash_inset) or 0)
+    local extraInset = assert(tonumber(opts.leash_inset), "air fling leash_inset is required")
+    extraInset = math.max(0, extraInset)
     local flyer = (entry.hoverHeight or 0) > 0
     local step = dist
     while step >= 1 do
@@ -2693,7 +2697,9 @@ function EnemyService:_displaceEnemy(entry, targetId, enemyModel, away, distance
             "knockback found enemy outside authored movement room"
         )
     end
-    local dest, unit = self:_resolvePlanarDest(entry, ePos, away, tonumber(distance) or 12)
+    local dest, unit = self:_resolvePlanarDest(entry, ePos, away, tonumber(distance) or 12, {
+        leash_inset = 0,
+    })
     if not dest then
         return false
     end
@@ -2773,7 +2779,10 @@ function EnemyService:ApplyAirFling(enemyModel, direction, distance, opts)
         return false
     end
     away = away.Unit
-    local dist = tonumber(distance) or 0
+    local dist = tonumber(distance)
+    if dist == nil then
+        return false
+    end
     if dist <= 0 then
         return false
     end
@@ -2791,16 +2800,22 @@ function EnemyService:ApplyAirFling(enemyModel, direction, distance, opts)
             if not dest then
                 return false
             end
-            local duration = math.max(0.2, tonumber(opts.duration) or 0.55)
-            local recover = math.max(0, tonumber(opts.recover) or 0.45)
+            local duration = assert(tonumber(opts.duration), "air fling duration is required")
+            duration = math.max(0.2, duration)
+            local recover = assert(tonumber(opts.recover), "air fling recover is required")
+            recover = math.max(0, recover)
+            local height = assert(tonumber(opts.height), "air fling height is required")
+            height = math.max(1, height)
+            local spins = assert(tonumber(opts.spins), "air fling spins is required")
+            spins = math.max(0.5, spins)
             entry.fling = {
                 start = ePos,
                 dest = dest,
-                height = math.max(1, tonumber(opts.height) or 10),
+                height = height,
                 startedAt = os.clock(),
                 duration = duration,
                 recover = recover,
-                spins = math.max(0.5, tonumber(opts.spins) or 1.25),
+                spins = spins,
                 sign = (math.random() < 0.5) and 1 or -1,
             }
             local hold = math.ceil(duration + recover + 0.05)
@@ -2827,7 +2842,7 @@ function EnemyService:_stepAirFling(entry, targetId, now)
         return false
     end
     local elapsed = (tonumber(now) or os.clock()) - (tonumber(fling.startedAt) or 0)
-    local duration = tonumber(fling.duration) or 0.55
+    local duration = assert(tonumber(fling.duration), "air fling state requires duration")
     if elapsed < duration then
         local alpha = elapsed / duration
         local x, y, z = MergeCannonFling.point(

@@ -284,10 +284,7 @@ function MergeBulwarkProgression.normalize(raw, maximumTier)
             installs[def.id] = nil
             for _, other in ipairs(MergeBulwarkSlots.all()) do
                 local otherFamily = installEntry(installs[other.id])
-                if
-                    otherFamily == nil
-                    and MergeBulwarkProgression.canInstall(family, other.id)
-                then
+                if otherFamily == nil and MergeBulwarkProgression.canInstall(family, other.id) then
                     installs[other.id] = {
                         family = family,
                         tier = tier > 0 and tier or owned[family],

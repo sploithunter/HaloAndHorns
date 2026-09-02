@@ -73,7 +73,8 @@ end
 -- (ease-out up, ease-in down). shake is a decaying ripple, not a second hop.
 function MergeTowerBallistics.recoilHeight(alpha, height, peakAt, shake)
     alpha = clamp01(alpha)
-    height = math.max(0, tonumber(height) or 0)
+    height = assert(tonumber(height), "recoil height is required")
+    height = math.max(0, height)
     peakAt = tonumber(peakAt) or 0.32
     if peakAt < 0.05 then
         peakAt = 0.05
@@ -97,7 +98,8 @@ end
 function MergeTowerBallistics.bloomScale(alpha, startDiameter, peakScale)
     alpha = clamp01(alpha)
     startDiameter = math.max(0, tonumber(startDiameter) or 0)
-    peakScale = math.max(1, tonumber(peakScale) or 2)
+    peakScale = assert(tonumber(peakScale), "bloom peakScale is required")
+    peakScale = math.max(1, peakScale)
     local t = 1 - (1 - alpha) * (1 - alpha)
     return startDiameter * (1 + (peakScale - 1) * t)
 end
