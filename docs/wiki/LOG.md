@@ -7215,3 +7215,15 @@ first-session cohort rates.
 - While an incomplete tutorial is between hands-on pauses, the covered footprint shows one of four
   config-authored combat cards previewing the Wave 2 Bulwark, Wave 4 Cannon, Wave 6 egg-upgrade, or
   Wave 10 Quartermaster lesson. Active instructions continue to replace those cards.
+
+## 2026-09-01 — Wave 6 egg feedback uses lesson-local state
+
+- The Wave 6 preview now says the conditional lesson will begin, rather than that it may begin.
+- Buy Egg exposes the opening five-purchase countdown only during `create_five`; Wave 6 no longer
+  turns the lifetime egg-created counter into a false `FIVE EARTH EGGS READY` claim on an empty
+  board. The opening completion copy now accurately says the five eggs were created.
+- A successful egg upgrade during the Wave 6 beat receives a config-authored five-second
+  encouragement. Other board-action feedback keeps its ordinary 2.5-second duration.
+- The Wave 10 potion booth now restores the config-owned visible transparency of `0`. Its authored
+  parts begin at transparency `1`, which the generic vendor helper had incorrectly preserved as the
+  reveal value even while Macros himself was visible.

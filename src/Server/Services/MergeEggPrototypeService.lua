@@ -6678,6 +6678,14 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
     if not shop then
         return
     end
+    local visibleTransparency = math.clamp(
+        requiredConfigNumber(
+            self:_quartermasterConfig().shop_visible_transparency,
+            "quartermaster.shop_visible_transparency"
+        ),
+        0,
+        1
+    )
     local function stash(instance)
         if instance:IsA("BasePart") and instance:GetAttribute("MergeShopBaseCanCollide") == nil then
             instance:SetAttribute("MergeShopBaseCanCollide", instance.CanCollide)
@@ -6691,8 +6699,16 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
     if visible == true then
         local function restore(instance)
             if instance:IsA("BasePart") then
+                -- These authored booth/sign parts intentionally start hidden. The generic vendor
+                -- helper therefore cannot infer their live transparency from the authored value;
+                -- stamp the config-owned reveal value so every later hide/show cycle restores it.
+                instance:SetAttribute("MergeVendorBaseTransparency", visibleTransparency)
+                instance.Transparency = visibleTransparency
                 instance.CanCollide = instance:GetAttribute("MergeShopBaseCanCollide") == true
                 instance.CanQuery = true
+            elseif instance:IsA("Decal") or instance:IsA("Texture") then
+                instance:SetAttribute("MergeVendorBaseTransparency", visibleTransparency)
+                instance.Transparency = visibleTransparency
             end
         end
         restore(shop)
@@ -15182,7 +15198,12 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
         stationDistance = stationDistance,
         automaticMerges = automaticMerges,
     })
-    local tutorialRequiredEggs = record.tutorialActive == true and self:_tutorialRequiredEggs()
+    -- The five-purchase counter belongs only to the opening create_five lesson. Wave 6 also has
+    -- an active tutorial while the lifetime eggsCreated counter is already at least five; sending
+    -- the opening requirement there made one new board egg read as "five eggs ready."
+    local tutorialRequiredEggs = record.tutorialActive == true
+            and record.tutorialStep == "create_five"
+            and self:_tutorialRequiredEggs()
         or nil
     self:_updateTutorial(record, now, true)
     return true,
@@ -15296,6 +15317,7 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
         expansionFailures = expansionFailures,
         automaticMerges = automaticMerges,
     })
+    self:_updateTutorial(record, os.clock(), true)
     return true
 end
 
@@ -16198,7 +16220,12 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     local state = record.waveIndex == 0 and record.nextWaveAt ~= nil and "WaveIntermission"
         or self:_activeWaveState(record)
     self:_setWorldState(state, record)
-    return true
+    return true,
+        {
+            operation = wasInitialized and "upgraded" or "deployed",
+            fromTier = tierBefore,
+            toTier = resultTier,
+        }
 end
 
 -- Keep the prototype's existing packet/service seam stable while the UI and gameplay language use
@@ -16465,12 +16492,27 @@ function MergeEggPrototypeService:Start()
         self:AdvanceHatcherEgg(player, request)
     end)
     Signals.MergeEggPrototypeBoardAction.OnServerEvent:Connect(function(player, request)
+        local action = type(request) == "table" and tostring(request.action or "") or ""
+        local recordBefore = self:_recordFor(player)
+        local tutorialStepBefore = recordBefore
+                and recordBefore.tutorialActive == true
+                and recordBefore.tutorialStep
+            or nil
         local ok, result = self:HandleBoardAction(player, request)
+        local operation = type(result) == "table" and tostring(result.operation or "") or ""
+        local tutorialEggUpgrade = ok == true
+            and tutorialStepBefore == "upgrade_eggs"
+            and (
+                action == "merge_slots"
+                or action == "upgrade_base"
+                or (action == "deploy_to_hatcher" and operation == "upgraded")
+            )
         Signals.MergeEggPrototypeBoardResult:FireClient(player, {
             ok = ok == true,
-            action = type(request) == "table" and tostring(request.action or "") or "",
+            action = action,
             value = ok == true and result or nil,
             reason = ok ~= true and tostring(result or "action_refused") or nil,
+            tutorialEggUpgrade = tutorialEggUpgrade,
         })
     end)
     RunService.Heartbeat:Connect(function()

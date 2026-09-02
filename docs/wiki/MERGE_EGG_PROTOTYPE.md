@@ -666,8 +666,13 @@ team and queue model:
   have not merged, installed, or raised the base egg since that snapshot,
   combat pauses for an encouraging coin pickup (about 600 Waycoins) and
   one loose create-then-upgrade-or-place card. If they already did that
-  work, Wave 6 does not pause. After Wave 10 the potion tent and Macros
-  unhide; Talk completes the first-visit drip. Full
+  work, Wave 6 does not pause. The Wave 6 preview is definite: the egg-upgrade lesson will begin
+  after Wave 6 when the skip condition has not been met. Its Buy Egg result never reuses the
+  opening lesson's lifetime five-purchase countdown. A successful merge, base-source upgrade, or
+  deployed-egg upgrade during this beat shows the config-authored five-second encouragement; the
+  ordinary short action feedback remains unchanged outside that lesson. After Wave 10 the potion tent and Macros
+  unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
+  hidden transparency as the reveal value. Talk completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
   that Talk finishes. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an

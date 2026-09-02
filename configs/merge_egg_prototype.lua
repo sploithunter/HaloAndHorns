@@ -420,7 +420,7 @@ return {
             upgrade_waves = {
                 progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
                 title = "DEFEND THROUGH WAVE 6",
-                body = "An egg-upgrade lesson may begin after Wave 6.",
+                body = "The egg-upgrade lesson will begin after Wave 6.",
             },
             quartermaster_waves = {
                 progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
@@ -512,6 +512,12 @@ return {
                 target = "quartermaster",
             },
         },
+        success_feedback = {
+            egg_upgraded = {
+                text = "EGG UPGRADED — GOOD JOB. YOU'VE GOT THIS.",
+                duration_seconds = 5,
+            },
+        },
     },
 
     -- Macros sits at the bay potion tent. Hidden with the tent until
@@ -526,6 +532,7 @@ return {
         idle_animation = "507766388",
         max_distance = 16,
         stand_front_studs = 8,
+        shop_visible_transparency = 0,
         greeting = "I'll get you whatever you need.",
     },
 

@@ -45,6 +45,18 @@ local EGG_HEALTH_BILLBOARD = assert(
 )
 local TUTORIAL_CLICK_CUE =
     assert((CONFIG.tutorial or {}).click_cue, "merge_egg_prototype.tutorial.click_cue is required")
+local TUTORIAL_EGG_UPGRADED_FEEDBACK = assert(
+    ((CONFIG.tutorial or {}).success_feedback or {}).egg_upgraded,
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded is required"
+)
+local TUTORIAL_EGG_UPGRADED_TEXT = assert(
+    TUTORIAL_EGG_UPGRADED_FEEDBACK.text,
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.text is required"
+)
+local TUTORIAL_EGG_UPGRADED_SECONDS = assert(
+    tonumber(TUTORIAL_EGG_UPGRADED_FEEDBACK.duration_seconds),
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.duration_seconds is required"
+)
 
 local MergeEggPrototypeObserver = {}
 
@@ -986,7 +998,7 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                     remaining,
                     remaining == 1 and "" or "S"
                 )
-            or "FIVE EARTH EGGS READY"
+            or "FIVE EARTH EGGS CREATED"
         card.body.Text = "Click the highlighted BUY EGG button again."
     end
     if step == "upgrade_eggs" then
@@ -1190,7 +1202,7 @@ local function boardActionResultCopy(result)
                 if remaining > 0 then
                     return string.format("%d MORE EGG%s", remaining, remaining == 1 and "" or "S")
                 end
-                return "FIVE EARTH EGGS READY"
+                return "FIVE EARTH EGGS CREATED"
             end
             return "EGG ADDED TO BOARD"
         elseif action == "upgrade_base" then
@@ -3984,13 +3996,17 @@ function MergeEggPrototypeObserver.start()
                 cannonMenu:show(result.value)
             end
         end
-        boardActionFeedback.Text = boardActionResultCopy(result)
+        local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
+        boardActionFeedback.Text = tutorialEggUpgrade and tostring(TUTORIAL_EGG_UPGRADED_TEXT)
+            or boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
             or Color3.fromRGB(255, 205, 105)
         boardActionFeedbackStroke.Color = success and Color3.fromRGB(95, 230, 135)
             or Color3.fromRGB(245, 170, 60)
         boardActionFeedback.Visible = true
-        boardActionFeedbackUntil = os.clock() + 2.5
+        local feedbackSeconds = tutorialEggUpgrade and math.max(0.1, TUTORIAL_EGG_UPGRADED_SECONDS)
+            or 2.5
+        boardActionFeedbackUntil = os.clock() + feedbackSeconds
     end)
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
