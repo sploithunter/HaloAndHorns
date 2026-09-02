@@ -7035,7 +7035,9 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
     end
     return {
         operation = "quartermaster_services",
-        greeting = tostring(post.greeting or "I'll get you whatever you need."),
+        greeting = tostring(
+            (done and post.greeting_complete) or post.greeting or "I'll get you whatever you need."
+        ),
         title = tostring(services.title or "QUARTERMASTER"),
         body = tostring((done and services.body_complete) or services.body or "Choose a service."),
         gamePassesLabel = tostring(services.game_passes_label or "GAME PASSES"),
@@ -7063,18 +7065,16 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     if not accessOk then
         return false, accessReason
     end
-    local greeting =
-        tostring(self:_quartermasterConfig().greeting or "I'll get you whatever you need.")
     local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
     local live = self:_findQuartermaster(folder)
-    self:_setQuartermasterSpeech(live, greeting)
+    local value = self:_quartermasterMenuState(record)
+    self:_setQuartermasterSpeech(live, value.greeting)
     local completesTutorial = record.tutorialActive == true
         and record.tutorialStep == "talk_quartermaster"
     if completesTutorial then
         record.tutorialTalkedQuartermaster = true
         self:_updateTutorial(record, os.clock(), true)
     end
-    local value = self:_quartermasterMenuState(record)
     value.milestone = completesTutorial and "quartermaster_ready" or nil
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
