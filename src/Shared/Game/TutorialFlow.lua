@@ -338,6 +338,19 @@ function TutorialFlow.advance(config, progress, eventName, ctx)
             return progress, false
         end
     end
+    -- Optional exact event-payload predicates keep progression authored in config.
+    -- Example: an enhancement lesson can require { context = { powerId = "heal" } }
+    -- instead of accepting an enhancement slotted into an unrelated power.
+    if type(cond.context) == "table" then
+        if type(ctx) ~= "table" then
+            return progress, false
+        end
+        for key, expected in pairs(cond.context) do
+            if ctx[key] ~= expected then
+                return progress, false
+            end
+        end
+    end
     -- sum_ctx: accumulate a NUMBER from the event ctx instead of counting events —
     -- the farm step sums coin_payout amounts so "count" reads as COINS EARNED and the
     -- player keeps mining until they can afford the next egg (Jason's coin gate).
