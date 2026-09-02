@@ -1977,6 +1977,18 @@ function MergeEggPrototypeService:_managementUpgradeMultiplier(record, upgradeId
     return math.max(0, 1 + level * math.max(0, tonumber(definition.step) or 0))
 end
 
+-- Pet Endurance is a durable Gem upgrade layered on the Merge-only rebirth defense curve. Keep
+-- the combined value on the existing contextual pet attribute so every durability consumer (live
+-- combat, bars, healing, and replacement spawns) observes one authoritative multiplier.
+function MergeEggPrototypeService:_petDefenseMultiplier(record)
+    return self:_rebirthScalingMultiplier(record, "pets", "defense")
+        * self:_managementUpgradeMultiplier(record, "pet_endurance")
+end
+
+function MergeEggPrototypeService:_playerFocusMultiplier(record)
+    return self:_managementUpgradeMultiplier(record, "player_focus")
+end
+
 function MergeEggPrototypeService:_activeSlotCount(record)
     local layout = type(self._config.station_layout) == "table" and self._config.station_layout
         or {}
@@ -2175,12 +2187,15 @@ function MergeEggPrototypeService:_stampUpgradeExperiment(record)
         rebirthDamage
     )
     local power = self:_upgradeExperimentMultiplier(record, "power") * persistentDamage
+    local defenseMultiplier = self:_petDefenseMultiplier(record)
+    local focusMultiplier = self:_playerFocusMultiplier(record)
     for _, team in ipairs(record.teams or {}) do
         local teamPower = math.max(0, tonumber(team.originPowerMultiplier) or 1) * power
         for _, model in ipairs(team.units or {}) do
             if model and model.Parent then
                 model:SetAttribute("CombatCadenceMultiplier", cadence)
                 model:SetAttribute("OriginProgressionMultiplier", teamPower)
+                model:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", defenseMultiplier)
             end
         end
     end
@@ -2188,7 +2203,12 @@ function MergeEggPrototypeService:_stampUpgradeExperiment(record)
         if model and model.Parent then
             model:SetAttribute("CombatCadenceMultiplier", cadence)
             model:SetAttribute("OriginProgressionMultiplier", power)
+            model:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", defenseMultiplier)
         end
+    end
+    if record.player then
+        record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", defenseMultiplier)
+        record.player:SetAttribute("FocusMaxMultiplier", focusMultiplier)
     end
 end
 
@@ -2730,11 +2750,7 @@ function MergeEggPrototypeService:_spawnPlayerEscortSlot(record, slot, definitio
                 MergeEggEscortAnchorLookVector = anchor.LookVector,
                 CombatTargetOpen = true,
                 CombatCadenceMultiplier = combatCadenceMultiplier(self._config),
-                MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
-                    record,
-                    "pets",
-                    "defense"
-                ),
+                MergeDefenseRebirthPetDefenseMultiplier = self:_petDefenseMultiplier(record),
                 EphemeralDownPolicy = "destroy",
                 PrincipalLevel = self:_prototypeBaseLevel(record),
                 Level = self:_prototypeBaseLevel(record),
@@ -3319,18 +3335,22 @@ function MergeEggPrototypeService:_ensureCannonGemLesson(record)
     return record.cannonGemSpawned == true
 end
 
-function MergeEggPrototypeService:_resetSessionCurrency(record)
+function MergeEggPrototypeService:_resetSessionCurrency(record, amountOverride, reasonOverride)
     if not (record and self._economyService and record.sessionCurrency) then
         return false
     end
     local opening = type(self._config.opening_economy) == "table" and self._config.opening_economy
         or {}
-    local resetAmount = math.max(0, math.floor(tonumber(opening.wallet_amount) or 0))
+    local resetAmount = tonumber(amountOverride)
+    if resetAmount == nil then
+        resetAmount = tonumber(opening.wallet_amount) or 0
+    end
+    resetAmount = math.max(0, math.floor(resetAmount))
     return self._economyService:SetCurrency(
         record.player,
         record.sessionCurrency,
         resetAmount,
-        "merge_egg_session_reset"
+        tostring(reasonOverride or "merge_egg_session_reset")
     )
 end
 
@@ -4185,7 +4205,7 @@ end
 
 function MergeEggPrototypeService:_applyTeamEggTierModifiers(team, tier, record)
     local multiplier = self:_originPowerForEggTier(tier, team)
-    local defenseMultiplier = self:_rebirthScalingMultiplier(record, "pets", "defense")
+    local defenseMultiplier = self:_petDefenseMultiplier(record)
     team.originPowerMultiplier = multiplier
     if team.folder and team.folder.Parent then
         team.folder:SetAttribute("MergeEggOriginPowerMultiplier", multiplier)
@@ -4269,11 +4289,7 @@ function MergeEggPrototypeService:_expandTeamForEggTier(record, team, source, ti
                 PrincipalLevel = self:_prototypeBaseLevel(record),
                 Level = self:_prototypeBaseLevel(record),
                 OriginProgressionMultiplier = self:_originPowerForEggTier(tier, team),
-                MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
-                    record,
-                    "pets",
-                    "defense"
-                ),
+                MergeDefenseRebirthPetDefenseMultiplier = self:_petDefenseMultiplier(record),
             },
             positionOffset = current,
         })
@@ -8612,6 +8628,76 @@ function MergeEggPrototypeService:_ensureEquipBestControl(world, board, toward)
     return control
 end
 
+-- Auto-Combine is a board action, so it belongs beside Equip Best on the floor instead of inside
+-- the wall economy. Place it outward from the board using the authored Equip Best transform; this
+-- mirrors correctly between Heaven and Hell bays and does not depend on a global-axis guess.
+function MergeEggPrototypeService:_ensureAutoCombineControl(world, board, equipBestControl)
+    local worldCfg = self._config.world or {}
+    local cfg = (self._config.team or {}).merge_board or {}
+    local boardRoot = board and board.PrimaryPart
+    if not (world and boardRoot and equipBestControl and equipBestControl:IsA("BasePart")) then
+        return nil
+    end
+
+    local outward = Vector3.new(
+        equipBestControl.Position.X - boardRoot.Position.X,
+        0,
+        equipBestControl.Position.Z - boardRoot.Position.Z
+    )
+    outward = outward.Magnitude > 0.001 and outward.Unit
+        or Vector3.new(
+            equipBestControl.CFrame.RightVector.X,
+            0,
+            equipBestControl.CFrame.RightVector.Z
+        )
+    outward = outward.Magnitude > 0.001 and outward.Unit or Vector3.new(1, 0, 0)
+
+    local sizeCfg = type(cfg.auto_combine_size) == "table" and cfg.auto_combine_size or {}
+    local width = math.max(3, tonumber(sizeCfg.x) or equipBestControl.Size.X)
+    local depth = math.max(3, tonumber(sizeCfg.z) or equipBestControl.Size.Z)
+    local gap = math.max(
+        0,
+        assert(tonumber(cfg.auto_combine_gap), "team.merge_board.auto_combine_gap is required")
+    )
+    local function halfExtentAlong(size, cframe, direction)
+        return math.abs(cframe.RightVector:Dot(direction)) * size.X * 0.5
+            + math.abs(cframe.UpVector:Dot(direction)) * size.Y * 0.5
+            + math.abs(cframe.LookVector:Dot(direction)) * size.Z * 0.5
+    end
+    local controlSize = Vector3.new(width, 0.16, depth)
+    local center = equipBestControl.Position
+        + outward
+            * (halfExtentAlong(equipBestControl.Size, equipBestControl.CFrame, outward) + gap + halfExtentAlong(
+                controlSize,
+                equipBestControl.CFrame,
+                outward
+            ))
+
+    local name = tostring(worldCfg.auto_combine_control or "AutoCombineControl")
+    local control = world:FindFirstChild(name)
+    if control and not control:IsA("BasePart") then
+        control:Destroy()
+        control = nil
+    end
+    if not control then
+        control = Instance.new("Part")
+        control.Name = name
+        control.Parent = world
+    end
+    control.Anchored = true
+    control.CanCollide = false
+    control.CanTouch = false
+    control.CanQuery = true
+    control.CastShadow = false
+    control.Size = controlSize
+    control.CFrame = equipBestControl.CFrame.Rotation + center
+    control.Color = Color3.fromRGB(177, 82, 225)
+    control.Material = Enum.Material.Neon
+    control.Transparency = 0.04
+    control:SetAttribute("MergeEggAutoCombineControl", true)
+    return control
+end
+
 function MergeEggPrototypeService:_ensureMergeBoard(world)
     local worldCfg = self._config.world or {}
     local boardName = tostring(worldCfg.merge_board or "MergeBoard")
@@ -8777,7 +8863,8 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
     if layoutChanged then
         board:SetAttribute("InventorySignature", nil)
     end
-    self:_ensureEquipBestControl(world, board, toward)
+    local equipBestControl = self:_ensureEquipBestControl(world, board, toward)
+    self:_ensureAutoCombineControl(world, board, equipBestControl)
     return board
 end
 
@@ -9048,6 +9135,9 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeEggTutorialQuartermasterAt", quartermasterAt)
     local rebirth = self:_rebirthStatus(record)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
+    local managementPetEndurance = self:_managementUpgradeMultiplier(record, "pet_endurance")
+    local managementPlayerFocus = self:_playerFocusMultiplier(record)
+    local petDefenseMultiplier = self:_petDefenseMultiplier(record)
     local alliedDamage =
         MergeEggDamageScope.additiveUpgradeMultiplier(managementDamage, rebirth.damageMultiplier)
     local nextRebirthDamage =
@@ -9058,6 +9148,9 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeDefenseRebirthRank", rebirth.rank)
     world:SetAttribute("MergeDefenseRebirthDamageMultiplier", rebirth.damageMultiplier)
     world:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", rebirth.scaling.petDefense)
+    world:SetAttribute("MergeDefenseManagementPetEnduranceMultiplier", managementPetEndurance)
+    world:SetAttribute("MergeDefensePetDefenseMultiplier", petDefenseMultiplier)
+    world:SetAttribute("MergeDefenseManagementPlayerFocusMultiplier", managementPlayerFocus)
     world:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
     world:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
     world:SetAttribute("MergeDefenseNextRebirthDamageMultiplier", nextRebirthDamage)
@@ -9114,12 +9207,10 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         record.personalHatchEggId = personalEggId
         record.player:SetAttribute("MergeDefenseRebirths", rebirth.count)
         record.player:SetAttribute("MergeDefenseRebirthDamageMultiplier", rebirth.damageMultiplier)
-        record.player:SetAttribute(
-            "MergeDefenseRebirthPetDefenseMultiplier",
-            rebirth.scaling.petDefense
-        )
+        record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", petDefenseMultiplier)
         record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
         record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
+        record.player:SetAttribute("FocusMaxMultiplier", managementPlayerFocus)
         record.player:SetAttribute("MergeDefensePersonalEggTier", personalTier)
         record.player:SetAttribute("MergeDefensePersonalEggId", personalEggId)
     end
@@ -9129,6 +9220,8 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         fire_rate = "FireRate",
         active_slots = "ActiveSlots",
         egg_health = "EggHealth",
+        pet_endurance = "PetEndurance",
+        player_focus = "PlayerFocus",
     }
     for upgradeId, attributeName in pairs(upgradeAttributeNames) do
         local level = self:_managementUpgradeLevel(record, upgradeId)
@@ -10309,11 +10402,7 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         PrincipalLevel = self:_prototypeBaseLevel(record),
         Level = self:_prototypeBaseLevel(record),
         OriginProgressionMultiplier = tonumber(team.originPowerMultiplier) or 1,
-        MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
-            record,
-            "pets",
-            "defense"
-        ),
+        MergeDefenseRebirthPetDefenseMultiplier = self:_petDefenseMultiplier(record),
     }
     if definition.role then
         attributes.PetRole = definition.role
@@ -11360,6 +11449,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", nil)
     record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", nil)
     record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", nil)
+    record.player:SetAttribute("FocusMaxMultiplier", nil)
 
     if departing then
         if record.parked then
@@ -14282,11 +14372,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
                     PrincipalLevel = self:_prototypeBaseLevel(record),
                     Level = self:_prototypeBaseLevel(record),
                     EphemeralDownPolicy = "destroy",
-                    MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
-                        record,
-                        "pets",
-                        "defense"
-                    ),
+                    MergeDefenseRebirthPetDefenseMultiplier = self:_petDefenseMultiplier(record),
                 },
             }
         )
@@ -15933,7 +16019,8 @@ function MergeEggPrototypeService:ToggleAutoCombine(player)
     then
         return false, "not_active_encounter"
     end
-    local stationName = tostring((self._config.world or {}).egg_merge_control or "EggMergeControl")
+    local stationName =
+        tostring((self._config.world or {}).auto_combine_control or "AutoCombineControl")
     local accessOk, accessReason = self:_canUseEggStation(player, stationName)
     if not accessOk then
         return false, accessReason
@@ -16368,6 +16455,52 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         return false, commitFailure or transaction.reason
     end
 
+    -- Rebirth must never depend on collecting temporary world drops. Replace the old five-pile
+    -- grant with one durable wallet credit and snapshot it before any later reconciliation work.
+    -- This closes the immediate-logout soft lock while preserving the collectible opening lesson
+    -- for genuinely new/admin-reset runs.
+    local rebirthCfg = type(self._config.rebirth) == "table" and self._config.rebirth or {}
+    local startingWalletAmount = math.max(
+        0,
+        math.floor(
+            assert(
+                tonumber(rebirthCfg.starting_wallet_amount),
+                "rebirth.starting_wallet_amount is required"
+            )
+        )
+    )
+    local walletReset = self:_resetSessionCurrency(
+        record,
+        startingWalletAmount,
+        "merge_egg_rebirth_starting_wallet"
+    )
+    if not walletReset then
+        self:_log("Warn", "Merge Egg rebirth could not grant its starting wallet", {
+            player = player.Name,
+            rebirth = record.rebirthCount,
+            amount = startingWalletAmount,
+        })
+    end
+    progress.playstate = MergeEggPlaystate.fromRuntime({
+        wave = 0,
+        currency = record.sessionCurrency,
+        coins = startingWalletAmount,
+        objectiveEggsRemaining = math.max(
+            1,
+            math.floor(
+                assert(
+                    tonumber((self._config.objective or {}).starting_eggs),
+                    "objective.starting_eggs is required"
+                )
+            )
+        ),
+        eggInventory = {},
+        recordState = {
+            baseEggTier = self:_baseEggTier(nil),
+        },
+    }, {}, self:_checkpointOptions())
+    record.durablePlaystate = progress.playstate
+
     -- Reconcile the bay immediately after the transaction commits. Empty active slot state makes
     -- the existing runtime models disappear while the commander/engineer and unlock catalogs stay.
     self:_ensureBayTowers(record)
@@ -16392,13 +16525,6 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         })
     end
     self:_clearEncounter(record)
-    if not self:_resetSessionCurrency(record) then
-        self:_log("Warn", "Merge Egg rebirth could not reset its session wallet", {
-            player = player.Name,
-            rebirth = record.rebirthCount,
-        })
-    end
-    self:_spawnOpeningCoinDrops(record)
     local armed, armReason = self:_hatch(player)
     if not armed then
         return false, armReason
@@ -16836,6 +16962,7 @@ function MergeEggPrototypeService:ResetForBeginning(player)
         player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", 1)
         player:SetAttribute("MergeDefenseManagementDamageMultiplier", 1)
         player:SetAttribute("MergeDefenseAlliedDamageMultiplier", 1)
+        player:SetAttribute("FocusMaxMultiplier", nil)
     end
     return true
 end

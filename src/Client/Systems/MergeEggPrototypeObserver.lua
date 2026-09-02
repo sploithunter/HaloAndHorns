@@ -752,11 +752,10 @@ local function tutorialTarget(world, targetKind)
                 true
             )
         if host and host:IsA("BasePart") then
-            -- BUY EGG is row 3, column 1 of the symmetric 3x3 management SurfaceGui. Front-face
-            -- SurfaceGui X runs opposite the part's local X when viewed from the player side, so
-            -- the left card lives at +X. Resolve that card center instead of the wall origin.
+            -- BUY EGG is the lower half of the large left action panel. Front-face SurfaceGui X
+            -- runs opposite local X from the player side, so the visual-left panel lives at +X.
             return host.CFrame:PointToWorldSpace(
-                Vector3.new(host.Size.X / 3, -host.Size.Y / 3, -host.Size.Z / 2 - 0.2)
+                Vector3.new(host.Size.X * 0.34, -host.Size.Y * 0.25, -host.Size.Z / 2 - 0.2)
             )
         end
         return host
@@ -2896,7 +2895,9 @@ local function createManagementBoardSurface(host)
     surface.Name = "MergeEggManagementBoard"
     surface.Adornee = host
     surface.Face = Enum.NormalId.Front
-    surface.CanvasSize = Vector2.new(1520, 720)
+    -- The authored host is 14×8 studs. Match that aspect exactly so neither panel nor its text is
+    -- stretched when projected onto the wall.
+    surface.CanvasSize = Vector2.new(1400, 800)
     surface.LightInfluence = 0
     surface.AlwaysOnTop = false
     surface.Active = true
@@ -2906,75 +2907,138 @@ local function createManagementBoardSurface(host)
     surface.Parent = playerGui
 
     local background = Instance.new("Frame")
-    background.Name = "Cards"
+    background.Name = "ManagementPanels"
     background.Size = UDim2.fromScale(1, 1)
-    background.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
-    background.BackgroundTransparency = 0.02
+    background.BackgroundTransparency = 1
     background.BorderSizePixel = 0
     background.Parent = surface
 
-    local padding = Instance.new("UIPadding")
-    padding.PaddingLeft = UDim.new(0, 18)
-    padding.PaddingRight = UDim.new(0, 18)
-    padding.PaddingTop = UDim.new(0, 18)
-    padding.PaddingBottom = UDim.new(0, 18)
-    padding.Parent = background
+    local content = Instance.new("Frame")
+    content.Name = "PanelContent"
+    content.Position = UDim2.fromOffset(16, 16)
+    content.Size = UDim2.new(1, -32, 1, -32)
+    content.BackgroundTransparency = 1
+    content.BorderSizePixel = 0
+    content.Parent = background
 
-    local grid = Instance.new("UIGridLayout")
-    grid.CellPadding = UDim2.fromOffset(14, 14)
-    grid.CellSize = UDim2.new(1 / 3, -10, 1 / 3, -10)
-    grid.FillDirection = Enum.FillDirection.Horizontal
-    grid.FillDirectionMaxCells = 3
-    grid.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    grid.SortOrder = Enum.SortOrder.LayoutOrder
-    grid.VerticalAlignment = Enum.VerticalAlignment.Center
-    grid.Parent = background
+    local split = Instance.new("UIListLayout")
+    split.FillDirection = Enum.FillDirection.Horizontal
+    split.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    split.Padding = UDim.new(0, 16)
+    split.SortOrder = Enum.SortOrder.LayoutOrder
+    split.VerticalAlignment = Enum.VerticalAlignment.Center
+    split.Parent = content
+
+    local function createPanel(name, widthScale, layoutOrder, columns, rows)
+        local panel = Instance.new("Frame")
+        panel.Name = name
+        panel.LayoutOrder = layoutOrder
+        panel.Size = UDim2.new(widthScale, -8, 1, 0)
+        panel.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
+        panel.BackgroundTransparency = 0.02
+        panel.BorderSizePixel = 0
+        panel.Parent = content
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 18)
+        corner.Parent = panel
+
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Color3.fromRGB(68, 82, 108)
+        stroke.Thickness = 5
+        stroke.Parent = panel
+
+        local panelPadding = Instance.new("UIPadding")
+        panelPadding.PaddingLeft = UDim.new(0, 14)
+        panelPadding.PaddingRight = UDim.new(0, 14)
+        panelPadding.PaddingTop = UDim.new(0, 14)
+        panelPadding.PaddingBottom = UDim.new(0, 14)
+        panelPadding.Parent = panel
+
+        local grid = Instance.new("UIGridLayout")
+        local panelInset = 28
+        local cellGap = 12
+        grid.CellPadding = UDim2.fromOffset(cellGap, cellGap)
+        grid.CellSize = UDim2.new(
+            1 / columns,
+            -((panelInset + cellGap * (columns - 1)) / columns),
+            1 / rows,
+            -((panelInset + cellGap * (rows - 1)) / rows)
+        )
+        grid.FillDirection = Enum.FillDirection.Horizontal
+        grid.FillDirectionMaxCells = columns
+        grid.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        grid.SortOrder = Enum.SortOrder.LayoutOrder
+        grid.VerticalAlignment = Enum.VerticalAlignment.Center
+        grid.Parent = panel
+        return panel
+    end
+
+    -- Rebirth and Buy Egg are the large, high-consequence actions. The independent upgrade panel
+    -- keeps eight smaller durable/progression controls in a legible 2×4 grid.
+    local actionPanel = createPanel("Actions", 0.32, 1, 1, 2)
+    local upgradePanel = createPanel("Upgrades", 0.68, 2, 2, 4)
 
     local cards = {
         {
+            id = "rebirth",
+            panel = actionPanel,
+            color = Color3.fromRGB(245, 145, 45),
+            action = { action = "rebirth" },
+        },
+        {
+            id = "buy_egg",
+            panel = actionPanel,
+            color = Color3.fromRGB(52, 183, 225),
+            action = { action = "create", managementBoard = true },
+        },
+        {
             id = "coin_value",
+            panel = upgradePanel,
             color = Color3.fromRGB(225, 162, 45),
             action = { action = "purchase_upgrade", upgradeId = "coin_value" },
         },
         {
             id = "damage",
+            panel = upgradePanel,
             color = Color3.fromRGB(70, 177, 235),
             action = { action = "purchase_upgrade", upgradeId = "damage" },
         },
         {
             id = "fire_rate",
+            panel = upgradePanel,
             color = Color3.fromRGB(235, 82, 91),
             action = { action = "purchase_upgrade", upgradeId = "fire_rate" },
         },
         {
             id = "active_slots",
+            panel = upgradePanel,
             color = Color3.fromRGB(125, 104, 235),
             action = { action = "purchase_upgrade", upgradeId = "active_slots" },
         },
         {
             id = "egg_health",
+            panel = upgradePanel,
             color = Color3.fromRGB(225, 72, 112),
             action = { action = "purchase_upgrade", upgradeId = "egg_health" },
         },
         {
             id = "spawn_level",
+            panel = upgradePanel,
             color = Color3.fromRGB(82, 205, 105),
             action = { action = "upgrade_base", managementBoard = true },
         },
         {
-            id = "buy_egg",
-            color = Color3.fromRGB(52, 183, 225),
-            action = { action = "create", managementBoard = true },
-        },
-        {
-            id = "auto_combine",
+            id = "pet_endurance",
+            panel = upgradePanel,
             color = Color3.fromRGB(177, 82, 225),
-            action = { action = "toggle_auto" },
+            action = { action = "purchase_upgrade", upgradeId = "pet_endurance" },
         },
         {
-            id = "rebirth",
-            color = Color3.fromRGB(245, 145, 45),
-            action = { action = "rebirth" },
+            id = "player_focus",
+            panel = upgradePanel,
+            color = Color3.fromRGB(84, 198, 210),
+            action = { action = "purchase_upgrade", upgradeId = "player_focus" },
         },
     }
     local buttons = {}
@@ -2989,7 +3053,7 @@ local function createManagementBoardSurface(host)
         button.Active = true
         button.ClipsDescendants = false
         button.Text = ""
-        button.Parent = background
+        button.Parent = card.panel
 
         local corner = Instance.new("UICorner")
         corner.CornerRadius = UDim.new(0, 18)
@@ -3174,6 +3238,70 @@ local function createEquipBestSurface(host)
     return { surface = surface, host = host, button = button }
 end
 
+local function createAutoCombineSurface(host)
+    if not (host and host:IsA("BasePart")) then
+        return nil
+    end
+    for _, child in ipairs(host:GetChildren()) do
+        if child:IsA("SurfaceGui") then
+            child.Enabled = false
+        end
+    end
+    local playerGui = localPlayer:WaitForChild("PlayerGui")
+    local existing = playerGui:FindFirstChild("MergeEggAutoCombineSurface")
+    if existing then
+        existing:Destroy()
+    end
+
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = "MergeEggAutoCombineSurface"
+    surface.Adornee = host
+    surface.Face = Enum.NormalId.Top
+    surface.CanvasSize = Vector2.new(600, 300)
+    surface.LightInfluence = 0
+    surface.AlwaysOnTop = false
+    surface.Active = true
+    surface.Enabled = false
+    surface.Parent = playerGui
+
+    local button = Instance.new("TextButton")
+    button.Name = "AutoCombine"
+    button.Size = UDim2.fromScale(1, 1)
+    button.Rotation = tonumber(
+        ((CONFIG.team or {}).merge_board or {}).equip_best_text_rotation_degrees
+    ) or 180
+    button.BackgroundColor3 = Color3.fromRGB(177, 82, 225)
+    button.BackgroundTransparency = 0.03
+    button.BorderSizePixel = 0
+    button.AutoButtonColor = true
+    button.Active = true
+    button.Font = Enum.Font.GothamBlack
+    button.Text = "AUTO-COMBINE\nOFF\nFUTURE GAME PASS"
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextScaled = true
+    button.TextStrokeColor3 = Color3.fromRGB(30, 16, 38)
+    button.TextStrokeTransparency = 0.12
+    button.TextWrapped = true
+    button.Parent = surface
+
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft = UDim.new(0.06, 0)
+    padding.PaddingRight = UDim.new(0.06, 0)
+    padding.PaddingTop = UDim.new(0.08, 0)
+    padding.PaddingBottom = UDim.new(0.08, 0)
+    padding.Parent = button
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(225, 174, 255)
+    stroke.Thickness = 7
+    stroke.Parent = button
+
+    button.Activated:Connect(function()
+        Signals.MergeEggPrototypeBoardAction:FireServer({ action = "toggle_auto" })
+    end)
+    return { surface = surface, host = host, button = button, stroke = stroke }
+end
+
 local function createBoardWallControls()
     local world = prototypeWorld()
     if not world then
@@ -3183,10 +3311,13 @@ local function createBoardWallControls()
     local host = world:FindFirstChild(worldCfg.egg_merge_control or "EggMergeControl", true)
     local equipBestHost =
         world:FindFirstChild(worldCfg.equip_best_control or "EquipBestControl", true)
+    local autoCombineHost =
+        world:FindFirstChild(worldCfg.auto_combine_control or "AutoCombineControl", true)
     return {
         world = world,
         board = createManagementBoardSurface(host),
         equipBest = createEquipBestSurface(equipBestHost),
+        autoCombine = createAutoCombineSurface(autoCombineHost),
     }
 end
 
@@ -3256,19 +3387,38 @@ local function updateBoardWallControls(controls, observing)
             host.Color = stateColor
         end
     end
+    local autoCombine = controls.autoCombine
+    if autoCombine then
+        local autoEnabled = world and world:GetAttribute("AutoCombineEnabled") == true
+        local stateColor = autoEnabled and Color3.fromRGB(75, 190, 105)
+            or Color3.fromRGB(177, 82, 225)
+        autoCombine.surface.Enabled = observing
+        autoCombine.button.Active = observing
+        autoCombine.button.AutoButtonColor = observing
+        autoCombine.button.BackgroundColor3 = stateColor
+        autoCombine.stroke.Color = autoEnabled and Color3.fromRGB(150, 255, 180)
+            or Color3.fromRGB(225, 174, 255)
+        autoCombine.button.Text =
+            string.format("AUTO-COMBINE\n%s\nFUTURE GAME PASS", autoEnabled and "ON" or "OFF")
+        local host = autoCombine.host
+        if host and host:IsA("BasePart") then
+            host.Color = stateColor
+        end
+    end
     if not controls.board then
         return
     end
     local board = controls.board
     local buttons = board.buttons
     board.surface.Enabled = observing
-    local autoEnabled = world and world:GetAttribute("AutoCombineEnabled") == true
     local baseName = tostring(world and world:GetAttribute("BaseEggSourceName") or "Earth Egg")
     local upgradeData = {
         coin_value = { title = "COIN VALUE", attribute = "CoinValue", suffix = "%" },
         damage = { title = "DAMAGE", attribute = "Damage", suffix = "%" },
         fire_rate = { title = "FIRE RATE", attribute = "FireRate", suffix = "%" },
         egg_health = { title = "EGG HP", attribute = "EggHealth", suffix = "%" },
+        pet_endurance = { title = "PET ENDURANCE", attribute = "PetEndurance", suffix = "%" },
+        player_focus = { title = "PLAYER FOCUS", attribute = "PlayerFocus", suffix = "%" },
     }
     for id, data in pairs(upgradeData) do
         local card = buttons[id]
@@ -3363,16 +3513,6 @@ local function updateBoardWallControls(controls, observing)
         currency = "waycoins",
         pillText = MergeEggCostFormat.format(buyCost),
     })
-    setManagementCard(buttons.auto_combine, observing, {
-        title = "AUTO-COMBINE",
-        detail = string.format("%s\nFUTURE GAME PASS", autoEnabled and "ON" or "OFF"),
-        available = true,
-    })
-    if autoEnabled then
-        buttons.auto_combine.button.BackgroundColor3 = Color3.fromRGB(75, 190, 105)
-        buttons.auto_combine.stroke.Color = Color3.fromRGB(150, 255, 180)
-    end
-
     local rebirthCount =
         math.max(0, math.floor(tonumber(world:GetAttribute("MergeDefenseRebirthCount")) or 0))
     local rebirthRank = math.max(
