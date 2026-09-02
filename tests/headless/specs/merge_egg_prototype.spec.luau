@@ -1338,7 +1338,14 @@ return function()
             expect(observer:find('action = "rebirth"', 1, true)).to.be.ok()
             expect(observer:find('createPanel("Actions", 0.32, 1, 1, 2)', 1, true)).to.be.ok()
             expect(observer:find('createPanel("Upgrades", 0.68, 2, 2, 4)', 1, true)).to.be.ok()
-            expect(observer:find("local function createAutoCombineSurface", 1, true)).to.be.ok()
+            expect(
+                observer:find(
+                    "function MergeEggPrototypeObserver._createAutoCombineSurface",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(observer:find("local function createAutoCombineSurface", 1, true)).to.equal(nil)
             expect(observer:find('upgradeId = "pet_endurance"', 1, true)).to.be.ok()
             expect(observer:find('upgradeId = "player_focus"', 1, true)).to.be.ok()
             expect(observer:find("CONFIRM REBIRTH", 1, true)).to.be.ok()
