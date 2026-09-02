@@ -2017,9 +2017,10 @@ return {
         },
     },
 
-    -- Merge-only prestige. Rank 1 is the free starting state. Exact transitions are authored by
-    -- target rank rather than extrapolated: Rank 2 costs 50,000 and Rank 3 costs 200,000, with no
-    -- Rank 4 price yet. A future pass may add
+    -- Merge-only prestige. Rank 1 is the free starting state and Rank 50 is the progression cap.
+    -- The square cost curve preserves the playtest anchors exactly (Rank 2 = 50,000; Rank 3 =
+    -- 200,000) while keeping every later price configuration-owned. Exact rank entries override
+    -- the curve when a future balance pass needs a bespoke transition. A future pass may add
     -- minimum deployed-egg tiers per rank through the empty requirements list below. Rebirth keeps
     -- permanent player progression and Gem upgrades, resets the active Merge run and wallet, and
     -- scales pets, defenses, and enemy currency payouts without compounding. A factor of 2 means
@@ -2031,6 +2032,12 @@ return {
         enabled = true,
         scope = "merge_defense_only",
         currency = "hall_coins",
+        max_rank = 50,
+        cost_curve = {
+            base = 50000,
+            exponent = 2,
+            rank_offset = 1,
+        },
         costs_by_rank = {
             [2] = 50000,
             [3] = 200000,
@@ -2038,13 +2045,15 @@ return {
         requirements = {
             minimum_deployed_egg_tier_by_rank = {},
         },
-        cost_multiplier_per_rebirth = 1,
         damage_stacking = "additive",
         management_damage_stacking = "additive",
         per_rebirth_factors = {
             stacking = "additive",
             pets = {
                 power = 2,
+                -- Scales the endurance ceiling inside Merge Defense so rank-matched pets are not
+                -- one-shot while enemy damage continues to grow through wave progression.
+                defense = 2,
             },
             cannons = {
                 power = 2,

@@ -7440,3 +7440,14 @@ first-session cohort rates.
   Farm & Fight retains the canonical `configs/squad.lua` 60-second slot / 300-second Huge values.
 - Full-mode durable pets now resolve EnemyService slot and identity locks through the Merge-place
   override; Simple-mode reserve replacements use the same values and recognize Huge slot occupants.
+
+## 2026-09-02 — Merge rebirth cap raised to Rank 50
+
+- Replaced the temporary implicit Rank-3 ceiling with explicit `rebirth.max_rank = 50`.
+  Missing exact price overrides now use the config-owned square curve `50,000 × (rank-1)²`,
+  retaining the Rank 2/3 prices and setting Rank 50 to 120,050,000 Waycoins.
+- The shared rebirth resolver still preserves exact-table-only behavior for configs without a cap,
+  while the Merge UI and server derive `MAX` from the same resolved next price.
+- Added a matching Merge-only pet-defense factor that scales the endurance ceiling from 1x at Rank
+  1 to 50x at Rank 50. Enemy HP and damage remain independent of rebirth and continue to grow only
+  through combat-layer and endless-wave progression.

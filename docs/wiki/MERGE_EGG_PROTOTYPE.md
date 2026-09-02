@@ -396,24 +396,29 @@ team and queue model:
   as `B`, `T`, and `Q`. This is display-only; it does not halve costs, convert Waycoins into bars, or
   alter affordability checks.
 - Merge-only rebirth is the combat and economy escape valve when enemies overtake the current
-  defense ceiling. Every player starts at Rank 1 for free. Rank 2 costs 50,000 Waycoins and Rank 3
-  costs 200,000; those two paid transitions produce 2x/3x pet power, cannon power, bulwark damage,
-  defeated-enemy Waycoin amounts, and defeated-enemy Gem amounts. All factors live in
-  `rebirth.per_rebirth_factors`; additive stacking means an authored factor of `2` resolves to
+  defense ceiling. Every player starts at Rank 1 for free and the progression cap is Rank 50. A
+  config-owned square curve prices Rank N at `50,000 × (N-1)²` Waycoins, preserving Rank 2 at 50,000
+  and Rank 3 at 200,000 while pricing Rank 50 at 120,050,000. Exact `costs_by_rank` entries override
+  the curve for future tuning. The first two paid transitions produce 2x/3x pet power, cannon power,
+  pet endurance, bulwark damage, defeated-enemy Waycoin amounts, and defeated-enemy Gem amounts. All
+  factors live in `rebirth.per_rebirth_factors`; additive stacking means an authored factor of `2` resolves to
   1x/2x/3x at paid-rebirth counts 0/1/2. Cannon and bulwark radius factors are explicitly `1`, so
   neither defense widens as ranks grow. Cannon cadence plus bulwark cadence, duration, capacity, and
   control also begin at `1`; Gem drop chance remains `1` while Gem quantity grows. Gem management
   damage and Rebirth pet-power percentages share one additive pool: nine +5% purchases plus the
   first +100% rebirth produce `1 + 0.45 + 1.00 = 2.45x`, not `1.45 × 2`. The same combined pet value
-  applies to hatcher NPC squads, Simple-mode reserve pets, and Full-mode durable player pets. There
-  is intentionally no inferred third price. The Full-mode pet factor is read only while the player
-  is inside Merge Defense and is never written into durable pet records, so it cannot affect combat
-  elsewhere. The rank is durable; the
+  applies to hatcher NPC squads, Simple-mode reserve pets, and Full-mode durable player pets. The
+  matching pet-defense factor widens those pets' Merge-only endurance ceiling so higher-wave damage
+  cannot erase the offensive progression with one hit. Enemy stats never scale from rebirth rank:
+  combat layers and the endless wave generator own enemy HP, damage, lieutenant, and boss growth, so
+  rebirth changes where the player intersects that independent wave curve. The Full-mode pet factor
+  is read only while the player is inside Merge Defense and is never written into durable pet records,
+  so it cannot affect combat elsewhere. The rank is durable; the
   active wave/checkpoint, board, deployed eggs, and Merge wallet reset, while player pets, level,
   prior world unlocks, and the durable Gem-upgrade table remain untouched. Each rank also owns one
-  more personal hatch source in canonical egg order: Rank 1 starts with Grass, Rank 2 adds Ice, and
-  Rank 3 adds Lava. No Rank 4 cost is inferred; adding a future authored price automatically extends
-  the same one-egg-per-rank ladder. Management upgrade ranks and cumulative Gem spend now live in
+  more personal hatch source in canonical egg order: Rank 1 starts with Grass, Rank 2 adds Ice, Rank
+  3 adds Lava, and later ranks continue the configured progression through the Rank-50 cap.
+  Management upgrade ranks and cumulative Gem spend now live in
   the Merge-defense profile record rather than only the session.
 - A ninth management-board card shows the next exact price and total damage. Rebirth requires a
   second confirmation click because it clears the current run. Future anti-spam progression gates

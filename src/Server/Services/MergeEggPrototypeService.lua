@@ -1907,6 +1907,7 @@ function MergeEggPrototypeService:_rebirthStatus(record)
         MergeEggRebirth.requirementMet(config, count, self:_lowestDeployedEggTier(record))
     local scaling = {}
     for _, definition in ipairs({
+        { key = "petDefense", system = "pets", axis = "defense" },
         { key = "cannonPower", system = "cannons", axis = "power" },
         { key = "cannonRadius", system = "cannons", axis = "radius" },
         { key = "bulwarkPower", system = "bulwarks", axis = "power" },
@@ -2727,6 +2728,11 @@ function MergeEggPrototypeService:_spawnPlayerEscortSlot(record, slot, definitio
                 MergeEggEscortAnchorLookVector = anchor.LookVector,
                 CombatTargetOpen = true,
                 CombatCadenceMultiplier = combatCadenceMultiplier(self._config),
+                MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
+                    record,
+                    "pets",
+                    "defense"
+                ),
                 EphemeralDownPolicy = "destroy",
                 PrincipalLevel = self:_prototypeBaseLevel(record),
                 Level = self:_prototypeBaseLevel(record),
@@ -3009,7 +3015,7 @@ function MergeEggPrototypeService:_raiseHatchersToBaseTier(record, minimumTier, 
             team.resetEggId = nil
             team.resetEggName = nil
             team.resetHatchPlayerData = nil
-            self:_applyTeamEggTierModifiers(team, minimumTier)
+            self:_applyTeamEggTierModifiers(team, minimumTier, record)
             for _, queued in ipairs(team.replacementQueue or {}) do
                 queued.definition = nil
             end
@@ -4162,8 +4168,9 @@ function MergeEggPrototypeService:_originPowerForEggTier(tier, context)
     return 1 + completedAdvances * perTier
 end
 
-function MergeEggPrototypeService:_applyTeamEggTierModifiers(team, tier)
+function MergeEggPrototypeService:_applyTeamEggTierModifiers(team, tier, record)
     local multiplier = self:_originPowerForEggTier(tier, team)
+    local defenseMultiplier = self:_rebirthScalingMultiplier(record, "pets", "defense")
     team.originPowerMultiplier = multiplier
     if team.folder and team.folder.Parent then
         team.folder:SetAttribute("MergeEggOriginPowerMultiplier", multiplier)
@@ -4171,6 +4178,7 @@ function MergeEggPrototypeService:_applyTeamEggTierModifiers(team, tier)
     for _, model in ipairs(team.units or {}) do
         if model and model.Parent then
             model:SetAttribute("OriginProgressionMultiplier", multiplier)
+            model:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", defenseMultiplier)
         end
     end
 end
@@ -4218,7 +4226,7 @@ function MergeEggPrototypeService:_spawnInitialTeam(record, team, source, tier)
         self:_publishTeamSlot(team, slot, squad[slot])
     end
     self:_ensurePlayerEscort(record)
-    self:_applyTeamEggTierModifiers(team, tier)
+    self:_applyTeamEggTierModifiers(team, tier, record)
     return true, spawned
 end
 
@@ -4246,6 +4254,11 @@ function MergeEggPrototypeService:_expandTeamForEggTier(record, team, source, ti
                 PrincipalLevel = self:_prototypeBaseLevel(record),
                 Level = self:_prototypeBaseLevel(record),
                 OriginProgressionMultiplier = self:_originPowerForEggTier(tier, team),
+                MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
+                    record,
+                    "pets",
+                    "defense"
+                ),
             },
             positionOffset = current,
         })
@@ -9024,6 +9037,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeDefenseRebirthCount", rebirth.count)
     world:SetAttribute("MergeDefenseRebirthRank", rebirth.rank)
     world:SetAttribute("MergeDefenseRebirthDamageMultiplier", rebirth.damageMultiplier)
+    world:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", rebirth.scaling.petDefense)
     world:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
     world:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
     world:SetAttribute("MergeDefenseNextRebirthDamageMultiplier", nextRebirthDamage)
@@ -9068,6 +9082,10 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         record.personalHatchEggId = personalEggId
         record.player:SetAttribute("MergeDefenseRebirths", rebirth.count)
         record.player:SetAttribute("MergeDefenseRebirthDamageMultiplier", rebirth.damageMultiplier)
+        record.player:SetAttribute(
+            "MergeDefenseRebirthPetDefenseMultiplier",
+            rebirth.scaling.petDefense
+        )
         record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
         record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
         record.player:SetAttribute("MergeDefensePersonalEggTier", personalTier)
@@ -9838,7 +9856,7 @@ function MergeEggPrototypeService:_restoreDurableProgress(record, saved, restore
             team.eggHealth = team.eggMaxHealth
             team.eggDamageTaken = 0
             team.needsEggRebuild = false
-            self:_applyTeamEggTierModifiers(team, tier)
+            self:_applyTeamEggTierModifiers(team, tier, record)
             self:_spawnHatcherEggObjective(record, team)
             self:_publishTeamEggSource(team)
             restoredTeams += 1
@@ -10054,7 +10072,7 @@ function MergeEggPrototypeService:_restoreCheckpoint(record, cause, options)
             end
             team.activePets = spawned
         end
-        self:_applyTeamEggTierModifiers(team, team.eggTier)
+        self:_applyTeamEggTierModifiers(team, team.eggTier, record)
         if team.eggTier > 0 then
             self:_spawnHatcherEggObjective(record, team)
         end
@@ -10239,6 +10257,11 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         PrincipalLevel = self:_prototypeBaseLevel(record),
         Level = self:_prototypeBaseLevel(record),
         OriginProgressionMultiplier = tonumber(team.originPowerMultiplier) or 1,
+        MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
+            record,
+            "pets",
+            "defense"
+        ),
     }
     if definition.role then
         attributes.PetRole = definition.role
@@ -10572,7 +10595,7 @@ function MergeEggPrototypeService:_destroyInstalledHatcherEgg(record, team, caus
     team.needsEggRebuild = true
     team.eggsDestroyed = (team.eggsDestroyed or 0) + 1
     record.hatcherEggsDestroyed = (record.hatcherEggsDestroyed or 0) + 1
-    self:_applyTeamEggTierModifiers(team, 0)
+    self:_applyTeamEggTierModifiers(team, 0, record)
     for _, queued in ipairs(team.replacementQueue or {}) do
         queued.definition = nil
     end
@@ -11282,6 +11305,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     record.player:SetAttribute("MergeEggRealPlayerHatches", nil)
     record.player:SetAttribute("MergeDefenseRebirths", nil)
     record.player:SetAttribute("MergeDefenseRebirthDamageMultiplier", nil)
+    record.player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", nil)
     record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", nil)
     record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", nil)
 
@@ -14206,6 +14230,11 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
                     PrincipalLevel = self:_prototypeBaseLevel(record),
                     Level = self:_prototypeBaseLevel(record),
                     EphemeralDownPolicy = "destroy",
+                    MergeDefenseRebirthPetDefenseMultiplier = self:_rebirthScalingMultiplier(
+                        record,
+                        "pets",
+                        "defense"
+                    ),
                 },
             }
         )
@@ -16582,7 +16611,7 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
         record.hatcherEggsRebuilt = (record.hatcherEggsRebuilt or 0) + 1
     end
     record.maximumEggTier = math.max(record.maximumEggTier or 0, resultTier)
-    self:_applyTeamEggTierModifiers(team, resultTier)
+    self:_applyTeamEggTierModifiers(team, resultTier, record)
     for _, queued in ipairs(team.replacementQueue or {}) do
         queued.definition = nil
     end
@@ -16737,6 +16766,7 @@ function MergeEggPrototypeService:ResetForBeginning(player)
         player:SetAttribute("MergeEggRunId", nil)
         player:SetAttribute("MergeDefenseRebirths", 0)
         player:SetAttribute("MergeDefenseRebirthDamageMultiplier", 1)
+        player:SetAttribute("MergeDefenseRebirthPetDefenseMultiplier", 1)
         player:SetAttribute("MergeDefenseManagementDamageMultiplier", 1)
         player:SetAttribute("MergeDefenseAlliedDamageMultiplier", 1)
     end

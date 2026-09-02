@@ -12,7 +12,7 @@ return function()
             damage_stacking = "additive",
             per_rebirth_factors = {
                 stacking = "additive",
-                pets = { power = 2 },
+                pets = { power = 2, defense = 2 },
                 cannons = { power = 2, radius = 1, cadence = 1 },
                 bulwarks = {
                     power = 2,
@@ -44,6 +44,21 @@ return function()
             expect(Rebirth.nextCost(config, 2)).to.equal(nil)
         end)
 
+        it("extends a config-owned curve through an explicit maximum rank", function()
+            local extended = table.clone(config)
+            extended.max_rank = 50
+            extended.cost_curve = {
+                base = 50000,
+                exponent = 2,
+                rank_offset = 1,
+            }
+            expect(Rebirth.nextCost(extended, 0).amount).to.equal(50000)
+            expect(Rebirth.nextCost(extended, 1).amount).to.equal(200000)
+            expect(Rebirth.nextCost(extended, 2).amount).to.equal(450000)
+            expect(Rebirth.nextCost(extended, 48).amount).to.equal(120050000)
+            expect(Rebirth.nextCost(extended, 49)).to.equal(nil)
+        end)
+
         it("adds another base damage unit per rebirth without compounding", function()
             expect(Rebirth.damageMultiplier(config, 0)).to.equal(1)
             expect(Rebirth.damageMultiplier(config, 1)).to.equal(2)
@@ -54,6 +69,9 @@ return function()
             for count = 0, 2 do
                 local growing = count + 1
                 expect(Rebirth.scalingMultiplier(config, count, "cannons", "power")).to.equal(
+                    growing
+                )
+                expect(Rebirth.scalingMultiplier(config, count, "pets", "defense")).to.equal(
                     growing
                 )
                 expect(Rebirth.scalingMultiplier(config, count, "bulwarks", "power")).to.equal(
