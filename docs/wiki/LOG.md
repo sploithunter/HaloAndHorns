@@ -7224,3 +7224,6 @@ first-session cohort rates.
   board. The opening completion copy now accurately says the five eggs were created.
 - A successful egg upgrade during the Wave 6 beat receives a config-authored five-second
   encouragement. Other board-action feedback keeps its ordinary 2.5-second duration.
+- The Wave 10 potion booth now restores the config-owned visible transparency of `0`. Its authored
+  parts begin at transparency `1`, which the generic vendor helper had incorrectly preserved as the
+  reveal value even while Macros himself was visible.

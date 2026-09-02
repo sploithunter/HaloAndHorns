@@ -250,6 +250,7 @@ return function()
             expect(config.tutorial.pause_after_quartermaster_wave).to.equal(10)
             expect(config.quartermaster.user_id).to.equal(873359641)
             expect(config.quartermaster.greeting).to.equal("I'll get you whatever you need.")
+            expect(config.quartermaster.shop_visible_transparency).to.equal(0)
             expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
             expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
             expect(config.tutorial.steps.collect_setup.target).to.equal("coins")
@@ -395,6 +396,14 @@ return function()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureBayQuartermaster", 1, true)
             ).to.be.ok()
+            expect(service:find('"quartermaster.shop_visible_transparency"', 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    'instance:SetAttribute("MergeVendorBaseTransparency", visibleTransparency)',
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(service:find('kind == "quartermaster"', 1, true)).to.be.ok()
             expect(service:find("I'll get you whatever you need.", 1, true)).to.be.ok()
             expect(service:find('reason or "upgrade_coins"', 1, true)).to.be.ok()
@@ -436,7 +445,7 @@ return function()
             expect(observer:find("FIVE EARTH EGGS READY", 1, true)).to.equal(nil)
             expect(observer:find("FIVE EARTH EGGS CREATED", 1, true)).to.be.ok()
             expect(observer:find("result.tutorialEggUpgrade == true", 1, true)).to.be.ok()
-            expect(observer:find("eggUpgraded.duration_seconds", 1, true)).to.be.ok()
+            expect(observer:find("TUTORIAL_EGG_UPGRADED_SECONDS", 1, true)).to.be.ok()
             expect(service:find('record.tutorialStep == "create_five"', 1, true)).to.be.ok()
             expect(service:find("tutorialEggUpgrade = tutorialEggUpgrade", 1, true)).to.be.ok()
             expect(observer:find("BULWARK TUTORIAL", 1, true)).to.be.ok()

@@ -671,7 +671,8 @@ team and queue model:
   opening lesson's lifetime five-purchase countdown. A successful merge, base-source upgrade, or
   deployed-egg upgrade during this beat shows the config-authored five-second encouragement; the
   ordinary short action feedback remains unchanged outside that lesson. After Wave 10 the potion tent and Macros
-  unhide; Talk completes the first-visit drip. Full
+  unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
+  hidden transparency as the reveal value. Talk completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
   that Talk finishes. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an

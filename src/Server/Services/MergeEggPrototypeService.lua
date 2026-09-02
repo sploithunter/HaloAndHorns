@@ -6678,6 +6678,14 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
     if not shop then
         return
     end
+    local visibleTransparency = math.clamp(
+        requiredConfigNumber(
+            self:_quartermasterConfig().shop_visible_transparency,
+            "quartermaster.shop_visible_transparency"
+        ),
+        0,
+        1
+    )
     local function stash(instance)
         if instance:IsA("BasePart") and instance:GetAttribute("MergeShopBaseCanCollide") == nil then
             instance:SetAttribute("MergeShopBaseCanCollide", instance.CanCollide)
@@ -6691,8 +6699,16 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
     if visible == true then
         local function restore(instance)
             if instance:IsA("BasePart") then
+                -- These authored booth/sign parts intentionally start hidden. The generic vendor
+                -- helper therefore cannot infer their live transparency from the authored value;
+                -- stamp the config-owned reveal value so every later hide/show cycle restores it.
+                instance:SetAttribute("MergeVendorBaseTransparency", visibleTransparency)
+                instance.Transparency = visibleTransparency
                 instance.CanCollide = instance:GetAttribute("MergeShopBaseCanCollide") == true
                 instance.CanQuery = true
+            elseif instance:IsA("Decal") or instance:IsA("Texture") then
+                instance:SetAttribute("MergeVendorBaseTransparency", visibleTransparency)
+                instance.Transparency = visibleTransparency
             end
         end
         restore(shop)

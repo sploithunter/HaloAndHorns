@@ -532,6 +532,7 @@ return {
         idle_animation = "507766388",
         max_distance = 16,
         stand_front_studs = 8,
+        shop_visible_transparency = 0,
         greeting = "I'll get you whatever you need.",
     },
 

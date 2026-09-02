@@ -45,6 +45,18 @@ local EGG_HEALTH_BILLBOARD = assert(
 )
 local TUTORIAL_CLICK_CUE =
     assert((CONFIG.tutorial or {}).click_cue, "merge_egg_prototype.tutorial.click_cue is required")
+local TUTORIAL_EGG_UPGRADED_FEEDBACK = assert(
+    ((CONFIG.tutorial or {}).success_feedback or {}).egg_upgraded,
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded is required"
+)
+local TUTORIAL_EGG_UPGRADED_TEXT = assert(
+    TUTORIAL_EGG_UPGRADED_FEEDBACK.text,
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.text is required"
+)
+local TUTORIAL_EGG_UPGRADED_SECONDS = assert(
+    tonumber(TUTORIAL_EGG_UPGRADED_FEEDBACK.duration_seconds),
+    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.duration_seconds is required"
+)
 
 local MergeEggPrototypeObserver = {}
 
@@ -3984,24 +3996,15 @@ function MergeEggPrototypeObserver.start()
                 cannonMenu:show(result.value)
             end
         end
-        local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
-        local successFeedback = type(tutorial.success_feedback) == "table"
-                and tutorial.success_feedback
-            or {}
-        local eggUpgraded = type(successFeedback.egg_upgraded) == "table"
-                and successFeedback.egg_upgraded
-            or {}
         local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
-        boardActionFeedback.Text = tutorialEggUpgrade
-                and tostring(eggUpgraded.text or "EGG UPGRADED")
+        boardActionFeedback.Text = tutorialEggUpgrade and tostring(TUTORIAL_EGG_UPGRADED_TEXT)
             or boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
             or Color3.fromRGB(255, 205, 105)
         boardActionFeedbackStroke.Color = success and Color3.fromRGB(95, 230, 135)
             or Color3.fromRGB(245, 170, 60)
         boardActionFeedback.Visible = true
-        local feedbackSeconds = tutorialEggUpgrade
-                and math.max(0.1, tonumber(eggUpgraded.duration_seconds) or 5)
+        local feedbackSeconds = tutorialEggUpgrade and math.max(0.1, TUTORIAL_EGG_UPGRADED_SECONDS)
             or 2.5
         boardActionFeedbackUntil = os.clock() + feedbackSeconds
     end)
