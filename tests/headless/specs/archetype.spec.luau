@@ -28,6 +28,7 @@ return function()
             expect(ArchetypeLogic.hasPower("geomancer", "stone_skin", config)).to.equal(true)
             -- generic powers are available to every archetype
             expect(ArchetypeLogic.hasPower("geomancer", "fortune", config)).to.equal(true)
+            expect(ArchetypeLogic.hasPower("geomancer", "heal", config)).to.equal(true)
         end)
 
         it("does NOT include other archetypes' powers", function()
@@ -49,6 +50,7 @@ return function()
             expect(#ArchetypeLogic.availablePowers(nil, config)).to.equal(genericCount)
             expect(#ArchetypeLogic.availablePowers("wizard", config)).to.equal(genericCount)
             expect(ArchetypeLogic.hasPower(nil, "fortune", config)).to.equal(true) -- generic, no origin
+            expect(ArchetypeLogic.hasPower(nil, "heal", config)).to.equal(true) -- innate catalog row
             expect(ArchetypeLogic.hasPower(nil, "stone_skin", config)).to.equal(false) -- origin power
         end)
     end)

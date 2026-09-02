@@ -30,6 +30,20 @@ function PowerAvailability.isAvailable(def, snapshot)
     return not PowerAvailability.isHidden(def, snapshot)
 end
 
+-- Preserve config order while removing powers hidden in the current player context. Keeping this
+-- pure lets every catalog surface share the same rule instead of independently special-casing Heal
+-- or Resonance in UI code.
+function PowerAvailability.filterAvailableIds(ids, definitions, snapshot)
+    local filtered = {}
+    for _, id in ipairs(type(ids) == "table" and ids or {}) do
+        local def = type(definitions) == "table" and definitions[id] or nil
+        if PowerAvailability.isAvailable(def, snapshot) then
+            filtered[#filtered + 1] = id
+        end
+    end
+    return filtered
+end
+
 function PowerAvailability.snapshotForPlayer(player)
     return {
         inCombatTutorial = player ~= nil and player:GetAttribute("InCombatTutorial") == true,

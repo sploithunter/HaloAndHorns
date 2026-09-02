@@ -7370,3 +7370,10 @@ first-session cohort rates.
   enhanced. Existing progressed test saves are migrated forward without a rewind.
 - Enemy-card tutorial callouts now opt into the top tutorial overlay, keeping `CLICK HERE` and
   `KILL THIS` above the mission map.
+
+## 2026-09-02 — Heal is present in the shared Natural power catalog
+
+- Added Heal beside Resonance in the config-owned Natural catalog so the unlocked innate renders in
+  the Power Choice menu in both games.
+- The menu now applies shared contextual availability before rendering: locked Heal stays hidden,
+  Combat Training hides Resonance, and innate powers remain ineligible for level-up selection.

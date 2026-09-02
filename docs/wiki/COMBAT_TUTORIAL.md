@@ -277,3 +277,11 @@ earned inside stay. `restart_on_enter` does not wipe `CombatTutorialLoadout`.
 `player:GetAttribute("InCombatTutorial") == true`. `TutorialService` skips push/advance in
 that window and restores the Homeworld capsule on leave. On the client, the same attribute overrides
 the dedicated Merge-place visibility gate so the mission cannot load without its direction card.
+
+## Power catalog handoff
+
+Heal and Resonance both belong to the shared NATURAL catalog as innate, slottable powers. The Power
+Choice menu applies `PowerAvailability` before rendering that catalog: Heal is hidden until Combat
+Training begins, Resonance is hidden during Combat Training, and unlocked Heal remains available in
+both Merge Defense and Farm & Fight afterward. Innates are server-rejected as level-up selections,
+so neither power consumes a pick.
