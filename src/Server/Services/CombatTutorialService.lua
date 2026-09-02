@@ -286,8 +286,9 @@ function CombatTutorialService:Start()
         self:_onDoorAction(player, action)
     end)
     Signals.CombatTutorialRedoAnswer.OnServerEvent:Connect(function(player, accepted)
-        local kind = self._pendingConfirm[player]
+        local pending = self._pendingConfirm[player]
         self._pendingConfirm[player] = nil
+        local kind = type(pending) == "table" and pending.kind or pending
         if accepted ~= true then
             return
         end
@@ -296,10 +297,17 @@ function CombatTutorialService:Start()
             return
         end
         if self:_needsRedoConfirm(player) then
-            self:_openCaveMission(player, { redo = true })
+            self:_openRequestedMission(player, {
+                redo = true,
+                beforeOpen = type(pending) == "table" and pending.beforeOpen or nil,
+                onOpenFailed = type(pending) == "table" and pending.onOpenFailed or nil,
+            })
             return
         end
-        self:_openCaveMission(player)
+        self:_openRequestedMission(player, {
+            beforeOpen = type(pending) == "table" and pending.beforeOpen or nil,
+            onOpenFailed = type(pending) == "table" and pending.onOpenFailed or nil,
+        })
     end)
 
     local function watch(player)
@@ -383,20 +391,84 @@ end
 
 function CombatTutorialService:_openCaveMission(player, opts)
     if not self:_canEnterCave(player) then
-        return
+        return nil, "combat_tutorial_unavailable"
     end
     if self:_needsRedoConfirm(player) and not (opts and opts.redo == true) then
-        return
+        return nil, "redo_confirmation_required"
     end
     self:_prepareLiveTrack(player, opts and opts.redo == true)
     local svc = self._missionInstanceService
     if not (svc and svc.Open) then
-        return
+        return nil, "mission_service_unavailable"
     end
-    local _, err = svc:Open(player, self:_caveMissionId())
+    local instanceId, err = svc:Open(player, self:_caveMissionId())
     if err and self._logger then
         self._logger:Warn("combat tutorial open failed", { err = tostring(err) })
     end
+    return instanceId, err
+end
+
+function CombatTutorialService:_openRequestedMission(player, opts)
+    opts = type(opts) == "table" and opts or {}
+    if type(opts.beforeOpen) == "function" then
+        local ok, prepared = pcall(opts.beforeOpen)
+        if not ok or prepared == false then
+            if type(opts.onOpenFailed) == "function" then
+                pcall(opts.onOpenFailed, "entry_prepare_failed")
+            end
+            return nil, "entry_prepare_failed"
+        end
+    end
+    local instanceId, err = self:_openCaveMission(player, { redo = opts.redo == true })
+    if not instanceId and type(opts.onOpenFailed) == "function" then
+        pcall(opts.onOpenFailed, err)
+    end
+    return instanceId, err
+end
+
+-- Public entry boundary used by alternate authored vendors. It deliberately reuses the exact cave
+-- mission, redo confirmation, save track, rewards, and loaned-squad lifecycle instead of creating a
+-- Merge-specific tutorial fork.
+function CombatTutorialService:OpenForPlayer(player, opts)
+    if not self:_canEnterCave(player) then
+        return false, "combat_tutorial_unavailable"
+    end
+    opts = type(opts) == "table" and opts or {}
+    local data = self._dataService and self._dataService:GetData(player)
+    local progress = data and data.CombatTutorial
+    local done = type(progress) == "table" and progress.done == true
+    local started = type(progress) == "table"
+        and done ~= true
+        and math.max(1, math.floor(tonumber(progress.step) or 1)) > 1
+    if self:_needsRedoConfirm(player) then
+        self:_offerConfirm(
+            player,
+            "redo",
+            (self._config.venue and self._config.venue.redo_confirm) or {},
+            {
+                beforeOpen = opts.beforeOpen,
+                onOpenFailed = opts.onOpenFailed,
+            }
+        )
+        return true,
+            {
+                operation = "combat_training_confirmation",
+                combatTutorialDone = done,
+            }
+    end
+    local instanceId, err = self:_openRequestedMission(player, {
+        beforeOpen = opts.beforeOpen,
+        onOpenFailed = opts.onOpenFailed,
+    })
+    if not instanceId then
+        return false, err or "combat_tutorial_open_failed"
+    end
+    return true,
+        {
+            operation = "combat_training_opened",
+            resumed = started,
+            instanceId = instanceId,
+        }
 end
 
 local function asPromptHost(inst)
@@ -501,12 +573,18 @@ function CombatTutorialService:_canEnterCave(player)
     return self._dataService:GetData(player) ~= nil
 end
 
-function CombatTutorialService:_offerConfirm(player, kind, copy)
+function CombatTutorialService:_offerConfirm(player, kind, copy, context)
     if not (player and player.Parent) then
         return
     end
     copy = type(copy) == "table" and copy or {}
-    self._pendingConfirm[player] = kind
+    self._pendingConfirm[player] = type(context) == "table"
+            and {
+                kind = kind,
+                beforeOpen = context.beforeOpen,
+                onOpenFailed = context.onOpenFailed,
+            }
+        or kind
     local defaults = {
         redo = {
             title = "Combat Training",

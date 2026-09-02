@@ -23,6 +23,8 @@ local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
 local MergeCannonMenu = require(script.Parent.Parent.UI.Components.MergeCannonMenu)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
+local QuartermasterServicesMenu =
+    require(script.Parent.Parent.UI.Components.QuartermasterServicesMenu)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeTutorialHud = require(ReplicatedStorage.Shared.Game.MergeTutorialHud)
@@ -4069,6 +4071,19 @@ function MergeEggPrototypeObserver.start()
         local success = result.ok == true
         local operation = type(result.value) == "table" and tostring(result.value.operation or "")
             or ""
+        if action == "quartermaster_talk" and success and operation == "quartermaster_services" then
+            bulwarkMenu:hide()
+            cannonMenu:hide()
+            QuartermasterServicesMenu.show(result.value, function(choice)
+                Signals.MergeEggPrototypeBoardAction:FireServer({
+                    action = "quartermaster",
+                    choice = choice,
+                })
+            end)
+        elseif action == "quartermaster" and success then
+            QuartermasterServicesMenu.hide()
+            return
+        end
         local placed = operation == "installed"
             or operation == "replaced"
             or operation == "equipped"
@@ -4184,6 +4199,7 @@ function MergeEggPrototypeObserver.start()
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
             bulwarkMenu:hide()
             cannonMenu:hide()
+            QuartermasterServicesMenu.hide()
             activeFeedback = nil
             table.clear(feedbackQueue)
             showFeedback(nil)

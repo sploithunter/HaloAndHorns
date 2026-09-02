@@ -1719,7 +1719,9 @@ function EnemyService:_onDefeated(targetId)
         local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
         local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
         if killer and killer.Parent then
-            if killer:GetAttribute("AscensionUnlocked") == true and combat then
+            -- Merge awards real combat XP only after the player has learned powers and targeting
+            -- in the full Combat Training track. Home onboarding/ascension alone is not enough.
+            if killer:GetAttribute("CombatTutorialDone") == true and combat then
                 pcall(function()
                     combat:AwardExperience(
                         killer,

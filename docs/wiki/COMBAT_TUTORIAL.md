@@ -1,6 +1,6 @@
 # Combat Tutorial
 
-Last checked: 2026-08-25
+Last checked: 2026-09-01
 
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
 bound, cast, and enhanced, `first_fight` points the FIGHT trail at the
@@ -49,6 +49,14 @@ Click the lesson plate to continue or nudge. Progress is kept
 (`leave_resume` on mid-fight disconnect still applies). The Hall arch is
 **not** an entry.
 `restart_on_enter` is off so an unfinished cave visit keeps progress.
+
+Merge Defense exposes the same entry boundary from its Quartermaster after the Wave-10 introduction.
+This is not a shortened Merge lesson: `CombatTutorialService:OpenForPlayer` opens the same
+`combat_tutorial` mission id, progress record, redo confirmation, loaned squad, rewards, and exit
+flow described here. Merge checkpoints and releases the active bay before the mission opens so its
+owned pets cannot overlap the loaned squad; when the mission completes or is left, Merge claims an
+available bay and reconstructs the saved playstate. The Quartermaster menu labels unfinished saved
+progress as Resume and completed progress as Redo.
 
 ## Mission
 

@@ -25,6 +25,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local BUCKET = "potions"
 local PROMPT_NAME = "PotionShopPrompt"
 local ANCHOR_NAME = "PotionShopPromptAnchor"
+local PROMPT_SUPPRESSED_ATTRIBUTE = "PotionShopPromptSuppressed"
 
 local PotionShopService = {}
 PotionShopService.__index = PotionShopService
@@ -117,30 +118,53 @@ function PotionShopService:_bindModel(model)
     prompt.MaxActivationDistance = tonumber(interaction.max_distance) or 14
     prompt.HoldDuration = tonumber(interaction.hold_duration) or 0
     prompt.RequiresLineOfSight = interaction.requires_line_of_sight == true
-    prompt.Enabled = true
+    local function syncPromptEnabled()
+        prompt.Enabled = model:GetAttribute(PROMPT_SUPPRESSED_ATTRIBUTE) ~= true
+    end
+    syncPromptEnabled()
+    model:GetAttributeChangedSignal(PROMPT_SUPPRESSED_ATTRIBUTE):Connect(syncPromptEnabled)
     prompt.Triggered:Connect(function(player)
         self:_openFor(player, model)
     end)
 end
 
-function PotionShopService:_openFor(player, model)
-    if not (player and self:_isShopModel(model)) then
-        return
+local function proximityPart(instance)
+    if instance and instance:IsA("BasePart") then
+        return instance
     end
-    if
-        model:GetAttribute("MergeEggBayId")
-        and model:GetAttribute("MergeVendorPosted") ~= true
-    then
-        return
+    if instance and instance:IsA("Model") then
+        return instance.PrimaryPart or instance:FindFirstChildWhichIsA("BasePart", true)
+    end
+    return nil
+end
+
+function PotionShopService:_openFor(player, model, proximityHost)
+    if not (player and self:_isShopModel(model)) then
+        return false, "shop_unavailable"
+    end
+    if model:GetAttribute("MergeEggBayId") and model:GetAttribute("MergeVendorPosted") ~= true then
+        return false, "shop_unavailable"
+    end
+    if proximityHost ~= nil and not proximityPart(proximityHost) then
+        return false, "shop_unavailable"
     end
     self._access[player] = {
         model = model,
+        proximityHost = proximityHost,
         expiresAt = os.clock() + (tonumber(self:_interaction().access_seconds) or 120),
     }
     Signals.PotionShopOpened:FireClient(player, {
         displayName = self:_interaction().object_text or "Potion Shop",
         modelName = model.Name,
     })
+    return true
+end
+
+-- Quartermasters and other server-authoritative vendors may own the interaction while reusing the
+-- same catalog and transaction boundary. A separate proximity host keeps authorization tied to the
+-- NPC the player actually used instead of resurrecting the authored tent prompt.
+function PotionShopService:OpenForPlayer(player, model, proximityHost)
+    return self:_openFor(player, model, proximityHost)
 end
 
 function PotionShopService:_hasAccess(player)
@@ -152,7 +176,8 @@ function PotionShopService:_hasAccess(player)
 
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    local part = self:_promptPart(access.model)
+    local part = access.proximityHost and proximityPart(access.proximityHost)
+        or self:_promptPart(access.model)
     if not (root and part) then
         return false
     end
