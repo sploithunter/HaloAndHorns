@@ -314,9 +314,11 @@ team and queue model:
   - Fixed-four +20% reached Sand in Wave 9 with no escapes (306 seconds), then entered Wave 10 with
     the same five objectives, 15 live pets, and one queued replacement. One trial cannot distinguish
     10% from 20%; repeat distributions are required.
-- The chosen next hypothesis avoids unbounded slots and gives egg quality a distinct role: world
-  progression owns capacity (`Home=3`, `Layer 1=4`, `Layer 2=5`, `Layer 3=6`), while egg tier owns
-  draft quality. The earlier slot and flat-modifier modes remain selectable experiment fixtures.
+- The shipping capacity track adds one pet at every aligned world level: `Home=3`, `Heaven 1=4`,
+  `Hell 1=5`, `Heaven 2=6`, `Hell 2=7`, `Heaven 3=8`, and `Hell 3=9`. Each four-egg origin group
+  inherits its world's capacity; the second/rebirth pass retains nine positions while continuing
+  to improve draft quality. The earlier slot and flat-modifier modes remain selectable experiment
+  fixtures.
 
 ### Candidate permanent knobs
 
@@ -670,12 +672,13 @@ team and queue model:
   after Wave 6 when the skip condition has not been met. Its Buy Egg result never reuses the
   opening lesson's lifetime five-purchase countdown. A successful merge, base-source upgrade, or
   deployed-egg upgrade during this beat shows the config-authored five-second encouragement; the
-  ordinary short action feedback remains unchanged outside that lesson. Through Wave 10, the same
-  scaled tutorial/hotbar footprint doubles as a queued activity feed: server action results name
-  the real egg or upgrade for creation, tier discovery, merge, deployment, generator, management,
-  bulwark, cannon, and Quartermaster events. Gems and each cumulative 1,000 Waycoins earned in the
-  session also produce feedback. Repeated events coalesce while distinct actions queue, preventing
-  rapid purchases or currency ticks from leaving stale instructions on screen. After Wave 10 the potion tent and Macros
+  ordinary short action feedback remains unchanged outside that lesson. The same scaled
+  tutorial/hotbar footprint also carries sparse progression milestones: the first creation of each
+  egg tier, each generator tier, first bulwark/cannon family unlocks, new pet-slot capacity, the
+  first 1,000 Waycoins earned in a session, and the Quartermaster tutorial arrival. Routine
+  creation, merging, deployment, installation, and management purchases do not toast, and Gem
+  pickups never toast. Distinct milestones can queue without turning normal play into an activity
+  feed. After Wave 10 the potion tent and Macros
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
   hidden transparency as the reveal value. Talk completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when

@@ -46,11 +46,10 @@ for pass = 1, 2 do
     for normalTier, eggId in ipairs(NORMAL_EGG_PROGRESSION) do
         MERGE_EGG_PROGRESSION[#MERGE_EGG_PROGRESSION + 1] = eggId
         MERGE_EGG_DRAFT_ROLLS[#MERGE_EGG_DRAFT_ROLLS + 1] = ((normalTier - 1) % 4) + 2
-        local positions = pass == 2 and 6
-            or normalTier <= 4 and 3
-            or normalTier <= 12 and 4
-            or normalTier <= 20 and 5
-            or 6
+        -- Four eggs belong to each world level. Home starts at three pets, then every level adds
+        -- one: Heaven 1 = 4, Hell 1 = 5, Heaven 2 = 6, through Hell 3 = 9. Rebirth retains the
+        -- completed nine-pet formation while its second pass improves draft quality.
+        local positions = pass == 2 and 9 or 3 + math.floor((normalTier - 1) / 4)
         MERGE_EGG_TEAM_POSITIONS[#MERGE_EGG_TEAM_POSITIONS + 1] = positions
     end
 end
@@ -242,9 +241,9 @@ return {
             -- the management area. Keep the station-cell width fixed, but give the floor panel a
             -- minimum rearward footprint so its rows remain legible at normal camera angles.
             minimum_depth = 6.25,
-            -- Heaven Layer 3 can field six pets; panels keep that final physical height from the
+            -- Hell Layer 3 can field nine pets; panels keep that final physical height from the
             -- beginning so a mid-run capacity increase never forces the whole HUD to reflow.
-            logical_slots = 6,
+            logical_slots = 9,
         },
         deployment_pads = {
             size = 6.6,
@@ -512,24 +511,20 @@ return {
                 target = "quartermaster",
             },
         },
-        -- Action feedback temporarily covers the already-scaled tutorial/hotbar footprint instead
-        -- of adding another mobile HUD element. Same-action bursts coalesce; distinct actions queue.
+        -- One-time milestones temporarily cover the already-scaled tutorial/hotbar footprint
+        -- instead of adding another mobile HUD element. Distinct milestones queue.
         activity_feedback = {
-            through_wave = 10,
             default_duration_seconds = 2.5,
             egg_upgrade_duration_seconds = 5,
             maximum_queue = 4,
             waycoin_milestone_amount = 1000,
             copies = {
                 egg_created = "%s CREATED",
-                egg_unlocked = "%s UNLOCKED",
-                egg_merged = "%s CREATED",
-                egg_deployed = "%s DEPLOYED",
-                egg_upgraded = "%s UPGRADED",
                 tutorial_egg_upgraded = "%s UPGRADED — GREAT JOB. YOU'VE GOT THIS.",
                 generator_unlocked = "%s GENERATOR UNLOCKED",
-                management_upgraded = "%s UPGRADE PURCHASED",
-                gem_collected = "GEM COLLECTED",
+                pet_slot_unlocked = "%s PET SLOT UNLOCKED",
+                bulwark_unlocked = "BULWARK UNLOCKED",
+                cannon_unlocked = "CANNON UNLOCKED",
                 waycoins_collected = "%s WAYCOINS COLLECTED",
                 quartermaster_ready = "QUARTERMASTER READY",
             },
@@ -585,8 +580,8 @@ return {
     team = {
         return_ready_distance = 20,
         starts_with_egg = false,
-        -- Capacity now belongs to the world stage. Home fields three pets per hatcher and Heaven
-        -- Layer 1 fields four; egg tier changes draft quality, not formation size.
+        -- Capacity belongs to the config-authored world/egg track. Home fields three pets per
+        -- hatcher, then each realm layer adds one position.
         positions_by_egg_tier = { 3, 3, 3, 3 },
         -- Studio balance variants keep the actual pet definitions immutable. The runner can select
         -- one with { automation = "coin_runner", experiment = <id> } for matched A/B/C runs.
@@ -1070,14 +1065,14 @@ return {
                     4,
                     4,
                     4,
-                    5,
-                    5,
-                    5,
-                    5,
                     6,
                     6,
                     6,
                     6,
+                    8,
+                    8,
+                    8,
+                    8,
                 },
                 -- Preserve the Home origin order: Earth, Ice, Lava, Desert.
                 egg_progression = {
