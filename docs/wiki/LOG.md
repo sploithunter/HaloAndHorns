@@ -7451,3 +7451,17 @@ first-session cohort rates.
 - Added a matching Merge-only pet-defense factor that scales the endurance ceiling from 1x at Rank
   1 to 50x at Rank 50. Enemy HP and damage remain independent of rebirth and continue to grow only
   through combat-layer and endless-wave progression.
+
+## 2026-09-02 — Live level spawns and defeat-safe logout
+
+- Merge combat no longer freezes the player's combat level at entry. Each newly spawned enemy,
+  friendly pet, escort, or objective reads the current `EffectiveLevel`, while already spawned
+  actors retain the level they received at creation.
+- Logout after a failed attempt now serializes each destroyed hatcher's `resetEggTier` as its
+  durable deployed tier, so re-entry at the last wave-ten boundary rebuilds the last-good eggs at
+  full health. Same-wave legacy saves with empty deployment holes recover those slots from the
+  existing combat checkpoint without replacing newer wallet, inventory, or nonempty deployments.
+- Merge's configured 10-second ordinary and 60-second Huge recovery timers now auto-summon the
+  still-equipped pet when its applicable deadline ends. The squad HUD resolves those same
+  place-specific durations for its progress bars; Farm & Fight remains manual and gauntlets remain
+  no-revive.

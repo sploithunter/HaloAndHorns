@@ -617,12 +617,13 @@ return {
     -- Required by the config schema for compatibility; Phase 5 never reads a fixed roster.
     squad = {},
 
-    -- Freeze one fair combat baseline when the player enters. Ordinary enemies, tanks, NPC pets,
-    -- the temporary player escort, and installed eggs all use it. Lieutenant/boss rank offsets are
-    -- still applied by EnemyService on top of that common base.
+    -- Resolve the player's current combat level whenever a new combatant/objective is spawned.
+    -- Existing actors keep the level stamped when they spawned; newly hatched pets and later-wave
+    -- enemies immediately follow an earned level-up without requiring a leave/rejoin. Lieutenant/
+    -- boss rank offsets are still applied by EnemyService on top of that common base.
     combat_level = {
         source = "active_player_effective_level",
-        freeze_for_run = true,
+        freeze_for_run = false,
         rank_tiers = {
             trash = "trash_mob",
             tank = "trash_mob",
@@ -635,8 +636,9 @@ return {
 
     -- Merge Defense owns a faster player-pet recovery cadence than Farm & Fight. The slot timer
     -- governs ordinary/stacked replacements; the identity timer keeps the exact downed Huge out
-    -- longer while still allowing another ready pet to crew the recovered slot.
+    -- longer. Equipped pets automatically return as soon as their applicable timer finishes.
     player_pet_recovery = {
+        auto_summon_on_recovery = true,
         slot_recovery = {
             down_cooldown_seconds = 10,
         },

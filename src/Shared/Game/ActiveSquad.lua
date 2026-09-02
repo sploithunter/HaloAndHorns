@@ -52,6 +52,11 @@ function ActiveSquad.withRecoveryOverride(config, override)
     for key, value in pairs(config or {}) do
         resolved[key] = value
     end
+    for key, value in pairs(override or {}) do
+        if key ~= "slot_recovery" and key ~= "down_lockout" then
+            resolved[key] = value
+        end
+    end
     for _, key in ipairs({ "slot_recovery", "down_lockout" }) do
         local merged = {}
         for field, value in pairs((config and config[key]) or {}) do
@@ -95,6 +100,15 @@ function ActiveSquad.canSummon(slotReady, hasReadyInstance, noRevive)
         return { ok = false, reason = "no_ready_instance" }
     end
     return { ok = true }
+end
+
+-- Place-owned automatic recovery uses the same availability deadline as manual Summon. The
+-- gauntlet contract always wins, even if a place enables automatic recovery.
+function ActiveSquad.shouldAutoSummon(downed, unavailableUntil, now, config, noRevive)
+    return (config and config.auto_summon_on_recovery) == true
+        and downed == true
+        and noRevive ~= true
+        and ActiveSquad.slotReady(unavailableUntil, now)
 end
 
 return ActiveSquad

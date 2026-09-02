@@ -23,7 +23,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 
+local ActiveSquad = require(ReplicatedStorage.Shared.Game.ActiveSquad)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local TeamFollow = require(script.Parent.TeamFollowController)
 local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("power_icons"))
@@ -289,10 +291,21 @@ end
 function SquadHud.start()
     local config = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("combat"))
     local squadCfg = require(ReplicatedStorage.Configs:WaitForChild("squad"))
+    local placesCfg = require(ReplicatedStorage.Configs:WaitForChild("places"))
+    local runtimeSquadCfg = squadCfg
+    if PlaceRuntime.isMerge(game.PlaceId, placesCfg) then
+        local mergeCfg = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
+        runtimeSquadCfg = ActiveSquad.withRecoveryOverride(squadCfg, mergeCfg.player_pet_recovery)
+    end
     local lockoutDur = {
-        -- the EXACT special pet's recovery (5 min); a stack pet rides the slot timer
-        petSpecial = (squadCfg.down_lockout and squadCfg.down_lockout.pet_lockout_seconds) or 300,
-        slot = (squadCfg.slot_recovery and squadCfg.slot_recovery.down_cooldown_seconds) or 60,
+        -- The exact special pet's identity recovery; a stack pet rides the slot timer. Both use
+        -- the same place-aware config as the server so the progress bars cannot drift.
+        petSpecial = (
+            runtimeSquadCfg.down_lockout and runtimeSquadCfg.down_lockout.pet_lockout_seconds
+        ) or 300,
+        slot = (
+            runtimeSquadCfg.slot_recovery and runtimeSquadCfg.slot_recovery.down_cooldown_seconds
+        ) or 60,
     }
     local factor = config.pet_down_threshold_factor or 1
     local thresholds = config.degradation or { strained_at = 0.6, critical_at = 0.3 }

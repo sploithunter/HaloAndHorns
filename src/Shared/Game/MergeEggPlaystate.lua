@@ -23,4 +23,21 @@ function MergeEggPlaystate.fromRuntime(snapshot, teams, options)
     return MergeEggPlaystate.normalize(state, options)
 end
 
+-- Older builds wrote a destroyed live egg as an empty deployment on logout. At the same wave-ten
+-- boundary, the combat checkpoint still has the last-good deployment. Fill only missing slots so
+-- the newer logout wallet, inventory, and upgraded live deployments remain authoritative.
+function MergeEggPlaystate.recoverCheckpointDeployments(raw, rawCheckpoint, options)
+    local state = MergeEggPlaystate.normalize(raw, options)
+    local checkpoint = MergeEggCheckpoint.normalize(rawCheckpoint, options)
+    if state.wave ~= checkpoint.wave then
+        return state
+    end
+    for slot, checkpointTier in ipairs(checkpoint.deployed_egg_tiers) do
+        if state.deployed_egg_tiers[slot] <= 0 and checkpointTier > 0 then
+            state.deployed_egg_tiers[slot] = checkpointTier
+        end
+    end
+    return state
+end
+
 return MergeEggPlaystate
