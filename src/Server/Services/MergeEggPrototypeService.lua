@@ -16305,9 +16305,13 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
             progress.rebirths = countBefore + 1
             progress.checkpoint = MergeEggCheckpoint.normalize(nil, self:_checkpointOptions())
             progress.playstate = MergeEggPlaystate.normalize(nil, self:_checkpointOptions())
-            -- Unlocks stay (coin and Robux/game-pass). Placements do not.
-            MergeCannonPersist.resetPlacements(nil, progress, self:_edgeTowerConfig())
-            MergeBulwarkPersist.resetPlacements(nil, progress, self:_edgeBulwarkConfig())
+            -- Unlocks stay (coin and Robux/game-pass). Placements do not. Clear both the durable
+            -- profile and the active encounter copy; otherwise the ready caches keep rendering and
+            -- firing the pre-rebirth chassis until the player leaves the server.
+            MergeCannonPersist.resetPlacements(record, progress, self:_edgeTowerConfig())
+            MergeBulwarkPersist.resetPlacements(record, progress, self:_edgeBulwarkConfig())
+            record.towersReady = false
+            record.bulwarksReady = false
             record.rebirthCount = progress.rebirths
             record.durableCheckpoint = progress.checkpoint
             record.durablePlaystate = progress.playstate
@@ -16321,6 +16325,11 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         end
         return false, commitFailure or transaction.reason
     end
+
+    -- Reconcile the bay immediately after the transaction commits. Empty active slot state makes
+    -- the existing runtime models disappear while the commander/engineer and unlock catalogs stay.
+    self:_ensureBayTowers(record)
+    self:_ensureBayBulwarks(record)
 
     if self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(player, "merge_defense_rebirth", {

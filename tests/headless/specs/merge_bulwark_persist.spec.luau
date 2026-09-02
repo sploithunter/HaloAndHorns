@@ -74,15 +74,21 @@ return function()
             local unlocked = Persist.apply({}, "unlock", "impaler_palisade", config, "lane")
             local installed = Persist.apply(unlocked, "select", "impaler_palisade", config, "lane")
             local upgraded = Persist.apply(installed, "upgrade", "impaler_palisade", config, "lane")
+            local record = {}
             local progress = {}
-            Persist.write(nil, progress, upgraded)
+            Persist.write(record, progress, upgraded)
             expect(progress.bulwark_family).to.equal("impaler_palisade")
             expect(progress.bulwark_tier).to.equal(2)
 
-            Persist.resetPlacements(nil, progress, config)
+            Persist.resetPlacements(record, progress, config)
             expect(progress.bulwark_owned.impaler_palisade).to.equal(1)
             expect(progress.bulwark_family).to.equal(nil)
             expect(progress.bulwark_tier).to.equal(0)
+            expect(record.bulwarkOwned.impaler_palisade).to.equal(1)
+            expect(record.bulwarkFamily).to.equal(nil)
+            expect(record.bulwarkTier).to.equal(0)
+            expect(record.bulwarkSlots.lane.family).to.equal(nil)
+            expect(record.bulwarkSlots.lane.tier).to.equal(0)
         end)
     end)
 end
