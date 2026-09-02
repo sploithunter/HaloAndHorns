@@ -986,7 +986,7 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                     remaining,
                     remaining == 1 and "" or "S"
                 )
-            or "FIVE EARTH EGGS READY"
+            or "FIVE EARTH EGGS CREATED"
         card.body.Text = "Click the highlighted BUY EGG button again."
     end
     if step == "upgrade_eggs" then
@@ -1190,7 +1190,7 @@ local function boardActionResultCopy(result)
                 if remaining > 0 then
                     return string.format("%d MORE EGG%s", remaining, remaining == 1 and "" or "S")
                 end
-                return "FIVE EARTH EGGS READY"
+                return "FIVE EARTH EGGS CREATED"
             end
             return "EGG ADDED TO BOARD"
         elseif action == "upgrade_base" then
@@ -3984,13 +3984,26 @@ function MergeEggPrototypeObserver.start()
                 cannonMenu:show(result.value)
             end
         end
-        boardActionFeedback.Text = boardActionResultCopy(result)
+        local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
+        local successFeedback = type(tutorial.success_feedback) == "table"
+                and tutorial.success_feedback
+            or {}
+        local eggUpgraded = type(successFeedback.egg_upgraded) == "table"
+                and successFeedback.egg_upgraded
+            or {}
+        local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
+        boardActionFeedback.Text = tutorialEggUpgrade
+                and tostring(eggUpgraded.text or "EGG UPGRADED")
+            or boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
             or Color3.fromRGB(255, 205, 105)
         boardActionFeedbackStroke.Color = success and Color3.fromRGB(95, 230, 135)
             or Color3.fromRGB(245, 170, 60)
         boardActionFeedback.Visible = true
-        boardActionFeedbackUntil = os.clock() + 2.5
+        local feedbackSeconds = tutorialEggUpgrade
+                and math.max(0.1, tonumber(eggUpgraded.duration_seconds) or 5)
+            or 2.5
+        boardActionFeedbackUntil = os.clock() + feedbackSeconds
     end)
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
