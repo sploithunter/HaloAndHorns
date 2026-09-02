@@ -59,6 +59,16 @@ function round(value) {
   return Number(value.toFixed(6));
 }
 
+function runtimePresentation(family, tier) {
+  const presentation = {};
+  if (family === "rage" && tier === 1) {
+    presentation.barrelYawDegrees = 270;
+  }
+  presentation.worldScale = tier === 1 ? 0.375 : 0.5;
+  presentation.seatOffsetY = tier === 1 ? 0.55 : 0.733;
+  return presentation;
+}
+
 function findRepairReport(directory) {
   const candidates = fs
     .readdirSync(absolute(directory))
@@ -197,6 +207,7 @@ function buildTier(family, tier, upload) {
       templatePath: `ReplicatedStorage.Assets.Models.MergeCannons.${DISPLAY_NAMES[family]}.Tier${tier}`,
       sourceArtTier: tier,
       templateScale: 1,
+      ...runtimePresentation(family, tier),
     },
   };
 }
@@ -315,6 +326,22 @@ function audit(manifest) {
       assert(entry.deliverables.exportFbxSha256 === sha256(entry.deliverables.exportFbx), `${prefix}: FBX checksum drift`, failures);
       assert(entry.runtime.sourceArtTier === entry.tier, `${prefix}: runtime uses wrong art tier`, failures);
       assert(entry.runtime.templateScale === 1, `${prefix}: runtime template is scaled`, failures);
+      const presentation = runtimePresentation(family, entry.tier);
+      assert(
+        entry.runtime.worldScale === presentation.worldScale,
+        `${prefix}: runtime world scale drift`,
+        failures,
+      );
+      assert(
+        entry.runtime.seatOffsetY === presentation.seatOffsetY,
+        `${prefix}: runtime seat offset drift`,
+        failures,
+      );
+      assert(
+        entry.runtime.barrelYawDegrees === presentation.barrelYawDegrees,
+        `${prefix}: runtime barrel yaw drift`,
+        failures,
+      );
     }
   }
 

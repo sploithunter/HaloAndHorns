@@ -7422,3 +7422,13 @@ first-session cohort rates.
 - Merge tutorial cards now mount over the inner `PillFrame` by copying its relative UDim geometry,
   rather than occupying a separate viewport share. The tutorial covers only the white pill while
   both flank-control groups remain visible and interactive.
+
+## 2026-09-02 — Saved cannon checkpoint reconciled with main
+
+- Confirmed the three commits on the saved `feat/cannon-barrel-yaw` checkout were all carried into
+  merged PR #348; its duplicate Finder-suffixed artifacts were intentionally removed while the
+  canonical 24-model and 24-preview manifests remained.
+- Repaired `merge_cannon_pipeline.js` so rebuilding the model manifest retains the config-owned
+  per-tier world scale, seat offset, and Rage Tier-1 yaw. The deep audit now round-trips the
+  committed manifest and passes all 24 concepts, Meshy jobs, repairs, retextures, exports, 72 Roblox
+  assets, and 24 prebaked runtime templates.
