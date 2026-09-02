@@ -7196,3 +7196,13 @@ first-session cohort rates.
 - Tower-shot bloom and directed knockback now resolve asserted numeric values before passing them to
   variadic `math.max`; Luau otherwise forwards the assert diagnostic string as an extra argument and
   crashes the live step loop.
+
+## 2026-09-01 — Merge tutorial covers only the editable hotbar
+
+- The Wave 0–10 cover now hides the central pill, Edit, Farm Near, and all 20 power slots without
+  hiding the separately adopted Pets/Menu and Powers/Board flank controls. Hotbar activation remains
+  blocked behind the same tutorial attribute.
+- Verified in the iPhone 16 Pro landscape simulator that the central layer is hidden, the compact
+  Pets/Menu/Powers controls remain on-screen and active, and Menu still opens the Settings/Admin
+  popup. Studio's screen-capture endpoint returned a solid magenta frame, so acceptance used live
+  GUI bounds, hierarchy, and click interaction instead.
