@@ -535,6 +535,27 @@ function MergeEggPrototypeService:_tutorialConfig()
     return type(self._config.tutorial) == "table" and self._config.tutorial or {}
 end
 
+function MergeEggPrototypeService:_tutorialRequired(record)
+    local tutorial = self:_tutorialConfig()
+    if tutorial.enabled ~= true then
+        return false
+    end
+    -- Explicitly forced/admin-replayed tutorial steps still own the HUD even when the durable
+    -- profile had already completed onboarding.
+    if record and record.tutorialActive == true then
+        return true
+    end
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    if progress and progress.tutorial_completed == true then
+        return false
+    end
+    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.disable_after_rebirth == true and reborn then
+        return false
+    end
+    return record ~= nil
+end
+
 function MergeEggPrototypeService:_tutorialUsesAutoCollector(record)
     local attribute =
         tostring(self:_tutorialConfig().auto_collector_attribute or "AutoCollectorEnabled")
@@ -8609,6 +8630,12 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     )
     world:SetAttribute("ActivePlayer", record and record.player.Name or nil)
     world:SetAttribute("ActiveRunId", record and record.runId or nil)
+    local progress = record and self:_mergeDefenseProgress(record.player)
+    world:SetAttribute("MergeEggTutorialRequired", self:_tutorialRequired(record))
+    world:SetAttribute(
+        "MergeEggTutorialCompleted",
+        progress and progress.tutorial_completed == true or false
+    )
     world:SetAttribute("MergeEggTutorialActive", record and record.tutorialActive == true)
     world:SetAttribute("MergeEggTutorialStep", record and record.tutorialStep or nil)
     world:SetAttribute(

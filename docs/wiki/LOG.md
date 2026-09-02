@@ -7206,3 +7206,12 @@ first-session cohort rates.
   Pets/Menu/Powers controls remain on-screen and active, and Menu still opens the Settings/Admin
   popup. Studio's screen-capture endpoint returned a solid magenta frame, so acceptance used live
   GUI bounds, hierarchy, and click interaction instead.
+
+## 2026-09-01 — Resumed Merge tutorials never leave a blank hotbar footprint
+
+- The server now publishes whether the first-visit tutorial is still required and whether it is
+  complete. Coverage is no longer inferred from Wave 0–10 alone: completed, disabled, and
+  rebirth-skipped tutorials restore the editable hotbar immediately.
+- While an incomplete tutorial is between hands-on pauses, the covered footprint shows one of four
+  config-authored combat cards previewing the Wave 2 Bulwark, Wave 4 Cannon, Wave 6 egg-upgrade, or
+  Wave 10 Quartermaster lesson. Active instructions continue to replace those cards.

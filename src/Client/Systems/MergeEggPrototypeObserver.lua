@@ -304,7 +304,9 @@ end
 
 local function setTutorialHotbarCovered(world, observing)
     local currentWave = world and world:GetAttribute("CurrentWave") or 0
-    local covered = MergeTutorialHud.coversHotbar(observing, currentWave, TUTORIAL_FINAL_WAVE)
+    local tutorialRequired = world and world:GetAttribute("MergeEggTutorialRequired") == true
+    local covered =
+        MergeTutorialHud.coversHotbar(observing, currentWave, TUTORIAL_FINAL_WAVE, tutorialRequired)
     if localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) ~= covered then
         localPlayer:SetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE, covered)
     end
@@ -870,13 +872,11 @@ local function tutorialBuyEggCueAllowed(world)
 end
 
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
+    local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
     local active = observing and world and world:GetAttribute("MergeEggTutorialActive") == true
     local step = active and tostring(world:GetAttribute("MergeEggTutorialStep") or "") or ""
-    local spec = type((CONFIG.tutorial or {}).steps) == "table"
-            and (CONFIG.tutorial or {}).steps[step]
-        or nil
+    local spec = type(tutorial.steps) == "table" and tutorial.steps[step] or nil
     if not (active and type(spec) == "table") then
-        card.frame.Visible = false
         clearTutorialEggFocus()
         clearTutorialClickChevron()
         local autoCollector = world
@@ -888,6 +888,20 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         else
             tutorialPathTarget = nil
             clearTutorialPath()
+        end
+        local combatSpec = localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) == true
+                and MergeTutorialHud.combatCard(
+                    tutorial,
+                    world and world:GetAttribute("CurrentWave")
+                )
+            or nil
+        if type(combatSpec) == "table" then
+            card.frame.Visible = true
+            card.progress.Text = tostring(combatSpec.progress or "MERGE DEFENSE TUTORIAL")
+            card.title.Text = tostring(combatSpec.title or "DEFEND THE HATCHERS")
+            card.body.Text = tostring(combatSpec.body or "Hold the line until the next lesson.")
+        else
+            card.frame.Visible = false
         end
         return
     end
