@@ -7276,3 +7276,12 @@ first-session cohort rates.
 - iPhone 17 Pro landscape validation rendered the three-service unfinished menu and the two-service
   completed menu inside the full device bounds, then exercised the real observer/MenuManager path
   to an eight-card, Game-Passes-only Quartermaster storefront.
+
+## 2026-09-01 — Both Merge potion-tent themes stay scenery-only
+
+- Verified all five `HeavenPotionShop` and all five `HellPotionShop` instances in the live Merge
+  PlayFields carry `PotionShopPromptSuppressed = true`; every generated `PotionShopPrompt` is
+  disabled. Added an explicit regression check for both config-owned tent names and the plural
+  synchronization path so the Hell-themed `Browse Potions` hook cannot silently return.
+- Corrected the map contract: after Wave 10 the tents reveal as scenery, while Macros' Quartermaster
+  Services menu remains the only Merge potion entry point.

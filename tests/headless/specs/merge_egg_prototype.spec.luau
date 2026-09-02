@@ -89,26 +89,45 @@ return function()
             expect(passes[#passes].id).to.equal("second_wind")
         end)
 
-        it("makes the Quartermaster the only Merge potion interaction", function()
-            local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
-            local potionShop = readFile("src/Server/Services/PotionShopService.lua")
+        it(
+            "suppresses both Merge tent themes so the Quartermaster owns potion interaction",
+            function()
+                local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+                local potionShop = readFile("src/Server/Services/PotionShopService.lua")
 
-            expect(config.quartermaster.action_text).to.equal("Services")
-            expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS")
-            expect(
-                mergeService:find('shop:SetAttribute("PotionShopPromptSuppressed", true)', 1, true)
-            ).to.be.ok()
-            expect(mergeService:find('descendant.Name == "PotionShopPrompt"', 1, true)).to.be.ok()
-            expect(
-                potionShop:find(
-                    'local PROMPT_SUPPRESSED_ATTRIBUTE = "PotionShopPromptSuppressed"',
-                    1,
-                    true
-                )
-            ).to.be.ok()
-            expect(potionShop:find("function PotionShopService:OpenForPlayer", 1, true)).to.be.ok()
-            expect(mergeService:find("service:OpenForPlayer(player, shop, live)", 1, true)).to.be.ok()
-        end)
+                expect(config.quartermaster.action_text).to.equal("Services")
+                expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS")
+                expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
+                expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
+                expect(
+                    mergeService:find(
+                        "function MergeEggPrototypeService:_syncMergePotionShops(record)",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(
+                    mergeService:find("shop.Name == heavenName or shop.Name == hellName", 1, true)
+                ).to.be.ok()
+                expect(
+                    mergeService:find(
+                        'shop:SetAttribute("PotionShopPromptSuppressed", true)',
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(mergeService:find('descendant.Name == "PotionShopPrompt"', 1, true)).to.be.ok()
+                expect(
+                    potionShop:find(
+                        'local PROMPT_SUPPRESSED_ATTRIBUTE = "PotionShopPromptSuppressed"',
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(potionShop:find("function PotionShopService:OpenForPlayer", 1, true)).to.be.ok()
+                expect(mergeService:find("service:OpenForPlayer(player, shop, live)", 1, true)).to.be.ok()
+            end
+        )
 
         it("offers Combat Training only until completion and resumes Merge afterward", function()
             local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")

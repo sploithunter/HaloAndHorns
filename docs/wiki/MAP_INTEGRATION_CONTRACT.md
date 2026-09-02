@@ -207,7 +207,9 @@ model under Workspace and attaches its prompt to the authored `PotionBannerLabel
 the Home plus per-layer Heaven/Hell tents. The Merge voxel map now has one
 `HeavenPotionShop` or `HellPotionShop` under each `PlayFields` bay
 (cloned from bay 1). Merge runtime hides those tents until the Wave 10
-Quartermaster beat, then Macros talks and the shop prompt turns on.
+Quartermaster beat, then Macros talks while both tent themes remain scenery. The Merge service
+stamps every Heaven and Hell tent with `PotionShopPromptSuppressed`, and its Quartermaster Services
+menu is the only potion interaction in those bays.
 Pricing, stock, proximity authorization, inventory
 mutation, and currency mutation remain config/service-owned.
 
