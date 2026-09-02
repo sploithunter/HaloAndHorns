@@ -48,39 +48,4 @@ function MergeTutorialHud.combatCard(tutorial, currentWave)
     return phase and tutorial.combat_cards[phase] or nil
 end
 
-function MergeTutorialHud.stableScreenOffset(targetAbsolute, currentAbsolute, currentOffset)
-    local target = assert(tonumber(targetAbsolute), "targetAbsolute is required")
-    local rendered = assert(tonumber(currentAbsolute), "currentAbsolute is required")
-    local assigned = assert(tonumber(currentOffset), "currentOffset is required")
-
-    -- A ScreenGui's safe-area transform is the rendered coordinate minus the assigned offset.
-    -- Subtract that stable origin once so repeated layout passes remain idempotent.
-    return target - (rendered - assigned)
-end
-
-function MergeTutorialHud.fitLeftBlocker(x, width, blockerRight, gap, minimumWidth)
-    local left = assert(tonumber(x), "x is required")
-    local requiredWidth = assert(tonumber(width), "width is required")
-    local cardWidth = math.max(0, requiredWidth)
-    local blockerEdge = tonumber(blockerRight)
-    if not blockerEdge or cardWidth <= 0 then
-        return left, cardWidth
-    end
-
-    local clearance = tonumber(gap)
-    if clearance == nil then
-        clearance = 0
-    end
-    clearance = math.max(0, clearance)
-    local minimum = tonumber(minimumWidth)
-    if minimum == nil then
-        minimum = 0
-    end
-    minimum = math.clamp(minimum, 0, cardWidth)
-    local right = left + cardWidth
-    local desiredLeft = math.max(left, blockerEdge + clearance)
-    local fittedLeft = math.min(desiredLeft, right - minimum)
-    return fittedLeft, right - fittedLeft
-end
-
 return MergeTutorialHud

@@ -94,6 +94,18 @@ return {
             compact_size = 48,
             gap = 26,
             inner = 8,
+            classic_menu_reserved_end = 0.163,
+            -- Classic narrow-screen dock. These are viewport proportions because the utility tray,
+            -- Pets, and Merge tutorial must keep the same relationship at every desktop width.
+            -- Compact mode keeps the existing hotbar-relative flank columns.
+            classic_pets = {
+                anchor = { x = 0, y = 1 },
+                position = { x = 0.17, y = 0.97 },
+                size = { x = 0.074, y = 0.14 },
+                aspect_ratio = 1,
+                minimum_size = { width = 44, height = 44 },
+                maximum_size = { width = 96, height = 96 },
+            },
         },
     },
 

@@ -7334,3 +7334,11 @@ first-session cohort rates.
   immediately beside the tray's measured live right edge.
 - The Merge tutorial explicitly includes the rendered Pets and compact Menu flank controls in its
   blocker set, including ancestor visibility, yielding tray → Pets → tutorial on narrow screens.
+
+## 2026-09-01 — Merge lower HUD uses relative constrained regions
+
+- Replaced the Classic Pets/tutorial implementation that copied `AbsolutePosition` and
+  `AbsoluteSize` into pixel offsets. Those runtime bounds are no longer inputs to either surface.
+- Added one full-viewport `ResponsiveDock`: Pets and the tutorial use config-owned scale positions
+  and sizes, `UISizeConstraint`, and aspect constraints. The milestone toast uses the same path, and
+  tests enforce a positive proportional gap between Pets and the tutorial.
