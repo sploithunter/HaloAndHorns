@@ -12,17 +12,27 @@ local geoPowers = ArchetypeLogic.availablePowers("geomancer", archetypes)
 
 return function()
     describe("Merge tutorial hotbar coverage", function()
-        it("hides the rendered bar and blocks every activation path", function()
-            local controller = readFile("src/Client/Systems/HotbarBar.lua")
-            expect(controller:find('"MergeTutorialHotbarCovered"', 1, true)).to.be.ok()
-            expect(controller:find("root.Visible = not tutorialCoversHotbar()", 1, true)).to.be.ok()
-            expect(controller:find("local function activateHotbarSlot", 1, true)).to.be.ok()
+        it(
+            "hides only the central slots, preserves flank controls, and blocks activation",
+            function()
+                local controller = readFile("src/Client/Systems/HotbarBar.lua")
+                local flank = readFile("src/Client/Systems/HotbarFlank.lua")
+                local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
+                expect(controller:find('"MergeTutorialHotbarCovered"', 1, true)).to.be.ok()
+                expect(
+                    controller:find("centralContent.Visible = not tutorialCoversHotbar()", 1, true)
+                ).to.be.ok()
+                expect(controller:find("root.Visible = not tutorialCoversHotbar()", 1, true)).never.to.be.ok()
+                expect(flank:find("btn.Parent = bar", 1, true)).to.be.ok()
+                expect(observer:find('FindFirstChild("PillFrame", true)', 1, true)).to.be.ok()
+                expect(controller:find("local function activateHotbarSlot", 1, true)).to.be.ok()
 
-            local _, activationCount = controller:gsub("activateHotbarSlot%(", "")
-            expect(activationCount).to.equal(5)
-            local _, directFireCount = controller:gsub("Hotbar_Activate:FireServer", "")
-            expect(directFireCount).to.equal(1)
-        end)
+                local _, activationCount = controller:gsub("activateHotbarSlot%(", "")
+                expect(activationCount).to.equal(5)
+                local _, directFireCount = controller:gsub("Hotbar_Activate:FireServer", "")
+                expect(directFireCount).to.equal(1)
+            end
+        )
     end)
 
     describe("hotbar auto-cast tell", function()

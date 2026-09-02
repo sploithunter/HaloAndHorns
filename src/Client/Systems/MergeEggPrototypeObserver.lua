@@ -263,7 +263,7 @@ local function layoutTutorialCardOverHotbar(card)
     local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
     local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
     local hotbarRoot = hotbarGui and hotbarGui:FindFirstChild("Bar")
-    local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame")
+    local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame", true)
     if not (footprint and footprint:IsA("GuiObject")) then
         card.frame.Visible = false
         return false

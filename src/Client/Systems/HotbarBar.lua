@@ -297,8 +297,19 @@ function HotbarBar.start()
     root.BackgroundTransparency = 1
     root.Parent = gui
 
+    -- Keep the four mobile flank controls (Pets/Menu and Powers/Board) mounted directly under
+    -- Bar so they remain usable while Merge's opening tutorial replaces only the central slots.
+    -- HotbarFlank adopts those controls into `root` after this module starts; everything authored
+    -- by HotbarBar itself lives in this dedicated visibility layer.
+    local centralContent = Instance.new("Frame")
+    centralContent.Name = "CentralContent"
+    centralContent.Size = UDim2.fromScale(1, 1)
+    centralContent.BackgroundTransparency = 1
+    centralContent.BorderSizePixel = 0
+    centralContent.Parent = root
+
     local function applyTutorialCoverage()
-        root.Visible = not tutorialCoversHotbar()
+        centralContent.Visible = not tutorialCoversHotbar()
     end
     localPlayer
         :GetAttributeChangedSignal(TUTORIAL_HOTBAR_COVER_ATTRIBUTE)
@@ -318,7 +329,7 @@ function HotbarBar.start()
     controllerLegend.TextSize = 15
     controllerLegend.Text = InputGlyphs.hotbarLegend("gamepad")
     controllerLegend.Visible = localPlayer:GetAttribute("InputMode") == "gamepad"
-    controllerLegend.Parent = root
+    controllerLegend.Parent = centralContent
     local legendCorner = Instance.new("UICorner")
     legendCorner.CornerRadius = UDim.new(1, 0)
     legendCorner.Parent = controllerLegend
@@ -351,7 +362,7 @@ function HotbarBar.start()
     barFrame.ScaleType = Enum.ScaleType.Slice
     barFrame.SliceCenter = Rect.new(180, 180, 330, 330)
     barFrame.ZIndex = 0
-    barFrame.Parent = root
+    barFrame.Parent = centralContent
 
     -- Farming cycle button (left of the bar).
     local farmBtn = Instance.new("TextButton")
@@ -366,7 +377,7 @@ function HotbarBar.start()
     farmBtn.Text = "Farm\nOff"
     farmBtn.BackgroundColor3 = FARM_COLOR.Off
     farmBtn.BorderSizePixel = 0
-    farmBtn.Parent = root
+    farmBtn.Parent = centralContent
     do
         local c = Instance.new("UICorner")
         c.CornerRadius = UDim.new(0, 6)
@@ -844,7 +855,7 @@ function HotbarBar.start()
             b.BackgroundColor3 = Color3.fromRGB(26, 28, 38)
             b.BackgroundTransparency = 0.15
             b.BorderSizePixel = 0
-            b.Parent = root
+            b.Parent = centralContent
             b.ClipsDescendants = true
             local c = Instance.new("UICorner")
             c.CornerRadius = UDim.new(1, 0) -- circular slot
@@ -1414,7 +1425,7 @@ function HotbarBar.start()
     editBtn.Text = "Edit"
     editBtn.BackgroundColor3 = Color3.fromRGB(60, 63, 76)
     editBtn.BorderSizePixel = 0
-    editBtn.Parent = root
+    editBtn.Parent = centralContent
     do
         local c = Instance.new("UICorner")
         c.CornerRadius = UDim.new(0, 6)
@@ -1813,7 +1824,7 @@ function HotbarBar.start()
     -- next move is to click a slot. Cleared when a slot is clicked (openPicker) or editing ends.
     local function setEditHint(on)
         if on then
-            local slot1 = root:FindFirstChild("Slot_1")
+            local slot1 = centralContent:FindFirstChild("Slot_1")
             if not slot1 or editHint then
                 return
             end
@@ -1827,7 +1838,7 @@ function HotbarBar.start()
             editHint.TextStrokeColor3 = Color3.new(0, 0, 0)
             editHint.TextStrokeTransparency = 0.3
             editHint.ZIndex = 13
-            editHint.Parent = root
+            editHint.Parent = centralContent
             local baseX
             local baseY
             if isVertical() then
