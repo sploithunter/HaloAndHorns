@@ -251,7 +251,10 @@ local function createTutorialCard(parent)
     frame.Position = UDim2.fromScale(0.2, 0.78)
     frame.Size = UDim2.fromScale(0.6, 0.18)
     frame.BackgroundColor3 = Color3.fromRGB(24, 29, 40)
-    frame.BackgroundTransparency = 0.04
+    frame.BackgroundTransparency = assert(
+        tonumber(TUTORIAL_CARD_LAYOUT.background_transparency),
+        "tutorial.card_layout.background_transparency is required"
+    )
     frame.BorderSizePixel = 0
     frame.Visible = false
     frame.ZIndex = 30
