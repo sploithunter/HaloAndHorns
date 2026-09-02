@@ -7250,3 +7250,14 @@ first-session cohort rates.
   such as `4TH PET SLOT UNLOCKED` exactly once per run.
 - Auto-Combine now returns every first-time tier and capacity produced by its merge cascade, so an
   automatic Ice Egg (or later tier) queues the same milestone as a manual merge.
+
+## 2026-09-01 — Merge Quartermaster owns potions and full Combat Training
+
+- The visible supply booth is now scenery only in Merge: its legacy `Browse Potions` prompt is
+  suppressed even when the generic shop binder runs later. Macros opens one responsive Services
+  menu with Browse Potions and the full persistent Combat Training track.
+- Entering training checkpoints and releases the active Merge bay before the existing mission opens;
+  mission close reconstructs the saved Merge playstate in the prior bay when available. This keeps
+  hatcher/player pets isolated from Combat Training's loaned squad and avoids a parallel tutorial.
+- A durable player-pet final hit in Merge now receives ordinary combat XP only after
+  `CombatTutorialDone`; Home tutorial/Ascension completion alone no longer unlocks Merge XP.

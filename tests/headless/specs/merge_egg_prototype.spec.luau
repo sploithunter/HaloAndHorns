@@ -68,6 +68,65 @@ return function()
         end)
     end)
 
+    describe("Merge Quartermaster services", function()
+        it("makes the Quartermaster the only Merge potion interaction", function()
+            local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local potionShop = readFile("src/Server/Services/PotionShopService.lua")
+
+            expect(config.quartermaster.action_text).to.equal("Services")
+            expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS")
+            expect(
+                mergeService:find('shop:SetAttribute("PotionShopPromptSuppressed", true)', 1, true)
+            ).to.be.ok()
+            expect(mergeService:find('descendant.Name == "PotionShopPrompt"', 1, true)).to.be.ok()
+            expect(
+                potionShop:find(
+                    'local PROMPT_SUPPRESSED_ATTRIBUTE = "PotionShopPromptSuppressed"',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(potionShop:find("function PotionShopService:OpenForPlayer", 1, true)).to.be.ok()
+            expect(mergeService:find("service:OpenForPlayer(player, shop, live)", 1, true)).to.be.ok()
+        end)
+
+        it("opens the existing full Combat Training track and resumes Merge afterward", function()
+            local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
+
+            expect(config.quartermaster.services.training_label).to.equal("COMBAT TRAINING")
+            expect(combatTutorial:find("function CombatTutorialService:OpenForPlayer", 1, true)).to.be.ok()
+            expect(combatTutorial:find("self:_caveMissionId()", 1, true)).to.be.ok()
+            expect(mergeService:find('elseif action == "quartermaster" then', 1, true)).to.be.ok()
+            expect(mergeService:find('if choice == "combat_training" then', 1, true)).to.be.ok()
+            expect(
+                mergeService:find(
+                    "self._combatTrainingReturns[player] = { bayId = bayId }",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(
+                mergeService:find(
+                    "function MergeEggPrototypeService:_resumeAfterCombatTraining",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+        end)
+
+        it("uses a responsive two-choice client menu", function()
+            local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
+            local menu = readFile("src/Client/UI/Components/QuartermasterServicesMenu.lua")
+
+            expect(observer:find("QuartermasterServicesMenu.show", 1, true)).to.be.ok()
+            expect(observer:find('choice = "combat_training"', 1, true)).to.equal(nil)
+            expect(menu:find('resolve("potions")', 1, true)).to.be.ok()
+            expect(menu:find('resolve("combat_training")', 1, true)).to.be.ok()
+            expect(menu:find("UIViewportScale.attach(panel", 1, true)).to.be.ok()
+        end)
+    end)
+
     describe("Merge an Egg Phase 5", function()
         it("binds one permanent authored Studio realm with no tile-system dependency", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
@@ -1252,7 +1311,7 @@ return function()
             expect(combatApplication:find('source:GetAttribute("PetRecordKey")', 1, true)).to.be.ok()
             local enemyService = readFile("src/Server/Services/EnemyService.lua")
             expect(enemyService:find('model:GetAttribute("MergeEggPlayerPetKillUserId")', 1, true)).to.be.ok()
-            expect(enemyService:find('killer:GetAttribute("AscensionUnlocked") == true', 1, true)).to.be.ok()
+            expect(enemyService:find('killer:GetAttribute("CombatTutorialDone") == true', 1, true)).to.be.ok()
             expect(enemyService:find("combat:AwardExperience(", 1, true)).to.be.ok()
             local combatService = readFile("src/Server/Services/CombatService.lua")
             expect(combatService:find("function CombatService:AwardExperience", 1, true)).to.be.ok()

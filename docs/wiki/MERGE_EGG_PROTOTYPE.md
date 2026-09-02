@@ -466,9 +466,10 @@ team and queue model:
   `enemies_defeated` counter or publish the ordinary `enemy_defeated` event. A durable Full-mode pet
   may earn exactly one global kill only when it lands the final damaging hit; participation and
   nearby-team credit do not qualify. Direct, AoE, aura, burn, and contagion final hits preserve this
-  real-pet attribution. Once Ascension is unlocked by either the crystal/Homeworld tutorial or
-  Combat Training, that same qualifying final hit also runs through the ordinary combat XP curve.
-  Before that unlock, Merge grants no XP; autonomous and Simple-mode combat never grants it.
+  real-pet attribution. That qualifying final hit runs through the ordinary combat XP curve only
+  after `CombatTutorial.done` publishes `CombatTutorialDone = true`; Home onboarding or Ascension
+  alone is intentionally insufficient because powers and targeting have not been taught. Before
+  Combat Training completion, Merge grants no XP; autonomous and Simple-mode combat never grants it.
 
 ## Simple-mode session reserve roster (2026-08-26)
 
@@ -649,9 +650,9 @@ team and queue model:
     loose card: create a couple, then upgrade or place. Hands-off.
     `tutorial_upgrade_completed` stamps when that beat finishes. Skip
     leaves it false so Wave 10 can still land.
-  - **End of Wave 10:** reveal the bay potion tent and post Macros as
-    Quartermaster. Talk only: "I'll get you whatever you need." Then
-    `tutorial_completed`. Shop browse unlocks after that talk. Macros
+  - **End of Wave 10:** reveal the bay supply booth and post Macros as
+    Quartermaster. His first interaction completes `tutorial_completed`, then opens two services:
+    Browse Potions for the player's own pets, or the full persistent Combat Training mission. Macros
     and tent stay planted and hidden (Transparency 1, no collide/query,
     prompt off) until this beat.
   After Wave 2 clears, combat pauses (`TutorialIntermission`). Vendors are
@@ -680,9 +681,13 @@ team and queue model:
   pickups never toast. Distinct milestones can queue without turning normal play into an activity
   feed. Auto-Combine returns every new egg-tier and pet-capacity discovery from its cascade through
   the same queue, so automatic merges cannot silently consume a first-time milestone. After Wave 10
-  the potion tent and Macros
+  the supply booth and Macros
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
-  hidden transparency as the reveal value. Talk completes the first-visit drip. Full
+  hidden transparency as the reveal value. The legacy `Browse Potions` tent prompt stays suppressed;
+  the Quartermaster's responsive Services menu is the only Merge interaction and reuses the ordinary
+  potion catalog/transaction service. Combat Training checkpoints and releases the Merge session
+  before opening the existing mission, then reconstructs the saved playstate when the mission ends.
+  The first Quartermaster interaction completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
   that Talk finishes. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an

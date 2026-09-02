@@ -1025,6 +1025,8 @@ if isFeatureEnabled("map_binding") then
         "PetGrantService",
         "SettingsService",
         "PowerService",
+        "PotionShopService",
+        "CombatTutorialService",
     }
     if RunService:IsStudio() then
         table.insert(mergeEggPrototypeDeps, "AutomationService")

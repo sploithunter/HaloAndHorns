@@ -353,6 +353,8 @@ function MergeEggPrototypeService:Init()
     self._settingsService = self._modules and self._modules.SettingsService
     self._automationService = self._modules and self._modules.AutomationService
     self._powerService = self._modules and self._modules.PowerService
+    self._potionShopService = self._modules and self._modules.PotionShopService
+    self._combatTutorialService = self._modules and self._modules.CombatTutorialService
     self._worldBindingService = self._modules and self._modules.WorldBindingService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
@@ -376,6 +378,7 @@ function MergeEggPrototypeService:Init()
     self._towerShots = {}
     self._enteringByPlayer = setmetatable({}, { __mode = "k" })
     self._enteringRecordByPlayer = setmetatable({}, { __mode = "k" })
+    self._combatTrainingReturns = setmetatable({}, { __mode = "k" })
     self._world = nil
     self._gatePrompt = nil
     self._upgradeSweepGeneration = 0
@@ -6719,16 +6722,6 @@ function MergeEggPrototypeService:_quartermasterConfig()
     return type(self._config.quartermaster) == "table" and self._config.quartermaster or {}
 end
 
-function MergeEggPrototypeService:_potionShopOpen(record)
-    local progress = record and self:_mergeDefenseProgress(record.player)
-    if progress and progress.tutorial_completed == true then
-        return true
-    end
-    local tutorial = self:_tutorialConfig()
-    local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
-    return tutorial.enabled ~= true or (tutorial.disable_after_rebirth == true and reborn)
-end
-
 function MergeEggPrototypeService:_findPotionShop(world)
     if not world then
         return nil
@@ -6755,10 +6748,13 @@ function MergeEggPrototypeService:_findPotionShop(world)
     return nil
 end
 
-function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
+function MergeEggPrototypeService:_setPotionShopPosted(shop, visible)
     if not shop then
         return
     end
+    -- The booth is still the visual supply landmark, but all Merge interactions belong to the
+    -- Quartermaster. PotionShopService honors this attribute even when it binds after this pass.
+    shop:SetAttribute("PotionShopPromptSuppressed", true)
     local visibleTransparency = math.clamp(
         requiredConfigNumber(
             self:_quartermasterConfig().shop_visible_transparency,
@@ -6799,7 +6795,7 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible, shopOpen)
     end
     for _, descendant in ipairs(shop:GetDescendants()) do
         if descendant:IsA("ProximityPrompt") and descendant.Name == "PotionShopPrompt" then
-            descendant.Enabled = visible == true and shopOpen == true
+            descendant.Enabled = false
         end
     end
 end
@@ -6831,8 +6827,7 @@ function MergeEggPrototypeService:_syncMergePotionShops(record)
             local owner = owners[tostring(shop:GetAttribute("MergeEggBayId") or "")]
             self:_setPotionShopPosted(
                 shop,
-                owner and self:_tutorialVendorsReady(owner, "quartermaster") == true,
-                owner and self:_potionShopOpen(owner) == true
+                owner and self:_tutorialVendorsReady(owner, "quartermaster") == true
             )
         end
     end
@@ -6921,13 +6916,72 @@ function MergeEggPrototypeService:_findQuartermaster(folder)
     return nil
 end
 
-function MergeEggPrototypeService:_openQuartermasterTalk(player)
+function MergeEggPrototypeService:_canUseQuartermaster(player)
     local record = self:_recordFor(player)
-    if not (record and record.player == player and record.terminal ~= true) then
-        return false, "not_active_encounter"
+    local root = characterRoot(player)
+    local folder = record and record.world and record.world:FindFirstChild("MergeEggQuartermaster")
+    local live = self:_findQuartermaster(folder)
+    local host = live and firstBasePart(live)
+    if
+        not (
+            record
+            and record.player == player
+            and record.terminal ~= true
+            and root
+            and live
+            and host
+            and live:GetAttribute("MergeVendorPosted") == true
+        )
+    then
+        return false, "quartermaster_unavailable"
     end
     if not self:_tutorialVendorsReady(record, "quartermaster") then
         return false, "vendor_not_ready"
+    end
+    local maximum = math.max(
+        4,
+        requiredConfigNumber(self:_quartermasterConfig().max_distance, "quartermaster.max_distance")
+    ) + 4
+    if (root.Position - host.Position).Magnitude > maximum then
+        return false, "quartermaster_too_far"
+    end
+    return true, nil, record, live
+end
+
+function MergeEggPrototypeService:_quartermasterMenuState(record)
+    local post = self:_quartermasterConfig()
+    local services = type(post.services) == "table" and post.services or {}
+    local data = record and self._dataService and self._dataService:GetData(record.player)
+    local progress = data and data.CombatTutorial
+    local done = type(progress) == "table" and progress.done == true
+    local started = type(progress) == "table"
+        and done ~= true
+        and math.max(1, math.floor(tonumber(progress.step) or 1)) > 1
+    local trainingLabel = services.training_label or "COMBAT TRAINING"
+    if done then
+        trainingLabel = services.training_redo_label or "REDO COMBAT TRAINING"
+    elseif started then
+        trainingLabel = services.training_resume_label or "RESUME COMBAT TRAINING"
+    end
+    return {
+        operation = "quartermaster_services",
+        greeting = tostring(post.greeting or "I'll get you whatever you need."),
+        title = tostring(services.title or "QUARTERMASTER"),
+        body = tostring(services.body or "Choose a service."),
+        potionsLabel = tostring(services.potions_label or "BROWSE POTIONS"),
+        potionsBody = tostring(services.potions_body or "Buy supplies for your pets."),
+        trainingLabel = tostring(trainingLabel),
+        trainingBody = tostring(services.training_body or "Learn to use powers in combat."),
+        closeLabel = tostring(services.close_label or "NOT NOW"),
+        combatTutorialDone = done,
+        combatTutorialStarted = started,
+    }
+end
+
+function MergeEggPrototypeService:_openQuartermasterTalk(player)
+    local accessOk, accessReason, record = self:_canUseQuartermaster(player)
+    if not accessOk then
+        return false, accessReason
     end
     local greeting =
         tostring(self:_quartermasterConfig().greeting or "I'll get you whatever you need.")
@@ -6940,16 +6994,59 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
         record.tutorialTalkedQuartermaster = true
         self:_updateTutorial(record, os.clock(), true)
     end
+    local value = self:_quartermasterMenuState(record)
+    value.milestone = completesTutorial and "quartermaster_ready" or nil
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
         action = "quartermaster_talk",
-        value = {
-            operation = "quartermaster_ready",
-            greeting = greeting,
-            milestone = completesTutorial and "quartermaster_ready" or nil,
-        },
+        value = value,
     })
     return true
+end
+
+function MergeEggPrototypeService:UseQuartermasterService(player, request)
+    local accessOk, accessReason, record, live = self:_canUseQuartermaster(player)
+    if not accessOk then
+        return false, accessReason
+    end
+    local choice = tostring(type(request) == "table" and request.choice or "")
+    if choice == "potions" then
+        local shop = self:_findPotionShop(record.world)
+        local service = self._potionShopService
+        if not (shop and service and service.OpenForPlayer) then
+            return false, "potion_shop_unavailable"
+        end
+        local opened, reason = service:OpenForPlayer(player, shop, live)
+        if not opened then
+            return false, reason or "potion_shop_unavailable"
+        end
+        return true, { operation = "potions_opened" }
+    end
+    if choice == "combat_training" then
+        local service = self._combatTutorialService
+        if not (service and service.OpenForPlayer) then
+            return false, "combat_tutorial_unavailable"
+        end
+        local bayId = record.bayId
+        local opened, result = service:OpenForPlayer(player, {
+            beforeOpen = function()
+                if not self:_isRecordActive(record) then
+                    return false
+                end
+                self._combatTrainingReturns[player] = { bayId = bayId }
+                self:_end(record, false, false)
+                return true
+            end,
+            onOpenFailed = function(reason)
+                self:_resumeAfterCombatTraining(player, reason or "open_failed")
+            end,
+        })
+        if not opened then
+            return false, result or "combat_tutorial_unavailable"
+        end
+        return true, result
+    end
+    return false, "invalid_quartermaster_service"
 end
 
 function MergeEggPrototypeService:_spawnQuartermaster(record, folder, shop)
@@ -16167,6 +16264,8 @@ function MergeEggPrototypeService:HandleBoardAction(player, request)
         return self:PurchaseBulwarkAction(player, request)
     elseif action == "cannon" then
         return self:PurchaseCannonAction(player, request)
+    elseif action == "quartermaster" then
+        return self:UseQuartermasterService(player, request)
     end
     return false, "invalid_board_action"
 end
@@ -16445,6 +16544,7 @@ end
 -- does not mutate durable profile data; AdminToolsService owns the one authoritative profile
 -- transaction after this teardown completes.
 function MergeEggPrototypeService:ResetForBeginning(player)
+    self._combatTrainingReturns[player] = nil
     local enteringRecord = self._enteringRecordByPlayer[player]
     if enteringRecord then
         self:_cancelPendingEntry(enteringRecord, false)
@@ -16544,6 +16644,49 @@ function MergeEggPrototypeService:_exit(player)
     end
     self:_end(record, true, false)
     return true
+end
+
+function MergeEggPrototypeService:_resumeAfterCombatTraining(player, reason)
+    local pending = player and self._combatTrainingReturns[player]
+    if not pending then
+        return
+    end
+    self._combatTrainingReturns[player] = nil
+    task.spawn(function()
+        local deadline = os.clock() + 10
+        while
+            player.Parent
+            and (player:GetAttribute("InMission") ~= nil or player:GetAttribute("InCombatTutorial") == true)
+            and os.clock() < deadline
+        do
+            RunService.Heartbeat:Wait()
+        end
+        if not player.Parent or self:_recordFor(player) then
+            return
+        end
+        local began, beginReason = self:_begin(player, pending.bayId)
+        if not began and beginReason == "bay_occupied" then
+            began, beginReason = self:_begin(player)
+        end
+        if not began then
+            self:_log("Warn", "Merge Egg session did not resume after Combat Training", {
+                player = player.Name,
+                requestedBay = pending.bayId,
+                trigger = reason,
+                reason = beginReason,
+            })
+        end
+    end)
+end
+
+function MergeEggPrototypeService:_watchCombatTrainingReturn(player)
+    player:GetAttributeChangedSignal("InMission"):Connect(function()
+        if player:GetAttribute("InMission") == nil and self._combatTrainingReturns[player] then
+            task.defer(function()
+                self:_resumeAfterCombatTraining(player, "mission_closed")
+            end)
+        end
+    end)
 end
 
 function MergeEggPrototypeService:_bindMergePlaceJoin()
@@ -16679,7 +16822,14 @@ function MergeEggPrototypeService:Start()
     RunService.Heartbeat:Connect(function()
         self:_step()
     end)
+    Players.PlayerAdded:Connect(function(player)
+        self:_watchCombatTrainingReturn(player)
+    end)
+    for _, player in ipairs(Players:GetPlayers()) do
+        self:_watchCombatTrainingReturn(player)
+    end
     Players.PlayerRemoving:Connect(function(player)
+        self._combatTrainingReturns[player] = nil
         local enteringRecord = self._enteringRecordByPlayer[player]
         if enteringRecord then
             self:_cancelPendingEntry(enteringRecord, true)
