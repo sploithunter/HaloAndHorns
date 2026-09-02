@@ -191,6 +191,29 @@ return function()
                     true
                 )
             ).to.be.ok()
+            local prepareAt = mergeService:find(
+                "function MergeEggPrototypeService:_prepareCombatTrainingPets",
+                1,
+                true
+            )
+            local switchAt = prepareAt
+                and mergeService:find(
+                    'self:_switchPlayerCombatMode(record, "full")',
+                    prepareAt,
+                    true
+                )
+            local openCallbackAt = mergeService:find("beforeOpen = function()", switchAt, true)
+            local handoffAt = openCallbackAt
+                and mergeService:find(
+                    "self:_prepareCombatTrainingPets(record)",
+                    openCallbackAt,
+                    true
+                )
+            local endAt = handoffAt
+                and mergeService:find("self:_end(record, false, false)", handoffAt, true)
+            expect(prepareAt ~= nil and switchAt ~= nil).to.equal(true)
+            expect(openCallbackAt ~= nil and handoffAt ~= nil and endAt ~= nil).to.equal(true)
+            expect(handoffAt < endAt).to.equal(true)
         end)
 
         it("uses one responsive service menu and the authoritative pass storefront", function()

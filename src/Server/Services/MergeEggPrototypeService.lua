@@ -7084,6 +7084,21 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     return true
 end
 
+-- Combat Training manages ordinary inventory-backed pets, including its temporary tutorial loan
+-- records. If Merge is currently in Simple mode, first leave the prototype escort path through the
+-- existing Full-mode transition: destroy the ghosts and restore the parked durable models before
+-- the Merge session closes. This is a transient handoff, not an eligibility unlock or a persisted
+-- Settings choice; returning to Merge resolves the player's effective mode normally.
+function MergeEggPrototypeService:_prepareCombatTrainingPets(record)
+    if not self:_isRecordActive(record) then
+        return false
+    end
+    if record.playerCombatMode == "full" then
+        return true
+    end
+    return self:_switchPlayerCombatMode(record, "full")
+end
+
 function MergeEggPrototypeService:UseQuartermasterService(player, request)
     local accessOk, accessReason, record, live = self:_canUseQuartermaster(player)
     if not accessOk then
@@ -7127,6 +7142,9 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
         local opened, result = service:OpenForPlayer(player, {
             beforeOpen = function()
                 if not self:_isRecordActive(record) then
+                    return false
+                end
+                if not self:_prepareCombatTrainingPets(record) then
                     return false
                 end
                 self._combatTrainingReturns[player] = { bayId = bayId }
