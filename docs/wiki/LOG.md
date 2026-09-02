@@ -7356,3 +7356,9 @@ first-session cohort rates.
 - `TutorialFlow` can now require config-authored event payload values through
   `complete_on.context`, preventing a matching action on the wrong power or target from advancing a
   lesson.
+
+## 2026-09-02 — Live pet rebuilds retain mid-flight equipment changes
+
+- Serialized each player's `PetRuntimeBridge` worker across yielding model rebuilds. An equipment
+  change received while a rebuild is active now latches one final pass instead of being rejected by
+  the active-load guard and leaving the live squad blank.

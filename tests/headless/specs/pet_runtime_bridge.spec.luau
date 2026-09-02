@@ -50,6 +50,23 @@ return function()
             expect(calls).to.equal(1)
         end)
 
+        it("runs a final rebuild requested while the handler is active", function()
+            local calls = 0
+            bridge.RegisterHandler(function(player)
+                calls += 1
+                if calls == 1 then
+                    bridge.RequestRebuild(player)
+                end
+            end)
+
+            bridge.RequestRebuild("player")
+            expect(#queue).to.equal(1)
+            flush()
+
+            expect(calls).to.equal(2)
+            expect(#queue).to.equal(0)
+        end)
+
         it("keeps different players independent", function()
             local seen = {}
             bridge.RegisterHandler(function(player)

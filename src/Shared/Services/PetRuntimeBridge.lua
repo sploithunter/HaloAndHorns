@@ -12,12 +12,14 @@ local function create(deferCallback)
         end
         scheduled[player] = true
         deferCallback(function()
-            scheduled[player] = nil
-            if not pending[player] or handler == nil then
-                return
+            -- Keep one worker alive through the handler. Pet construction can yield while
+            -- loading assets; an equipment change during that window must request one more
+            -- pass, not start an overlapping handler that PetHandler rejects as "Skipped".
+            while pending[player] and handler ~= nil do
+                pending[player] = nil
+                handler(player)
             end
-            pending[player] = nil
-            handler(player)
+            scheduled[player] = nil
         end)
     end
 
@@ -44,7 +46,6 @@ local function create(deferCallback)
 
     function bridge.ClearPlayer(player)
         pending[player] = nil
-        scheduled[player] = nil
     end
 
     return bridge
