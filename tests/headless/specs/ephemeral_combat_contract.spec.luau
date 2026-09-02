@@ -2,20 +2,28 @@ return function()
     describe("ephemeral combat runtime contract", function()
         it("gates the complete normal defeat side-effect block by reward policy", function()
             local source = readFile("src/Server/Services/EnemyService.lua")
+            local reward = source:find("function EnemyService:_awardCombatDefeat", 1, true)
+            local defeat = source:find("function EnemyService:_onDefeated", reward, true)
             local normalization = source:find(
                 "local awardsNormalRewards = EnemyRewardPolicy.awardsNormalRewards(entry.rewardPolicy)",
-                1,
+                defeat,
                 true
             )
             local gate = source:find("if awardsNormalRewards and combat and contrib then", 1, true)
-            local award = source:find("combat:AwardLoot(", gate, true)
-            local gameEvent = source:find('fireGameEvent(player, "enemy_defeated"', gate, true)
-            local callback = source:find("local onDefeated = entry.onDefeated", gate, true)
+            local award = source:find("self:_awardCombatDefeat(player", gate, true)
+            local callback = source:find("local onDefeated = entry.onDefeated", award, true)
 
+            expect(reward ~= nil and defeat ~= nil and reward < defeat).to.equal(true)
+            expect(source:find("combat:AwardLoot(", reward, true) < defeat).to.equal(true)
+            expect(source:find('fireGameEvent(player, "enemy_defeated"', reward, true) < defeat).to.equal(
+                true
+            )
+            expect(source:find("drops:TrySpawnEnhancementDrop", reward, true) < defeat).to.equal(
+                true
+            )
             expect(normalization ~= nil and gate ~= nil and gate > normalization).to.equal(true)
             expect(award ~= nil and award > gate).to.equal(true)
-            expect(gameEvent ~= nil and gameEvent > gate).to.equal(true)
-            expect(callback ~= nil and callback > gameEvent).to.equal(true)
+            expect(callback ~= nil and callback > award).to.equal(true)
         end)
 
         it("destroys opted-in ephemeral pets before down or lockout writes", function()

@@ -1563,6 +1563,80 @@ function EnemyService:DespawnEnemiesInBounds(minV, maxV)
     return removed
 end
 
+-- One player's complete ordinary combat-reward path for one defeated enemy. Ordinary Farm & Fight
+-- enemies call this for every credited contributor/nearby teammate. Merge Defense may call it only
+-- for the trained owner of the durable player pet that dealt the final damaging hit; the encounter's
+-- NPC Waycoin/Gem callback remains separate and is therefore never duplicated here.
+function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef)
+    if not (player and player.Parent and entry and model and combat) then
+        return
+    end
+
+    pcall(function()
+        combat:AwardLoot(
+            player,
+            entry.enemyId,
+            model:GetAttribute("Level"),
+            model:GetAttribute("EnemyTier"),
+            rewardDef or entry.def
+        )
+    end)
+    fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
+    if self._statsService then
+        pcall(function() -- mission counter (Origin Story combat beats)
+            self._statsService:Increment(player, "enemies_defeated", 1)
+        end)
+    end
+
+    -- Rare physical drops land at the authoritative DOWN site. The server never re-pivots the
+    -- anchored enemy model (only the client interpolates toward MoveTarget), so PrimaryPart is still
+    -- at SPAWN; entry.pos is where the enemy actually died.
+    local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+    local dropPos = entry.pos or (pp and pp.Position)
+    if not dropPos then
+        return
+    end
+    local drops = self._dropService
+    if not (drops and drops.TrySpawnEnhancementDrop) then
+        return
+    end
+
+    pcall(function()
+        -- Rank premium: bosses roll better (enemy_rank_mult).
+        drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
+            tier = model:GetAttribute("EnemyTier"),
+            enemy_level = model:GetAttribute("Level"),
+        })
+    end)
+    -- Potion drop (same odds as enhancements; independent roll).
+    if drops.TrySpawnPotionDrop then
+        pcall(function()
+            drops:TrySpawnPotionDrop(player, "enemy", dropPos)
+        end)
+    end
+
+    -- Boss-exclusive egg: each credited player rolls independently. Prefer the resolved reward
+    -- definition because isolated encounters may use a ranked clone; fall back to the static config.
+    pcall(function()
+        local staticDef = self._enemiesConfig.enemies and self._enemiesConfig.enemies[entry.enemyId]
+        local bossDef = type(rewardDef) == "table" and rewardDef or staticDef
+        local ex = bossDef and bossDef.exclusive_egg
+        local exChance = tonumber(ex and ex.chance) or 0
+        exChance *= 1 + self:_eventModifier("exclusive_egg_chance", 0)
+        if ex and ex.egg and math.random() < exChance and drops.TrySpawnEggDrop then
+            drops:TrySpawnEggDrop(player, ex.egg, ex.name or ex.egg, dropPos)
+            fireGameEvent(player, "exclusive_egg_drop", {
+                egg = ex.egg,
+                boss = entry.enemyId,
+                name = ("%s dropped a %s!"):format(
+                    bossDef.display_name or "The boss",
+                    ex.name or "mysterious egg"
+                ),
+            })
+        end
+    end)
+end
+
 function EnemyService:_onDefeated(targetId)
     local entry = self._enemies[targetId]
     if not entry then
@@ -1632,112 +1706,34 @@ function EnemyService:_onDefeated(targetId)
         end
         for player in pairs(credited) do
             if player.Parent then
-                pcall(function()
-                    combat:AwardLoot(
-                        player,
-                        entry.enemyId,
-                        model:GetAttribute("Level"),
-                        model:GetAttribute("EnemyTier"),
-                        entry.def
-                    )
-                end)
-                fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
-                if self._statsService then
-                    pcall(function() -- mission counter (Origin Story combat beats)
-                        self._statsService:Increment(player, "enemies_defeated", 1)
-                    end)
-                end
-                -- rare ENHANCEMENT drop at the DOWN site (identity revealed at pickup). Use entry.pos,
-                -- NOT model.PrimaryPart.Position: the server never re-pivots the anchored enemy model
-                -- (only the client interpolates it toward MoveTarget), so the model sits at its SPAWN
-                -- CFrame server-side. entry.pos is the authoritative current position — the spot the
-                -- enemy actually went down (Jason: drops were landing back at the spawn, not the kill).
-                local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-                local dropPos = entry.pos or (pp and pp.Position)
-                if dropPos then
-                    local drops = self._dropService
-                    if drops and drops.TrySpawnEnhancementDrop then
-                        pcall(function()
-                            -- rank premium: bosses roll better (enemy_rank_mult)
-                            drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
-                                tier = model:GetAttribute("EnemyTier"),
-                                enemy_level = model:GetAttribute("Level"),
-                            })
-                        end)
-                        -- POTION drop (same odds as enhancements; independent roll)
-                        if drops.TrySpawnPotionDrop then
-                            pcall(function()
-                                drops:TrySpawnPotionDrop(player, "enemy", dropPos)
-                            end)
-                        end
-                        -- BOSS EXCLUSIVE EGG (docs MISSION_WORLDGEN §11): a boss
-                        -- def may carry exclusive_egg = { egg, name, chance } —
-                        -- each credited player rolls independently (team-friendly,
-                        -- like the completion counters). Grants straight into the
-                        -- eggs INVENTORY bucket; hatch via egg_item.hatch.
-                        pcall(function()
-                            local bossDef = self._enemiesConfig.enemies
-                                and self._enemiesConfig.enemies[entry.enemyId]
-                            local ex = bossDef and bossDef.exclusive_egg
-                            -- Wyrm Weekend (exclusive_egg_chance event axis):
-                            -- doubles the ROLL, never the stated hatch odds
-                            local exChance = tonumber(ex and ex.chance) or 0
-                            exChance *= 1 + self:_eventModifier("exclusive_egg_chance", 0)
-                            if ex and ex.egg and math.random() < exChance then
-                                -- PHYSICAL drop (Jason: "see it in the world in
-                                -- 3d") — magnet-immune; despawn force-collects
-                                local dropSvc = self._dropService
-                                if dropSvc and dropSvc.TrySpawnEggDrop then
-                                    dropSvc:TrySpawnEggDrop(
-                                        player,
-                                        ex.egg,
-                                        ex.name or ex.egg,
-                                        dropPos
-                                    )
-                                    fireGameEvent(player, "exclusive_egg_drop", {
-                                        egg = ex.egg,
-                                        boss = entry.enemyId,
-                                        name = ("%s dropped a %s!"):format(
-                                            bossDef.display_name or "The boss",
-                                            ex.name or "mysterious egg"
-                                        ),
-                                    })
-                                end
-                            end
-                        end)
-                    end
-                end
+                self:_awardCombatDefeat(player, entry, model, combat, entry.def)
             end
         end
     end
 
     -- Merge defense pays only its authored physical coin/Gem drops. It must not turn the NPC
-    -- hatchers' autonomous battle into global kill/quest/leaderboard farming. CombatApplication
-    -- stamps the actual final damaging source, and only a durable player pet record can produce
-    -- this id. No nearby-team sharing applies to this isolated kill-credit exception.
+    -- hatchers' autonomous battle into global combat loot/quest/leaderboard farming.
+    -- CombatApplication stamps the actual final damaging source, and only a durable player pet
+    -- record can produce this id. No contributor or nearby-team sharing applies to this exception.
     if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true then
         local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
         local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
-        if killer and killer.Parent then
-            -- Merge awards real combat XP only after the player has learned powers and targeting
-            -- in the full Combat Training track. Home onboarding/ascension alone is not enough.
-            if killer:GetAttribute("CombatTutorialDone") == true and combat then
-                pcall(function()
-                    combat:AwardExperience(
-                        killer,
-                        entry.enemyId,
-                        model:GetAttribute("Level"),
-                        model:GetAttribute("EnemyTier"),
-                        entry.def
-                    )
-                end)
-            end
-            fireGameEvent(killer, "enemy_defeated", { enemy = entry.enemyId })
-            if self._statsService then
-                pcall(function()
-                    self._statsService:Increment(killer, "enemies_defeated", 1)
-                end)
-            end
+        -- The whole canonical Farm & Fight payout (currencies/tokens, XP, enhancement/potion/boss
+        -- drops, event, and kill stat) stays locked until Combat Training is complete. Merge keeps
+        -- a reward definition separate from its drop-less combat clone so NPC kills remain isolated.
+        if
+            killer
+            and killer.Parent
+            and killer:GetAttribute("CombatTutorialDone") == true
+            and combat
+        then
+            self:_awardCombatDefeat(
+                killer,
+                entry,
+                model,
+                combat,
+                entry.combatRewardDef or entry.def
+            )
         end
     end
 
@@ -7893,7 +7889,9 @@ end
 
 -- Public: spawn a stationary enemy near the player and engage their pets.
 -- opts (optional, for test spreads): { forward = studs, right = studs } offsets the spawn in the
--- player's local frame, on top of the base spawn distance.
+-- player's local frame, on top of the base spawn distance. Isolated encounters may pass a separate
+-- combatRewardDef: combat uses the drop-less `def`, while an explicitly qualified player kill can
+-- still resolve the canonical enemy rewards without enabling contributor-wide normal rewards.
 function EnemyService:SpawnEnemy(player, enemyId, opts)
     enemyId = tostring(enemyId or "lava_imp")
     local rewardPolicy = EnemyRewardPolicy.normalize(opts and opts.rewardPolicy)
@@ -7988,6 +7986,8 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         targetId = targetId, -- own id back-ref (combat/trace identify the enemy without a reverse lookup)
         enemyId = enemyId,
         def = def, -- the resolved def (config OR a synthesized pet-invader def); combat reads this
+        combatRewardDef = (opts and type(opts.combatRewardDef) == "table") and opts.combatRewardDef
+            or nil,
         pos = position,
         spawnPosition = position, -- immutable authored recovery point (mission stuck recovery)
         authoredHome = (opts and typeof(opts.home) == "Vector3") and opts.home or nil,

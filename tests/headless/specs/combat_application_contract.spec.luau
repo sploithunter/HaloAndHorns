@@ -47,17 +47,25 @@ return function()
         it("reserves merge-defense global kill credit for durable player pets", function()
             local application = readFile("src/Server/CombatApplication.lua")
             local enemies = readFile("src/Server/Services/EnemyService.lua")
+            local merge = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local mergeGate = enemies:find(
+                'if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true',
+                1,
+                true
+            )
+            local mergeAward = enemies:find("self:_awardCombatDefeat(", mergeGate, true)
 
             expect(count(application, 'source:GetAttribute("PetRecordKey")')).to.equal(1)
             expect(count(application, 'target:SetAttribute("MergeEggPlayerPetKillUserId"')).to.equal(
                 1
             )
             expect(count(enemies, 'model:GetAttribute("MergeEggPlayerPetKillUserId")')).to.equal(1)
-            expect(count(enemies, 'self._statsService:Increment(killer, "enemies_defeated", 1)')).to.equal(
-                1
-            )
-            expect(count(enemies, 'fireGameEvent(killer, "enemy_defeated"')).to.equal(1)
-            expect(count(enemies, "combat:AwardExperience(")).to.equal(1)
+            expect(mergeGate).to.be.ok()
+            expect(mergeAward).to.be.ok()
+            expect(count(enemies, "combat:AwardExperience(")).to.equal(0)
+            expect(count(enemies, "combat:AwardLoot(")).to.equal(1)
+            expect(count(enemies, "entry.combatRewardDef or entry.def")).to.equal(1)
+            expect(count(merge, "combatRewardDef = spec.enemyDef")).to.equal(1)
             expect(count(enemies, 'killer:GetAttribute("CombatTutorialDone") == true')).to.equal(1)
             expect(count(enemies, 'killer:GetAttribute("AscensionUnlocked") == true')).to.equal(0)
         end)

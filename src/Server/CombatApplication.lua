@@ -54,11 +54,11 @@ local function sourceUserId(context)
     return tonumber(context and context.sourceUserId)
 end
 
--- Merge defense owns its physical coin/Gem economy and suppresses the ordinary enemy reward
--- bundle. It still needs truthful final-hit attribution for the global kill counter: only a real,
--- durable pet record may earn that credit. Manifested NPC squads, Simple-mode reserve ghosts,
--- summons, and player powers do not carry PetRecordKey. DoT callers can preserve the originating
--- pet identity through the explicit playerPetKillUserId field.
+-- Merge defense owns its physical Waycoin/Gem economy and suppresses ordinary enemy rewards by
+-- default. It still needs truthful final-hit attribution for the post-training Farm & Fight reward
+-- exception: only a real, durable pet record may earn it. Manifested NPC squads, Simple-mode reserve
+-- ghosts, summons, and player powers do not carry PetRecordKey. DoT callers can preserve the
+-- originating pet identity through the explicit playerPetKillUserId field.
 local function playerPetKillUserId(context)
     local explicit = tonumber(context and context.playerPetKillUserId)
     if explicit and explicit > 0 then
