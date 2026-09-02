@@ -6910,3 +6910,260 @@ first-session cohort rates.
   inventory, and live tiers; the client only emits intent.
 - Added pure policy coverage for every selection/action/cancellation branch and made the Merge
   tutorial/result cards fit phone widths while retaining their desktop size caps.
+
+## 2026-09-01 — Cannon size and Rage T1 barrel yaw are per-tier config
+
+- All 24 cannon runtimes now have `worldScale = 0.5`. Spawn reads that
+  entry; templates stay scale 1. Rage T1 has `barrelYawDegrees = 90`
+  (T2 does not). Aim uses the shot tangent, not mesh +X, so a yaw
+  offset does not fire sideways. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 barrel yaw is 180
+
+- Play showed Rage T1 firing exactly backwards at 90. Config-only
+  change: Rage T1 `barrelYawDegrees = 180`. T2–T4 and the other five
+  families stay 0. Aim now reads that value from config, not the
+  stamped attribute on an already-spawned chassis. Rage T1 landing
+  radius is 7 (was 28: 75% smaller). The MagicCircle and the sip
+  use that same number via PlaceBerserkCircle. T2–T4 stay 28.
+  Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 barrel yaw is 270, not 180-from-90
+
+- `barrelYawDegrees` is an absolute extra yaw on the fire basis,
+  not a delta. Replacing 90 with 180 only turned the backwards
+  shot another quarter turn (left). Play wanted 90+180, so Rage
+  T1 is now 270. T2 stays 0. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 chassis is 25% smaller than the shared half-size
+
+- Rage T1 `worldScale` is 0.375 (0.5 × 0.75). The other 23 cannons
+  stay 0.5. Existing T1 fails MatchesTemplate and respawns after Play
+  restart. Not Play-confirmed.
+
+## 2026-09-01 — Rage T1 wheels sit on the pad
+
+- Rage T1 mesh hangs below its AABB, so bbox-to-deck seating buried
+  the wheels. `seatOffsetY` is now on all 24 chassis, scaled with
+  `worldScale` (0.55 at T1 / 0.375, 0.733 at T2–4 / 0.5). Every
+  Tier 1 uses Rage T1's tuned size 0.375. Not Play-confirmed.
+
+## 2026-09-01 — Cannons kick on fire without changing cadence
+
+- After a shot the chassis stops aiming for 0.18s, lurches up 0.2
+  studs with a light shake, then settles and tracks again. Tunables
+  are `team.edge_towers.shot.recoil`. The fire interval is unchanged.
+  Applies to every role; test on Rage T1. Not Play-confirmed.
+
+## 2026-09-01 — Ability shots land on the floor and bloom out
+
+- Heal/Rage (and any landing with a cast, or `land_at = "ground"`)
+  aim the LandStrip under the target. The ball no longer sits at
+  chest height for 0.55s; it blooms to 2× and fades in 0.16s.
+  Extra Rage sips use planar distance so the floor landing does not
+  shrink the circle. Not Play-confirmed.
+
+## 2026-09-01 — Cannon pads and bulwark slots upgrade independently
+
+- Unlock is one-time and global. The workshop shows LOCKED until
+  that flag is set; the catalog is not granted for free. Playtest
+  unlock, place, and upgrade stay one Waycoin so testing does not
+  need gems. Final unlocks will almost certainly be gems or a
+  Robux game pass and those flags survive rebirth. Placement and
+  upgrade are paid per cannon pad and per bulwark slot. A second
+  pad or the egg wall starts at Tier 1. Rebirth empties every
+  install and keeps unlocks. Install now shows the same one-coin
+  price as Unlock/Upgrade. Switch is a paid replace at Tier 1 with
+  no refund. The right list is picker-only (LOCKED / UNLOCKED /
+  TIER N). Unlock and Upgrade stay on the left card. Not
+  Play-confirmed.
+
+## 2026-09-01 — Robux purchases are permanent
+
+- Rebirth, upgrade, and family switch never wipe a Robux
+  entitlement or unlock flag. The only spendable exception is an
+  authored developer consumable (potions). Merge rebirth still
+  empties placements only.
+
+## 2026-09-01 — Cannon workshop previews are eye-level side views
+
+- Currently Owned and Next Upgrade no longer use Roblox model
+  thumbnails (those cameras were often top-down). Each pane clones
+  that chassis and frames it independently: eye-level, 90° to the
+  long silhouette, filling most of that window with a little
+  padding. Tunables are `team.edge_towers.workshop_preview`.
+  Bulwark cards stay flat authored art. Not Play-confirmed.
+
+## 2026-09-01 — Cannon previews fill the existing pane
+
+- The 16:9 inset was wrong: it shrank the preview frame. The
+  viewport fills the existing Currently Owned / Next Upgrade pane
+  again. The camera frames that pane with padding. Not
+  Play-confirmed.
+
+## 2026-09-01 — Remaining cannons reuse existing powers
+
+- Debuff sips Weakening Vial on enemies. Gravity pulls into a
+  black-hole rune. Repulsor flings, tumbles, and recovers toward
+  the gate. Nullifier is Frost Bind with a per-enemy hit roll
+  (T1 40%). Workshop menu art is a separate PNG-alpha pass. Not
+  Play-confirmed.
+
+## 2026-09-01 — Repulsor cannot bury past the back wall
+
+- Visible WallBack is only ~4 studs above the floor; the 64-stud
+  EnemyEnd containment wall is collision for the player, not
+  enemies (MoveTarget). T4 dest was grounded off the strip (stock
+  baseplate Y≈-192) then leashed XZ back, leaving MoveTarget
+  buried. Pets chased that target. Fling/knockback now leash XZ
+  first, reject drops > `ground_drop_max`, and add a 6-stud
+  wall_inset. Not Play-confirmed.
+
+## 2026-09-01 — Repulsor is a concussion blast
+
+- Landing uses the existing CombatFX lava detonation (fireball +
+  visual Explosion), not a magic ring. Fling is outward from
+  impact so the pack spreads. Each enemy rolls hit_chance; T4 is
+  40% because 100% + 40-stud gate shove froze the lane. Live
+  play: workable, still overpowered, not broken. Further nerf
+  is a tune, not a rewrite.
+
+## 2026-09-01 — Merge opening gem and tutorial drip
+
+- Stage 1 opening now lays one Gem in front of the five Waycoin
+  stacks (spawned first). Collect waits for both. The gem is not
+  spent yet. Proposed first-visit drip: Waves 1–2 egg-only, then
+  T1 bulwark, then cannon after Wave 4 (needs a second gem).
+  Playtest unlock-at-Wave-1 stays. Not Play-confirmed.
+
+## 2026-09-01 — Admin Reset clears Merge tutorial flags
+
+- Board wipe was already correct. Admin Reset had been keeping
+  `GameData.MergeDefense.tutorial_completed`, so `_startTutorial`
+  no-oped and the card/chevrons never came back. Reset now always
+  writes a fresh onboarding record (`tutorial_completed = false`).
+  `ResumeDedicatedEntry` still only ignores the checkpoint; the
+  cleared flag is enough for `collect_setup`. Headless spec and
+  Studio lifecycle script now expect stage 1 to replay. Not
+  Play-confirmed.
+
+## 2026-09-01 — Collect coins first, then the left-side gem
+
+- Opening gem moved to Bulwark-local x=-42, z=38 (player-left,
+  further into the field). Chevrons prefer the closest remaining
+  Waycoin stack, then the gem; skip the gem walk only when that
+  drop is already gone. Collect no longer advances just because
+  leftover gems are in the wallet. Card counts remaining stacks,
+  then "NOW PICK UP THE GEM", then the existing five-egg BUY EGG
+  counter. Not Play-confirmed.
+
+## 2026-09-01 — Opening gem sits by the second engineer
+
+- "Left" was BulwarkLine local space and landed on the first
+  (red-line / egg) engineer. The gem now uses the second
+  engineer post: gold-line right, player-right while facing the
+  enemy gate, 12 studs toward the gate and 8 inward onto the
+  board. Axes are the same incoming/rightDir the vendors use,
+  not enemy-view and not the line part's local X. Not
+  Play-confirmed.
+
+## 2026-09-01 — Pause after Wave 2 for the bulwark tutorial
+
+- Phase 1 now releases combat without marking the whole tutorial
+  done (`tutorial_setup_completed`). After Wave 2 the run holds
+  Wave 3 and baby-steps Talk on the gold-line engineer, then
+  CLICK HERE on UNLOCK, then INSTALL. Playtest price stays 1
+  Waycoin. Cannon drip is still later. Not Play-confirmed.
+
+## 2026-09-01 — Vendors arrive with their tutorial beat
+
+- Bulwark Engineers and Artillery Commanders are not spawned
+  until `_tutorialVendorsReady`. After Wave 2 only the gold-line
+  engineer posts; the card says he took the line. Egg-line and
+  artillery spawn when the first-visit tutorial completes. Not
+  Play-confirmed.
+
+## 2026-09-01 — Engineer posts even after the bay is ready
+
+- `_ensureBayBulwarks` returned once `bulwarksReady` was set
+  during Waves 1–2, so the gold-line engineer never spawned and
+  chevrons had no target. Ready bays still ensure vendors.
+  Client chevrons fall back to `MergeEggTutorialEngineerAt`.
+  Same ready-gate fix for artillery. Not Play-confirmed.
+
+## 2026-09-01 — Vendors stay planted and only unhide
+
+- Engineers and commanders always exist: uncollidable, unqueryable,
+  Transparency 1, prompt off. `_setVendorPosted` flips them visible
+  and enables Talk when their beat is ready. No wait on a late
+  avatar spawn for the Wave-2 card. Not Play-confirmed.
+
+## 2026-09-01 — Wave 4 cannon tutorial and gem unlocks
+
+- Impaler Palisade and Heal unlock for 1 Gem. Other playtest
+  changes stay 1 Waycoin. Wave 2 workshop now stores
+  `tutorial_workshop_completed` and releases Waves 3–4. After
+  Wave 4, spawn a field gem if the wallet is 0, chevron it, then
+  Talk → UNLOCK Heal → INSTALL on the right pad. Full
+  `tutorial_completed` waits for that install. Not Play-confirmed.
+
+## 2026-09-01 — Merge tutorial drip locked through Wave 10
+
+- Wave 0 eggs, Wave 2 Impaler, Wave 4 Heal (gem if wallet empty),
+  Wave 6 coins + player-chosen egg upgrades, Wave 10 Quartermaster
+  (Farm/Fight potion shop, Heaven/Hell themed, plus macros). 6 and
+  10 are not built. Wave 4 coin pile still undecided.
+
+## 2026-09-01 — Engineer card says left of the field
+
+- Wave 2 talk copy said "on your right". Live stand is left of
+  the field while facing the gate. Card now says left.
+
+## 2026-09-01 — Tutorial pauses pick up any existing pile
+
+- Wave 2 and Wave 4 chevron a live Waycoin drop only when the
+  wallet is empty. No new pile is placed. If none remain, credit
+  1 Waycoin so a vanished drop cannot stall Install.
+
+## 2026-09-01 — Wave 6 optional egg-upgrade pause
+
+- Heal install now stamps `tutorial_cannon_completed` and snapshots
+  merge/place/base-tier. Wave 6 pauses only if they have not upgraded
+  or installed since then. Collect ~600 field Waycoins, then one
+  loose create / upgrade / install card. `tutorial_completed` waits
+  for that beat. Wave 4 gem is placed past the stone wall, not on
+  the cannon pad. Not Play-confirmed.
+
+## 2026-09-01 — Merge bay potion tents copied to every field
+
+- Heaven_01 / Hell_01 authored tents cloned onto the other eight
+  PlayFields with the same local offset. `PotionShopService` already
+  binds every `HeavenPotionShop` / `HellPotionShop`. Save the Merge
+  place. Not Play-confirmed for prompts.
+
+## 2026-09-01 — Wave 10 Macros quartermaster
+
+- Potion tents stay planted and hidden until Wave 10. Macros
+  (873359641) posts at the tent. Talk: "I'll get you whatever you
+  need." That stamps `tutorial_completed` and opens Browse Potions.
+  Wave 6 now only stamps `tutorial_upgrade_completed`. Not
+  Play-confirmed.
+
+## 2026-09-01 — Wave 6 upgrade beat is create then upgrade-or-place
+
+- Creating eggs alone no longer leaves the Wave 6 card stuck. After
+  two creates, chevrons leave Buy Egg. One merge, base-egg raise, or
+  placement finishes the beat. Not Play-confirmed.
+
+## 2026-09-01 — Mobile People list and Merge tutorial replace fixed HUD geometry
+
+- The custom People list now derives its dock, rows, columns, body cap, and profile card from
+  DisplayClass-specific viewport ratios and relayouts on camera-size/orientation changes. The
+  fixed 397px list-width contract is retired.
+- From Merge setup through Wave 10, the central hotbar is hidden and all activation paths are
+  blocked. An active tutorial card copies the live, already-scaled hotbar PillFrame bounds exactly;
+  Wave 11 restores the bar.
+- Consolidation removed the superseded live cannon-preview helper/tests and retained the 24
+  manifest-owned transparent PNG previews. New cannon/fling/effect code now requires its authored
+  config values instead of restoring silent numeric fallbacks. The architecture ratchet fell from
+  1,641 fallbacks in 239 files to 1,621 in 238 files.

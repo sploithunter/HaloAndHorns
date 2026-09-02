@@ -27,10 +27,18 @@ return function()
         end)
 
         it("installs without consulting a live wave", function()
+            local unlocked, unlockReason =
+                Persist.apply({}, "unlock", "impaler_palisade", config, "lane")
+            expect(unlockReason).to.equal(nil)
+            expect(unlocked.owned.impaler_palisade).to.equal(1)
+            expect(unlocked.family).to.equal(nil)
+            expect(unlocked.operation).to.equal("unlocked")
+
             local installed, reason =
-                Persist.apply({}, "select", "impaler_palisade", config, "lane")
+                Persist.apply(unlocked, "select", "impaler_palisade", config, "lane")
             expect(reason).to.equal(nil)
             expect(installed.family).to.equal("impaler_palisade")
+            expect(installed.tier).to.equal(1)
             expect(installed.operation).to.equal("installed")
             expect(installed.charged).to.equal(true)
 
@@ -49,7 +57,8 @@ return function()
         end)
 
         it("writes onto the live profile table without a signature match", function()
-            local installed = Persist.apply({}, "select", "impaler_palisade", config, "lane")
+            local unlocked = Persist.apply({}, "unlock", "impaler_palisade", config, "lane")
+            local installed = Persist.apply(unlocked, "select", "impaler_palisade", config, "lane")
             local record = {}
             local detached = { bulwark_owned = {} }
             local live = { playstate = { wave = 3 } }
@@ -59,6 +68,21 @@ return function()
             expect(live.bulwark_family).to.equal("impaler_palisade")
             expect(record.bulwarkWaycoinsSpent).to.equal(1)
             expect(live.bulwark_waycoins_spent).to.equal(1)
+        end)
+
+        it("clears placements on rebirth and keeps unlock flags", function()
+            local unlocked = Persist.apply({}, "unlock", "impaler_palisade", config, "lane")
+            local installed = Persist.apply(unlocked, "select", "impaler_palisade", config, "lane")
+            local upgraded = Persist.apply(installed, "upgrade", "impaler_palisade", config, "lane")
+            local progress = {}
+            Persist.write(nil, progress, upgraded)
+            expect(progress.bulwark_family).to.equal("impaler_palisade")
+            expect(progress.bulwark_tier).to.equal(2)
+
+            Persist.resetPlacements(nil, progress, config)
+            expect(progress.bulwark_owned.impaler_palisade).to.equal(1)
+            expect(progress.bulwark_family).to.equal(nil)
+            expect(progress.bulwark_tier).to.equal(0)
         end)
     end)
 end

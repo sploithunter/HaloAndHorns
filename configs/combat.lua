@@ -445,8 +445,12 @@ return {
         ground_probe_above = 2,
         -- Max studs an enemy may snap UP in one move step. Slopes rise a little per step and pass;
         -- a vertical wall makes the downcast jump to the wall top (a big rise) -> the step is
-        -- rejected, so enemies don't climb onto walls/ledges. Steps DOWN are always allowed.
+        -- rejected, so enemies don't climb onto walls/ledges. Ordinary walk still allows
+        -- downward steps. Knockback and Repulsor fling also reject a drop larger than
+        -- ground_drop_max so a dest past the back wall cannot snap onto the void
+        -- baseplate and then leash XZ back while leaving Y buried.
         ground_climb_max = 10,
+        ground_drop_max = 10,
         -- Chase uses the same per-step rise ceiling as ordinary movement. Authored mountains remain
         -- climbable because their slopes rise gradually; an abrupt wall/ledge produces one large
         -- downcast jump and is rejected instead of becoming a 28-stud jump-assist landing.

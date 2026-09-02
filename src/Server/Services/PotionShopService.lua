@@ -127,6 +127,12 @@ function PotionShopService:_openFor(player, model)
     if not (player and self:_isShopModel(model)) then
         return
     end
+    if
+        model:GetAttribute("MergeEggBayId")
+        and model:GetAttribute("MergeVendorPosted") ~= true
+    then
+        return
+    end
     self._access[player] = {
         model = model,
         expiresAt = os.clock() + (tonumber(self:_interaction().access_seconds) or 120),

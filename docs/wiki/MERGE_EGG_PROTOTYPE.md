@@ -590,6 +590,11 @@ team and queue model:
   are rejected by configured movement/duration thresholds. The server remains authoritative for
   distance, inventory, and live destination tier. The tutorial and result cards use viewport-width
   sizing with desktop caps so those cues stay on-screen on phones and tablets.
+- From setup through Wave 10, Merge suppresses the central power hotbar and blocks click, keyboard,
+  controller, and auto-cast activation through the same local coverage attribute. When a tutorial
+  instruction is active, its card copies the live hotbar `PillFrame`'s final absolute bounds after
+  phone/tablet scaling, so it replaces that footprint exactly instead of owning another pixel size.
+  Wave 11 restores the hotbar. The side Pets/Powers controls are separate from this central bar.
 - The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,
@@ -598,7 +603,10 @@ team and queue model:
   keeps its saved balance. A fresh Wave-1 (no board, no usable checkpoint), an in-game pre-checkpoint
   reset, a rebirth, or Admin Reset to Beginning sets the wallet to
   `opening_economy.wallet_amount` (0) and lays five owner-only 120-Waycoin stacks beyond the
-  Bulwark (600 total). `collect_setup` re-arms that lesson if the wallet is below 600 and this
+  Bulwark (600 total) plus one gem in front of the gold-line engineer (left of
+  the field while facing the enemy gate). Chevrons walk the closest remaining
+  stack, then the gem; leftover gems in the wallet do not skip that drop.
+  `collect_setup` re-arms that lesson if the wallet is below 600 and this
   session has not spawned the stacks. A leftover `hall_coins` profile default of 100 is not a
   possession and must not skip the stacks. Checkpoint 10+ retries do not recreate the opening.
   Opening and combat Waycoin drops persist for ten minutes in this management mode; ordinary-game
@@ -618,18 +626,58 @@ team and queue model:
   does not require all four hatchers or prescribe whether merging happens before deployment. Wave 1
   remains sealed until those facts are true. Auto Collector owners receive Coin Pup copy instead of
   walking breadcrumbs and advance when that pet has actually placed all 600 Waycoins in the wallet.
-  Completion is stored in `GameData.MergeDefense.tutorial_completed` and critically saved together
-  with the current Merge playstate as soon as the final tutorial action completes; later entries
+  Phase 1 completion is stored as `tutorial_setup_completed` and releases Waves 1–2.
+  Locked first-visit drip (pauses are end-of-wave, then the next wave is held):
+  - **Wave 0:** collect coins + gem, buy eggs, combine, deploy.
+  - **End of Wave 2:** meet gold-line engineer, unlock Impaler for 1 Gem, install.
+    Persists `tutorial_workshop_completed`.
+  - **End of Wave 4:** if the Waycoin wallet is empty, chevron any existing
+    pile (do not spawn one; credit 1 Waycoin if none are left so the beat
+    cannot stick). Then a gem if the gem wallet is 0, meet right-pad
+    artillery, unlock Heal for 1 Gem, install. The gem lands on the field
+    past the stone wall, not on the cannon pad. Stamps
+    `tutorial_cannon_completed` and snapshots egg merge/place/base-tier
+    so Wave 6 can tell whether they already upgraded.
+  - **End of Wave 6:** optional. If they merged, installed, or raised the
+    base egg since Wave 4, skip. Otherwise pause, pick up field coins
+    until the wallet is about 600 (enough for six Earth eggs), then one
+    loose card: create a couple, then upgrade or place. Hands-off.
+    `tutorial_upgrade_completed` stamps when that beat finishes. Skip
+    leaves it false so Wave 10 can still land.
+  - **End of Wave 10:** reveal the bay potion tent and post Macros as
+    Quartermaster. Talk only: "I'll get you whatever you need." Then
+    `tutorial_completed`. Shop browse unlocks after that talk. Macros
+    and tent stay planted and hidden (Transparency 1, no collide/query,
+    prompt off) until this beat.
+  After Wave 2 clears, combat pauses (`TutorialIntermission`). Vendors are
+  always in the bay but invisible (`Transparency = 1`, no collide/query,
+  prompt off) until `_setVendorPosted`. The gold-line engineer is revealed
+  with the card (`THE ENGINEER TOOK THE GOLD LINE`), then baby-steps Talk →
+  UNLOCK (1 Gem for Impaler Palisade) → INSTALL. That beat stores
+  `tutorial_workshop_completed` and releases Waves 3–4; the gold-line post
+  stays visible. After Wave 4, combat pauses again. If the gem wallet is 0,
+  a second gem is laid on the field in front of the right pad
+  (`cannon_gem`) and chevrons walk it. Then Talk → UNLOCK (1 Gem for
+  Heal) → INSTALL. That beat stores `tutorial_cannon_completed` and
+  releases Waves 5–6; remaining vendors unhide. After Wave 6, if they
+  have not merged, installed, or raised the base egg since that snapshot,
+  combat pauses for an encouraging coin pickup (about 600 Waycoins) and
+  one loose create-then-upgrade-or-place card. If they already did that
+  work, Wave 6 does not pause. After Wave 10 the potion tent and Macros
+  unhide; Talk completes the first-visit drip. Full
+  completion is stored in `GameData.MergeDefense.tutorial_completed` when
+  that Talk finishes. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
   independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
   rebirth. Admin **Reset to Beginning** (`🔄 Reset to Beginning (keeps ALL unique pets)`) is the
-  deliberate clean-slate exception for Merge possessions, but it is **not** a tutorial replay.
+  deliberate clean-slate exception for Merge possessions **and** the Merge tutorial flags.
   It closes any live/pending Merge session before profile mutation; clears wallet, checkpoint,
-  board and deployed eggs, hatcher/bulwark runtime models, rebirths, management upgrades, and spent
-  Gems; then re-enters on the next scheduler turn with no scheduled wave. A previously completed
-  Merge tutorial remains completed and inactive. The new session starts at Wave 0 with zero
-  Waycoins and exactly five owner-only opening piles worth 120 each; Wave 1 remains sealed until an
-  egg is deployed. Unique/huge pets stay, while ordinary inventory follows the global Reset to
+  board and deployed eggs, hatcher/bulwark runtime models, rebirths, management upgrades, spent
+  Gems, and `GameData.MergeDefense.tutorial_completed`; then re-enters on the next scheduler turn
+  with no scheduled wave. Stage 1 (`collect_setup`) starts again so the opening piles get
+  chevrons. The new session starts at Wave 0 with zero Waycoins and exactly five owner-only
+  opening piles worth 120 each plus the opening gem; Wave 1 remains sealed until an egg is
+  deployed. Unique/huge pets stay, while ordinary inventory follows the global Reset to
   Beginning contract. On the dedicated Merge place this never starts the Farm prologue or first-pet
   chooser. Wall cards show the reset values (Coin Value 100%, Rebirth R1) and next purchase
   (+5% → 105%, Next R2). `scripts/studio/test_merge_admin_reset_lifecycle.luau` exercises the real
@@ -1073,9 +1121,14 @@ clean.
   `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
   Workspace review lineup is removed; maps own mounts, not cannon visuals. Every tier is normalized
-  to the corrected 7.953594-stud reference width at template scale 1.
-  `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier and grounds it on a
-  pad's `TowerAnchor`; no current-art substitution or resize fallback remains.
+  to the corrected 7.953594-stud reference width at template scale 1. Presentation
+  size is per-tier `worldScale` on `configs/merge_tier_art.lua` (every
+  Tier 1 is 0.375; Tiers 2–4 stay 0.5). Every chassis sets
+  `seatOffsetY` so wheels sit on the pad. Rage T1 also sets
+  `barrelYawDegrees = 270`.
+  `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier,
+  applies that entry's `worldScale`, and grounds it on a pad's `TowerAnchor`;
+  no current-art substitution or shared edge-tower scale remains.
 - Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
   and one immediately outside position 9, pulled one 8.4-stud pad-width back
   from the egg-stand depth so they are not on top of the red-line engineer.
@@ -1084,11 +1137,15 @@ clean.
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Pads
-  start empty. Runtime clones the installed role's distinct gameplay-tier template at scale 1,
-  seats the chassis on the pad, and
-  lofts a fireball along a parabolic arc toward the nearest enemy on the gate
-  side of the lane. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
-  the model pivot (that CFrame stays at the portal spawn). Range reaches
+  start empty. Runtime clones the installed role's distinct gameplay-tier
+  template, applies that tier's `worldScale`, seats the chassis on the pad, and
+  lofts a fireball along a parabolic arc. Power-laying roles (Heal, Rage,
+  and any `cast` landing) aim the floor under the target — the same
+  LandStrip plane the ring uses — and the ball blooms out instead of
+  lingering. Other roles still use the gate-side lane target. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
+  the model pivot (that CFrame stays at the portal spawn). Each shot
+  freezes aim for a short config recoil (lurch up, settle) that never
+  owns the fire interval, then tracking resumes. Range reaches
   `OuterSpawnGate` on the dedicated Merge place (the old `EnemyPortalVisual`
   hook is absent there), so they track from the gate rather than only the last
   90 studs. The chassis stays flat and only yaws; loft is in the projectile.
@@ -1098,11 +1155,14 @@ clean.
   is gone. Talk the Artillery Commander behind that pad instead: the
   workshop is the same pick-then-act panel as the bulwark menu, but the
   list is the six cannon roles and that commander only writes his pad.
-  Buy owns a role forever; Install deploys the owned tier onto that pad;
-  Upgrade advances the owned tier. The visual pass owns the six roles so
-  each chassis can be installed and judged before powers. Catalog
-  ownership is applied on every workshop read so Install does not
-  require a Buy. Persist is `MergeCannonPersist`: owned + per-pad
+  Unlock is one-time and global (access to Tier 1). Playtest
+  unlock, place, and upgrade stay one Waycoin; final unlocks will
+  almost certainly be gems or a Robux game pass. The workshop
+  shows LOCKED until that flag is set. Currently Owned and Next
+  Upgrade each render the family/tier's config-owned transparent PNG
+  from the generated preview manifest. The menu owns no live model,
+  WorldModel, ViewportFrame, or model-thumbnail fallback. Install pays to place
+  Tier 1 on that pad. Upgrade pays to advance only that pad. Persist is `MergeCannonPersist`: owned + per-pad
   slots only. Purchase does not compare the bay record to a rebuilt
   MergeDefense table and does not read the live wave. Board-action toasts use DisplayOrder 130 so they
   sit in front of the workshop (120), not behind it. Heal aims injured pets (`CombatDamageTaken`) and
@@ -1117,15 +1177,21 @@ clean.
   Hard rule: no shot at a target on the egg side of BreachLine. Heal
   and Rage use that same floor (`heal_fire_line` / `rage_fire_line`,
   also `bulwark` or `mid`).
-  New landing effects wait. Playtest unlock is Wave 1 / one Waycoin;
+  Debuff sips Weakening Vial on enemies. Gravity pulls into a
+  black-hole rune. Repulsor is a concussion blast that flings
+  outward from impact (per-enemy hit roll; T4 40%). Dest is
+  leashed before Y-snap so they cannot clear the back wall.
+  Nullifier rolls Frost Bind per enemy. No rebuilt powers.
+  Playtest unlock is Wave 1 / one Waycoin;
   production stays the Wave-10 intermission. Hits do not deal damage yet.
 
 ## Bulwark defense art set
 
 - The walk-up workshop is a pick-then-act panel: Currently Owned and Next
   Upgrade previews on the left, the six families as a list on the right.
-  Buy/Upgrade lives in the next-upgrade card; Install only deploys an owned
-  family onto the strip. Persist is `MergeBulwarkPersist` (owned + per-slot
+  Buy unlocks the family globally. Upgrade lives in the next-upgrade
+  card and only advances this slot. Install pays to place Tier 1 on
+  this slot. Persist is `MergeBulwarkPersist` (owned + per-slot
   installs only). Purchase does not compare the bay record to MergeDefense
   and does not read the live wave. Per-tier `upgradeNotes` and draft roles (stop, bleed,
   hunt, shred, hold, ward) live on `MergeBulwarkProgression`. Impaler Palisade
@@ -1174,8 +1240,9 @@ clean.
   stand on the red-line left and the gold-line right so the egg row and
   later cannons keep the middle. Each Talk opens the same unchanged
   workshop for that slot. Wardstone is egg-only.
-  Select writes that slot; Upgrade still advances owned tier. Playtest unlock
-  remains Wave 1 / one Waycoin; production stays the Wave-20 intermission.
+  Select writes that slot at Tier 1. Upgrade advances only that
+  slot. Playtest unlock remains Wave 1 / one Waycoin; production
+  stays the Wave-20 intermission.
 - Every one of the 24 family/tier variants is presentation-audited against all ten Heaven/Hell bays.
   The five static families use uniform `0.94` scaling on ten 9.4-stud anchors; each line spans 94
   studs and retains the authored one-stud wall clearance. Land Sharks are audited separately as

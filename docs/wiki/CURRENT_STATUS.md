@@ -18,11 +18,22 @@ does not match, rather than trusting tier attributes alone.
 ## Artillery Commander workshop (2026-09-01)
 
 SploitHunter stands behind each pad. Talk opens an artillery workshop
-that matches the bulwark panel (six roles, buy / upgrade / install).
-Ownership is global; each commander installs only that pad. Pads start
-empty. The visual pass owns the six chassis so Install does not need
-a Buy. All six families use distinct Tier 1–4 models at uniform runtime
-scale; gameplay tier selects the matching prebaked template directly.
+that matches the bulwark panel (six roles, unlock / upgrade / install).
+Unlock is global and one-time; each commander places and upgrades
+only that pad. Pads start empty and keep their own tier. The
+workshop shows LOCKED until that family is unlocked — the catalog
+is not granted for free. Currently Owned and Next Upgrade use that
+family/tier's config-owned transparent preview image. The 24 previews
+are normalized flat PNGs; the menu does not clone live models, create
+ViewportFrames, or depend on Roblox's arbitrary model-thumbnail camera.
+Playtest unlock/place/upgrade are one
+Waycoin each. All six families use distinct Tier 1–4 models. Each of the 24
+cannon entries has its own `worldScale` (0.375 on every Tier 1,
+0.5 on Tiers 2–4). Every chassis uses `seatOffsetY` so wheels sit
+on the pad (0.55 at T1, 0.733 at T2–4). Rage T1 also has
+`barrelYawDegrees = 270`. Gameplay
+tier selects the matching
+prebaked template, then spawn applies that entry's presentation.
 Board-action toasts sit above the workshop
 (DisplayOrder 130). Install writes `MergeCannonPersist` only — no
 wave/MergeDefense signature compare. The `CANNON STATE CHANGED`
@@ -43,9 +54,18 @@ idle-pet or empty-lane shot. Pets outside the circle are not buffed. Flask
 drink still broadcasts from the player. Floor cards read the pet
 stamp (`damage_potion_pet`); CombatAura watches the pet Until. Not
 Play-confirmed. Rage tiers only change fire interval and circle
-size. Cannons never fire at a target on the egg side
+size. Rage T1 circle is 7 studs (T2–T4 stay 28); the rune and
+the sip share that radius. Cannons never fire at a target on the egg side
 of BreachLine. Heal and Rage use that same floor for now; bulwark/mid stay
-tunable. Not Play-confirmed yet.
+tunable. Debuff sips Weakening Vial on enemies (Rage's sibling).
+Gravity pulls into a black-hole rune. Repulsor is a concussion
+blast (CombatFX lava detonation, no magic ring). Fling is radial
+from impact so the pack spreads; each enemy rolls hit_chance
+(T4 40%) so a 2.4s T4 shot cannot freeze the lane. Live play:
+still overpowered, not broken. Dest is still
+leashed before Y-snap. Nullifier rolls Frost
+Bind per enemy (T1 40% hit) so a 2.4s circle cannot hard-lock the
+lane. Not Play-confirmed yet.
 
 ## Dead hatcher egg retargets leftover marchers (2026-09-01)
 
@@ -142,12 +162,21 @@ next rank plus three role-true bullets from `upgradeNotes`. Buy/Upgrade
 lives in that next card. Install only deploys an owned family onto the
 strip. List rows report NOT OWNED / OWNED • TIER N / MAX.
 
+## Merge pads and walls upgrade independently (2026-09-01)
+
+Unlock is one-time and global. The workshop shows LOCKED / UNLOCK
+until that family is bought. Playtest unlock, place, and upgrade
+stay one Waycoin. Final unlocks will almost certainly be gems or
+a Robux game pass and survive rebirth; placements do not.
+Installing on a second pad or on the egg wall starts at Tier 1.
+Upgrade only advances the slot you are standing at. Workshop
+layout is unchanged. Not Play-confirmed.
+
 ## Merge bulwarks are owned per family (2026-08-31)
 
 The right-hand list is the selector. First purchase unlocks Tier 1
-forever; later visits install the owned tier onto the strip for free.
-Upgrade buys the next owned rank of the selected family, even if another
-family is on the strip.
+globally. Later visits still pay to place that family on a slot.
+Upgrade advances only the slot you talked to.
 
 ## Merge bulwark menu is pick-then-act (2026-08-31)
 
@@ -155,6 +184,14 @@ Draft roles (stop/bleed/hunt/shred/hold/ward) live on
 `MergeBulwarkProgression`. Live combat so far: Impaler Palisade `stop_shove`,
 Concertina Line `bleed_slow`, Land Shark `hunt_drag`, Saw Blade `shred_line`,
 and Grasping Hedge `grab_root`. Wardstone Barrier is still visual-only.
+
+## Ability cannon shots land on the floor (2026-09-01)
+
+Heal, Rage, and other power-laying shots aim the floor under the
+target — the same LandStrip plane the ring uses — then the ball
+blooms out in 0.16s instead of lingering. Not dramatic. Config:
+`land_at`, `ability_impact`, `bloom_seconds`, `bloom_scale`. Not
+Play-confirmed.
 
 ## Merge cannon shots boom on landing (2026-08-31)
 
@@ -175,6 +212,13 @@ was stuck at 90, so cannons only woke when pets entered the last third
 of the lane. Aim and range now use the gate (or the old portal visual
 when that world is present), plus live `MoveTarget` / `GetLivePosition`.
 Still no shot damage.
+
+## Merge cannons kick on fire (2026-09-01)
+
+On each shot the chassis stops aiming for 0.18s, lurches up 0.2 studs
+with a light shake, then settles and resumes tracking. Config lives on
+`team.edge_towers.shot.recoil`. It does not change the fire interval.
+Not Play-confirmed.
 
 ## Merge cannons aim the barrel and spit fireballs (2026-08-31)
 
@@ -402,6 +446,10 @@ VIP/staff sit as one name badge. Persist `GameData.CombatRank`.
 People list (2026-08-25): custom smoked list replaces CoreGui. Tab or
 the header collapses it. One name badge (owner Colorado C+blaster,
 then developer / content creator / official tester / founder ⭐ / VIP).
+Its dock width, top/right position, header/row/body heights, columns, and
+profile-card footprint are viewport ratios selected by DisplayClass
+(phone/tablet/desktop/ten-foot); no fixed 397px screen-width contract remains.
+Viewport and orientation changes relayout the live list.
 Rank is the claimed/Ascended level, not the potentially-ahead earned level. The Rank cell and
 Ascension nudge stay hidden until either the crystal/Homeworld introduction or the independent
 Combat Training tutorial is complete; older players who already claimed a level remain unlocked.
@@ -2116,6 +2164,7 @@ The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left
 ## Merge HUD (2026-08-30)
 
 Dedicated Merge place hides the Farm quest tracker. Wave status lives in
-`MergeWaveBar` in that same upper-right chrome slot. The People list uses
-`merge_top_inset` 98 so it sits under the wave bar. Hatcher captains stand on
+`MergeWaveBar` in that same upper-right chrome slot. The People list selects
+its configured Merge top ratio for the current DisplayClass so it sits under
+the wave bar on phone, tablet, desktop, and ten-foot displays. Hatcher captains stand on
 the floor on the gate side of their egg; new slots get a cloned `EggStand`.

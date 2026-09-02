@@ -1,0 +1,33 @@
+local MergeCannonFling = loadModule("src/Shared/Game/MergeCannonFling.lua")
+
+return function()
+    describe("MergeCannonFling", function()
+        it("peaks at mid-flight then lands", function()
+            local _, midY = MergeCannonFling.point(0, 0, 0, 10, 0, 0, 8, 0.5)
+            local _, startY = MergeCannonFling.point(0, 0, 0, 10, 0, 0, 8, 0)
+            local _, endY = MergeCannonFling.point(0, 0, 0, 10, 0, 0, 8, 1)
+            expect(startY).to.equal(0)
+            expect(endY).to.equal(0)
+            expect(midY).to.equal(8)
+        end)
+
+        it("tumbles a full authored spin", function()
+            expect(MergeCannonFling.tumble(1, 1, 1)).to.be.near(math.pi * 2, 0.001)
+            expect(MergeCannonFling.tumble(0.5, 2, -1)).to.be.near(-math.pi * 2, 0.001)
+        end)
+
+        it("rejects a cliff drop and a wall climb", function()
+            expect(MergeCannonFling.keepStep(7, 7, 10, 10)).to.equal(true)
+            expect(MergeCannonFling.keepStep(7, 16, 10, 10)).to.equal(true)
+            expect(MergeCannonFling.keepStep(7, -3, 10, 10)).to.equal(true)
+            expect(MergeCannonFling.keepStep(7, 18, 10, 10)).to.equal(false)
+            expect(MergeCannonFling.keepStep(7, -190, 10, 10)).to.equal(false)
+        end)
+
+        it("misses a Frost Bind roll at or above hit_chance", function()
+            expect(MergeCannonFling.hitRoll(0.4, 0.39)).to.equal(true)
+            expect(MergeCannonFling.hitRoll(0.4, 0.4)).to.equal(false)
+            expect(MergeCannonFling.hitRoll(0.4, 0.9)).to.equal(false)
+        end)
+    end)
+end

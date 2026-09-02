@@ -19,6 +19,9 @@ Responsive relationships—not guessed screen coordinates—own placement.
   parent, or layout relationship is wrong and must be fixed instead.
 - Prefer zero offsets. Fixed pixel sizes for icons, strokes, corner radii, and other internal chrome
   are separate from viewport placement, but still belong inside a responsively placed container.
+- When one responsive surface replaces another, copy the live surface's measured final bounds after
+  its constraints/UIScale have resolved. Do not duplicate its nominal design pixels in a second
+  config. The Merge tutorial card replacing the central hotbar is the reference implementation.
 
 The quest/tutorial upper-right surfaces illustrate the boundary: their shared `{1,0},{0,0}` dock and
 right anchor perform placement. The quest tracker's measured 14px top and 4px right adjustments only

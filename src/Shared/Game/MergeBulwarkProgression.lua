@@ -1,6 +1,7 @@
 -- Pure progression policy for the Merge Defense bulwarks. The server owns payment and
--- persistence; this module keeps unlock, family ownership, slot install, and tier advancement
--- deterministic. Buying a family keeps that tier forever; switching onto a slot is free.
+-- persistence; this module keeps unlock, slot install, and tier advancement deterministic.
+-- Unlock is one-time and global. Each physical slot (lane, egg, later mid/front) keeps
+-- its own family and tier; placement and upgrade are paid per slot.
 -- Lane = gold BulwarkLine. Egg = red BreachLine. Wardstone is egg-only.
 
 local MergeBulwarkSlots = require(script.Parent.MergeBulwarkSlots)
@@ -211,14 +212,29 @@ local function readRawFamily(raw, def, nested)
         raw[def.aliasTier] or raw[def.persistTier]
 end
 
-local function decorateState(owned, installs)
+local function installEntry(entry)
+    if type(entry) == "table" then
+        return entry.family, whole(entry.tier, 0)
+    end
+    return entry, 0
+end
+
+local function decorateState(owned, installs, cap)
+    cap = math.max(1, whole(cap, 4))
     local state = {
         slots = {},
         owned = owned,
     }
     for _, def in ipairs(MergeBulwarkSlots.all()) do
-        local family = installs[def.id]
-        local tier = family and owned[family] or 0
+        local family, rawTier = installEntry(installs[def.id])
+        local tier = 0
+        if family then
+            if rawTier > 0 then
+                tier = math.clamp(rawTier, 1, cap)
+            else
+                tier = math.clamp(whole(owned[family], 1), 1, cap)
+            end
+        end
         state.slots[def.id] = {
             family = family,
             tier = tier,
@@ -249,31 +265,36 @@ function MergeBulwarkProgression.normalize(raw, maximumTier)
     for _, def in ipairs(MergeBulwarkSlots.all()) do
         local rawFamily, rawTier = readRawFamily(raw, def, nested)
         local family = string.lower(tostring(rawFamily or ""))
+        local tier = math.clamp(whole(rawTier, 0), 0, cap)
         if FAMILY_SET[family] and owned[family] == nil then
-            owned[family] = math.clamp(whole(rawTier, 1), 1, cap)
+            owned[family] = math.clamp(math.max(tier, 1), 1, cap)
         end
         if FAMILY_SET[family] and owned[family] ~= nil then
-            installs[def.id] = family
+            installs[def.id] = {
+                family = family,
+                tier = tier > 0 and tier or owned[family],
+            }
         end
     end
-    -- Legacy saves could put Wardstone on the gold line. Move it to the first
-    -- slot that still accepts it.
+    -- Legacy saves could put Wardstone on the gold line. Move the whole
+    -- install (family + that slot's tier) to the first slot that accepts it.
     for _, def in ipairs(MergeBulwarkSlots.all()) do
-        local family = installs[def.id]
+        local family, tier = installEntry(installs[def.id])
         if family and not MergeBulwarkProgression.canInstall(family, def.id) then
             installs[def.id] = nil
             for _, other in ipairs(MergeBulwarkSlots.all()) do
-                if
-                    installs[other.id] == nil
-                    and MergeBulwarkProgression.canInstall(family, other.id)
-                then
-                    installs[other.id] = family
+                local otherFamily = installEntry(installs[other.id])
+                if otherFamily == nil and MergeBulwarkProgression.canInstall(family, other.id) then
+                    installs[other.id] = {
+                        family = family,
+                        tier = tier > 0 and tier or owned[family],
+                    }
                     break
                 end
             end
         end
     end
-    return decorateState(owned, installs)
+    return decorateState(owned, installs, cap)
 end
 
 function MergeBulwarkProgression.slotFamily(state, slot)
@@ -314,6 +335,21 @@ function MergeBulwarkProgression.ownedTier(state, family)
     return whole((type(state.owned) == "table" and state.owned or {})[id], 0)
 end
 
+-- Per-slot workshop view: unlocked families show as T1 (placeable).
+-- The family on this slot shows that slot's live tier.
+function MergeBulwarkProgression.menuOwned(state, slot)
+    state = MergeBulwarkProgression.normalize(state)
+    local owned = {}
+    for family in pairs(type(state.owned) == "table" and state.owned or {}) do
+        owned[family] = 1
+    end
+    local family, tier = MergeBulwarkProgression.slotFamily(state, slot)
+    if family then
+        owned[family] = math.max(1, whole(tier, 1))
+    end
+    return owned
+end
+
 function MergeBulwarkProgression.signature(state)
     return snapshot(MergeBulwarkProgression.normalize(state))
 end
@@ -333,8 +369,18 @@ function MergeBulwarkProgression.isUnlocked(currentWave, config)
     return reachedWave >= MergeBulwarkProgression.unlockWave(config)
 end
 
-function MergeBulwarkProgression.actionCost(config)
+function MergeBulwarkProgression.actionCost(config, action, family)
     config = type(config) == "table" and config or {}
+    if tostring(action or "") == "unlock" then
+        local costs = type(config.unlock_costs) == "table" and config.unlock_costs or {}
+        local row = costs[string.lower(tostring(family or ""))]
+        if type(row) == "table" then
+            return {
+                currency = tostring(row.currency or "gems"),
+                amount = whole(row.amount, 1),
+            }
+        end
+    end
     return {
         currency = tostring(config.currency or "hall_coins"),
         amount = whole(config.action_cost, 1),
@@ -503,9 +549,17 @@ function MergeBulwarkProgression.scaleCombatEffect(effect, multipliers)
     return result
 end
 
-local function withInstalls(owned, installs, extra)
+-- Rebirth keeps unlock flags. Robux/game-pass grants are permanent
+-- entitlements and must never be cleared here. Only placements empty.
+function MergeBulwarkProgression.clearInstalls(raw, maximumTier)
+    local cap = math.max(1, whole(maximumTier, 4))
+    local state = MergeBulwarkProgression.normalize(raw, cap)
+    return decorateState(cloneOwned(state.owned), {}, cap)
+end
+
+local function withInstalls(owned, installs, extra, cap)
     extra = type(extra) == "table" and extra or {}
-    local state = decorateState(owned, installs)
+    local state = decorateState(owned, installs, cap)
     for key, value in pairs(extra) do
         state[key] = value
     end
@@ -515,8 +569,13 @@ end
 local function cloneInstalls(state)
     local installs = {}
     for _, slotId in ipairs(MergeBulwarkSlots.ids()) do
-        local family = MergeBulwarkProgression.slotFamily(state, slotId)
-        installs[slotId] = family
+        local family, tier = MergeBulwarkProgression.slotFamily(state, slotId)
+        if family then
+            installs[slotId] = {
+                family = family,
+                tier = tier,
+            }
+        end
     end
     return installs
 end
@@ -530,6 +589,23 @@ function MergeBulwarkProgression.apply(raw, action, family, currentWave, config,
     end
     slot = normalizeSlot(slot)
 
+    if action == "unlock" then
+        local requested = string.lower(tostring(family or ""))
+        if not FAMILY_SET[requested] then
+            return nil, "invalid_bulwark_family"
+        end
+        local owned = cloneOwned(state.owned)
+        if owned[requested] ~= nil then
+            return nil, "bulwark_already_unlocked"
+        end
+        owned[requested] = 1
+        return withInstalls(owned, cloneInstalls(state), {
+            operation = "unlocked",
+            charged = true,
+            slot = slot,
+        }, maximumTier)
+    end
+
     if action == "select" then
         local requested = string.lower(tostring(family or ""))
         if not FAMILY_SET[requested] then
@@ -539,39 +615,31 @@ function MergeBulwarkProgression.apply(raw, action, family, currentWave, config,
             return nil, "bulwark_slot_forbidden"
         end
         local owned = cloneOwned(state.owned)
-        local installs = cloneInstalls(state)
-        local current = installs[slot]
         if owned[requested] == nil then
-            owned[requested] = 1
-            installs[slot] = requested
-            return withInstalls(owned, installs, {
-                operation = "installed",
-                charged = true,
-                slot = slot,
-            })
+            return nil, "bulwark_not_owned"
         end
+        local installs = cloneInstalls(state)
+        local current = installs[slot] and installs[slot].family
         if requested == current then
             return nil, "bulwark_already_selected"
         end
-        installs[slot] = requested
+        installs[slot] = {
+            family = requested,
+            tier = 1,
+        }
         return withInstalls(owned, installs, {
-            operation = "equipped",
-            charged = false,
+            operation = current and "replaced" or "installed",
+            charged = true,
             slot = slot,
-        })
+        }, maximumTier)
     end
 
     if action == "upgrade" then
-        local fallback = MergeBulwarkProgression.slotFamily(state, slot)
-        if not fallback then
-            for _, slotId in ipairs(MergeBulwarkSlots.ids()) do
-                fallback = MergeBulwarkProgression.slotFamily(state, slotId)
-                if fallback then
-                    break
-                end
-            end
+        local currentFamily, currentTier = MergeBulwarkProgression.slotFamily(state, slot)
+        local requested = string.lower(tostring(family or currentFamily or ""))
+        if requested ~= currentFamily then
+            return nil, "bulwark_not_installed"
         end
-        local requested = string.lower(tostring(family or fallback or ""))
         if not FAMILY_SET[requested] then
             return nil, "bulwark_not_owned"
         end
@@ -579,16 +647,21 @@ function MergeBulwarkProgression.apply(raw, action, family, currentWave, config,
         if owned[requested] == nil then
             return nil, "bulwark_not_owned"
         end
-        if owned[requested] >= maximumTier then
+        if currentTier >= maximumTier then
             return nil, "bulwark_maxed"
         end
-        owned[requested] = owned[requested] + 1
-        return withInstalls(owned, cloneInstalls(state), {
+        local installs = cloneInstalls(state)
+        local nextTier = currentTier + 1
+        installs[slot] = {
+            family = currentFamily,
+            tier = nextTier,
+        }
+        return withInstalls(owned, installs, {
             upgradedFamily = requested,
             operation = "upgraded",
             charged = true,
             slot = slot,
-        })
+        }, maximumTier)
     end
 
     return nil, "invalid_bulwark_action"

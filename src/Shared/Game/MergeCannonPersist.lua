@@ -53,8 +53,24 @@ function MergeCannonPersist.write(record, progress, state)
         for key, value in pairs(persisted) do
             progress[key] = value
         end
+        for _, def in ipairs(MergeTowerSlots.all()) do
+            local family, tier = MergeTowerProgression.slotFamily(state, def.id)
+            progress[def.persistFamily] = family
+            progress[def.persistTier] = tier
+        end
     end
     return persisted
+end
+
+function MergeCannonPersist.resetPlacements(record, progress, config)
+    config = type(config) == "table" and config or {}
+    -- Empties pads only. Unlock flags stay, including future Robux
+    -- grants. Do not run visual_catalog_owned here.
+    local cleared = MergeTowerProgression.clearInstalls(
+        MergeCannonPersist.inputFrom(record or progress),
+        config.maximum_tier
+    )
+    return MergeCannonPersist.write(record, progress, cleared)
 end
 
 function MergeCannonPersist.apply(state, action, family, config, slot)

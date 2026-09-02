@@ -12,15 +12,19 @@ local MergeCannonMenu = {}
 local function currencyThumbnail(currencyId)
     for _, currency in ipairs(CURRENCIES) do
         if currency.id == currencyId then
-            local assetId = string.match(tostring(currency.icon or ""), "(%d+)$")
-            assert(assetId ~= nil, "Currency icon is not an asset id: " .. currencyId)
-            return string.format("rbxthumb://type=Asset&id=%s&w=150&h=150", assetId)
+            local raw = tostring(currency.icon_asset or currency.icon or "")
+            local assetId = string.match(raw, "(%d+)")
+            if assetId then
+                return string.format("rbxthumb://type=Asset&id=%s&w=150&h=150", assetId)
+            end
+            return nil
         end
     end
     error("Currency config is missing: " .. currencyId)
 end
 
 local WAYCOIN_ICON = currencyThumbnail("hall_coins")
+local GEM_ICON = currencyThumbnail("gems")
 local FAMILY_COLORS = {
     Color3.fromRGB(210, 145, 55),
     Color3.fromRGB(125, 135, 155),
@@ -266,7 +270,7 @@ function MergeCannonMenu.new(parent, onAction)
     selectedName.LayoutOrder = 1
     textLimit(selectedName, 24)
     local ownedBadge =
-        label(selectedHeader, "OwnedBadge", "NOT OWNED", UDim2.new(0.24, 0, 0.78, 0), true)
+        label(selectedHeader, "OwnedBadge", "LOCKED", UDim2.new(0.24, 0, 0.78, 0), true)
     ownedBadge.LayoutOrder = 2
     ownedBadge.BackgroundTransparency = 0
     ownedBadge.BackgroundColor3 = Color3.fromRGB(42, 51, 68)
@@ -277,7 +281,7 @@ function MergeCannonMenu.new(parent, onAction)
     local hint = label(
         panel,
         "Hint",
-        "Placeable from Wave 1 • Every change costs 1 Waycoin",
+        "Placeable from Wave 1 • Heal unlocks for 1 Gem • Other changes 1 Waycoin",
         UDim2.new(1, 0, 0.03, 0),
         false
     )
@@ -361,7 +365,8 @@ function MergeCannonMenu.new(parent, onAction)
     fill(ownedPreview.pane)
 
     local ownedEmpty =
-        label(ownedPreview.pane, "OwnedEmpty", "NOT OWNED YET", UDim2.fromScale(1, 1), true)
+        label(ownedPreview.pane, "OwnedEmpty", "LOCKED", UDim2.fromScale(1, 1), true)
+    ownedEmpty.ZIndex = 2
     ownedEmpty.TextXAlignment = Enum.TextXAlignment.Center
     ownedEmpty.TextColor3 = Color3.fromRGB(132, 146, 164)
     textLimit(ownedEmpty, 18)
@@ -567,7 +572,7 @@ function MergeCannonMenu.new(parent, onAction)
         statusSplit.SortOrder = Enum.SortOrder.LayoutOrder
         statusSplit.Parent = status
         local statusText =
-            label(status, "StatusText", "NOT OWNED", UDim2.new(0.72, 0, 0.7, 0), true)
+            label(status, "StatusText", "LOCKED", UDim2.new(0.72, 0, 0.7, 0), true)
         statusText.LayoutOrder = 1
         statusText.TextXAlignment = Enum.TextXAlignment.Right
         statusText.TextColor3 = Color3.fromRGB(175, 190, 208)
@@ -634,7 +639,7 @@ function MergeCannonMenu.new(parent, onAction)
         split.Padding = UDim.new(0.02, 0)
         split.SortOrder = Enum.SortOrder.LayoutOrder
         split.Parent = row
-        local verb = label(row, "Verb", "BUY", UDim2.new(0.4, 0, 0.7, 0), true)
+        local verb = label(row, "Verb", "UNLOCK", UDim2.new(0.4, 0, 0.7, 0), true)
         verb.LayoutOrder = 1
         verb.TextXAlignment = Enum.TextXAlignment.Right
         textLimit(verb, 20)
@@ -654,13 +659,14 @@ function MergeCannonMenu.new(parent, onAction)
         return { row = row, verb = verb, coin = coin, amount = amount }
     end
 
-    local function paintPriced(contents, verbText, showPrice, costAmount, ink)
+    local function paintPriced(contents, verbText, showPrice, costAmount, ink, currencyId)
         contents.verb.Text = verbText
         contents.verb.TextColor3 = ink
         contents.verb.Size = showPrice and UDim2.new(0.4, 0, 0.7, 0) or UDim2.new(0.8, 0, 0.7, 0)
         contents.verb.TextXAlignment = showPrice and Enum.TextXAlignment.Right
             or Enum.TextXAlignment.Center
         contents.coin.Visible = showPrice
+        contents.coin.Image = currencyId == "gems" and GEM_ICON or WAYCOIN_ICON
         contents.amount.Visible = showPrice
         contents.amount.Text = tostring(costAmount)
         contents.amount.TextColor3 = ink
@@ -685,7 +691,7 @@ function MergeCannonMenu.new(parent, onAction)
         if controller.buyActive then
             onAction({
                 action = "cannon",
-                cannonAction = "select",
+                cannonAction = "unlock",
                 family = controller.selectedFamily.id,
                 slot = controller.state and controller.state.slot,
             })
@@ -705,14 +711,14 @@ function MergeCannonMenu.new(parent, onAction)
     install.BackgroundColor3 = Color3.fromRGB(225, 151, 22)
     install.BorderSizePixel = 0
     install.Font = Enum.Font.GothamBlack
-    install.Text = "INSTALL"
+    install.Text = ""
     install.TextColor3 = Color3.fromRGB(26, 18, 4)
     install.TextScaled = true
     install.LayoutOrder = 5
     install.Parent = panel
     corner(install, 14)
     local installStroke = stroke(install, Color3.fromRGB(255, 229, 110), 3)
-    textLimit(install, 22)
+    local installPurchase = pricedContents(install, "Purchase")
     install.Activated:Connect(function()
         if controller.installActive and controller.selectedFamily then
             onAction({
@@ -749,11 +755,14 @@ function MergeCannonMenu.new(parent, onAction)
         local maximumTier = math.max(1, math.floor(tonumber(state.maximumTier) or 4))
         local cost = math.max(0, math.floor(tonumber(state.actionCost) or 0))
         local wallet = math.max(0, math.floor(tonumber(state.wallet) or 0))
+        local gemWallet = math.max(0, math.floor(tonumber(state.gemWallet) or 0))
+        local unlockCosts = type(state.unlockCosts) == "table" and state.unlockCosts or {}
         syncCards(families)
+        walletCoin.Image = WAYCOIN_ICON
         walletAmount.Text = tostring(wallet)
 
         hint.Text = state.playtestUnlock == true
-                and "Placeable from Wave 1 • Every change costs 1 Waycoin"
+                and "Placeable from Wave 1 • Heal unlocks for 1 Gem • Other changes 1 Waycoin"
             or string.format(
                 "Unlocks at Wave %d • Tutorial during the milestone intermission",
                 tonumber(state.productionUnlockWave) or 10
@@ -787,19 +796,26 @@ function MergeCannonMenu.new(parent, onAction)
                     card.statusMark.TextColor3 = Color3.fromRGB(196, 150, 255)
                     card.statusMark.Visible = true
                 elseif ownedTier == 0 then
-                    card.statusText.Text = "NOT OWNED"
+                    card.statusText.Text = "LOCKED"
                     card.statusText.TextColor3 = Color3.fromRGB(175, 190, 208)
                     card.statusIcon.Visible = true
                     card.statusMark.Visible = false
-                elseif atMax then
+                elseif current and atMax then
                     card.statusText.Text = "MAX"
                     card.statusText.TextColor3 = Color3.fromRGB(196, 150, 255)
                     card.statusIcon.Visible = false
                     card.statusMark.Text = "★"
                     card.statusMark.TextColor3 = Color3.fromRGB(196, 150, 255)
                     card.statusMark.Visible = true
+                elseif current then
+                    card.statusText.Text = string.format("TIER %d", ownedTier)
+                    card.statusText.TextColor3 = Color3.fromRGB(140, 220, 160)
+                    card.statusIcon.Visible = false
+                    card.statusMark.Text = "✓"
+                    card.statusMark.TextColor3 = Color3.fromRGB(90, 210, 130)
+                    card.statusMark.Visible = true
                 else
-                    card.statusText.Text = string.format("OWNED • TIER %d", ownedTier)
+                    card.statusText.Text = "UNLOCKED"
                     card.statusText.TextColor3 = Color3.fromRGB(140, 220, 160)
                     card.statusIcon.Visible = false
                     card.statusMark.Text = "✓"
@@ -819,27 +835,47 @@ function MergeCannonMenu.new(parent, onAction)
         if selected then
             controller.selectedId = selected.id
             local ownedTier = math.max(0, math.floor(tonumber(owned[selected.id]) or 0))
+            local unlockPrice = ownedTier == 0 and unlockCosts[selected.id] or nil
+            local unlockCurrency = unlockPrice and unlockPrice.currency or state.currency
+            local unlockAmount = unlockPrice
+                    and math.max(0, math.floor(tonumber(unlockPrice.amount) or cost))
+                or cost
+            walletCoin.Image = unlockCurrency == "gems" and GEM_ICON or WAYCOIN_ICON
+            walletAmount.Text = tostring(unlockCurrency == "gems" and gemWallet or wallet)
             local current = installed and selected.id == state.family
             local atMaximum = ownedTier >= maximumTier
             local nextTier = ownedTier == 0 and 1
+                or (not current and 1)
                 or (atMaximum and ownedTier or math.min(maximumTier, ownedTier + 1))
             selectedName.Text = string.upper(tostring(selected.name or selected.id))
             if ownedTier == 0 then
-                ownedBadge.Text = "NOT OWNED"
+                ownedBadge.Text = "LOCKED"
                 ownedBadge.BackgroundColor3 = Color3.fromRGB(42, 51, 68)
                 ownedBadge.TextColor3 = Color3.fromRGB(205, 220, 235)
-            elseif atMaximum then
+            elseif atMaximum and current then
                 ownedBadge.Text = "MAX"
                 ownedBadge.BackgroundColor3 = Color3.fromRGB(74, 52, 110)
                 ownedBadge.TextColor3 = Color3.fromRGB(226, 196, 255)
+            elseif current then
+                ownedBadge.Text = string.format("TIER %d", ownedTier)
+                ownedBadge.BackgroundColor3 = Color3.fromRGB(46, 92, 68)
+                ownedBadge.TextColor3 = Color3.fromRGB(190, 255, 205)
             else
-                ownedBadge.Text = string.format("OWNED • TIER %d", ownedTier)
+                ownedBadge.Text = "UNLOCKED"
                 ownedBadge.BackgroundColor3 = Color3.fromRGB(46, 92, 68)
                 ownedBadge.TextColor3 = Color3.fromRGB(190, 255, 205)
             end
             ownedBadge.Visible = true
             installedBadge.Visible = current
             installedBadge.Text = "INSTALLED"
+            if ownedTier == 0 then
+                ownedTitle.Text = "LOCKED"
+                ownedEmpty.Text = "LOCKED"
+            elseif current then
+                ownedTitle.Text = "CURRENTLY OWNED"
+            else
+                ownedTitle.Text = "UNLOCKED"
+            end
             selectedRole.Text = string.upper(tostring(selected.role or ""))
             selectedDescription.Text = tostring(selected.description or "")
             if ownedTier > 0 then
@@ -853,30 +889,45 @@ function MergeCannonMenu.new(parent, onAction)
             nextCaption.Text = atMaximum and "MAX" or string.format("TIER %d", nextTier)
             nextCaption.Visible = true
             nextTitle.Text = ownedTier == 0 and "UNLOCK"
+                or (not current and "INSTALL")
                 or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
             paintNotes(selected, nextTier, atMaximum)
             local canInstall = selected.canInstall ~= false
             controller.buyActive = unlocked and ownedTier == 0 and canInstall
-            controller.upgradeActive = unlocked and ownedTier > 0 and not atMaximum
+            controller.upgradeActive = unlocked and current and not atMaximum
             controller.installActive = unlocked and ownedTier > 0 and not current and canInstall
             local purchaseActive = controller.buyActive or controller.upgradeActive
-            if atMaximum then
+            if atMaximum and current then
                 paintPriced(purchase, "MAXED", false, cost, Color3.fromRGB(213, 219, 227))
-            elseif ownedTier > 0 then
+            elseif current and ownedTier > 0 then
                 paintPriced(purchase, "UPGRADE", true, cost, Color3.fromRGB(26, 18, 4))
+            elseif ownedTier > 0 then
+                paintPriced(purchase, "", false, cost, Color3.fromRGB(213, 219, 227))
             else
-                paintPriced(purchase, "BUY", true, cost, Color3.fromRGB(26, 18, 4))
+                paintPriced(
+                    purchase,
+                    "UNLOCK",
+                    true,
+                    unlockAmount,
+                    Color3.fromRGB(26, 18, 4),
+                    unlockCurrency
+                )
             end
             upgrade.Active = purchaseActive
             upgrade.AutoButtonColor = purchaseActive
-            upgrade.BackgroundColor3 = atMaximum and Color3.fromRGB(68, 74, 86)
-                or (ownedTier > 0 and Color3.fromRGB(75, 175, 95) or Color3.fromRGB(225, 151, 22))
-            upgradeStroke.Color = atMaximum and Color3.fromRGB(110, 118, 132)
-                or (
-                    ownedTier > 0 and Color3.fromRGB(180, 255, 195)
-                    or Color3.fromRGB(255, 229, 110)
-                )
-            install.Text = current and "INSTALLED" or "INSTALL"
+            upgrade.BackgroundColor3 = purchaseActive
+                    and (ownedTier > 0 and Color3.fromRGB(75, 175, 95) or Color3.fromRGB(225, 151, 22))
+                or Color3.fromRGB(68, 74, 86)
+            upgradeStroke.Color = purchaseActive
+                    and (ownedTier > 0 and Color3.fromRGB(180, 255, 195) or Color3.fromRGB(255, 229, 110))
+                or Color3.fromRGB(110, 118, 132)
+            if current then
+                paintPriced(installPurchase, "INSTALLED", false, cost, Color3.fromRGB(213, 219, 227))
+            elseif controller.installActive then
+                paintPriced(installPurchase, "INSTALL", true, cost, Color3.fromRGB(26, 18, 4))
+            else
+                paintPriced(installPurchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
+            end
         else
             showPreview(ownedPreview, nil, 0)
             showPreview(nextPreview, nil, 0)
@@ -886,27 +937,40 @@ function MergeCannonMenu.new(parent, onAction)
             selectedName.Text = "CHOOSE A CANNON"
             selectedRole.Text = ""
             selectedDescription.Text = ""
+            ownedTitle.Text = "CURRENTLY OWNED"
+            ownedEmpty.Text = "LOCKED"
             nextCaption.Visible = false
             nextTitle.Text = "NEXT UPGRADE"
             paintNotes({}, 0, false)
             controller.buyActive = false
             controller.upgradeActive = false
             controller.installActive = false
-            paintPriced(purchase, "BUY", true, cost, Color3.fromRGB(213, 219, 227))
+            paintPriced(purchase, "UNLOCK", true, cost, Color3.fromRGB(213, 219, 227))
             upgrade.Active = false
             upgrade.AutoButtonColor = false
             upgrade.BackgroundColor3 = Color3.fromRGB(68, 74, 86)
             upgradeStroke.Color = Color3.fromRGB(110, 118, 132)
-            install.Text = "INSTALL"
+            paintPriced(installPurchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
         end
         install.Active = controller.installActive == true
         install.AutoButtonColor = controller.installActive == true
         install.BackgroundColor3 = controller.installActive == true and Color3.fromRGB(225, 151, 22)
             or Color3.fromRGB(68, 74, 86)
-        install.TextColor3 = controller.installActive == true and Color3.fromRGB(26, 18, 4)
-            or Color3.fromRGB(213, 219, 227)
         installStroke.Color = controller.installActive == true and Color3.fromRGB(255, 229, 110)
             or Color3.fromRGB(110, 118, 132)
+    end
+
+    function controller:isOpen()
+        return overlay.Visible == true
+    end
+
+    function controller:tutorialCueButton(kind)
+        if kind == "unlock" then
+            return upgrade
+        elseif kind == "install" then
+            return install
+        end
+        return nil
     end
 
     function controller:hide()

@@ -20,10 +20,11 @@ return function()
             local people = cfg()
             expect(people.enabled).to.equal(true)
             expect(people.disable_core_player_list).to.equal(true)
-            expect(people.width).to.equal(397)
-            expect(people.top_inset).to.equal(60)
-            expect(people.merge_top_inset).to.equal(98)
-            expect(people.tutorial_top_inset).to.equal(146)
+            expect(people.layout.modes.phone.width).to.equal(0.36)
+            expect(people.layout.modes.tablet.width).to.equal(0.30)
+            expect(people.layout.modes.desktop.width).to.equal(0.221)
+            expect(people.columns[1].width).to.equal(0.43)
+            expect(people.columns[4].width).to.equal(0.20)
             expect(people.toggle.key).to.equal("Tab")
             expect(people.social.report).to.equal(false)
         end)
@@ -177,20 +178,52 @@ return function()
     end)
 
     describe("PeopleList.topOffset", function()
-        it("uses the fixed slot under the quest pill", function()
-            expect(PeopleList.topOffset(cfg())).to.equal(60)
+        local desktop = {
+            displayClass = "desktop",
+            viewportWidth = 1800,
+            viewportHeight = 900,
+        }
+
+        it("derives the quest dock from the viewport", function()
+            expect(PeopleList.topOffset(cfg(), desktop)).to.equal(62)
         end)
 
         it("drops under the tutorial capsule while that card is up", function()
-            expect(PeopleList.topOffset(cfg(), { tutorialOwnsCorner = true })).to.equal(146)
+            local state = table.clone(desktop)
+            state.tutorialOwnsCorner = true
+            expect(PeopleList.topOffset(cfg(), state)).to.equal(151)
         end)
 
         it("drops under the Merge wave bar on the dedicated place", function()
-            expect(PeopleList.topOffset(cfg(), { mergePlace = true })).to.equal(98)
-            expect(PeopleList.topOffset(cfg(), {
+            local merge = table.clone(desktop)
+            merge.mergePlace = true
+            expect(PeopleList.topOffset(cfg(), merge)).to.equal(102)
+            merge.tutorialOwnsCorner = true
+            expect(PeopleList.topOffset(cfg(), merge)).to.equal(151)
+        end)
+
+        it("keeps phone and tablet rows proportional to their viewports", function()
+            local phone = PeopleList.layout(cfg(), {
+                displayClass = "phone",
+                viewportWidth = 874,
+                viewportHeight = 402,
                 mergePlace = true,
-                tutorialOwnsCorner = true,
-            })).to.equal(146)
+            })
+            expect(phone.widthScale).to.equal(0.36)
+            expect(phone.headerHeight).to.equal(27)
+            expect(phone.rowHeight).to.equal(25)
+            expect(phone.top).to.equal(52)
+
+            local tablet = PeopleList.layout(cfg(), {
+                displayClass = "tablet",
+                viewportWidth = 960,
+                viewportHeight = 600,
+                mergePlace = true,
+            })
+            expect(tablet.widthScale).to.equal(0.30)
+            expect(tablet.headerHeight).to.equal(24)
+            expect(tablet.rowHeight).to.equal(22)
+            expect(tablet.top).to.equal(69)
         end)
     end)
 
@@ -287,18 +320,26 @@ return function()
 
     describe("PeopleList.cardPlacement", function()
         it("sits immediately left of the People list column", function()
-            local place = PeopleList.cardPlacement(cfg())
-            expect(place.top).to.equal(60)
-            expect(place.right).to.equal(409)
-            expect(place.width).to.equal(228)
+            local place = PeopleList.cardPlacement(cfg(), {
+                displayClass = "desktop",
+                viewportWidth = 1800,
+                viewportHeight = 900,
+            })
+            expect(place.top).to.equal(62)
+            expect(place.rightScale).to.be.near(0.2277, 1e-6)
+            expect(place.widthScale).to.equal(0.127)
         end)
     end)
 
     describe("PeopleList.hoverPlacement", function()
         it("docks left of the name column at the hovered row", function()
-            local place = PeopleList.hoverPlacement(cfg(), {}, 33)
-            expect(place.right).to.equal(409)
-            expect(place.top).to.equal(93)
+            local place = PeopleList.hoverPlacement(cfg(), {
+                displayClass = "desktop",
+                viewportWidth = 1800,
+                viewportHeight = 900,
+            }, 33)
+            expect(place.rightScale).to.be.near(0.2277, 1e-6)
+            expect(place.top).to.equal(95)
         end)
     end)
 
@@ -343,6 +384,7 @@ return function()
             local client = readFile("src/Client/init.client.lua")
             expect(client:find("PeopleListController", 1, true)).to.be.ok()
             local controller = readFile("src/Client/Systems/PeopleListController.lua")
+            expect(controller:find("inst.TextScaled = true", 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("ClaimedLevel")', 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("AscensionUnlocked")', 1, true)).to.be.ok()
             expect(controller:find("PromptSendFriendRequest", 1, true)).to.be.ok()
@@ -356,9 +398,12 @@ return function()
             expect(controller:find("character:Clone", 1, true)).to.be.ok()
             expect(controller:find("InspectPlayerFromUserId", 1, true)).to.equal(nil)
             expect(controller:find("PeopleListToggle", 1, true)).to.be.ok()
-            expect(controller:find("PeopleList.topOffset", 1, true)).to.be.ok()
+            expect(controller:find("PeopleList.layout", 1, true)).to.be.ok()
             expect(controller:find("mergePlace = isMergePlace()", 1, true)).to.be.ok()
             expect(controller:find("PeopleList.hoverPlacement", 1, true)).to.be.ok()
+            expect(controller:find('GetPropertyChangedSignal("ViewportSize")', 1, true)).to.be.ok()
+            expect(controller:find("dimensions.widthScale", 1, true)).to.be.ok()
+            expect(controller:find("config.width", 1, true)).to.equal(nil)
             expect(controller:find("DisplayOrder = 92", 1, true)).to.be.ok()
             expect(controller:find("HoverTip", 1, true)).to.be.ok()
             local admin = readFile("src/Server/Services/AdminService.lua")

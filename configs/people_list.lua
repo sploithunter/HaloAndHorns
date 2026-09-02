@@ -13,21 +13,70 @@ return {
     enabled = true,
     disable_core_player_list = true,
 
-    -- Same column as the quest tracker (397 / 4px right). The quest bar owns
-    -- the 14px rounded-screen top + 40px pill. This list starts under that
-    -- slot (14 + 40 + 6). The 10s expanded tip may overlap; that is fine.
-    width = 397,
-    header_height = 24,
-    row_height = 22,
-    max_body_height = 240,
-    top_inset = 60,
-    -- Merge wave bar is 78px under the 14px top. Sit the list under that
-    -- card (14 + 78 + 6) so wave copy is not covered.
-    merge_top_inset = 98,
-    -- Tutorial capsule is 124px under the 14px top. Sit the list under that
-    -- card so both stay visible (Jason: see the player list with the tutorial).
-    tutorial_top_inset = 146,
-    right_inset = 4,
+    -- Every visible list dimension is a share of the live viewport. Do not replace these with
+    -- offsets: the People list must retain the same proportions on phones, tablets, and desktop.
+    layout = {
+        modes = {
+            desktop = {
+                width = 0.221,
+                header_height = 0.0276,
+                row_height = 0.0253,
+                max_body_height = 0.276,
+                top = 0.069,
+                merge_top = 0.113,
+                tutorial_top = 0.168,
+                right = 0.0022,
+                card_width = 0.127,
+                card_gap = 0.0045,
+                card_headshot_height = 0.0644,
+                card_viewport_height = 0.207,
+            },
+            tablet = {
+                width = 0.30,
+                header_height = 0.04,
+                row_height = 0.037,
+                max_body_height = 0.40,
+                top = 0.07,
+                merge_top = 0.115,
+                tutorial_top = 0.17,
+                right = 0.004,
+                card_width = 0.22,
+                card_gap = 0.008,
+                card_headshot_height = 0.093,
+                card_viewport_height = 0.30,
+            },
+            phone = {
+                width = 0.36,
+                header_height = 0.0665,
+                row_height = 0.061,
+                max_body_height = 0.465,
+                top = 0.08,
+                merge_top = 0.13,
+                tutorial_top = 0.17,
+                right = 0.006,
+                card_width = 0.28,
+                card_gap = 0.01,
+                card_headshot_height = 0.155,
+                card_viewport_height = 0.45,
+            },
+            ten_foot = {
+                width = 0.221,
+                header_height = 0.0276,
+                row_height = 0.0253,
+                max_body_height = 0.276,
+                top = 0.069,
+                merge_top = 0.113,
+                tutorial_top = 0.168,
+                right = 0.0022,
+                card_width = 0.127,
+                card_gap = 0.0045,
+                card_headshot_height = 0.0644,
+                card_viewport_height = 0.207,
+            },
+        },
+        column_header_to_header = 0.67,
+        column_gutter = 0.012,
+    },
 
     toggle = {
         key = "Tab",
@@ -35,10 +84,6 @@ return {
     },
 
     card = {
-        width = 228,
-        gap = 8,
-        headshot = 56,
-        viewport_height = 180,
         examine_label = "Examine Avatar",
         badge_heading = "How you get this",
         -- List row still shows one mark. The card lists every role.
@@ -57,10 +102,10 @@ return {
     },
 
     columns = {
-        { id = "name", label = "Name", width = 0 },
-        { id = "rank", label = "Rank", width = 56 },
-        { id = "status", label = "Status", width = 92 },
-        { id = "location", label = "Location", width = 78 },
+        { id = "name", label = "Name", width = 0.43 },
+        { id = "rank", label = "Rank", width = 0.14 },
+        { id = "status", label = "Status", width = 0.23 },
+        { id = "location", label = "Location", width = 0.20 },
     },
 
     -- One mark left of the name. First match wins. Founder's Legacy

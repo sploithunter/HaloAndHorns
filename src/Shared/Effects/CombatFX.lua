@@ -628,52 +628,10 @@ local function spawnAuraField(theme, radius, opts)
             discImg.ImageTransparency = 1
             TweenService:Create(discImg, TweenInfo.new(0.1), { ImageTransparency = tgt }):Play()
         end
-        -- DETONATION core: a rapid expanding NEON SPHERE (a swelling fireball that fades) and, when the
-        -- theme opts in, a real Roblox Explosion flash. Sized to the field radius so the pop reads as an
-        -- instant hit of the whole area. theme.burst = { explosion, sphere_color, sphere_frac,
-        -- sphere_time }. Both are point-anchored cosmetics (no physics) parented to the FX folder.
-        local bopt = theme.burst or {}
-        local center = originPos() + Vector3.new(0, math.max(2, radius * 0.4), 0)
-        do -- rapid expanding sphere (the "really quick" expansion Jason wanted)
-            local sphere = Instance.new("Part")
-            sphere.Shape = Enum.PartType.Ball
-            sphere.Material = Enum.Material.Neon
-            sphere.Color = toColor(bopt.sphere_color, c1)
-            sphere.Transparency = 0.2
-            sphere.Anchored = true
-            sphere.CanCollide = false
-            sphere.CanQuery = false
-            sphere.CastShadow = false
-            sphere.Massless = true
-            sphere.Size = Vector3.new(2, 2, 2)
-            sphere.CFrame = CFrame.new(center)
-            sphere.Parent = fieldFolder()
-            local full = (radius * 2) * (tonumber(bopt.sphere_frac) or 1.1)
-            local t = tonumber(bopt.sphere_time) or 0.28
-            TweenService:Create(
-                sphere,
-                TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { Size = Vector3.new(full, full, full), Transparency = 1 }
-            ):Play()
-            -- a colored light PULSE inside the sphere — the "flash" punch, element-tinted (the built-in
-            -- Roblox Explosion is orange-only; this gives every element its own colored flash).
-            local light = Instance.new("PointLight")
-            light.Color = sphere.Color
-            light.Brightness = 8
-            light.Range = math.clamp(radius * 1.5, 8, 60)
-            light.Parent = sphere
-            TweenService:Create(light, TweenInfo.new(t), { Brightness = 0 }):Play()
-            Debris:AddItem(sphere, t + 0.15)
-        end
-        if bopt.explosion then -- classic Roblox Explosion flash — visual only (no fling, no joint break)
-            local ex = Instance.new("Explosion")
-            ex.Position = center
-            ex.BlastRadius = math.max(4, radius)
-            ex.BlastPressure = 0
-            ex.DestroyJointRadiusPercent = 0
-            ex.Visible = true
-            ex.Parent = Workspace
-        end
+        CombatFX.detonate(originPos(), radius, {
+            burst = theme.burst,
+            color = c1,
+        })
     end
 
     local stopped = false
@@ -829,6 +787,72 @@ function CombatFX.attach(entity, spec)
             reskinStop()
         end,
     }
+end
+
+-- Visual-only concussion: expanding neon fireball + optional Roblox Explosion flash.
+-- BlastPressure is 0 — fling is owned by ApplyAirFling, not physics. Same burst
+-- the lava targeted AoE already uses (`combat_fx` themes.lava.field.burst).
+function CombatFX.detonate(origin, radius, opts)
+    opts = type(opts) == "table" and opts or {}
+    if typeof(origin) ~= "Vector3" then
+        return false
+    end
+    radius = tonumber(radius)
+    if radius == nil then
+        return false
+    end
+    radius = math.max(1, radius)
+    local bopt = type(opts.burst) == "table" and opts.burst or nil
+    if not bopt then
+        local element = tostring(opts.element or "lava")
+        local themes = config.attached and config.attached.themes
+        local field = themes
+            and themes[element]
+            and (themes[element].field or themes[element].aurafield)
+        bopt = (type(field) == "table" and field.burst) or {}
+    end
+    local color = toColor(opts.color or bopt.sphere_color, Color3.fromRGB(255, 130, 40))
+    local lift = math.max(2, radius * 0.4)
+    local floorY = tonumber(opts.floor_y)
+    local center = Vector3.new(origin.X, (floorY or origin.Y) + lift, origin.Z)
+    local sphere = Instance.new("Part")
+    sphere.Name = "ConcussionBurst"
+    sphere.Shape = Enum.PartType.Ball
+    sphere.Material = Enum.Material.Neon
+    sphere.Color = color
+    sphere.Transparency = 0.2
+    sphere.Anchored = true
+    sphere.CanCollide = false
+    sphere.CanQuery = false
+    sphere.CastShadow = false
+    sphere.Massless = true
+    sphere.Size = Vector3.new(2, 2, 2)
+    sphere.CFrame = CFrame.new(center)
+    sphere.Parent = fieldFolder()
+    local full = (radius * 2) * (tonumber(bopt.sphere_frac) or 1.1)
+    local t = tonumber(bopt.sphere_time) or 0.28
+    TweenService:Create(
+        sphere,
+        TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        { Size = Vector3.new(full, full, full), Transparency = 1 }
+    ):Play()
+    local light = Instance.new("PointLight")
+    light.Color = color
+    light.Brightness = 8
+    light.Range = math.clamp(radius * 1.5, 8, 60)
+    light.Parent = sphere
+    TweenService:Create(light, TweenInfo.new(t), { Brightness = 0 }):Play()
+    Debris:AddItem(sphere, t + 0.15)
+    if bopt.explosion ~= false then
+        local ex = Instance.new("Explosion")
+        ex.Position = center
+        ex.BlastRadius = math.max(4, radius)
+        ex.BlastPressure = 0
+        ex.DestroyJointRadiusPercent = 0
+        ex.Visible = true
+        ex.Parent = Workspace
+    end
+    return true
 end
 
 -- Public, reusable ground-AoE field. One entry point for both the persistent pet aura AND momentary

@@ -1,8 +1,8 @@
 -- Pure progression policy for Merge Defense pad cannons. The server owns
 -- payment and persistence; this module keeps unlock, role ownership, pad
--- install, and tier advancement deterministic. Buying a role keeps that
--- tier forever; switching onto a pad is free. Each pad is an independent
--- install slot with its own Artillery Commander.
+-- install, and tier advancement deterministic. Buying a role unlocks
+-- Install on every pad. Each pad keeps its own family and tier; Upgrade
+-- only advances the pad whose commander you talked to.
 
 local MergeTowerSlots = require(script.Parent.MergeTowerSlots)
 local MergeTierArt = require(script.Parent.MergeTierArt)
@@ -38,48 +38,52 @@ local FAMILIES = {
         id = "debuff",
         name = "Debuff Cannon",
         role = "Hex",
-        description = "A hex piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A hex piece on the pad. Landing sips a Weakening Vial on enemies in the circle. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Debuff chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Debuff chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Debuff chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Debuff chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Debuff chassis", "+ Sits on this pad", "+ Lands a Weakening Vial" },
+            { "+ Reinforced Debuff chassis", "+ Distinct Tier 2 model", "+ Weakening Vial" },
+            { "+ Advanced Debuff chassis", "+ Distinct Tier 3 model", "+ Weakening Vial" },
+            { "+ Mythic Debuff chassis", "+ Distinct Tier 4 model", "+ Weakening Vial" },
         },
     },
     {
         id = "gravity",
         name = "Gravity Cannon",
         role = "Pull",
-        description = "A pull piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A pull piece on the pad. Landing opens a black hole and shoves enemies into the impact. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Gravity chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Gravity chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Gravity chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Gravity chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Gravity chassis", "+ Sits on this pad", "+ Black hole pull" },
+            { "+ Reinforced Gravity chassis", "+ Distinct Tier 2 model", "+ Black hole pull" },
+            { "+ Advanced Gravity chassis", "+ Distinct Tier 3 model", "+ Black hole pull" },
+            { "+ Mythic Gravity chassis", "+ Distinct Tier 4 model", "+ Black hole pull" },
         },
     },
     {
         id = "repulsor",
         name = "Repulsor Cannon",
         role = "Push",
-        description = "The playtest starter. Knocks the look of a shove down the lane; shot damage is still later.",
+        description = "The playtest starter. Landing is a concussion blast: enemies in the radius can be flung outward. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Repulsor chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Repulsor chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Repulsor chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Repulsor chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Repulsor chassis", "+ Sits on this pad", "+ Blast (50% hit)" },
+            { "+ Reinforced Repulsor chassis", "+ Distinct Tier 2 model", "+ Blast (50% hit)" },
+            { "+ Advanced Repulsor chassis", "+ Distinct Tier 3 model", "+ Blast (45% hit)" },
+            { "+ Mythic Repulsor chassis", "+ Distinct Tier 4 model", "+ Blast (40% hit)" },
         },
     },
     {
         id = "nullifier",
         name = "Nullifier Cannon",
         role = "Silence",
-        description = "A silence piece on the pad. Shot effects stay visual this pass; the chassis and tier are what you are buying.",
+        description = "A silence piece on the pad. Landing rolls Frost Bind on each enemy in the circle. Every tier has its own chassis.",
         upgradeNotes = {
-            { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Shots stay visual" },
-            { "+ Reinforced Nullifier chassis", "+ Distinct Tier 2 model", "+ Shots stay visual" },
-            { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Shots stay visual" },
-            { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Shots stay visual" },
+            { "+ Starter Nullifier chassis", "+ Sits on this pad", "+ Frost Bind (40% hit)" },
+            {
+                "+ Reinforced Nullifier chassis",
+                "+ Distinct Tier 2 model",
+                "+ Frost Bind (50% hit)",
+            },
+            { "+ Advanced Nullifier chassis", "+ Distinct Tier 3 model", "+ Frost Bind (60% hit)" },
+            { "+ Mythic Nullifier chassis", "+ Distinct Tier 4 model", "+ Frost Bind (70% hit)" },
         },
     },
 }
@@ -177,14 +181,29 @@ local function readRawFamily(raw, def, nested)
         raw[def.aliasTier] or raw[def.persistTier]
 end
 
-local function decorateState(owned, installs)
+local function installEntry(entry)
+    if type(entry) == "table" then
+        return entry.family, whole(entry.tier, 0)
+    end
+    return entry, 0
+end
+
+local function decorateState(owned, installs, cap)
+    cap = math.max(1, whole(cap, 4))
     local state = {
         slots = {},
         owned = owned,
     }
     for _, def in ipairs(MergeTowerSlots.all()) do
-        local family = installs[def.id]
-        local tier = family and owned[family] or 0
+        local family, rawTier = installEntry(installs[def.id])
+        local tier = 0
+        if family then
+            if rawTier > 0 then
+                tier = math.clamp(rawTier, 1, cap)
+            else
+                tier = math.clamp(whole(owned[family], 1), 1, cap)
+            end
+        end
         state.slots[def.id] = {
             family = family,
             tier = tier,
@@ -215,14 +234,18 @@ function MergeTowerProgression.normalize(raw, maximumTier)
     for _, def in ipairs(MergeTowerSlots.all()) do
         local rawFamily, rawTier = readRawFamily(raw, def, nested)
         local family = string.lower(tostring(rawFamily or ""))
+        local tier = math.clamp(whole(rawTier, 0), 0, cap)
         if FAMILY_SET[family] and owned[family] == nil then
-            owned[family] = math.clamp(whole(rawTier, 1), 1, cap)
+            owned[family] = math.clamp(math.max(tier, 1), 1, cap)
         end
         if FAMILY_SET[family] and owned[family] ~= nil then
-            installs[def.id] = family
+            installs[def.id] = {
+                family = family,
+                tier = tier > 0 and tier or owned[family],
+            }
         end
     end
-    return decorateState(owned, installs)
+    return decorateState(owned, installs, cap)
 end
 
 function MergeTowerProgression.slotFamily(state, slot)
@@ -263,6 +286,21 @@ function MergeTowerProgression.ownedTier(state, family)
     return whole((type(state.owned) == "table" and state.owned or {})[id], 0)
 end
 
+-- Per-pad view for the workshop: owned families show as T1 (installable).
+-- The family on this pad shows that pad's live tier.
+function MergeTowerProgression.menuOwned(state, slot)
+    state = MergeTowerProgression.normalize(state)
+    local owned = {}
+    for family in pairs(type(state.owned) == "table" and state.owned or {}) do
+        owned[family] = 1
+    end
+    local family, tier = MergeTowerProgression.slotFamily(state, slot)
+    if family then
+        owned[family] = math.max(1, whole(tier, 1))
+    end
+    return owned
+end
+
 function MergeTowerProgression.signature(state)
     return snapshot(MergeTowerProgression.normalize(state))
 end
@@ -280,17 +318,27 @@ function MergeTowerProgression.isUnlocked(currentWave, config)
     return reachedWave >= MergeTowerProgression.unlockWave(config)
 end
 
-function MergeTowerProgression.actionCost(config)
+function MergeTowerProgression.actionCost(config, action, family)
     config = type(config) == "table" and config or {}
+    if tostring(action or "") == "unlock" then
+        local costs = type(config.unlock_costs) == "table" and config.unlock_costs or {}
+        local row = costs[string.lower(tostring(family or ""))]
+        if type(row) == "table" then
+            return {
+                currency = tostring(row.currency or "gems"),
+                amount = whole(row.amount, 1),
+            }
+        end
+    end
     return {
         currency = tostring(config.currency or "hall_coins"),
         amount = whole(config.action_cost, 1),
     }
 end
 
-local function withInstalls(owned, installs, extra)
+local function withInstalls(owned, installs, extra, cap)
     extra = type(extra) == "table" and extra or {}
-    local state = decorateState(owned, installs)
+    local state = decorateState(owned, installs, cap)
     for key, value in pairs(extra) do
         state[key] = value
     end
@@ -300,14 +348,19 @@ end
 local function cloneInstalls(state)
     local installs = {}
     for _, slotId in ipairs(MergeTowerSlots.ids()) do
-        local family = MergeTowerProgression.slotFamily(state, slotId)
-        installs[slotId] = family
+        local family, tier = MergeTowerProgression.slotFamily(state, slotId)
+        if family then
+            installs[slotId] = {
+                family = family,
+                tier = tier,
+            }
+        end
     end
     return installs
 end
 
--- Visual-pass helper: own every listed role at starter tier so Install does
--- not require a Buy. Does not place a chassis on a pad.
+-- Test helper: grant unlock flags without placing a chassis. Playtest no
+-- longer uses this; the workshop must show LOCKED until a real unlock.
 function MergeTowerProgression.withCatalogOwned(raw, roles, starterTier, maximumTier)
     local cap = math.max(1, whole(maximumTier, 4))
     local state = MergeTowerProgression.normalize(raw, cap)
@@ -319,7 +372,15 @@ function MergeTowerProgression.withCatalogOwned(raw, roles, starterTier, maximum
             owned[id] = starter
         end
     end
-    return decorateState(owned, cloneInstalls(state))
+    return decorateState(owned, cloneInstalls(state), cap)
+end
+
+-- Rebirth keeps unlock flags. Robux/game-pass grants are permanent
+-- entitlements and must never be cleared here. Only placements empty.
+function MergeTowerProgression.clearInstalls(raw, maximumTier)
+    local cap = math.max(1, whole(maximumTier, 4))
+    local state = MergeTowerProgression.normalize(raw, cap)
+    return decorateState(cloneOwned(state.owned), {}, cap)
 end
 
 function MergeTowerProgression.apply(raw, action, family, currentWave, config, slot)
@@ -340,39 +401,31 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
             return nil, "cannon_slot_forbidden"
         end
         local owned = cloneOwned(state.owned)
-        local installs = cloneInstalls(state)
-        local current = installs[slot]
         if owned[requested] == nil then
-            owned[requested] = 1
-            installs[slot] = requested
-            return withInstalls(owned, installs, {
-                operation = "installed",
-                charged = true,
-                slot = slot,
-            })
+            return nil, "cannon_not_owned"
         end
+        local installs = cloneInstalls(state)
+        local current = installs[slot] and installs[slot].family
         if requested == current then
             return nil, "cannon_already_selected"
         end
-        installs[slot] = requested
+        installs[slot] = {
+            family = requested,
+            tier = 1,
+        }
         return withInstalls(owned, installs, {
-            operation = "equipped",
-            charged = false,
+            operation = current and "replaced" or "installed",
+            charged = true,
             slot = slot,
-        })
+        }, maximumTier)
     end
 
     if action == "upgrade" then
-        local fallback = MergeTowerProgression.slotFamily(state, slot)
-        if not fallback then
-            for _, slotId in ipairs(MergeTowerSlots.ids()) do
-                fallback = MergeTowerProgression.slotFamily(state, slotId)
-                if fallback then
-                    break
-                end
-            end
+        local currentFamily, currentTier = MergeTowerProgression.slotFamily(state, slot)
+        local requested = string.lower(tostring(family or currentFamily or ""))
+        if requested ~= currentFamily then
+            return nil, "cannon_not_installed"
         end
-        local requested = string.lower(tostring(family or fallback or ""))
         if not FAMILY_SET[requested] then
             return nil, "cannon_not_owned"
         end
@@ -380,16 +433,38 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
         if owned[requested] == nil then
             return nil, "cannon_not_owned"
         end
-        if owned[requested] >= maximumTier then
+        if currentTier >= maximumTier then
             return nil, "cannon_maxed"
         end
-        owned[requested] = owned[requested] + 1
-        return withInstalls(owned, cloneInstalls(state), {
+        local installs = cloneInstalls(state)
+        local nextTier = currentTier + 1
+        installs[slot] = {
+            family = currentFamily,
+            tier = nextTier,
+        }
+        return withInstalls(owned, installs, {
             upgradedFamily = requested,
             operation = "upgraded",
             charged = true,
             slot = slot,
-        })
+        }, maximumTier)
+    end
+
+    if action == "unlock" then
+        local requested = string.lower(tostring(family or ""))
+        if not FAMILY_SET[requested] then
+            return nil, "invalid_cannon_family"
+        end
+        local owned = cloneOwned(state.owned)
+        if owned[requested] ~= nil then
+            return nil, "cannon_already_unlocked"
+        end
+        owned[requested] = 1
+        return withInstalls(owned, cloneInstalls(state), {
+            operation = "unlocked",
+            charged = true,
+            slot = slot,
+        }, maximumTier)
     end
 
     return nil, "invalid_cannon_action"

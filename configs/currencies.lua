@@ -20,6 +20,9 @@ return {
         maxAmount = 10000000000,
         defaultAmount = 0,
         icon = "💎",
+        -- HUD / workshop ImageLabels cannot use the emoji. Same purple
+        -- gem_single Decal CurrencyStyle already shows on the gems pane.
+        icon_asset = "rbxassetid://102357151476128",
     },
 
     {

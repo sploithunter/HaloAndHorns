@@ -352,18 +352,62 @@ function PeopleList.hover(config, ranksConfig, playerState)
     )
 end
 
+local function requiredNumber(value, label)
+    local number = tonumber(value)
+    assert(number ~= nil, "Missing People list layout number: " .. label)
+    return number
+end
+
+local function layoutMode(config, state)
+    local layout = assert(config and config.layout, "people_list.layout is required")
+    local modes = assert(layout.modes, "people_list.layout.modes is required")
+    local displayClass = tostring(state and state.displayClass or "desktop")
+    return assert(modes[displayClass] or modes.desktop, "People list layout mode is required"),
+        layout
+end
+
+function PeopleList.layout(config, state)
+    state = assert(state, "People list viewport state is required")
+    local mode, layout = layoutMode(config, state)
+    requiredNumber(state.viewportWidth, "viewportWidth")
+    local viewportHeight = requiredNumber(state.viewportHeight, "viewportHeight")
+    local topScale = if state.tutorialOwnsCorner == true
+        then requiredNumber(mode.tutorial_top, "tutorial_top")
+        elseif state.mergePlace == true then requiredNumber(mode.merge_top, "merge_top")
+        else requiredNumber(mode.top, "top")
+    return {
+        widthScale = requiredNumber(mode.width, "width"),
+        headerHeight = math.floor(
+            viewportHeight * requiredNumber(mode.header_height, "header_height") + 0.5
+        ),
+        rowHeight = math.floor(
+            viewportHeight * requiredNumber(mode.row_height, "row_height") + 0.5
+        ),
+        maximumBodyHeight = math.floor(
+            viewportHeight * requiredNumber(mode.max_body_height, "max_body_height") + 0.5
+        ),
+        top = math.floor(viewportHeight * topScale + 0.5),
+        rightScale = requiredNumber(mode.right, "right"),
+        cardWidthScale = requiredNumber(mode.card_width, "card_width"),
+        cardGapScale = requiredNumber(mode.card_gap, "card_gap"),
+        cardHeadshotHeight = math.floor(
+            viewportHeight * requiredNumber(mode.card_headshot_height, "card_headshot_height") + 0.5
+        ),
+        cardViewportHeight = math.floor(
+            viewportHeight * requiredNumber(mode.card_viewport_height, "card_viewport_height") + 0.5
+        ),
+        columnHeaderHeight = math.floor(
+            viewportHeight
+                    * requiredNumber(mode.header_height, "header_height")
+                    * requiredNumber(layout.column_header_to_header, "column_header_to_header")
+                + 0.5
+        ),
+        columnGutter = requiredNumber(layout.column_gutter, "column_gutter"),
+    }
+end
+
 function PeopleList.topOffset(config, state)
-    -- Fixed slot under the quest pill. The tutorial capsule shares this
-    -- corner, so drop the list under that card while the lesson is up.
-    -- Merge uses the same corner for the wave bar (taller than the pill).
-    state = state or {}
-    if state.tutorialOwnsCorner == true then
-        return tonumber(config and config.tutorial_top_inset) or 146
-    end
-    if state.mergePlace == true then
-        return tonumber(config and config.merge_top_inset) or 98
-    end
-    return tonumber(config and config.top_inset) or 60
+    return PeopleList.layout(config, state).top
 end
 
 function PeopleList.shouldShow(state)
@@ -414,26 +458,21 @@ function PeopleList.row(config, ranksConfig, playerState)
 end
 
 function PeopleList.cardPlacement(config, state)
-    local card = config and config.card or {}
-    local listWidth = tonumber(config and config.width) or 397
-    local right = tonumber(config and config.right_inset) or 4
-    local gap = tonumber(card.gap) or 8
+    local dimensions = PeopleList.layout(config, state)
     return {
-        top = PeopleList.topOffset(config, state),
-        -- ScreenGui sibling of the list: list width + gap + list right inset.
-        right = right + listWidth + gap,
-        width = tonumber(card.width) or 228,
+        top = dimensions.top,
+        rightScale = dimensions.rightScale + dimensions.widthScale + dimensions.cardGapScale,
+        widthScale = dimensions.cardWidthScale,
+        headshotHeight = dimensions.cardHeadshotHeight,
+        viewportHeight = dimensions.cardViewportHeight,
     }
 end
 
 function PeopleList.hoverPlacement(config, state, rowMidY)
-    local listWidth = tonumber(config and config.width) or 397
-    local right = tonumber(config and config.right_inset) or 4
-    -- Same right-edge dock as the list. The 8px gap is the only pixel
-    -- nudge: sit the tip just left of the name column.
+    local dimensions = PeopleList.layout(config, state)
     return {
-        right = right + listWidth + 8,
-        top = PeopleList.topOffset(config, state) + (tonumber(rowMidY) or 0),
+        rightScale = dimensions.rightScale + dimensions.widthScale + dimensions.cardGapScale,
+        top = dimensions.top + (tonumber(rowMidY) or 0),
     }
 end
 

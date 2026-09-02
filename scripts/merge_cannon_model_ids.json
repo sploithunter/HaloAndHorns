@@ -137,7 +137,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -209,7 +211,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -281,7 +285,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -353,7 +359,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Heal.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
@@ -430,7 +438,10 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "barrelYawDegrees": 270,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -502,7 +513,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -574,7 +587,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -646,7 +661,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Rage.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
@@ -723,7 +740,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -795,7 +814,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -867,7 +888,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -939,7 +962,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
@@ -1017,7 +1042,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -1089,7 +1116,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1162,7 +1191,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1235,7 +1266,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Gravity.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
@@ -1313,7 +1346,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -1385,7 +1420,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1458,7 +1495,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1531,7 +1570,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Repulsor.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
@@ -1609,7 +1650,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier1",
             "sourceArtTier": 1,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.375,
+            "seatOffsetY": 0.55
           }
         },
         {
@@ -1681,7 +1724,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier2",
             "sourceArtTier": 2,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1754,7 +1799,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier3",
             "sourceArtTier": 3,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         },
         {
@@ -1827,7 +1874,9 @@
           "runtime": {
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Nullifier.Tier4",
             "sourceArtTier": 4,
-            "templateScale": 1
+            "templateScale": 1,
+            "worldScale": 0.5,
+            "seatOffsetY": 0.733
           }
         }
       ]
