@@ -7237,3 +7237,16 @@ first-session cohort rates.
 - The feed also celebrates Gems and cumulative 1,000-Waycoin collection milestones. Distinct actions
   queue, repeated action/currency bursts coalesce, and the queue is config-capped to avoid covering
   later instructions with stale confirmations.
+
+## 2026-09-01 — Merge feedback is milestone-only and realm levels add pet positions
+
+- Replaced per-action success toasts with one-time milestones: first creation of each egg tier,
+  generator tiers, defense-family unlocks, new pet-slot capacity, the first 1,000 session Waycoins,
+  and the Quartermaster arrival. Routine egg/defense/management actions stay quiet, and Gem pickups
+  never toast. Refusal feedback remains immediate.
+- Config now adds one hatcher pet position at every aligned world level: Home 3, Heaven 1 four,
+  Hell 1 five, Heaven 2 six, Hell 2 seven, Heaven 3 eight, and Hell 3 nine. The ground roster panel
+  reserves the nine-row final footprint, and a newly reached capacity queues an ordinal milestone
+  such as `4TH PET SLOT UNLOCKED` exactly once per run.
+- Auto-Combine now returns every first-time tier and capacity produced by its merge cascade, so an
+  automatic Ice Egg (or later tier) queues the same milestone as a manual merge.

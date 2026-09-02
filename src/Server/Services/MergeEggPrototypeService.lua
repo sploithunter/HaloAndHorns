@@ -2772,24 +2772,60 @@ function MergeEggPrototypeService:_eggDisplayName(eggId)
     return tostring(source and source.name or eggId)
 end
 
--- Highest tier the player can currently point to on the board, generator, or a deployed hatcher.
--- This lets an action result distinguish a genuinely new tier from another copy without adding a
--- second persisted unlock ledger: consuming a tier always leaves either that tier deployed or a
--- still-higher tier on the board.
-function MergeEggPrototypeService:_highestOwnedEggTier(record)
-    local progression = self:_eggProgression(record)
-    local highest = self:_baseEggTier(record)
-    for tier = 1, #progression do
+function MergeEggPrototypeService:_markEggTierMilestone(record, tier)
+    local numericTier = tonumber(tier)
+    local resolvedTier = numericTier and math.floor(numericTier) or 0
+    if not record or resolvedTier < 1 then
+        return false
+    end
+    record.activityEggTierMilestones = record.activityEggTierMilestones or {}
+    if record.activityEggTierMilestones[resolvedTier] == true then
+        return false
+    end
+    record.activityEggTierMilestones[resolvedTier] = true
+    return true
+end
+
+function MergeEggPrototypeService:_markPetSlotMilestone(record, eggTier)
+    if not record then
+        return nil
+    end
+    local firstTierSlots = self:_positionsForEggTier(1, record)
+    local previous = tonumber(record.activityMaximumPetSlots)
+    previous = previous and math.max(firstTierSlots, math.floor(previous)) or firstTierSlots
+    local unlocked = self:_positionsForEggTier(eggTier, record)
+    record.activityMaximumPetSlots = math.max(previous, unlocked)
+    return unlocked > previous and unlocked or nil
+end
+
+-- Reconnecting to a live board must not celebrate an already-created tier again. Egg progression
+-- is sequential, so any restored highest tier proves that every lower tier was created earlier.
+function MergeEggPrototypeService:_restoreEggTierMilestones(record)
+    record.activityEggTierMilestones = {}
+    local highest = (record.eggsCreated or 0) > 0 and 1 or 0
+    local baseTier = self:_baseEggTier(record)
+    if baseTier > 1 then
+        highest = math.max(highest, baseTier)
+    end
+    local maximumEggTier = tonumber(record.maximumEggTier)
+    if maximumEggTier then
+        highest = math.max(highest, math.floor(maximumEggTier))
+    end
+    for tier = 1, #self:_eggProgression(record) do
         if self:_eggInventoryCount(record, tier) > 0 then
             highest = math.max(highest, tier)
         end
     end
-    for _, team in ipairs(record and record.teams or {}) do
-        if type(team.eggTier) == "number" then
-            highest = math.max(highest, team.eggTier)
+    for _, team in ipairs(record.teams or {}) do
+        local teamTier = tonumber(team.eggTier)
+        if teamTier then
+            highest = math.max(highest, math.floor(teamTier))
         end
     end
-    return highest
+    for tier = 1, highest do
+        record.activityEggTierMilestones[tier] = true
+    end
+    record.activityMaximumPetSlots = self:_positionsForEggTier(math.max(1, highest), record)
 end
 
 function MergeEggPrototypeService:_earthEggPricing(context)
@@ -3260,7 +3296,9 @@ function MergeEggPrototypeService:_applyEggMerge(record, tier)
     record.eggInventory[resolvedTier] = self:_eggInventoryCount(record, resolvedTier) - ratio
     record.eggInventory[resolvedTier + 1] = self:_eggInventoryCount(record, resolvedTier + 1) + 1
     record.eggsMerged = (record.eggsMerged or 0) + 1
-    return true
+    return true,
+        self:_markEggTierMilestone(record, resolvedTier + 1),
+        self:_markPetSlotMilestone(record, resolvedTier + 1)
 end
 
 function MergeEggPrototypeService:_publishBoardMutation(record)
@@ -3276,18 +3314,34 @@ end
 
 function MergeEggPrototypeService:_autoCombineBoard(record)
     local merged = 0
+    local milestones = {}
     while true do
         local tier = self:_mergeableEggTier(record)
-        if not tier or not self:_applyEggMerge(record, tier) then
+        if not tier then
+            break
+        end
+        local applied, eggMilestone, petSlotMilestone = self:_applyEggMerge(record, tier)
+        if not applied then
             break
         end
         merged += 1
+        if eggMilestone or petSlotMilestone then
+            local resultTier = tier + 1
+            local eggId = self:_eggProgression(record)[resultTier]
+            milestones[#milestones + 1] = {
+                milestone = eggMilestone and "egg_created" or nil,
+                eggTier = resultTier,
+                eggId = eggId,
+                eggName = self:_eggDisplayName(eggId),
+                petSlotMilestone = petSlotMilestone,
+            }
+        end
     end
     if merged > 0 then
         record.lastEggMergeAt = os.clock()
         self:_publishBoardMutation(record)
     end
-    return merged
+    return merged, milestones
 end
 
 function MergeEggPrototypeService:_publishEggInventory(record)
@@ -6880,7 +6934,9 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
     local live = self:_findQuartermaster(folder)
     self:_setQuartermasterSpeech(live, greeting)
-    if record.tutorialActive == true and record.tutorialStep == "talk_quartermaster" then
+    local completesTutorial = record.tutorialActive == true
+        and record.tutorialStep == "talk_quartermaster"
+    if completesTutorial then
         record.tutorialTalkedQuartermaster = true
         self:_updateTutorial(record, os.clock(), true)
     end
@@ -6890,6 +6946,7 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
         value = {
             operation = "quartermaster_ready",
             greeting = greeting,
+            milestone = completesTutorial and "quartermaster_ready" or nil,
         },
     })
     return true
@@ -9552,6 +9609,7 @@ function MergeEggPrototypeService:_restoreDurableProgress(record, saved, restore
     record.restoringDurableCheckpoint = false
     record.maximumEggTier = highestTier
     record.eggsPlaced = restoredTeams
+    self:_restoreEggTierMilestones(record)
     record.waveIndex = saved.wave
     record.pendingCheckpointWave = nil
     record.checkpointSnapshot = nil
@@ -9790,6 +9848,7 @@ function MergeEggPrototypeService:_restoreCheckpoint(record, cause, options)
     end
     self:_publishPlayerReserve(record)
     record.eggInventory = table.clone(snapshot.eggInventory or {})
+    self:_restoreEggTierMilestones(record)
     if
         not self._economyService:SetCurrency(
             record.player,
@@ -10859,6 +10918,8 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.baseEggCreationCoinsSpent = 0
     record.baseEggUpgradeInProgress = false
     record.eggInventory = {}
+    record.activityEggTierMilestones = {}
+    record.activityMaximumPetSlots = nil
     record.eggsCreated = 0
     record.eggsMerged = 0
     record.eggsPlaced = 0
@@ -11227,6 +11288,8 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         baseEggCreationCoinsSpent = 0,
         baseEggUpgradeInProgress = false,
         eggInventory = {},
+        activityEggTierMilestones = {},
+        activityMaximumPetSlots = nil,
         eggsCreated = 0,
         eggsMerged = 0,
         eggsPlaced = 0,
@@ -14196,6 +14259,8 @@ function MergeEggPrototypeService:_clearProgressionStageActors(record)
     record.baseEggCreationCoinsSpent = 0
     record.baseEggUpgradeInProgress = false
     record.eggInventory = {}
+    record.activityEggTierMilestones = {}
+    record.activityMaximumPetSlots = nil
     record.eggsCreated = 0
     record.eggsMerged = 0
     record.eggsPlaced = 0
@@ -15067,6 +15132,8 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
     record.baseEggCreationCoinsSpent = 0
     record.baseEggUpgradeInProgress = false
     record.eggInventory = {}
+    record.activityEggTierMilestones = {}
+    record.activityMaximumPetSlots = nil
     record.eggsCreated = 0
     record.eggsMerged = 0
     record.eggsPlaced = 0
@@ -15214,8 +15281,13 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
     record.earthEggCoinsSpent = (record.earthEggCoinsSpent or 0) + pricing.amount
     record.baseEggCreationCoinsSpent = (record.baseEggCreationCoinsSpent or 0) + pricing.amount
     record.coreEggCoinsSpent = (record.coreEggCoinsSpent or 0) + pricing.amount
-    local automaticMerges = record.autoCombineEnabled == true and self:_autoCombineBoard(record)
-        or 0
+    local eggMilestone = self:_markEggTierMilestone(record, pricing.tier)
+    local petSlotMilestone = self:_markPetSlotMilestone(record, pricing.tier)
+    local automaticMerges = 0
+    local automaticMilestones = {}
+    if record.autoCombineEnabled == true then
+        automaticMerges, automaticMilestones = self:_autoCombineBoard(record)
+    end
     if automaticMerges == 0 then
         self:_publishBoardMutation(record)
     end
@@ -15246,6 +15318,9 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
             eggTier = pricing.tier,
             eggId = eggId,
             eggName = self:_eggDisplayName(eggId),
+            milestone = eggMilestone and "egg_created" or nil,
+            petSlotMilestone = petSlotMilestone,
+            milestones = automaticMilestones,
         }
 end
 
@@ -15335,8 +15410,12 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
     record.baseEggHatcherPromotions = (record.baseEggHatcherPromotions or 0) + promotedHatchers
     record.baseEggUpgradeCoinsSpent = (record.baseEggUpgradeCoinsSpent or 0) + upgrade.amount
     record.coreEggCoinsSpent = (record.coreEggCoinsSpent or 0) + upgrade.amount
-    local automaticMerges = record.autoCombineEnabled == true and self:_autoCombineBoard(record)
-        or 0
+    local petSlotMilestone = self:_markPetSlotMilestone(record, upgrade.tier)
+    local automaticMerges = 0
+    local automaticMilestones = {}
+    if record.autoCombineEnabled == true then
+        automaticMerges, automaticMilestones = self:_autoCombineBoard(record)
+    end
     if automaticMerges == 0 then
         self:_publishBoardMutation(record)
     end
@@ -15361,6 +15440,9 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
             toTier = upgrade.tier,
             eggId = source.eggId,
             eggName = source.eggName,
+            milestone = "generator_unlocked",
+            petSlotMilestone = petSlotMilestone,
+            milestones = automaticMilestones,
         }
 end
 
@@ -15470,8 +15552,8 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
     if record.lastEggMergeAt and now - record.lastEggMergeAt < 0.2 then
         return false, "egg_merge_throttled"
     end
-    local highestTierBefore = self:_highestOwnedEggTier(record)
-    if not self:_applyEggMerge(record, sourceTier) then
+    local merged, eggMilestone, petSlotMilestone = self:_applyEggMerge(record, sourceTier)
+    if not merged then
         return false, "no_merge_available"
     end
     record.lastEggMergeAt = now
@@ -15493,7 +15575,8 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
             toTier = resultTier,
             eggId = eggId,
             eggName = self:_eggDisplayName(eggId),
-            unlocked = resultTier > highestTierBefore,
+            milestone = eggMilestone and "egg_created" or nil,
+            petSlotMilestone = petSlotMilestone,
         }
 end
 
@@ -15517,11 +15600,20 @@ function MergeEggPrototypeService:ToggleAutoCombine(player)
     end
     -- Prototype-only entitlement seam: this toggle becomes Game Pass-gated when the product ships.
     record.autoCombineEnabled = record.autoCombineEnabled ~= true
-    local merged = record.autoCombineEnabled and self:_autoCombineBoard(record) or 0
+    local merged = 0
+    local milestones = {}
+    if record.autoCombineEnabled then
+        merged, milestones = self:_autoCombineBoard(record)
+    end
     if merged == 0 then
         self:_publishBoardMutation(record)
     end
-    return true, record.autoCombineEnabled and "enabled" or "disabled"
+    return true,
+        {
+            operation = record.autoCombineEnabled and "auto_enabled" or "auto_disabled",
+            enabled = record.autoCombineEnabled,
+            milestones = milestones,
+        }
 end
 
 function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
@@ -15619,6 +15711,7 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     })
     local menuState = self:_bulwarkMenuState(record, slot)
     menuState.operation = nextState.operation
+    menuState.milestone = nextState.operation == "unlocked" and "bulwark_unlocked" or nil
     return true, menuState
 end
 
@@ -15716,6 +15809,7 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
     })
     local menuState = self:_cannonMenuState(record, slot)
     menuState.operation = nextState.operation
+    menuState.milestone = nextState.operation == "unlocked" and "cannon_unlocked" or nil
     return true, menuState
 end
 
@@ -16165,8 +16259,6 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if not source then
         return false, reason
     end
-    local highestTierBefore = self:_highestOwnedEggTier(record)
-
     if team.initialized ~= true and tierBefore ~= 0 then
         return false, "first_egg_required"
     end
@@ -16282,6 +16374,9 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     local state = record.waveIndex == 0 and record.nextWaveAt ~= nil and "WaveIntermission"
         or self:_activeWaveState(record)
     self:_setWorldState(state, record)
+    local eggMilestone = wasInitialized and self:_markEggTierMilestone(record, resultTier) or false
+    local petSlotMilestone = wasInitialized and self:_markPetSlotMilestone(record, resultTier)
+        or nil
     return true,
         {
             operation = wasInitialized and "upgraded" or "deployed",
@@ -16289,7 +16384,8 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
             toTier = resultTier,
             eggId = source.eggId,
             eggName = source.eggName,
-            unlocked = resultTier > highestTierBefore,
+            milestone = eggMilestone and "egg_created" or nil,
+            petSlotMilestone = petSlotMilestone,
         }
 end
 

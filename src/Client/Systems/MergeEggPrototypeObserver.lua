@@ -53,10 +53,6 @@ local TUTORIAL_ACTIVITY_COPIES = assert(
     TUTORIAL_ACTIVITY_FEEDBACK.copies,
     "merge_egg_prototype.tutorial.activity_feedback.copies is required"
 )
-local TUTORIAL_ACTIVITY_THROUGH_WAVE = assert(
-    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.through_wave),
-    "merge_egg_prototype.tutorial.activity_feedback.through_wave is required"
-)
 local TUTORIAL_ACTIVITY_DEFAULT_SECONDS = assert(
     tonumber(TUTORIAL_ACTIVITY_FEEDBACK.default_duration_seconds),
     "merge_egg_prototype.tutorial.activity_feedback.default_duration_seconds is required"
@@ -1213,27 +1209,30 @@ end
 
 local function layoutBoardActionFeedback(label, sizeConstraint, tutorialCard)
     local tutorialFrame = tutorialCard and tutorialCard.frame
-    if
-        tutorialFrame
-        and tutorialFrame.Visible
-        and tutorialFrame.AbsoluteSize.X > 0
-        and tutorialFrame.AbsoluteSize.Y > 0
-    then
+    local target = tutorialFrame and tutorialFrame.Visible and tutorialFrame or nil
+    if not target then
+        local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+        local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
+        local hotbarRoot = hotbarGui and hotbarGui:FindFirstChild("Bar")
+        local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame", true)
+        target = footprint and footprint:IsA("GuiObject") and footprint or nil
+    end
+    if target and target.AbsoluteSize.X > 0 and target.AbsoluteSize.Y > 0 then
         label.AnchorPoint = Vector2.zero
         local currentPosition = label.Position
         label.Position = UDim2.fromOffset(
             MergeTutorialHud.stableScreenOffset(
-                tutorialFrame.AbsolutePosition.X,
+                target.AbsolutePosition.X,
                 label.AbsolutePosition.X,
                 currentPosition.X.Offset
             ),
             MergeTutorialHud.stableScreenOffset(
-                tutorialFrame.AbsolutePosition.Y,
+                target.AbsolutePosition.Y,
                 label.AbsolutePosition.Y,
                 currentPosition.Y.Offset
             )
         )
-        label.Size = UDim2.fromOffset(tutorialFrame.AbsoluteSize.X, tutorialFrame.AbsoluteSize.Y)
+        label.Size = UDim2.fromOffset(target.AbsoluteSize.X, target.AbsoluteSize.Y)
         sizeConstraint.MinSize = Vector2.zero
         sizeConstraint.MaxSize = Vector2.new(10000, 10000)
         return
@@ -1245,65 +1244,45 @@ local function layoutBoardActionFeedback(label, sizeConstraint, tutorialCard)
     sizeConstraint.MaxSize = Vector2.new(520, 64)
 end
 
-local function boardActionResultCopy(result)
-    if result.ok == true then
-        local action = tostring(result.action or "")
-        local value = type(result.value) == "table" and result.value or {}
-        local eggName = string.upper(tostring(value.eggName or "EGG"))
-        if action == "equip_best" then
-            return string.format(
-                "EQUIPPED %d EGG%s",
-                tonumber(result.value) or 0,
-                tonumber(result.value) == 1 and "" or "S"
-            )
-        elseif action == "create" then
-            return tutorialActivityCopy("egg_created", eggName)
-        elseif action == "upgrade_base" then
-            return tutorialActivityCopy("generator_unlocked", eggName)
-        elseif action == "purchase_upgrade" then
-            return tutorialActivityCopy(
-                "management_upgraded",
-                string.upper(tostring(value.displayName or "MANAGEMENT"))
-            )
-        elseif action == "toggle_auto" then
-            return "AUTO-COMBINE UPDATED"
-        elseif action == "merge_slots" then
-            local copyId = value.unlocked == true and "egg_unlocked" or "egg_merged"
-            return tutorialActivityCopy(copyId, eggName)
-        elseif action == "deploy_to_hatcher" then
-            local copyId = value.operation == "upgraded" and "egg_upgraded" or "egg_deployed"
-            return tutorialActivityCopy(copyId, eggName)
-        elseif action == "rebirth" then
-            return string.format("REBIRTH %d ACTIVE", math.max(0, tonumber(result.value) or 0))
-        elseif action == "bulwark" then
-            if value.operation == "unlocked" then
-                return "BULWARK UNLOCKED"
-            elseif value.operation == "installed" then
-                return "BULWARK INSTALLED"
-            elseif value.operation == "replaced" then
-                return "BULWARK REPLACED AT TIER 1"
-            elseif value.operation == "upgraded" then
-                return string.format("BULWARK UPGRADED TO TIER %d", tonumber(value.tier) or 1)
-            end
-            return "BULWARK UPDATED"
-        elseif action == "cannon" then
-            if value.operation == "unlocked" then
-                return "CANNON UNLOCKED"
-            elseif value.operation == "installed" or value.operation == "equipped" then
-                return "CANNON INSTALLED"
-            elseif value.operation == "replaced" then
-                return "CANNON REPLACED AT TIER 1"
-            elseif value.operation == "upgraded" then
-                return string.format("CANNON UPGRADED TO TIER %d", tonumber(value.tier) or 1)
-            end
-            return "CANNON UPDATED"
-        elseif action == "quartermaster_talk" then
-            return tutorialActivityCopy("quartermaster_ready")
-        end
-        return "ACTION COMPLETE"
-    end
+local function boardActionFailureCopy(result)
     local reason = tostring(result.reason or "action_refused")
     return BOARD_ACTION_FAILURE_COPY[reason] or string.upper(reason:gsub("_", " "))
+end
+
+local function ordinal(value)
+    local numeric = tonumber(value)
+    if not numeric then
+        return tostring(value)
+    end
+    local whole = math.max(0, math.floor(numeric))
+    local finalTwo = whole % 100
+    local suffix = "TH"
+    if finalTwo < 11 or finalTwo > 13 then
+        local final = whole % 10
+        suffix = final == 1 and "ST" or final == 2 and "ND" or final == 3 and "RD" or "TH"
+    end
+    return tostring(whole) .. suffix
+end
+
+local function milestoneResultFeedback(value)
+    local milestone = tostring(value.milestone or "")
+    local eggName = string.upper(tostring(value.eggName or "EGG"))
+    if milestone == "egg_created" then
+        return "egg_created:" .. tostring(value.toTier or value.eggTier or eggName),
+            tutorialActivityCopy("egg_created", eggName)
+    elseif milestone == "generator_unlocked" then
+        return "generator_unlocked:" .. tostring(value.toTier or eggName),
+            tutorialActivityCopy("generator_unlocked", eggName)
+    elseif milestone == "bulwark_unlocked" then
+        return "bulwark_unlocked:" .. tostring(value.family or "bulwark"),
+            tutorialActivityCopy("bulwark_unlocked")
+    elseif milestone == "cannon_unlocked" then
+        return "cannon_unlocked:" .. tostring(value.family or value.leftFamily or "cannon"),
+            tutorialActivityCopy("cannon_unlocked")
+    elseif milestone == "quartermaster_ready" then
+        return "quartermaster_ready", tutorialActivityCopy("quartermaster_ready")
+    end
+    return nil, nil
 end
 
 local function prettyName(value)
@@ -4017,13 +3996,9 @@ function MergeEggPrototypeObserver.start()
     local activeFeedback = nil
     local feedbackQueue = {}
     local collectedWaycoins = 0
-    local function earlyActivityFeedbackAllowed()
-        if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
-            return false
-        end
-        local world = prototypeWorld()
-        local wave = world and world:GetAttribute("CurrentWave")
-        return type(wave) == "number" and wave >= 0 and wave <= TUTORIAL_ACTIVITY_THROUGH_WAVE
+    local waycoinMilestoneShown = false
+    local function milestoneFeedbackAllowed()
+        return localPlayer:GetAttribute("InMergeEggPrototype") == true
     end
     local function showFeedback(item)
         activeFeedback = item
@@ -4111,34 +4086,75 @@ function MergeEggPrototypeObserver.start()
                 cannonMenu:show(result.value)
             end
         end
-        if success and not earlyActivityFeedbackAllowed() then
+        if success and not milestoneFeedbackAllowed() then
             return
         end
         local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
         local value = type(result.value) == "table" and result.value or {}
-        local copy = tutorialEggUpgrade
-                and tutorialActivityCopy(
-                    "tutorial_egg_upgraded",
-                    string.upper(tostring(value.eggName or "EGG"))
-                )
-            or boardActionResultCopy(result)
-        local key = tutorialEggUpgrade and "tutorial_egg_upgraded"
-            or string.format(
-                "%s:%s:%s",
-                success and "success" or "failure",
-                action,
-                success and operation or tostring(result.reason or "action_refused")
+        if not success then
+            enqueueFeedback(
+                string.format("failure:%s:%s", action, tostring(result.reason or "action_refused")),
+                boardActionFailureCopy(result),
+                false,
+                TUTORIAL_ACTIVITY_DEFAULT_SECONDS
             )
-        enqueueFeedback(
-            key,
-            copy,
-            success,
-            tutorialEggUpgrade and TUTORIAL_EGG_UPGRADED_SECONDS
-                or TUTORIAL_ACTIVITY_DEFAULT_SECONDS
-        )
+            return
+        end
+        local key, copy
+        if tutorialEggUpgrade then
+            key = "tutorial_egg_upgraded"
+            copy = tutorialActivityCopy(
+                "tutorial_egg_upgraded",
+                string.upper(tostring(value.eggName or "EGG"))
+            )
+        else
+            key, copy = milestoneResultFeedback(value)
+        end
+        if key then
+            enqueueFeedback(
+                key,
+                copy,
+                true,
+                tutorialEggUpgrade and TUTORIAL_EGG_UPGRADED_SECONDS
+                    or TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+            )
+        end
+        local petSlots = tonumber(value.petSlotMilestone)
+        if petSlots then
+            enqueueFeedback(
+                "pet_slot_unlocked:" .. tostring(petSlots),
+                tutorialActivityCopy("pet_slot_unlocked", ordinal(petSlots)),
+                true,
+                TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+            )
+        end
+        for _, automaticMilestone in
+            ipairs(type(value.milestones) == "table" and value.milestones or {})
+        do
+            if type(automaticMilestone) == "table" then
+                local automaticKey, automaticCopy = milestoneResultFeedback(automaticMilestone)
+                if automaticKey then
+                    enqueueFeedback(
+                        automaticKey,
+                        automaticCopy,
+                        true,
+                        TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+                    )
+                end
+                local automaticPetSlots = tonumber(automaticMilestone.petSlotMilestone)
+                if automaticPetSlots then
+                    enqueueFeedback(
+                        "pet_slot_unlocked:" .. tostring(automaticPetSlots),
+                        tutorialActivityCopy("pet_slot_unlocked", ordinal(automaticPetSlots)),
+                        true,
+                        TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+                    )
+                end
+            end
+        end
     end)
     Signals.CurrencyUpdate.OnClientEvent:Connect(function(data)
-        if not earlyActivityFeedbackAllowed() or type(data) ~= "table" then
+        if not milestoneFeedbackAllowed() or type(data) ~= "table" then
             return
         end
         local change = tonumber(data.change)
@@ -4147,32 +4163,24 @@ function MergeEggPrototypeObserver.start()
         end
         local currency = tostring(data.currency or "")
         if currency == "hall_coins" then
-            local previousMilestone = math.floor(collectedWaycoins / TUTORIAL_WAYCOIN_MILESTONE)
             collectedWaycoins += change
-            local currentMilestone = math.floor(collectedWaycoins / TUTORIAL_WAYCOIN_MILESTONE)
-            if currentMilestone > previousMilestone then
-                local milestoneAmount = currentMilestone * TUTORIAL_WAYCOIN_MILESTONE
+            if not waycoinMilestoneShown and collectedWaycoins >= TUTORIAL_WAYCOIN_MILESTONE then
+                waycoinMilestoneShown = true
                 enqueueFeedback(
                     "currency:hall_coins",
                     tutorialActivityCopy(
                         "waycoins_collected",
-                        MergeEggCostFormat.format(milestoneAmount)
+                        MergeEggCostFormat.format(TUTORIAL_WAYCOIN_MILESTONE)
                     ),
                     true,
                     TUTORIAL_ACTIVITY_DEFAULT_SECONDS
                 )
             end
-        elseif currency == "gems" then
-            enqueueFeedback(
-                "currency:gems",
-                tutorialActivityCopy("gem_collected"),
-                true,
-                TUTORIAL_ACTIVITY_DEFAULT_SECONDS
-            )
         end
     end)
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
         collectedWaycoins = 0
+        waycoinMilestoneShown = false
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
             bulwarkMenu:hide()
             cannonMenu:hide()
