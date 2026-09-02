@@ -149,11 +149,23 @@ return function()
             expect(bindHeal.unlock_when[3].check).to.equal("hotbar_not_editing")
             local enhanceHeal = cfg.steps[9]
             expect(enhanceHeal.id).to.equal("enhance_heal")
-            expect(enhanceHeal.grant.enhancements[1].type).to.equal("potency")
+            expect(enhanceHeal.grant.receipt).to.equal("enhance_heal_healing_v1")
+            expect(enhanceHeal.grant.enhancements[1].type).to.equal("healing")
             expect(enhanceHeal.grant.ensure_slot).to.equal("heal")
             expect(enhanceHeal.target.cue).to.equal("enhance_power")
             expect(enhanceHeal.target.tutorial_guide).to.equal("Power:heal")
+            expect(enhanceHeal.target.enhancement_guide).to.equal("EnhanceType:healing")
             expect(enhanceHeal.complete_on.context.powerId).to.equal("heal")
+            local enhancements = loadModule("src/Shared/Game/Enhancements.lua")
+            local enhancementsConfig = loadModule("configs/enhancements.lua")
+            local grantedType = enhanceHeal.grant.enhancements[1].type
+            local compatible = enhancements.compatibleWith(
+                enhancementsConfig,
+                grantedType,
+                powers.powers.heal,
+                powers.effect_kinds
+            )
+            expect(compatible).to.equal(true)
             local unlock = loadModule("src/Shared/Game/TutorialUnlock.lua")
             for _, cond in ipairs(bindHeal.unlock_when) do
                 expect(unlock.hasCheck(cond.check)).to.equal(true)
@@ -169,6 +181,7 @@ return function()
             expect(service:find("CombatTutorialHealUnlocked", 1, true)).to.be.ok()
             expect(service:find("self._enhancementService", 1, true)).to.be.ok()
             expect(service:find("enhancements:Grant", 1, true)).to.be.ok()
+            expect(service:find("grant.receipt or step.id", 1, true)).to.be.ok()
             expect(service:find('type(grant.ensure_slot) == "string"', 1, true)).to.be.ok()
             expect(service:find("restart_on_enter wipes that table", 1, true)).to.be.ok()
             local watchAt = service:find("function CombatTutorialService:_ensureWatchers", 1, true)

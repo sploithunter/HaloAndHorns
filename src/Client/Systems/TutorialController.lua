@@ -932,9 +932,10 @@ end
 --   Edit (not editing, no Resonance) -> no callout while choosing -> Done after Resonance is bound.
 -- Power up Resonance is five clicks. A single PowersButton cue dies once the
 -- menu opens. Walk live PowerChoice state the same way bind-power walks Edit:
---   Powers -> Resonance row -> empty slot -> Potency -> Apply
-local function showSlotPowerGuidance(token, tutorialGuide)
+--   Powers -> power row -> empty slot -> configured enhancement -> Apply
+local function showSlotPowerGuidance(token, tutorialGuide, enhancementGuide)
     tutorialGuide = tutorialGuide or "Power:resonance"
+    enhancementGuide = enhancementGuide or "EnhancePotency"
     local cueText = TutorialLocalization.text(
         TutorialLanguageState.getLocaleId(),
         "tutorial.cue.click_here",
@@ -960,7 +961,7 @@ local function showSlotPowerGuidance(token, tutorialGuide)
             elseif stagedType then
                 nextPhase = "apply"
             elseif targetSlot > 0 then
-                nextPhase = "pick_potency"
+                nextPhase = "pick_enhancement"
             else
                 nextPhase = "pick_slot"
             end
@@ -989,12 +990,12 @@ local function showSlotPowerGuidance(token, tutorialGuide)
                         cueText = cueText,
                         tutorialGuide = "EnhanceEmptySlot",
                     })
-                elseif phase == "pick_potency" then
+                elseif phase == "pick_enhancement" then
                     showUiPulse(token, nil, {
                         arrow = true,
                         clickCue = true,
                         cueText = cueText,
-                        tutorialGuide = "EnhancePotency",
+                        tutorialGuide = enhancementGuide,
                     })
                 elseif phase == "apply" then
                     showUiPulse(token, nil, {
@@ -1491,7 +1492,7 @@ local function apply(state)
     elseif state.id == "bind_power" then
         showBindPowerGuidance(stepToken, "resonance")
     elseif (target.kind == "ui" and target.cue == "enhance_power") or state.id == "slot_power" then
-        showSlotPowerGuidance(stepToken, target.tutorial_guide)
+        showSlotPowerGuidance(stepToken, target.tutorial_guide, target.enhancement_guide)
     elseif target.kind == "ui" and target.cue == "equip_tank" then
         showEquipTankGuidance(stepToken, state)
     elseif target.kind == "ui" and target.cue == "equip_squad" then

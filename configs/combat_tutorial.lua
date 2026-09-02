@@ -546,19 +546,23 @@ return {
                 text = "ENHANCE HEAL",
                 nudge = "Put Potency into Heal first!",
             },
-            -- Reuse the Farm & Fight enhancement lesson: grant one usable piece and an
-            -- inherent slot, then require that exact power in the event payload.
+            -- Reuse the Farm & Fight enhancement lesson: grant one Heal-compatible piece and an
+            -- inherent slot, then require that exact power in the event payload. The receipt is
+            -- versioned so a tester stranded by the old incompatible Potency grant gets Healing on
+            -- the next enter instead of being blocked by the already-recorded step grant.
             grant = {
-                enhancements = { { type = "potency", origins = {}, level = 3, count = 1 } },
+                receipt = "enhance_heal_healing_v1",
+                enhancements = { { type = "healing", origins = {}, level = 3, count = 1 } },
                 ensure_slot = "heal",
             },
-            body = "Now improve Heal. Open POWERS, choose Heal, pick its empty slot, choose Potency, and Apply it. Enhancements make every power stronger.",
-            body_gamepad = "Press D-pad Right, choose Heal with A, select its empty slot, choose Potency, and Apply it.",
+            body = "Now improve Heal. Open POWERS, choose Heal, pick its empty slot, choose Healing, and Apply it. Enhancements make every power stronger.",
+            body_gamepad = "Press D-pad Right, choose Heal with A, select its empty slot, choose Healing, and Apply it.",
             target = {
                 kind = "ui",
                 name = "PowersButton",
                 cue = "enhance_power",
                 tutorial_guide = "Power:heal",
+                enhancement_guide = "EnhanceType:healing",
                 cue_text = "CLICK HERE",
             },
             complete_on = {

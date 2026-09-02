@@ -153,9 +153,11 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
    saved bar, and the hotbar **not** in edit mode (Done). Named checks live
    in `src/Shared/Game/TutorialUnlock.lua`.
 9. `enhance_heal` — lobby; reuse the five-click Farm & Fight enhancement flow:
-   Powers → Heal → empty slot → Potency → Apply. The step grants one natural
-   level-3 Potency plus an inherent Heal slot and advances only for an
+   Powers → Heal → empty slot → Healing → Apply. The step grants one natural,
+   Heal-compatible level-3 Healing enhancement plus an inherent Heal slot and advances only for an
    `enhancement_slotted` event whose configured context is `powerId = "heal"`.
+   The grant uses a versioned receipt so a corrected item can be delivered to an
+   already-in-progress tester without renaming or rewinding the lesson.
    Existing v10 test saves keep their later position; reset-to-beginning exercises
    the new lesson from a clean track.
 10. `ready_heal` — ENTER (same shared door checklist: pets equipped, not editing)

@@ -1531,7 +1531,10 @@ function CombatTutorialService:_applyGrant(player, data, step)
     if type(grant) ~= "table" then
         return
     end
-    local id = step.id or tostring(data.CombatTutorial.step)
+    -- A config-authored receipt can invalidate an obsolete grant without changing the tutorial
+    -- step id or rewinding progress. This is used when the delivered item itself changes (for
+    -- example, replacing Heal-incompatible Potency with Healing for the enhancement lesson).
+    local id = grant.receipt or step.id or tostring(data.CombatTutorial.step)
     data.CombatTutorial.granted = data.CombatTutorial.granted or {}
     if data.CombatTutorial.granted[id] then
         return

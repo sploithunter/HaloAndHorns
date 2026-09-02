@@ -1118,6 +1118,7 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             btn.Text = ""
             btn.ZIndex = 7
             btn.Parent = strip
+            btn:SetAttribute("TutorialGuide", "EnhanceType:" .. tostring(item.type))
             if item.type == "potency" and not strip:FindFirstChild("EnhancePotency") then
                 btn.Name = "EnhancePotency"
                 btn:SetAttribute("TutorialGuide", "EnhancePotency")
