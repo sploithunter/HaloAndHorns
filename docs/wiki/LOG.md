@@ -7377,6 +7377,6 @@ first-session cohort rates.
   the Power Choice menu in both games.
 - The menu now applies shared contextual availability before rendering: locked Heal stays hidden,
   Combat Training hides Resonance, and innate powers remain ineligible for level-up selection.
-- Corrected the Heal enhancement lesson to grant a compatible natural Healing piece instead of the
-  Potency piece that the picker correctly filtered out. A versioned receipt repairs in-progress
-  testers on their next mission enter, and the click cue now targets the configured enhancement.
+- Corrected the Heal enhancement lesson to grant one compatible natural Healing piece on Combat
+  Training entry instead of a Potency piece that the picker correctly filtered out. The normal
+  tutorial grant ledger prevents duplicate entry grants, and the cue targets the configured item.

@@ -152,12 +152,13 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
    `unlock_when` list is all true: at least one pet equipped, Heal on the
    saved bar, and the hotbar **not** in edit mode (Done). Named checks live
    in `src/Shared/Game/TutorialUnlock.lua`.
+On first entry, the tutorial grants one low-level natural Healing enhancement. The `entry` receipt
+in the normal tutorial grant ledger makes this idempotent across reconnects and repeat visits.
+
 9. `enhance_heal` — lobby; reuse the five-click Farm & Fight enhancement flow:
-   Powers → Heal → empty slot → Healing → Apply. The step grants one natural,
-   Heal-compatible level-3 Healing enhancement plus an inherent Heal slot and advances only for an
+   Powers → Heal → empty slot → Healing → Apply. The step ensures an inherent Heal slot for the
+   compatible level-3 Healing enhancement received on entry, and advances only for an
    `enhancement_slotted` event whose configured context is `powerId = "heal"`.
-   The grant uses a versioned receipt so a corrected item can be delivered to an
-   already-in-progress tester without renaming or rewinding the lesson.
    Existing v10 test saves keep their later position; reset-to-beginning exercises
    the new lesson from a clean track.
 10. `ready_heal` — ENTER (same shared door checklist: pets equipped, not editing)

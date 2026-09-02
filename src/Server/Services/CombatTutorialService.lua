@@ -1103,6 +1103,10 @@ function CombatTutorialService:_enter(player)
     end
     self:_rewindLeaveResume(player)
     local data = self:_ensureProgress(player)
+    -- Normal first-entry grant: one low-level Healing enhancement is waiting by the time the player
+    -- reaches the Heal lesson. `_applyGrant` records `entry` in the tutorial ledger, so reconnects
+    -- and repeat visits do not mint duplicates.
+    self:_applyGrant(player, data, { id = "entry", grant = self._config.entry_grant })
     self:_applyStepSideEffects(player, data, true)
     local look = (self._config.venue and self._config.venue.leave_prompt) or {}
     session.lobbyLeaveReadyAt = os.clock() + math.max(0, tonumber(look.enable_after) or 0.8)
@@ -1531,10 +1535,7 @@ function CombatTutorialService:_applyGrant(player, data, step)
     if type(grant) ~= "table" then
         return
     end
-    -- A config-authored receipt can invalidate an obsolete grant without changing the tutorial
-    -- step id or rewinding progress. This is used when the delivered item itself changes (for
-    -- example, replacing Heal-incompatible Potency with Healing for the enhancement lesson).
-    local id = grant.receipt or step.id or tostring(data.CombatTutorial.step)
+    local id = step.id or tostring(data.CombatTutorial.step)
     data.CombatTutorial.granted = data.CombatTutorial.granted or {}
     if data.CombatTutorial.granted[id] then
         return
