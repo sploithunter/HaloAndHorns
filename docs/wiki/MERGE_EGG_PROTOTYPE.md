@@ -707,8 +707,11 @@ team and queue model:
   creation, merging, deployment, installation, and management purchases do not toast, and Gem
   pickups never toast. Distinct milestones can queue without turning normal play into an activity
   feed. Auto-Combine returns every new egg-tier and pet-capacity discovery from its cascade through
-  the same queue, so automatic merges cannot silently consume a first-time milestone. After Wave 10
-  the supply booth and Macros
+  the same queue, so automatic merges cannot silently consume a first-time milestone. Cannon and
+  Bulwark unlock feedback is presentation-only and remains below its open workshop; the freshly
+  enabled Install action stays visible and clickable while the milestone is active. Rejected-action
+  feedback still renders above the workshop so its explanation remains readable. After Wave 10 the
+  supply booth and Macros
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
   hidden transparency as the reveal value. The legacy `Browse Potions` tent prompt stays suppressed;
   the Quartermaster's responsive Services menu is the only Merge interaction and reuses the ordinary

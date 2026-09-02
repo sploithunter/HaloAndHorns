@@ -1245,6 +1245,11 @@ local function createBoardActionFeedback(parent)
     label.TextStrokeTransparency = 0.15
     label.Visible = false
     label.ZIndex = 50
+    -- Feedback is presentation only. Roblox's Interactable property defaults true even on
+    -- TextLabels; explicitly disabling both input flags prevents this full-width surface from
+    -- swallowing the workshop button underneath it.
+    label.Active = false
+    label.Interactable = false
     label.Parent = parent
     local sizeConstraint = Instance.new("UISizeConstraint")
     sizeConstraint.MinSize = Vector2.new(240, 56)
@@ -1264,16 +1269,32 @@ local function createBoardActionFeedback(parent)
     return label, stroke, sizeConstraint, aspect
 end
 
-local function layoutBoardActionFeedback(label, sizeConstraint, aspect)
+local function layoutBoardActionFeedback(label, sizeConstraint, aspect, belowWorkshop)
+    -- Unlocking immediately repaints the open workshop with its enabled Install action. Keep that
+    -- duplicate celebration below the menu until it closes, so neither the label nor the shared
+    -- HotbarBar ScreenGui can cover Install. Failures still use feedback_display_order above the
+    -- workshop because their refusal copy must remain readable.
+    local displayOrder = belowWorkshop and TUTORIAL_CARD_LAYOUT.display_order
+        or TUTORIAL_CARD_LAYOUT.feedback_display_order
     layoutResponsiveDockSurface(
         label,
         aspect,
         sizeConstraint,
         assert(
-            tonumber(TUTORIAL_CARD_LAYOUT.feedback_display_order),
-            "tutorial.card_layout.feedback_display_order is required"
+            tonumber(displayOrder),
+            belowWorkshop and "tutorial.card_layout.display_order is required"
+                or "tutorial.card_layout.feedback_display_order is required"
         )
     )
+end
+
+local function unlockFeedbackBehindOpenWorkshop(item, bulwarkMenu, cannonMenu)
+    if type(item) ~= "table" or item.success ~= true then
+        return false
+    end
+    local key = tostring(item.key or "")
+    return (key:find("bulwark_unlocked:", 1, true) == 1 and bulwarkMenu and bulwarkMenu:isOpen())
+        or (key:find("cannon_unlocked:", 1, true) == 1 and cannonMenu and cannonMenu:isOpen())
 end
 
 local function boardActionFailureCopy(result)
@@ -4451,7 +4472,8 @@ function MergeEggPrototypeObserver.start()
             layoutBoardActionFeedback(
                 boardActionFeedback,
                 boardActionFeedbackSizeConstraint,
-                boardActionFeedbackAspect
+                boardActionFeedbackAspect,
+                unlockFeedbackBehindOpenWorkshop(activeFeedback, bulwarkMenu, cannonMenu)
             )
         elseif not tutorialCard.frame.Visible then
             setHotbarDisplayOrder(

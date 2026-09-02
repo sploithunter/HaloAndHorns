@@ -7399,3 +7399,10 @@ first-session cohort rates.
 - Replacement models and control boxes now seed from the player's current root (or the prior squad
   region during a character transition), move as a complete model, and remain persistent for their
   owning player while retaining all-or-nothing model streaming for observers.
+
+## 2026-09-02 — Workshop unlock feedback no longer blocks Install
+
+- Made the shared Merge milestone label explicitly non-interactive. Cannon and Bulwark unlock
+  celebrations also keep the shared hotbar layer below their currently open workshop, leaving the
+  newly enabled Install action unobscured and clickable. Rejected-action feedback remains above the
+  menu so its explanation is still readable.
