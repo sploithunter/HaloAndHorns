@@ -237,6 +237,7 @@ local SCHEMAS = {
         gate = "table",
         world = "table",
         squad = "table",
+        player_pet_recovery = "table",
         enemy = "table",
     }),
     merge_tier_art = schema({ cannons = "table", bulwarks = "table" }),

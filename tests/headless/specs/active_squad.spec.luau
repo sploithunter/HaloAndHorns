@@ -61,6 +61,23 @@ return function()
             expect(ActiveSquad.slotCooldownSeconds("anything", cfg)).to.equal(20)
         end)
 
+        it("applies a place recovery override without mutating the shared config", function()
+            local shared = {
+                slot_recovery = { recall_cooldown_seconds = 4, down_cooldown_seconds = 60 },
+                down_lockout = { pet_lockout_seconds = 300 },
+            }
+            local place = ActiveSquad.withRecoveryOverride(shared, {
+                slot_recovery = { down_cooldown_seconds = 10 },
+                down_lockout = { pet_lockout_seconds = 60 },
+            })
+            expect(ActiveSquad.slotCooldownSeconds("recall", place)).to.equal(4)
+            expect(ActiveSquad.slotCooldownSeconds("down", place)).to.equal(10)
+            expect(ActiveSquad.petUnavailableSeconds("down", place, false)).to.equal(10)
+            expect(ActiveSquad.petUnavailableSeconds("down", place, true)).to.equal(60)
+            expect(shared.slot_recovery.down_cooldown_seconds).to.equal(60)
+            expect(shared.down_lockout.pet_lockout_seconds).to.equal(300)
+        end)
+
         it("slotReady is true with no cooldown and once the time passes", function()
             expect(ActiveSquad.slotReady(nil, 100)).to.equal(true)
             expect(ActiveSquad.slotReady(120, 100)).to.equal(false)

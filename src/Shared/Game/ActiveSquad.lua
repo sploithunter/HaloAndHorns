@@ -44,6 +44,38 @@ function ActiveSquad.slotCooldownSeconds(reason, config)
     return sr.down_cooldown_seconds or 20 -- "down" (default) = the long cost
 end
 
+-- Apply a place-owned recovery override without mutating either source table. Callers can keep the
+-- canonical squad config for every other rule while a dedicated place replaces only its recovery
+-- cadence. Nested recovery tables are merged so an omitted recall value keeps the shared default.
+function ActiveSquad.withRecoveryOverride(config, override)
+    local resolved = {}
+    for key, value in pairs(config or {}) do
+        resolved[key] = value
+    end
+    for _, key in ipairs({ "slot_recovery", "down_lockout" }) do
+        local merged = {}
+        for field, value in pairs((config and config[key]) or {}) do
+            merged[field] = value
+        end
+        for field, value in pairs((override and override[key]) or {}) do
+            merged[field] = value
+        end
+        resolved[key] = merged
+    end
+    return resolved
+end
+
+-- A normal pet is unavailable only for the slot timer. A special identity (currently Huge pets)
+-- also observes its longer identity lock after a forced down. Recall is never an identity lock.
+function ActiveSquad.petUnavailableSeconds(reason, config, special)
+    local slotSeconds = ActiveSquad.slotCooldownSeconds(reason, config)
+    if reason == "recall" or special ~= true then
+        return slotSeconds
+    end
+    local downLockout = (config and config.down_lockout) or {}
+    return math.max(slotSeconds, tonumber(downLockout.pet_lockout_seconds) or slotSeconds)
+end
+
 -- A slot can be re-crewed once its cooldown has elapsed (nil cooldown = ready).
 function ActiveSquad.slotReady(cooldownUntil, now)
     return cooldownUntil == nil or now >= cooldownUntil

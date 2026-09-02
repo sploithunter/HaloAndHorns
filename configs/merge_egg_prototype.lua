@@ -633,6 +633,18 @@ return {
         },
     },
 
+    -- Merge Defense owns a faster player-pet recovery cadence than Farm & Fight. The slot timer
+    -- governs ordinary/stacked replacements; the identity timer keeps the exact downed Huge out
+    -- longer while still allowing another ready pet to crew the recovered slot.
+    player_pet_recovery = {
+        slot_recovery = {
+            down_cooldown_seconds = 10,
+        },
+        down_lockout = {
+            pet_lockout_seconds = 60,
+        },
+    },
+
     team = {
         return_ready_distance = 20,
         starts_with_egg = false,
@@ -1255,14 +1267,14 @@ return {
 
     -- Every completed hatcher draft gives its weakest candidate to a session-only player roster.
     -- The strongest available tank/ranged/melee become the player's three-pet escort; the paid
-    -- extra-equip-slot feature adds a fourth support slot. A defeated escort slot stays empty for
-    -- 30 real seconds, then takes the strongest matching cast-off still on the reserve bench.
+    -- extra-equip-slot feature adds a fourth support slot. A defeated escort slot uses the shared
+    -- Merge player-pet recovery config above, then takes the strongest matching cast-off still on
+    -- the reserve bench. A Huge cast-off uses the longer identity recovery.
     player_reserve = {
         enabled = true,
         base_slots = 3,
         extra_slot_feature = "extra_equip_slots",
         maximum_slots = 4,
-        replacement_seconds = 30,
         castoff_policy = "weakest_draft_candidate",
         roles = { "tank", "ranged", "melee", "support" },
         -- The player's temporary combat escort guards the breach while the character manages the

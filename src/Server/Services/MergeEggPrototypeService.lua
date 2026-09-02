@@ -10337,8 +10337,15 @@ function MergeEggPrototypeService:_syncPlayerEscort(record, now)
     record.playerEscortActive = active
     record.playerReplacementQueue = record.playerReplacementQueue or {}
     record.playerPendingReplacementSlots = record.playerPendingReplacementSlots or {}
-    local delay =
-        math.max(0.25, tonumber((self._config.player_reserve or {}).replacement_seconds) or 30)
+    local recovery = self._config.player_pet_recovery or {}
+    local normalDelay = requiredConfigNumber(
+        (recovery.slot_recovery or {}).down_cooldown_seconds,
+        "player_pet_recovery.slot_recovery.down_cooldown_seconds"
+    )
+    local hugeDelay = requiredConfigNumber(
+        (recovery.down_lockout or {}).pet_lockout_seconds,
+        "player_pet_recovery.down_lockout.pet_lockout_seconds"
+    )
     local capacity = self:_playerReserveSlots(record)
     local roles = (self._config.player_reserve or {}).roles
         or { "tank", "ranged", "melee", "support" }
@@ -10348,6 +10355,8 @@ function MergeEggPrototypeService:_syncPlayerEscort(record, now)
             and not occupied[slot]
             and not record.playerPendingReplacementSlots[slot]
         then
+            local defeatedDefinition = record.playerSquad[slot]
+            local delay = defeatedDefinition.huge == true and hugeDelay or normalDelay
             record.playerPendingReplacementSlots[slot] = true
             record.playerReplacementQueue[#record.playerReplacementQueue + 1] = {
                 slot = slot,
