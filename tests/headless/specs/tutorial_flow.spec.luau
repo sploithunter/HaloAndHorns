@@ -422,6 +422,40 @@ return function()
             expect(p.step).to.equal(1)
         end)
 
+        it("can require exact event context from config", function()
+            local filtered = {
+                version = 1,
+                steps = {
+                    {
+                        id = "enhance_heal",
+                        complete_on = {
+                            event = "enhancement_slotted",
+                            context = { powerId = "heal" },
+                        },
+                    },
+                },
+            }
+            local progress = TutorialFlow.fresh(filtered)
+            local ignored, changed = TutorialFlow.advance(
+                filtered,
+                progress,
+                "enhancement_slotted",
+                { powerId = "resonance" }
+            )
+            expect(changed).to.equal(false)
+            expect(ignored.done).to.equal(false)
+
+            local completed
+            completed, changed = TutorialFlow.advance(
+                filtered,
+                progress,
+                "enhancement_slotted",
+                { powerId = "heal" }
+            )
+            expect(changed).to.equal(true)
+            expect(completed.done).to.equal(true)
+        end)
+
         it("accumulates COINS on the farm step (sum_ctx) — Jason's 100-coin gate", function()
             local p = feed(nil, { "egg_hatch" }) -- now on farm_crystals
             local step = TutorialFlow.current(cfg, p)

@@ -7350,3 +7350,9 @@ first-session cohort rates.
   cues now render over the mission as they do from the Homeworld entry.
 - Added regression coverage for the Combat-Training-before-Merge-gate ordering and verified the live
   client renders step 1 while both `InCombatTutorial` and `InMergeEggPrototype` are true.
+
+## 2026-09-02 — Tutorial events support exact context predicates
+
+- `TutorialFlow` can now require config-authored event payload values through
+  `complete_on.context`, preventing a matching action on the wrong power or target from advancing a
+  lesson.
