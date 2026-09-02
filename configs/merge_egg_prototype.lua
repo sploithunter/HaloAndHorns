@@ -607,6 +607,9 @@ return {
     -- The owner avatar is a temporary visual stand-in for purpose-built hatcher NPC assets.
     principal = {
         avatar_owner = true,
+        -- Captains are readable world anchors, not lane blockers. Their body remains queryable for
+        -- targeting/tutorial rays, but players must be able to walk through the entire R15 rig.
+        character_non_collidable = true,
         level = 1, -- startup fallback only; runtime snapshots the entering player's combat level
         squad = {},
         alliance = { enabled = false },

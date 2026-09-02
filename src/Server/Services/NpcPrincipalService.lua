@@ -37,6 +37,23 @@ local CombatApplication = require(script.Parent.Parent.CombatApplication)
 local NpcPrincipalService = {}
 NpcPrincipalService.__index = NpcPrincipalService
 
+local function makeCharacterNonCollidable(model)
+    local function apply(instance)
+        if instance:IsA("BasePart") then
+            -- Keep CanQuery/CanTouch unchanged: authored interaction and targeting still need to
+            -- see the NPC; this only removes the physical wall presented to player characters.
+            instance.CanCollide = false
+        end
+    end
+
+    for _, descendant in ipairs(model:GetDescendants()) do
+        apply(descendant)
+    end
+    -- Humanoid descriptions are normally complete here, but accessories can arrive after the
+    -- initial pass. Preserve the configured collision contract for every late-added handle too.
+    model.DescendantAdded:Connect(apply)
+end
+
 function NpcPrincipalService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
@@ -135,6 +152,9 @@ function NpcPrincipalService:_buildCharacter(def, cf)
     model:SetAttribute("Level", tonumber(def.level) or 50)
     model:SetAttribute("EffectiveLevel", tonumber(def.level) or 50)
     model:SetAttribute("DisplayName", def.display_name or def.name)
+    if def.character_non_collidable == true then
+        makeCharacterNonCollidable(model)
+    end
     return model
 end
 

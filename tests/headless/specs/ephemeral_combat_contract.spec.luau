@@ -109,6 +109,22 @@ return function()
             expect(source:find("elseif rec.stationary then", step, true)).to.be.ok()
         end)
 
+        it("honors config-owned non-collidable NPC character bodies", function()
+            local source = readFile("src/Server/Services/NpcPrincipalService.lua")
+            local config = readFile("configs/merge_egg_prototype.lua")
+            local helper = source:find("local function makeCharacterNonCollidable", 1, true)
+            local build = source:find("function NpcPrincipalService:_buildCharacter", helper, true)
+
+            expect(helper ~= nil and build ~= nil and helper < build).to.equal(true)
+            expect(source:find('instance:IsA("BasePart")', helper, true) < build).to.equal(true)
+            expect(source:find("instance.CanCollide = false", helper, true) < build).to.equal(true)
+            expect(source:find("model.DescendantAdded:Connect(apply)", helper, true) < build).to.equal(
+                true
+            )
+            expect(source:find("if def.character_non_collidable == true then", build, true)).to.be.ok()
+            expect(config:find("character_non_collidable = true", 1, true)).to.be.ok()
+        end)
+
         it("gives NPC pets bounded server-authoritative combat positions", function()
             local source = readFile("src/Server/Services/PetFollowService.lua")
             local motion = source:find("function PetFollowService:_stepNpcCombatPosition", 1, true)
