@@ -3238,7 +3238,7 @@ local function createEquipBestSurface(host)
     return { surface = surface, host = host, button = button }
 end
 
-local function createAutoCombineSurface(host)
+function MergeEggPrototypeObserver._createAutoCombineSurface(host)
     if not (host and host:IsA("BasePart")) then
         return nil
     end
@@ -3317,7 +3317,7 @@ local function createBoardWallControls()
         world = world,
         board = createManagementBoardSurface(host),
         equipBest = createEquipBestSurface(equipBestHost),
-        autoCombine = createAutoCombineSurface(autoCombineHost),
+        autoCombine = MergeEggPrototypeObserver._createAutoCombineSurface(autoCombineHost),
     }
 end
 

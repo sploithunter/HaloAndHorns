@@ -7519,3 +7519,6 @@ first-session cohort rates.
 - Rebirth now credits and snapshots 600 starter Waycoins directly instead of spawning five
   temporary piles, eliminating the immediate-logout empty-wallet soft lock without changing the
   first-visit collection lesson.
+- Kept the new floor Auto-Combine surface builder off the observer chunk's local-register table;
+  the monolithic client module is already at Luau's 200-register ceiling, and one additional
+  module-local helper prevented the observer from compiling in Studio.
