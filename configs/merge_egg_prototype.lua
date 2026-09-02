@@ -361,6 +361,13 @@ return {
         resume_wave_delay_seconds = 3,
         auto_collector_attribute = "AutoCollectorEnabled",
         required_eggs = 5,
+        -- The tutorial replaces the central hotbar, but an explicitly selected classic menu can
+        -- still occupy its left edge on a short window. Keep the hotbar-aligned right edge and trim
+        -- only enough of the card's left side to leave the visible menu usable.
+        card_layout = {
+            menu_gap = 8,
+            minimum_width = 280,
+        },
         click_cue_purchase_count = 3,
         click_cue = {
             width = 330,

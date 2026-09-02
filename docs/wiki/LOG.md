@@ -7318,3 +7318,11 @@ first-session cohort rates.
 - Rewrote Macros' pre-training greeting and service copy to explain that rebirths unlock personal
   eggs and Combat Training lets pets from those eggs enter durable inventory. The completed-state
   conversation now acknowledges that those hatchlings are the player's to keep.
+
+## 2026-09-01 — Narrow screens keep every menu action reachable
+
+- The Merge tutorial still follows the central hotbar, but now trims its colliding left edge around
+  the visible classic tray or expanded compact popup while preserving its hotbar-aligned right edge.
+  This protects explicit Classic layout selections on short laptop and device-emulator viewports.
+- Corrected the compact utility popup from three allocated rows to all four required rows for its
+  eight actions. Its config-owned minimum scale retains the 44px mobile touch-target floor.

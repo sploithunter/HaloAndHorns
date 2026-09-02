@@ -47,6 +47,18 @@ local EGG_HEALTH_BILLBOARD = assert(
 )
 local TUTORIAL_CLICK_CUE =
     assert((CONFIG.tutorial or {}).click_cue, "merge_egg_prototype.tutorial.click_cue is required")
+local TUTORIAL_CARD_LAYOUT = assert(
+    (CONFIG.tutorial or {}).card_layout,
+    "merge_egg_prototype.tutorial.card_layout is required"
+)
+local TUTORIAL_CARD_MENU_GAP = assert(
+    tonumber(TUTORIAL_CARD_LAYOUT.menu_gap),
+    "merge_egg_prototype.tutorial.card_layout.menu_gap is required"
+)
+local TUTORIAL_CARD_MINIMUM_WIDTH = assert(
+    tonumber(TUTORIAL_CARD_LAYOUT.minimum_width),
+    "merge_egg_prototype.tutorial.card_layout.minimum_width is required"
+)
 local TUTORIAL_ACTIVITY_FEEDBACK = assert(
     (CONFIG.tutorial or {}).activity_feedback,
     "merge_egg_prototype.tutorial.activity_feedback is required"
@@ -285,6 +297,39 @@ local function createTutorialCard(parent)
     return { frame = frame, progress = progress, title = title, body = body }
 end
 
+local function visibleMenuBlockerRight(playerGui, targetTop, targetHeight)
+    local blockers = {}
+    local base = playerGui:FindFirstChild("ProfessionalBaseUI")
+    local main = base and base:FindFirstChild("MainContainer")
+    local classicPane = main and main:FindFirstChild("menu_buttons_pane")
+    if classicPane and classicPane:IsA("GuiObject") then
+        table.insert(blockers, classicPane)
+    end
+
+    local compactOverlay = playerGui:FindFirstChild("CompactMenuOverlayGui")
+    local compactPopup = compactOverlay and compactOverlay:FindFirstChild("CompactMenuPopup")
+    if compactPopup and compactPopup:IsA("GuiObject") then
+        table.insert(blockers, compactPopup)
+    end
+
+    local targetBottom = targetTop + targetHeight
+    local right
+    for _, blocker in ipairs(blockers) do
+        local blockerTop = blocker.AbsolutePosition.Y
+        local blockerBottom = blockerTop + blocker.AbsoluteSize.Y
+        if
+            blocker.Visible
+            and blocker.AbsoluteSize.X > 0
+            and blocker.AbsoluteSize.Y > 0
+            and blockerTop < targetBottom
+            and blockerBottom > targetTop
+        then
+            right = math.max(right or 0, blocker.AbsolutePosition.X + blocker.AbsoluteSize.X)
+        end
+    end
+    return right
+end
+
 local function layoutTutorialCardOverHotbar(card)
     local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
     local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
@@ -301,6 +346,16 @@ local function layoutTutorialCardOverHotbar(card)
         card.frame.Visible = false
         return false
     end
+    local blockerRight = visibleMenuBlockerRight(playerGui, position.Y, size.Y)
+    local fittedX, fittedWidth = MergeTutorialHud.fitLeftBlocker(
+        position.X,
+        size.X,
+        blockerRight,
+        TUTORIAL_CARD_MENU_GAP,
+        TUTORIAL_CARD_MINIMUM_WIDTH
+    )
+    position = Vector2.new(fittedX, position.Y)
+    size = Vector2.new(fittedWidth, size.Y)
     local currentPosition = card.frame.Position
     local nextPosition = UDim2.fromOffset(
         MergeTutorialHud.stableScreenOffset(

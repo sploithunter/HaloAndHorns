@@ -615,6 +615,16 @@ local uiConfig = {
             desktop = { width = 520, height = 64, track_x = 70 },
             compact = { width = 390, height = 68, track_x = 64 },
         },
+        -- Eight occasional utility actions expand from the compact Menu control. Four complete rows
+        -- are required; the minimum scale keeps each 66px cell at least a 44px touch target.
+        compact_menu = {
+            columns = 2,
+            cell = { width = 66, height = 66 },
+            gap = { x = 4, y = 3 },
+            minimum_scale = 0.67,
+            anchor_gap = 6,
+            left_floor = 8,
+        },
         -- Game-pass + toggle-power badges. Keeper "top_chrome" hangs them
         -- under the Roblox logo…shop run. "vertical_left" stands the same
         -- two rows up as columns on the far left (the live look-at-it).
