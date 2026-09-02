@@ -1195,6 +1195,31 @@ function loadEquipped(Player)
             petModelsLocation.Parent = workspace.PlayerPets
         end
 
+        -- PetFollowController owns the visible transforms for this player's squad, so the
+        -- authoritative server models can be far behind their rendered positions. Seed every
+        -- replacement at the character before destroying the old squad. Otherwise an equipment
+        -- swap inside a far-offset mission creates the new atomic models at world origin; with
+        -- StreamingEnabled the owner never receives them, cannot drive them, and SquadHud renders
+        -- empty slots even though server combat still uses the equipped records.
+        local projectionSeedCFrame = CFrame.new()
+        local character = Player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if root and root:IsA("BasePart") then
+            projectionSeedCFrame = root.CFrame
+        else
+            -- Character replacement can overlap an equip rebuild. Retain the last known squad
+            -- region when possible rather than falling all the way back to world origin.
+            local oldBox = petLocation:FindFirstChildWhichIsA("BasePart")
+            if oldBox then
+                projectionSeedCFrame = oldBox.CFrame
+            else
+                local oldModel = petModelsLocation:FindFirstChildWhichIsA("Model")
+                if oldModel then
+                    projectionSeedCFrame = oldModel:GetPivot()
+                end
+            end
+        end
+
         -- Clear existing boxes
         for _, box in pairs(petLocation:GetChildren()) do
             box:Destroy()
@@ -1278,6 +1303,7 @@ function loadEquipped(Player)
             local box = components.PetBox:Clone()
             box.Name = tostring(i)
             box.Anchored = true -- Anchor during setup to prevent initial fall
+            box.CFrame = projectionSeedCFrame
 
             -- Add Center attachment to the control box
             local centerAttachment = Instance.new("Attachment")
@@ -1755,9 +1781,11 @@ function loadEquipped(Player)
                 petIdNv.Value = petId.Value
             end
 
-            -- Position model by PrimaryPart to the box position (legacy behavior)
+            -- Seed the whole model beside its owner before parenting it into Workspace. Moving
+            -- only PrimaryPart can leave welded/anchored descendants at their asset-space origin,
+            -- which makes the model's streaming bounds straddle the wrong part of the world.
             if PetModel.PrimaryPart then
-                PetModel.PrimaryPart.Position = box.Position
+                PetModel:PivotTo(projectionSeedCFrame)
                 logModelGeometry("POST_SET_POSITION_PREPARENT", PetModel)
             end
 
@@ -1772,16 +1800,26 @@ function loadEquipped(Player)
                 print("  - PrimaryPart can collide:", PetModel.PrimaryPart.CanCollide)
             end
 
-            -- NOW parent everything to workspace (AFTER everything is built)
-            -- ATOMIC STREAMING (the Colorado floating-"C" root cause): with
-            -- StreamingEnabled, PARTS stream in/out individually — a streamed-
-            -- out part rejoins at its stale SERVER position while the rest of
-            -- the model was client-pivoted away, and the next PivotTo drags the
-            -- wrong offset around forever. Atomic streams the model as ONE unit,
-            -- so parts can never rejoin out of sync. (Welds and anchoring never
-            -- could fix this — the corruption was replication, not physics.)
-            PetModel.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+            -- NOW parent everything to workspace (AFTER everything is built). The owner moves
+            -- this anchored model locally, while its authoritative server pivot intentionally
+            -- stays at the seed pose. PersistentPerPlayer retains Atomic's all-or-nothing model
+            -- streaming for other observers and guarantees the owner keeps the model after moving
+            -- away from that server pose. Without it, any distant mission or later long walk can
+            -- stream the local squad back out and strand its visualization.
+            PetModel.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
             PetModel.Parent = petModelsLocation
+            if Player.Parent == Players then
+                local persistentOk, persistentErr = pcall(function()
+                    PetModel:AddPersistentPlayer(Player)
+                end)
+                if not persistentOk then
+                    warn(
+                        "PetHandler: Failed to retain pet projection for owner",
+                        Player.Name,
+                        tostring(persistentErr)
+                    )
+                end
+            end
             box.Parent = petLocation
             -- Anchor EVERY part, not just the primary; PetFollowService owns the
             -- position from here (moved on the client via PivotTo, which carries

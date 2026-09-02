@@ -107,6 +107,12 @@ by schema version **7**; the overall player-profile schema is currently version 
   duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.
   Rendered draft cards carry their exact saved reference so enchant-specific stacks cannot be
   confused by legacy-prefix fallback. A missing acknowledgement times out to an editable retry state.
+- **Runtime squad replacement must remain stream-safe.** `PetFollowController` owns the local
+  player's rendered transforms, so the authoritative server model does not follow that visual pose.
+  `PetHandler` therefore seeds the complete replacement model at the character before parenting it
+  and registers it as `PersistentPerPlayer` for its owner. Atomic-only models created at world origin
+  disappear from a client inside a far-offset mission before the controller or Squad HUD can see
+  them; moving only `PrimaryPart` is also insufficient for a multipart model's streaming bounds.
 - **Best Pets buttons are draft-only selectors.** Ranged and Melee rank eligible pets by live
   effective damage, while Tank ranks by live effective health. Support and Control rank real
   configured abilities with area effects ahead of targeted effects; Support then prefers Heal,
