@@ -365,6 +365,7 @@ return {
         -- This relationship is scale-based; min/max constraints protect readability and touch size
         -- without measuring rendered pixel bounds or converting them back into placement offsets.
         card_layout = {
+            background_transparency = 0.5,
             display_order = 100,
             feedback_display_order = 130,
             inactive_display_order = 0,
