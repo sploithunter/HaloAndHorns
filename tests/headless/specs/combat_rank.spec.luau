@@ -58,6 +58,15 @@ return function()
             expect(playerBar:find('emblem.Name = "Emblem"', 1, true)).to.be.ok()
         end)
 
+        it("gives the docked title measurable flex width above the chip background", function()
+            local source = readFile("src/Client/Systems/CombatRankController.lua")
+            expect(source:find("chip.AutomaticSize = Enum.AutomaticSize.None", 1, true)).to.be.ok()
+            expect(source:find("chipLabel.AutomaticSize = Enum.AutomaticSize.None", 1, true)).to.be.ok()
+            expect(source:find("chipLabelFlex.FlexMode = Enum.UIFlexMode.Fill", 1, true)).to.be.ok()
+            expect(source:find("chipLabel.ZIndex = chip.ZIndex + 1", 1, true)).to.be.ok()
+            expect(source:find("chipIcon.ZIndex = chip.ZIndex + 1", 1, true)).to.be.ok()
+        end)
+
         it("maps every pillar grant_step to a live combat-tutorial step", function()
             for stepId in pairs(PILLARS) do
                 expect(stepIndex(stepId) ~= nil).to.equal(true)

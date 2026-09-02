@@ -299,7 +299,9 @@ local function ensureHud()
     chip.Position = UDim2.new(0.5, -270, 0, tonumber(knobs.chip_top) or 14)
     chip.Size =
         UDim2.fromOffset(tonumber(knobs.chip_width) or 148, tonumber(knobs.chip_height) or 36)
-    chip.AutomaticSize = Enum.AutomaticSize.X
+    -- The chip width is config-owned. Letting both this button and its truncated label auto-size on
+    -- X creates a circular measurement whose stable result is a zero-width label.
+    chip.AutomaticSize = Enum.AutomaticSize.None
     chip.BackgroundColor3 = Color3.fromRGB(18, 16, 24)
     chip.BackgroundTransparency = 0.08
     chip.BorderSizePixel = 0
@@ -345,6 +347,7 @@ local function ensureHud()
     chipGlyph.Size = UDim2.fromOffset(28, 28)
     chipGlyph.Font = Enum.Font.GothamBold
     chipGlyph.TextSize = 18
+    chipGlyph.ZIndex = chip.ZIndex + 1
     chipGlyph.Parent = chip
 
     chipIcon = Instance.new("ImageLabel")
@@ -354,19 +357,26 @@ local function ensureHud()
     chipIcon.Size = UDim2.fromOffset(28, 28)
     chipIcon.ScaleType = Enum.ScaleType.Fit
     chipIcon.Visible = false
+    chipIcon.ZIndex = chip.ZIndex + 1
     chipIcon.Parent = chip
 
     chipLabel = Instance.new("TextLabel")
     chipLabel.Name = "Label"
     chipLabel.BackgroundTransparency = 1
     chipLabel.LayoutOrder = 2
-    chipLabel.AutomaticSize = Enum.AutomaticSize.X
+    chipLabel.AutomaticSize = Enum.AutomaticSize.None
     chipLabel.Size = UDim2.new(0, 0, 1, 0)
     chipLabel.Font = Enum.Font.GothamBold
     chipLabel.TextSize = 16
     chipLabel.TextXAlignment = Enum.TextXAlignment.Left
     chipLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    chipLabel.ZIndex = chip.ZIndex + 1
     chipLabel.Parent = chip
+    -- Consume the width left by the crest and configured list-layout gap. This keeps every title
+    -- measurable without feeding runtime pixels back into placement.
+    local chipLabelFlex = Instance.new("UIFlexItem")
+    chipLabelFlex.FlexMode = Enum.UIFlexMode.Fill
+    chipLabelFlex.Parent = chipLabel
 
     picker = Instance.new("Frame")
     picker.Name = "Picker"
