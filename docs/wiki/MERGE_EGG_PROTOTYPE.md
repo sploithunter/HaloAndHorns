@@ -471,6 +471,10 @@ team and queue model:
   squad may still sit outside ambient acquisition range. This remains an aggro seed, not a focus
   pin; tanks and the normal threat tables retain target authority. The player's pre-session folder
   value is restored on mode switch, cancelled entry, and exit.
+- Player-pet defeat recovery is place-owned configuration. In Merge Defense a defeated slot is
+  reusable after 10 seconds, while the exact downed Huge identity remains unavailable for 60
+  seconds. The same `player_pet_recovery` table drives Full-mode durable-pet lockouts and Simple-mode
+  reserve replacements; Farm & Fight continues to use `configs/squad.lua` unchanged.
 - A newly discovered Full-mode pet uses the regular single-egg reveal and pet picture, but as a
   passive nonmodal presentation whose transparent layer does not consume board/HUD input. Duplicate
   index entries enter inventory silently. `Show New Defense Pets` in Egg Settings disables these
@@ -509,10 +513,11 @@ team and queue model:
 - These ghosts live in the real player's pet folder, so the existing follow, aggro, combat, and My
   Team UI paths drive them while the avatar gathers Waycoins. `CombatTargetOpen` lets them join any
   hatcher-owned fight despite the four hatcher target partitions.
-- A defeated player-escort pet is destroyed and its slot waits 30 real seconds. The strongest bench
-  pet with the same role fills it; if no role match exists, the strongest cast-off fills it. An empty
-  bench leaves the slot pending until a later hatcher draft supplies another cast-off. Hatcher FIFOs
-  remain independent at four seconds.
+- A defeated player-escort pet is destroyed and its slot observes the Merge recovery config: 10
+  seconds for an ordinary pet and 60 seconds for a Huge. The strongest bench pet with the same role
+  fills it; if no role match exists, the strongest cast-off fills it. An empty bench leaves the slot
+  pending until a later hatcher draft supplies another cast-off. Hatcher FIFOs remain independent at
+  four seconds.
 - Checkpoint 10 snapshots and restores the active escort definitions, reserve bench, entitlement
   capacity, and counters. This makes retry comparisons deterministic without persisting any pet.
 - Live validation on the extra-slot-pass account produced six Grass candidates for the first

@@ -7432,3 +7432,11 @@ first-session cohort rates.
   per-tier world scale, seat offset, and Rage Tier-1 yaw. The deep audit now round-trips the
   committed manifest and passes all 24 concepts, Meshy jobs, repairs, retextures, exports, 72 Roblox
   assets, and 24 prebaked runtime templates.
+
+## 2026-09-02 — Merge-only player-pet downtime
+
+- Added one `merge_egg_prototype.player_pet_recovery` configuration shared by both combat modes:
+  defeated player slots recover in 10 seconds and the exact downed Huge identity in 60 seconds.
+  Farm & Fight retains the canonical `configs/squad.lua` 60-second slot / 300-second Huge values.
+- Full-mode durable pets now resolve EnemyService slot and identity locks through the Merge-place
+  override; Simple-mode reserve replacements use the same values and recognize Huge slot occupants.

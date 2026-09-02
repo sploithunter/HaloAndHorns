@@ -197,6 +197,12 @@ function EnemyService:Init()
     -- is a union of footprint shapes; an enemy spawned inside one is confined to it (hard wall).
     self._leashConfig = self._configLoader:LoadConfig("enemy_leash")
     self._placesConfig = self._configLoader:LoadConfig("places")
+    self._runtimeSquadConfig = self._squadConfig
+    if PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) then
+        local mergeConfig = self._configLoader:LoadConfig("merge_egg_prototype")
+        self._runtimeSquadConfig =
+            ActiveSquad.withRecoveryOverride(self._squadConfig, mergeConfig.player_pet_recovery)
+    end
     self._leashRegions = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) and {}
         or self:_buildLeashRegions(self._leashConfig)
     self._nextId = 0
@@ -1961,7 +1967,11 @@ function EnemyService:_downPet(pet, _now, _eng, reason)
     if owner then
         fireGameEvent(owner, "pet_down", { pet = pet.Name, reason = reason or "down" })
     end
-    local cd = ActiveSquad.slotCooldownSeconds(reason or "down", self._squadConfig)
+    local cd = ActiveSquad.petUnavailableSeconds(
+        reason or "down",
+        self._runtimeSquadConfig,
+        pet:GetAttribute("Huge") == true
+    )
     pet:SetAttribute("CooldownUntil", os.time() + cd)
     local tid = pet:FindFirstChild("TargetID")
     if tid then
@@ -1987,7 +1997,7 @@ function EnemyService:_dataService()
 end
 
 function EnemyService:_lockoutCfg()
-    local sq = self._squadConfig or {}
+    local sq = self._runtimeSquadConfig or self._squadConfig or {}
     return {
         pet_lockout_seconds = (sq.down_lockout and sq.down_lockout.pet_lockout_seconds) or 300,
         slot_lock_seconds = (sq.slot_recovery and sq.slot_recovery.down_cooldown_seconds) or 60,
@@ -2069,8 +2079,9 @@ function EnemyService:_enforceLockouts(now)
             for _, pet in ipairs(folder:GetChildren()) do
                 if pet:IsA("Model") then
                     local entry = petLockEntry(pet)
-                    -- SLOT lock (1 min): hold whatever pet occupies a slot whose pet just went down,
-                    -- so a DIFFERENT pet (or a fresh stack sibling) can't fill it until the slot frees.
+                    -- SLOT lock: hold whatever pet occupies a slot whose pet just went down, so a
+                    -- DIFFERENT pet (or a fresh stack sibling) can't fill it until the configured
+                    -- place-aware slot timer frees it.
                     local pn = pet:FindFirstChild("PositionNumber")
                     local slotName = "slot_"
                         .. tostring((pn and pn.Value) or pet:GetAttribute("PositionNumber") or "?")
@@ -2078,7 +2089,7 @@ function EnemyService:_enforceLockouts(now)
                     if not PetLockout.isSlotLocked(state, slotName, now) then
                         slotUntil = 0
                     end
-                    pet:SetAttribute("SlotLockUntil", slotUntil) -- UI: the SLOT bar (the 1-min timer)
+                    pet:SetAttribute("SlotLockUntil", slotUntil) -- UI: the configured SLOT timer
                     -- IDENTITY lock: only the EXACT special (huge/exclusive) holds for the long pet
                     -- lockout. Stacks are fungible — they ride the slot timer + the availability pool
                     -- (deploy a sibling once the slot frees), so there's no per-unit 5-min hold here.
