@@ -3343,13 +3343,18 @@ local function updateBoardWallControls(controls, observing)
     local rebirthMaxed = world:GetAttribute("MergeDefenseRebirthMaxed") == true
     local rebirthRequirementMet = world:GetAttribute("MergeDefenseRebirthRequirementMet") ~= false
     local rebirthMinimumTier = world:GetAttribute("MergeDefenseRebirthMinimumEggTier")
+    local personalEggName =
+        tostring(world:GetAttribute("MergeDefensePersonalEggName") or "PERSONAL EGG")
+    local nextPersonalEggName =
+        tostring(world:GetAttribute("MergeDefenseNextPersonalEggName") or "NEXT EGG")
     local rebirthCard = buttons.rebirth
     local rebirthAvailable = observing and not rebirthMaxed and rebirthRequirementMet
     if rebirthMaxed then
         setManagementCard(rebirthCard, observing, {
             title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "%s DAMAGE • MAX",
+                "%s • %s DAMAGE • MAX",
+                string.upper(personalEggName),
                 formatDamageMultiplier(alliedDamageMultiplier)
             ),
             available = false,
@@ -3371,7 +3376,7 @@ local function updateBoardWallControls(controls, observing)
     elseif os.clock() < rebirthConfirmUntil then
         setManagementCard(rebirthCard, observing, {
             title = "CONFIRM REBIRTH",
-            detail = "RESETS RUN + WAYCOINS",
+            detail = string.format("UNLOCK %s • RESET RUN", string.upper(nextPersonalEggName)),
             available = rebirthAvailable,
             currency = "rebirth",
             pillText = "CLICK AGAIN",
@@ -3381,8 +3386,9 @@ local function updateBoardWallControls(controls, observing)
         setManagementCard(rebirthCard, observing, {
             title = string.format("REBIRTH R%d", rebirthRank),
             detail = string.format(
-                "NEXT R%d · %s DAMAGE",
+                "NEXT R%d · %s + %s DAMAGE",
                 rebirthRank + 1,
+                string.upper(nextPersonalEggName),
                 formatDamageMultiplier(nextAlliedDamageMultiplier)
             ),
             available = rebirthAvailable,

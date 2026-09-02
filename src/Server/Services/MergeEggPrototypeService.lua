@@ -356,6 +356,7 @@ function MergeEggPrototypeService:Init()
     self._potionShopService = self._modules and self._modules.PotionShopService
     self._combatTutorialService = self._modules and self._modules.CombatTutorialService
     self._worldBindingService = self._modules and self._modules.WorldBindingService
+    self._zoneService = self._modules and self._modules.ZoneService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._placesConfig = (self._configLoader and self._configLoader:LoadConfig("places"))
@@ -433,6 +434,76 @@ function MergeEggPrototypeService:_mergeDefenseProgress(player)
     local progress = MergeEggPlayerCombat.normalizeOnboarding(data.GameData.MergeDefense)
     data.GameData.MergeDefense = progress
     return progress
+end
+
+function MergeEggPrototypeService:_personalHatchRules()
+    local reserve = type(self._config.player_reserve) == "table" and self._config.player_reserve
+        or {}
+    local fullMode = type(reserve.full_mode) == "table" and reserve.full_mode or {}
+    return type(fullMode.personal_hatches) == "table" and fullMode.personal_hatches or {}
+end
+
+function MergeEggPrototypeService:_personalHatchProgression(record)
+    local progression = self:_eggProgression(record)
+    if #progression == 0 then
+        return {}
+    end
+    local hugeCfg = (self._config.team or {}).prototype_huge_progression or {}
+    local normalTierCount =
+        math.clamp(math.floor(tonumber(hugeCfg.normal_tier_count) or #progression), 1, #progression)
+    local personal = {}
+    for tier = 1, normalTierCount do
+        personal[tier] = progression[tier]
+    end
+    return personal
+end
+
+function MergeEggPrototypeService:_canAwardPersonalHatch(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    local tutorialDone = data
+        and type(data.CombatTutorial) == "table"
+        and data.CombatTutorial.done == true
+    return MergeEggPlayerCombat.canAwardPersonalHatch(tutorialDone, self:_personalHatchRules())
+end
+
+-- Rebirth is the source of truth for personal egg ownership. Area unlocks are a derived, monotonic
+-- entitlement reconciled both on entry and immediately after purchase, so existing profiles and an
+-- interrupted unlock cannot require another rebirth. ZoneService still owns persistence/events;
+-- bypassing purchase requirements here does not bypass LayerService's separate travel level gate.
+function MergeEggPrototypeService:_reconcilePersonalHatchAreas(player, rebirthCount)
+    local progression = self:_personalHatchProgression(nil)
+    local rules = self:_personalHatchRules()
+    local tier = MergeEggPlayerCombat.highestPersonalHatchTier(progression, rebirthCount, rules)
+    local eggId = progression[tier]
+    if player then
+        player:SetAttribute("MergeDefensePersonalEggTier", tier)
+        player:SetAttribute("MergeDefensePersonalEggId", eggId)
+    end
+
+    local areas = MergeEggPlayerCombat.personalHatchAreas(progression, rebirthCount, rules)
+    if #areas == 0 then
+        return true, tier, eggId
+    end
+    if not (self._zoneService and self._zoneService.UnlockZone) then
+        return false, tier, eggId, "zone_service_unavailable"
+    end
+
+    for _, areaId in ipairs(areas) do
+        local result = self._zoneService:UnlockZone(player, areaId, {
+            bypassRequirements = true,
+        })
+        if not (result and result.ok == true) then
+            self:_log("Warn", "Merge personal egg area reconciliation failed", {
+                player = player and player.Name,
+                rebirthCount = rebirthCount,
+                eggId = eggId,
+                areaId = areaId,
+                reason = result and result.reason or "unlock_failed",
+            })
+            return false, tier, eggId, result and result.reason or "unlock_failed"
+        end
+    end
+    return true, tier, eggId
 end
 
 function MergeEggPrototypeService:_checkpointOptions()
@@ -2317,13 +2388,10 @@ function MergeEggPrototypeService:_playerCombatMode(player)
 end
 
 function MergeEggPrototypeService:_playerHatchSource(record, deployedTier)
-    local progression = self:_eggProgression(record)
-    local hugeCfg = (self._config.team or {}).prototype_huge_progression or {}
-    local normalTierCount =
-        math.clamp(math.floor(tonumber(hugeCfg.normal_tier_count) or #progression), 1, #progression)
-    local playerProgression = {}
-    for tier = 1, normalTierCount do
-        playerProgression[tier] = progression[tier]
+    local playerProgression = self:_personalHatchProgression(record)
+    local normalTierCount = #playerProgression
+    if normalTierCount == 0 then
+        return nil, "player_hatch_progression_unavailable"
     end
     -- Prototype-Huge tiers repeat the origin catalog for NPC combat only. A Full-mode player's
     -- durable hatch resolves to the repeated origin's ordinary egg and never inherits the forced
@@ -2331,14 +2399,11 @@ function MergeEggPrototypeService:_playerHatchSource(record, deployedTier)
     local playerDeployedTier = (
         (math.max(1, math.floor(tonumber(deployedTier) or 1)) - 1) % normalTierCount
     ) + 1
-    local data = self._dataService and self._dataService:GetData(record.player)
-    local unlockedAreas = data and data.GameData and data.GameData.UnlockedAreas or {}
-    local rules = ((self._config.player_reserve or {}).full_mode or {})
     local tier, eggId = MergeEggPlayerCombat.resolveHatchTier(
         playerProgression,
-        unlockedAreas,
-        rules.unlock_area_by_egg,
-        playerDeployedTier
+        record.rebirthCount,
+        playerDeployedTier,
+        self:_personalHatchRules()
     )
     if not eggId then
         return nil, "player_hatch_egg_unavailable"
@@ -2354,6 +2419,7 @@ function MergeEggPrototypeService:_awardFullModeHatch(record, deployedTier)
     if
         not record
         or record.playerCombatMode ~= "full"
+        or not self:_canAwardPersonalHatch(record.player)
         or not self._petGrantService
         or not self._inventoryService
     then
@@ -8955,11 +9021,35 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     )
     world:SetAttribute("MergeDefenseRebirthRequirementMet", rebirth.requirementMet)
     world:SetAttribute("MergeDefenseRebirthMinimumEggTier", rebirth.minimumDeployedTier)
+    local personalProgression = self:_personalHatchProgression(record)
+    local personalRules = self:_personalHatchRules()
+    local personalTier = MergeEggPlayerCombat.highestPersonalHatchTier(
+        personalProgression,
+        rebirth.count,
+        personalRules
+    )
+    local nextPersonalTier = MergeEggPlayerCombat.highestPersonalHatchTier(
+        personalProgression,
+        rebirth.count + 1,
+        personalRules
+    )
+    local personalEggId = personalProgression[personalTier]
+    local nextPersonalEggId = personalProgression[nextPersonalTier]
+    world:SetAttribute("MergeDefensePersonalEggTier", personalTier)
+    world:SetAttribute("MergeDefensePersonalEggId", personalEggId)
+    world:SetAttribute("MergeDefensePersonalEggName", self:_eggDisplayName(personalEggId))
+    world:SetAttribute("MergeDefenseNextPersonalEggTier", nextPersonalTier)
+    world:SetAttribute("MergeDefenseNextPersonalEggId", nextPersonalEggId)
+    world:SetAttribute("MergeDefenseNextPersonalEggName", self:_eggDisplayName(nextPersonalEggId))
     if record and record.player then
+        record.personalHatchTier = personalTier
+        record.personalHatchEggId = personalEggId
         record.player:SetAttribute("MergeDefenseRebirths", rebirth.count)
         record.player:SetAttribute("MergeDefenseRebirthDamageMultiplier", rebirth.damageMultiplier)
         record.player:SetAttribute("MergeDefenseManagementDamageMultiplier", managementDamage)
         record.player:SetAttribute("MergeDefenseAlliedDamageMultiplier", alliedDamage)
+        record.player:SetAttribute("MergeDefensePersonalEggTier", personalTier)
+        record.player:SetAttribute("MergeDefensePersonalEggId", personalEggId)
     end
     local upgradeAttributeNames = {
         coin_value = "CoinValue",
@@ -11286,6 +11376,8 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     local defaultStageId = self:_progressionStage(nil)
     local mergeDefenseProgress = self:_mergeDefenseProgress(player)
         or MergeEggPlayerCombat.normalizeOnboarding(nil)
+    local _, personalHatchTier, personalHatchEggId =
+        self:_reconcilePersonalHatchAreas(player, mergeDefenseProgress.rebirths)
     local record = {
         player = player,
         world = world,
@@ -11490,6 +11582,8 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
             math.floor(tonumber(mergeDefenseProgress.bulwark_waycoins_spent) or 0)
         ),
         rebirthCount = MergeEggRebirth.normalizeCount(mergeDefenseProgress.rebirths),
+        personalHatchTier = personalHatchTier,
+        personalHatchEggId = personalHatchEggId,
         rebirthInProgress = false,
         checkpointSnapshot = nil,
         pendingCheckpointWave = nil,
@@ -16155,6 +16249,18 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         self._dataService:RequestSave(player, "merge_defense_rebirth", {
             debounceSeconds = 0,
             critical = true,
+        })
+    end
+    local areasReconciled, personalHatchTier, personalHatchEggId, areaReason =
+        self:_reconcilePersonalHatchAreas(player, record.rebirthCount)
+    record.personalHatchTier = personalHatchTier
+    record.personalHatchEggId = personalHatchEggId
+    if not areasReconciled then
+        self:_log("Warn", "Merge Egg rebirth area entitlement will retry on entry", {
+            player = player.Name,
+            rebirth = record.rebirthCount,
+            eggId = personalHatchEggId,
+            reason = areaReason,
         })
     end
     self:_clearEncounter(record)
