@@ -2,8 +2,9 @@
 --
 -- Players begin at Rank 1 for free; the persisted count records paid rebirths, so count 0 is Rank
 -- 1, count 1 is Rank 2, and so on. Keeping those concepts separate preserves existing saves without
--- exposing a Rank 0. A config-owned curve can fill prices through an explicit maximum rank, while
--- exact per-rank entries remain available as balance overrides.
+-- exposing a Rank 0. Each proposed rank indexes the same-numbered Merge egg tier, and the authored
+-- egg creation value is multiplied by one config-owned constant. That quote is stable for the rank:
+-- live Spawn Level purchases and hatcher capacity never move it.
 --
 -- Hard rule: rebirth never wipes a Robux purchase or unlock flag. Only
 -- authored developer consumables (potions) are spent. Placements reset;
@@ -19,34 +20,28 @@ function MergeEggRebirth.rankForCount(count)
     return MergeEggRebirth.normalizeCount(count) + 1
 end
 
-function MergeEggRebirth.nextCost(config, count)
+function MergeEggRebirth.nextCost(config, count, indexedEggValue)
     config = type(config) == "table" and config or {}
     if config.enabled ~= true then
         return nil
     end
-    local costsByRank = type(config.costs_by_rank) == "table" and config.costs_by_rank or {}
     local nextRank = MergeEggRebirth.rankForCount(count) + 1
     local maxRank = tonumber(config.max_rank)
     if maxRank and nextRank > math.max(1, math.floor(maxRank)) then
         return nil
     end
-    local amount = tonumber(costsByRank[nextRank])
-    if not amount and maxRank then
-        local curve = type(config.cost_curve) == "table" and config.cost_curve or {}
-        local base = tonumber(curve.base)
-        local exponent = tonumber(curve.exponent)
-        local rankOffset = tonumber(curve.rank_offset)
-        if base and exponent and rankOffset then
-            amount = base * math.max(0, nextRank - rankOffset) ^ exponent
-        end
-    end
-    if not amount then
-        return nil
-    end
+    local eggValue = tonumber(indexedEggValue)
+    assert(eggValue ~= nil, "Rebirth indexed egg value must be numeric")
+    local multiplier = tonumber(config.indexed_egg_value_multiplier)
+    assert(multiplier ~= nil, "rebirth.indexed_egg_value_multiplier must be numeric")
+    assert(multiplier > 0, "rebirth.indexed_egg_value_multiplier must be positive")
     return {
-        amount = math.max(0, math.floor(amount + 0.5)),
+        amount = math.max(0, math.floor(math.max(0, eggValue) * multiplier + 0.5)),
         currency = tostring(config.currency or "hall_coins"),
         rank = nextRank,
+        indexedEggTier = nextRank,
+        indexedEggValue = math.max(0, eggValue),
+        eggValueMultiplier = multiplier,
     }
 end
 

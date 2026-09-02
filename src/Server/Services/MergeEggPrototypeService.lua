@@ -1902,7 +1902,9 @@ end
 function MergeEggPrototypeService:_rebirthStatus(record)
     local config = type(self._config.rebirth) == "table" and self._config.rebirth or {}
     local count = MergeEggRebirth.normalizeCount(record and record.rebirthCount)
-    local price = MergeEggRebirth.nextCost(config, count)
+    local indexedEggTier = MergeEggRebirth.rankForCount(count) + 1
+    local indexedEgg = self:_eggTierCost(indexedEggTier, nil)
+    local price = MergeEggRebirth.nextCost(config, count, indexedEgg.amount)
     local requirementMet, minimumTier =
         MergeEggRebirth.requirementMet(config, count, self:_lowestDeployedEggTier(record))
     local scaling = {}
@@ -2947,11 +2949,24 @@ function MergeEggPrototypeService:_baseEggUpgradeCost(context)
     if tier >= #progression then
         return nil
     end
-    local first = math.max(0, math.floor(tonumber(cfg.first_upgrade_cost) or 1000))
+    local proposedEgg = self:_eggTierCost(tier + 1, context)
+    local availableHatchers = self:_activeSlotCount(context)
+    local eggValueMultiplier = tonumber(cfg.upgrade_proposed_egg_value_multiplier)
+    if eggValueMultiplier == nil then
+        error("base_egg_generator.upgrade_proposed_egg_value_multiplier must be numeric")
+    end
+    eggValueMultiplier = math.max(1, eggValueMultiplier)
     return {
-        currency = self:_earthEggPricing(context).currency,
-        amount = MergeEggPricing.doublingTierCost(first, cfg.upgrade_cost_growth, tier, 1),
+        currency = proposedEgg.currency,
+        amount = MergeEggPricing.generatorUpgradeCost(
+            proposedEgg.amount,
+            availableHatchers,
+            eggValueMultiplier
+        ),
         tier = tier + 1,
+        proposedEggValue = proposedEgg.amount,
+        availableHatchers = availableHatchers,
+        eggValueMultiplier = eggValueMultiplier,
     }
 end
 
@@ -9057,6 +9072,18 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeDefenseRebirthMaxed", rebirth.maxed)
     world:SetAttribute("MergeDefenseRebirthCost", rebirth.price and rebirth.price.amount or nil)
     world:SetAttribute(
+        "MergeDefenseRebirthIndexedEggTier",
+        rebirth.price and rebirth.price.indexedEggTier or nil
+    )
+    world:SetAttribute(
+        "MergeDefenseRebirthIndexedEggValue",
+        rebirth.price and rebirth.price.indexedEggValue or nil
+    )
+    world:SetAttribute(
+        "MergeDefenseRebirthEggValueMultiplier",
+        rebirth.price and rebirth.price.eggValueMultiplier or nil
+    )
+    world:SetAttribute(
         "MergeDefenseRebirthCurrency",
         rebirth.price and rebirth.price.currency or nil
     )
@@ -9296,6 +9323,18 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("BaseEggUpgradeReady", baseUpgradeReady)
     world:SetAttribute("BaseEggUpgradeBlockedReason", baseUpgradeReason)
     world:SetAttribute("BaseEggUpgradeCost", baseUpgrade and baseUpgrade.amount or nil)
+    world:SetAttribute(
+        "BaseEggUpgradeProposedEggValue",
+        baseUpgrade and baseUpgrade.proposedEggValue or nil
+    )
+    world:SetAttribute(
+        "BaseEggUpgradeAvailableHatchers",
+        baseUpgrade and baseUpgrade.availableHatchers or nil
+    )
+    world:SetAttribute(
+        "BaseEggUpgradeEggValueMultiplier",
+        baseUpgrade and baseUpgrade.eggValueMultiplier or nil
+    )
     world:SetAttribute("BaseEggNextTier", baseUpgrade and baseUpgrade.tier or nil)
     world:SetAttribute("BaseEggNextSourceId", nextBaseEggId)
     world:SetAttribute(
@@ -15723,6 +15762,9 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
         toTier = upgrade.tier,
         cost = upgrade.amount,
         currency = upgrade.currency,
+        proposedEggValue = upgrade.proposedEggValue,
+        availableHatchers = upgrade.availableHatchers,
+        eggValueMultiplier = upgrade.eggValueMultiplier,
         stationDistance = stationDistance,
         promotedBoardEggs = promotedBoardEggs,
         promotedHatchers = promotedHatchers,
@@ -16368,6 +16410,9 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         rebirthRank = MergeEggRebirth.rankForCount(record.rebirthCount),
         amount = price.amount,
         currency = price.currency,
+        indexedEggTier = price.indexedEggTier,
+        indexedEggValue = price.indexedEggValue,
+        eggValueMultiplier = price.eggValueMultiplier,
         damageMultiplier = MergeEggRebirth.damageMultiplier(
             self._config.rebirth,
             record.rebirthCount
