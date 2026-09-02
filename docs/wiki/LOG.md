@@ -7538,3 +7538,10 @@ first-session cohort rates.
   Each level now multiplies base Focus regeneration by +5% while the pool maximum remains unchanged;
   the wall card, world attributes, player runtime attribute, save key, and tests use the corrected
   identity with no pre-release migration alias.
+
+## 2026-09-02 — Debuff cannon T3/T4 barrels align with their shots
+
+- Live inspection showed both models tracking their targets while the visible barrels stayed a
+  quarter-turn sideways: unlike Debuff T1/T2, the T3/T4 source meshes are authored along local +Z.
+- Their manifest-owned `barrelYawDegrees` is now 90, aligning the chassis with the common local +X
+  ballistic basis without adding a role/tier special case to projectile targeting.

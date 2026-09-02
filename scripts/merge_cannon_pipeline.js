@@ -63,6 +63,11 @@ function runtimePresentation(family, tier) {
   const presentation = {};
   if (family === "rage" && tier === 1) {
     presentation.barrelYawDegrees = 270;
+  } else if (family === "debuff" && (tier === 3 || tier === 4)) {
+    // These two Meshy exports are authored down local +Z. The common cannon
+    // ballistic basis aims local +X, so turn the chassis a quarter turn while
+    // keeping projectile targeting and muzzle fallback on the shot vector.
+    presentation.barrelYawDegrees = 90;
   }
   presentation.worldScale = tier === 1 ? 0.375 : 0.5;
   presentation.seatOffsetY = tier === 1 ? 0.55 : 0.733;

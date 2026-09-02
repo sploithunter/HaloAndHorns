@@ -33,8 +33,9 @@ Playtest unlock/place/upgrade are one
 Waycoin each. All six families use distinct Tier 1–4 models. Each of the 24
 cannon entries has its own `worldScale` (0.375 on every Tier 1,
 0.5 on Tiers 2–4). Every chassis uses `seatOffsetY` so wheels sit
-on the pad (0.55 at T1, 0.733 at T2–4). Rage T1 also has
-`barrelYawDegrees = 270`. Gameplay
+on the pad (0.55 at T1, 0.733 at T2–4). Rage T1 has
+`barrelYawDegrees = 270`; Debuff T3/T4 use 90 so their local +Z barrels align
+with the common local +X ballistic basis. Gameplay
 tier selects the matching
 prebaked template, then spawn applies that entry's presentation.
 Board-action toasts sit above the workshop

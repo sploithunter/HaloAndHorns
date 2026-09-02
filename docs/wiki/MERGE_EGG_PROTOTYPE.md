@@ -1213,8 +1213,9 @@ clean.
   to the corrected 7.953594-stud reference width at template scale 1. Presentation
   size is per-tier `worldScale` on `configs/merge_tier_art.lua` (every
   Tier 1 is 0.375; Tiers 2–4 stay 0.5). Every chassis sets
-  `seatOffsetY` so wheels sit on the pad. Rage T1 also sets
-  `barrelYawDegrees = 270`.
+  `seatOffsetY` so wheels sit on the pad. Rage T1 sets
+  `barrelYawDegrees = 270`; Debuff T3/T4 set it to 90 because those two meshes
+  are authored down local +Z rather than the common local +X barrel axis.
   `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier,
   applies that entry's `worldScale`, and grounds it on a pad's `TowerAnchor`;
   no current-art substitution or shared edge-tower scale remains.
