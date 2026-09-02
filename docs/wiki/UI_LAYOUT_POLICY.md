@@ -55,3 +55,8 @@ overlay above ordinary HUD cards such as `SquadHud`, while the pet cards remain 
 Its config-owned two-column geometry must allocate all four rows of its eight utility actions, and
 its minimum scale must retain 44px touch targets. Tutorials and true modal surfaces retain higher
 display orders except where an intentionally open utility menu must remain actionable.
+
+Classic mode's full utility tray and the Pets hotbar flank share the lower-left region. On constrained
+screens, Pets docks immediately beside the tray's measured right edge; it is not allowed to remain
+under tray buttons. The Merge tutorial then treats that live Pets control as a left blocker too, so
+the complete order stays tray → Pets → tutorial without relying on a nominal viewport breakpoint.

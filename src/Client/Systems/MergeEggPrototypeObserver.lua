@@ -59,6 +59,10 @@ local TUTORIAL_CARD_MINIMUM_WIDTH = assert(
     tonumber(TUTORIAL_CARD_LAYOUT.minimum_width),
     "merge_egg_prototype.tutorial.card_layout.minimum_width is required"
 )
+local TUTORIAL_CARD_LEFT_CLEARANCE_CONTROLS = assert(
+    TUTORIAL_CARD_LAYOUT.left_clearance_controls,
+    "merge_egg_prototype.tutorial.card_layout.left_clearance_controls is required"
+)
 local TUTORIAL_ACTIVITY_FEEDBACK = assert(
     (CONFIG.tutorial or {}).activity_feedback,
     "merge_egg_prototype.tutorial.activity_feedback is required"
@@ -297,6 +301,20 @@ local function createTutorialCard(parent)
     return { frame = frame, progress = progress, title = title, body = body }
 end
 
+local function isActuallyVisible(guiObject, playerGui)
+    local current = guiObject
+    while current and current ~= playerGui do
+        if current:IsA("GuiObject") and not current.Visible then
+            return false
+        end
+        if current:IsA("LayerCollector") and not current.Enabled then
+            return false
+        end
+        current = current.Parent
+    end
+    return current == playerGui
+end
+
 local function visibleMenuBlockerRight(playerGui, targetTop, targetHeight)
     local blockers = {}
     local base = playerGui:FindFirstChild("ProfessionalBaseUI")
@@ -311,6 +329,12 @@ local function visibleMenuBlockerRight(playerGui, targetTop, targetHeight)
     if compactPopup and compactPopup:IsA("GuiObject") then
         table.insert(blockers, compactPopup)
     end
+    for _, controlName in ipairs(TUTORIAL_CARD_LEFT_CLEARANCE_CONTROLS) do
+        local control = playerGui:FindFirstChild(controlName, true)
+        if control and control:IsA("GuiObject") then
+            table.insert(blockers, control)
+        end
+    end
 
     local targetBottom = targetTop + targetHeight
     local right
@@ -318,7 +342,7 @@ local function visibleMenuBlockerRight(playerGui, targetTop, targetHeight)
         local blockerTop = blocker.AbsolutePosition.Y
         local blockerBottom = blockerTop + blocker.AbsoluteSize.Y
         if
-            blocker.Visible
+            isActuallyVisible(blocker, playerGui)
             and blocker.AbsoluteSize.X > 0
             and blocker.AbsoluteSize.Y > 0
             and blockerTop < targetBottom
