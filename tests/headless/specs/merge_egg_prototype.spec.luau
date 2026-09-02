@@ -1201,6 +1201,15 @@ return function()
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             local authoring = readFile("scripts/studio/build_merge_egg_prototype_world.luau")
             expect(service:find("function MergeEggPrototypeService:_canUseHatcher", 1, true)).to.be.ok()
+            expect(service:find("local configuredGap = tonumber(cfg.auto_combine_gap)", 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    'assert(configuredGap, "team.merge_board.auto_combine_gap is required")',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("assert(tonumber(cfg.auto_combine_gap)", 1, true)).to.equal(nil)
             expect(
                 service:find("function MergeEggPrototypeService:_prepareSessionCurrency", 1, true)
             ).to.be.ok()

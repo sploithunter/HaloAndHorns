@@ -7522,3 +7522,6 @@ first-session cohort rates.
 - Kept the new floor Auto-Combine surface builder off the observer chunk's local-register table;
   the monolithic client module is already at Luau's 200-register ceiling, and one additional
   module-local helper prevented the observer from compiling in Studio.
+- Validate the required Auto-Combine floor gap before calling `math.max`; Luau `assert(value,
+  message)` returns both arguments, so nesting it in a variadic numeric function leaked the message
+  string into the calculation and stopped `MergeEggPrototypeService` during startup.
