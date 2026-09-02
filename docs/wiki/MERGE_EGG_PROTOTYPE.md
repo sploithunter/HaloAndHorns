@@ -619,10 +619,11 @@ team and queue model:
   power hotbar and blocks click, keyboard, controller, and auto-cast activation through the same
   local coverage attribute. Hands-on pauses show their exact instruction; combat intervals fill the
   same footprint with a config-authored preview of the next lesson, so a resumed session cannot
-  expose a blank hole. The card copies the live hotbar `PillFrame`'s final absolute bounds after
-  phone/tablet scaling instead of owning another pixel size. Completing or rebirth-skipping the
-  tutorial restores the hotbar immediately; Wave 11 remains the final safety boundary. Pets/Menu
-  and Powers/Board are separate flank controls and remain available while the center is covered.
+  expose a blank hole. The card is a child of the inner hotbar and copies `PillFrame`'s relative
+  anchor, position, and size; it never reads rendered pixel bounds. One outer
+  `GreaterHotbarFrame` scales Pets/Menu, the inner pill, and Powers/Board together. Completing or
+  rebirth-skipping the tutorial restores the hotbar immediately; Wave 11 remains the final safety
+  boundary. Both flank-control frames remain available while the center is covered.
 - The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,

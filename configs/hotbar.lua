@@ -78,8 +78,19 @@ return {
             tablet = 1.04,
             mobile = 1.6,
         },
-        -- bar 546 + left flank 88 + right flank 158 (HotbarFlank desktop)
+        -- One shared, scaled assembly owns the left controls, central white pill, and right
+        -- controls. Child placement is expressed as proportions of this design canvas; the
+        -- UIViewportScale belongs only to the assembly root.
         design_span = 792,
+        assembly = {
+            left_span = 88,
+            bar_span = 546,
+            right_span = 158,
+            height = 96,
+            -- The authored pill chrome extends evenly beyond Bar on both axes. The tutorial
+            -- reads PillFrame's UDim geometry directly, so it covers this exact surface.
+            pill_overhang = { width = 46, height = 30 },
+        },
         -- header + 10 slots (HotbarBar vertical_left)
         vertical_span = 546,
         -- 10% narrower than the first mobile pass so Jump keeps a slot
@@ -94,18 +105,6 @@ return {
             compact_size = 48,
             gap = 26,
             inner = 8,
-            classic_menu_reserved_end = 0.163,
-            -- Classic narrow-screen dock. These are viewport proportions because the utility tray,
-            -- Pets, and Merge tutorial must keep the same relationship at every desktop width.
-            -- Compact mode keeps the existing hotbar-relative flank columns.
-            classic_pets = {
-                anchor = { x = 0, y = 1 },
-                position = { x = 0.17, y = 0.97 },
-                size = { x = 0.074, y = 0.14 },
-                aspect_ratio = 1,
-                minimum_size = { width = 44, height = 44 },
-                maximum_size = { width = 96, height = 96 },
-            },
         },
     },
 

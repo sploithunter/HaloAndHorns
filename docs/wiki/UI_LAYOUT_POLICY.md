@@ -22,8 +22,9 @@ Responsive relationships—not guessed screen coordinates—own placement.
 - When one responsive surface replaces another, mount both in a shared responsive parent and author
   their relationship with scale components. Add `UISizeConstraint` and, where shape matters,
   `UIAspectRatioConstraint`; never read `AbsolutePosition`/`AbsoluteSize` and feed those pixels back
-  into `UDim2.fromOffset`. Merge's lower `ResponsiveDock` is the reference implementation: Classic
-  Pets and the tutorial own non-overlapping viewport shares, with explicit minimum and maximum sizes.
+  into `UDim2.fromOffset`. Merge's lower hotbar is the reference implementation: one
+  `GreaterHotbarFrame` owns the left controls, inner `Bar`, and right controls under one viewport
+  scale, while the tutorial copies the inner `PillFrame`'s relative UDim geometry.
 - When one independent HUD surface must follow another, use the leader's live rendered edge. In the
   Merge place, the People list docks beneath `MergeWaveBar.WaveMeter`, inherits its rendered width,
   right edge, and chrome scale, and adds a viewport-relative gap. Its per-device values are startup
@@ -50,7 +51,10 @@ Its config-owned two-column geometry must allocate all four rows of its eight ut
 its minimum scale must retain 44px touch targets. Tutorials and true modal surfaces retain higher
 display orders except where an intentionally open utility menu must remain actionable.
 
-Classic mode's full utility tray, Pets control, and Merge tutorial share authored lower-dock regions.
-Pets and the tutorial are siblings in `HotbarBar.ResponsiveDock`, use scale-only placement, and carry
-touch/readability constraints. The config invariant is tray reserve → Pets share → tutorial share;
-headless tests reject overlap between the Pets and tutorial proportions.
+The lower hotbar is a single responsive assembly in every HUD mode. `GreaterHotbarFrame` contains
+`LeftControls`, the inner `Bar`, and `RightControls`; Pets and the compact Menu expander live on the
+left, while Powers and Hoverboard live on the right. Only the outer frame owns `ViewportScale`.
+Config-authored proportional spans partition the assembly, and internal button chrome uses the same
+design canvas. Merge's tutorial replaces only the inner pill, leaving both flanks visible and
+interactive. The full-screen `ResponsiveDock` is presentation-only and may host transient feedback;
+it must not own persistent hotbar controls.

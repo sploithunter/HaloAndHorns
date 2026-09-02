@@ -286,20 +286,67 @@ function HotbarBar.start()
     local PAD = 4
     local rowWidth = 10 * SLOT + 9 * PAD
 
+    local assemblyConfig = assert(HOTBAR_CONFIG.size.assembly, "hotbar.size.assembly is required")
+    local leftSpan = assert(tonumber(assemblyConfig.left_span), "assembly.left_span is required")
+    local barSpan = assert(tonumber(assemblyConfig.bar_span), "assembly.bar_span is required")
+    local rightSpan = assert(tonumber(assemblyConfig.right_span), "assembly.right_span is required")
+    local assemblyHeight = assert(tonumber(assemblyConfig.height), "assembly.height is required")
+    local designSpan =
+        assert(tonumber(HOTBAR_CONFIG.size.design_span), "size.design_span is required")
+    assert(
+        leftSpan + barSpan + rightSpan == designSpan,
+        "hotbar assembly spans must equal design_span"
+    )
+    assert(barSpan == rowWidth + SLOT + PAD, "assembly.bar_span must fit the authored slots")
+    assert(assemblyHeight == SLOT * 2 + PAD, "assembly.height must fit the authored rows")
+
+    -- The complete lower-HUD cluster has one responsive owner. Pets/Menu, the white pill, and
+    -- Powers/Board are children of this frame and therefore can never acquire different scaling.
+    local greaterHotbar = Instance.new("Frame")
+    greaterHotbar.Name = "GreaterHotbarFrame"
+    greaterHotbar.AnchorPoint = Vector2.new(0.5, 1)
+    greaterHotbar.Position = UDim2.new(0.5, 0, 1, -20)
+    greaterHotbar.Size = UDim2.fromOffset(designSpan, assemblyHeight)
+    greaterHotbar.BackgroundTransparency = 1
+    greaterHotbar.BorderSizePixel = 0
+    greaterHotbar.ClipsDescendants = false
+    greaterHotbar.Parent = gui
+
+    -- Pixel-designed internal chrome is legal inside this responsively anchored canvas. One
+    -- UIViewportScale on the outer frame uniformly scales every child as a single assembly.
+    local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
+    UIViewportScale.attach(greaterHotbar)
+
+    local leftControls = Instance.new("Frame")
+    leftControls.Name = "LeftControls"
+    leftControls.Position = UDim2.fromScale(0, 0)
+    leftControls.Size = UDim2.fromScale(leftSpan / designSpan, 1)
+    leftControls.BackgroundTransparency = 1
+    leftControls.BorderSizePixel = 0
+    leftControls.ClipsDescendants = false
+    leftControls.Parent = greaterHotbar
+
+    -- Keep HotbarBar.Bar stable for systems that use it as the central slot anchor.
     local root = Instance.new("Frame")
     root.Name = "Bar"
-    root.AnchorPoint = Vector2.new(0.5, 1)
-    root.Position = UDim2.new(0.5, 0, 1, -20)
-    root.Size = UDim2.fromOffset(rowWidth + SLOT + PAD, SLOT * 2 + PAD)
-    -- pixel-designed bar: shrink on small viewports (anchored bottom-center, stays docked)
-    local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
-    UIViewportScale.attach(root)
+    root.Position = UDim2.fromScale(leftSpan / designSpan, 0)
+    root.Size = UDim2.fromScale(barSpan / designSpan, 1)
     root.BackgroundTransparency = 1
-    root.Parent = gui
+    root.BorderSizePixel = 0
+    root.ClipsDescendants = false
+    root.Parent = greaterHotbar
 
-    -- Shared viewport-relative parent for lower-HUD surfaces that must remain ordered outside the
-    -- pixel-designed power bar. Children own scale-based geometry plus size constraints; this frame
-    -- deliberately does not inherit the bar's design-pixel UIScale.
+    local rightControls = Instance.new("Frame")
+    rightControls.Name = "RightControls"
+    rightControls.Position = UDim2.fromScale((leftSpan + barSpan) / designSpan, 0)
+    rightControls.Size = UDim2.fromScale(rightSpan / designSpan, 1)
+    rightControls.BackgroundTransparency = 1
+    rightControls.BorderSizePixel = 0
+    rightControls.ClipsDescendants = false
+    rightControls.Parent = greaterHotbar
+
+    -- Full-viewport presentation layer for transient feedback only. Interactive hotbar controls do
+    -- not live here; they all inherit GreaterHotbarFrame's single scale.
     local responsiveDock = Instance.new("Frame")
     responsiveDock.Name = "ResponsiveDock"
     responsiveDock.Size = UDim2.fromScale(1, 1)
@@ -307,9 +354,8 @@ function HotbarBar.start()
     responsiveDock.BorderSizePixel = 0
     responsiveDock.Parent = gui
 
-    -- Keep the central power slots in their own visibility layer so Merge can cover only those
-    -- slots. HotbarFlank mounts compact flanks under Bar and Classic Pets under ResponsiveDock;
-    -- neither disappears with CentralContent.
+    -- Keep the central power slots in their own visibility layer so Merge can cover only the pill.
+    -- HotbarFlank mounts every persistent flank in the outer frame; none disappear with this layer.
     local centralContent = Instance.new("Frame")
     centralContent.Name = "CentralContent"
     centralContent.Size = UDim2.fromScale(1, 1)
@@ -366,7 +412,12 @@ function HotbarBar.start()
     barFrame.BackgroundTransparency = 1
     barFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     barFrame.Position = UDim2.fromScale(0.5, 0.5)
-    barFrame.Size = UDim2.new(1, 46, 1, 30)
+    local pillOverhang = assert(assemblyConfig.pill_overhang, "assembly.pill_overhang is required")
+    local pillOverhangWidth =
+        assert(tonumber(pillOverhang.width), "assembly.pill_overhang.width is required")
+    local pillOverhangHeight =
+        assert(tonumber(pillOverhang.height), "assembly.pill_overhang.height is required")
+    barFrame.Size = UDim2.new(1, pillOverhangWidth, 1, pillOverhangHeight)
     bindPillFrame(barFrame) -- themed to the player's origin/area (was hardcoded sapphire/blue)
     barFrame.ScaleType = Enum.ScaleType.Slice
     barFrame.SliceCenter = Rect.new(180, 180, 330, 330)
@@ -1466,12 +1517,21 @@ function HotbarBar.start()
         local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
         local tenFoot = localPlayer:GetAttribute("DisplayClass") == "ten_foot"
         if isVertical() then
-            root.AnchorPoint = Vector2.new(0, 0.5)
-            root.Size = UDim2.fromOffset(SLOT * 2 + PAD, SLOT + PAD + 10 * SLOT + 9 * PAD)
+            greaterHotbar.AnchorPoint = Vector2.new(0, 0.5)
+            greaterHotbar.Size = UDim2.fromOffset(
+                SLOT * 2 + PAD + leftSpan + rightSpan,
+                SLOT + PAD + 10 * SLOT + 9 * PAD
+            )
             -- Far-left experiment: 10px inset, vertically centered. SafeInsets
             -- are not available as a scale relationship here.
-            root.Position = UDim2.new(0, 10, 0.5, 0)
-            barFrame.Size = UDim2.new(1, 30, 1, 46)
+            greaterHotbar.Position = UDim2.new(0, 10, 0.5, 0)
+            leftControls.Position = UDim2.fromScale(0, 0)
+            leftControls.Size = UDim2.new(0, leftSpan, 1, 0)
+            root.Position = UDim2.new(0, leftSpan, 0, 0)
+            root.Size = UDim2.new(0, SLOT * 2 + PAD, 1, 0)
+            rightControls.Position = UDim2.new(0, leftSpan + SLOT * 2 + PAD, 0, 0)
+            rightControls.Size = UDim2.new(0, rightSpan, 1, 0)
+            barFrame.Size = UDim2.new(1, pillOverhangHeight, 1, pillOverhangWidth)
             editBtn.AnchorPoint = Vector2.new(0, 0)
             editBtn.Position = UDim2.fromOffset(3, 3)
             farmBtn.AnchorPoint = Vector2.new(0, 0)
@@ -1485,10 +1545,16 @@ function HotbarBar.start()
             controllerLegend.Position = UDim2.new(1, 16, 0, SLOT / 2)
             return
         end
-        root.AnchorPoint = Vector2.new(0.5, 1)
-        root.Size = UDim2.fromOffset(rowWidth + SLOT + PAD, SLOT * 2 + PAD)
-        root.Position = UDim2.new(0.5, 0, 1, tenFoot and -48 or (compact and -16 or -20))
-        barFrame.Size = UDim2.new(1, 46, 1, 30)
+        greaterHotbar.AnchorPoint = Vector2.new(0.5, 1)
+        greaterHotbar.Size = UDim2.fromOffset(designSpan, assemblyHeight)
+        greaterHotbar.Position = UDim2.new(0.5, 0, 1, tenFoot and -48 or (compact and -16 or -20))
+        leftControls.Position = UDim2.fromScale(0, 0)
+        leftControls.Size = UDim2.fromScale(leftSpan / designSpan, 1)
+        root.Position = UDim2.fromScale(leftSpan / designSpan, 0)
+        root.Size = UDim2.fromScale(barSpan / designSpan, 1)
+        rightControls.Position = UDim2.fromScale((leftSpan + barSpan) / designSpan, 0)
+        rightControls.Size = UDim2.fromScale(rightSpan / designSpan, 1)
+        barFrame.Size = UDim2.new(1, pillOverhangWidth, 1, pillOverhangHeight)
         editBtn.AnchorPoint = Vector2.new(0, 1)
         editBtn.Position = UDim2.fromOffset(3, SLOT)
         farmBtn.AnchorPoint = Vector2.new(0, 1)
@@ -1512,7 +1578,7 @@ function HotbarBar.start()
             localPlayer:GetAttribute("DisplayClass")
         )
         UIViewportScale.setMultiplier(
-            root,
+            greaterHotbar,
             HotbarSize.multiplier(resolved, vp.X, vp.Y, HOTBAR_CONFIG.size)
         )
     end

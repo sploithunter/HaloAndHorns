@@ -7412,3 +7412,13 @@ first-session cohort rates.
 - Fixed the docked combat-rank chip's title collapsing to zero width when its truncated label and
   parent both attempted horizontal automatic sizing. The config-sized chip now gives the title the
   remaining row width through flex layout and keeps its crest/title explicitly above the background.
+
+## 2026-09-02 — Lower hotbar is one responsive assembly
+
+- Replaced the independent Classic Pets viewport placement with one `GreaterHotbarFrame` that owns
+  left controls, the inner white-pill `Bar`, and right controls under a single viewport scale. Pets,
+  the compact Menu expander, Powers, and Hoverboard now keep the same scale and fixed relationship
+  at every viewport size.
+- Merge tutorial cards now mount over the inner `PillFrame` by copying its relative UDim geometry,
+  rather than occupying a separate viewport share. The tutorial covers only the white pill while
+  both flank-control groups remain visible and interactive.

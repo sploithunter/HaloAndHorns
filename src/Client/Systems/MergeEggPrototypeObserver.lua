@@ -266,14 +266,6 @@ local function createTutorialCard(parent)
     stroke.Color = Color3.fromRGB(255, 194, 62)
     stroke.Thickness = 3
     stroke.Parent = frame
-    local aspect = Instance.new("UIAspectRatioConstraint")
-    aspect.Name = "ResponsiveAspect"
-    aspect.DominantAxis = Enum.DominantAxis.Width
-    aspect.Parent = frame
-    local sizeConstraint = Instance.new("UISizeConstraint")
-    sizeConstraint.Name = "ResponsiveBounds"
-    sizeConstraint.Parent = frame
-
     local progress = Instance.new("TextLabel")
     progress.Name = "Progress"
     progress.Position = UDim2.fromScale(0.035, 0.08)
@@ -317,8 +309,6 @@ local function createTutorialCard(parent)
         progress = progress,
         title = title,
         body = body,
-        aspect = aspect,
-        sizeConstraint = sizeConstraint,
     }
 end
 
@@ -368,15 +358,28 @@ local function setHotbarDisplayOrder(displayOrder)
 end
 
 local function layoutTutorialCardOverHotbar(card)
-    return layoutResponsiveDockSurface(
-        card.frame,
-        card.aspect,
-        card.sizeConstraint,
-        assert(
-            tonumber(TUTORIAL_CARD_LAYOUT.display_order),
-            "tutorial.card_layout.display_order is required"
-        )
+    local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+    local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
+    local greaterHotbar = hotbarGui and hotbarGui:FindFirstChild("GreaterHotbarFrame")
+    local bar = greaterHotbar and greaterHotbar:FindFirstChild("Bar")
+    local centralContent = bar and bar:FindFirstChild("CentralContent")
+    local pillFrame = centralContent and centralContent:FindFirstChild("PillFrame")
+    if not (hotbarGui and bar and pillFrame and pillFrame:IsA("GuiObject")) then
+        card.frame.Visible = false
+        return false
+    end
+
+    -- The tutorial replaces only the white pill. Copy its relative UDim contract, never its
+    -- rendered pixel bounds; the outer hotbar scale then moves and resizes both surfaces together.
+    card.frame.Parent = bar
+    card.frame.AnchorPoint = pillFrame.AnchorPoint
+    card.frame.Position = pillFrame.Position
+    card.frame.Size = pillFrame.Size
+    hotbarGui.DisplayOrder = assert(
+        tonumber(TUTORIAL_CARD_LAYOUT.display_order),
+        "tutorial.card_layout.display_order is required"
     )
+    return true
 end
 
 local function setTutorialHotbarCovered(world, observing)
@@ -4021,8 +4024,8 @@ function MergeEggPrototypeObserver.start()
     gui.DisplayOrder = 41
     gui.Enabled = false
     gui.Parent = pg
-    -- The card is created here, then mounted into HotbarBar.ResponsiveDock so tutorial, Pets, and
-    -- milestone feedback share one scale-based coordinate system.
+    -- The card is created here, then mounted over HotbarBar.Bar's exact PillFrame UDim geometry.
+    -- Persistent flank controls remain siblings under GreaterHotbarFrame and stay interactive.
     local tutorialGui = Instance.new("ScreenGui")
     tutorialGui.Name = "MergeEggTutorialHud"
     tutorialGui.ResetOnSpawn = false
