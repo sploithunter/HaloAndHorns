@@ -16,11 +16,33 @@ local tutorialHud = loadModule("src/Shared/Game/MergeTutorialHud.lua")
 return function()
     describe("Merge tutorial HUD", function()
         it("reserves the hotbar footprint from setup through Wave 10", function()
-            expect(tutorialHud.coversHotbar(true, 0, 10)).to.equal(true)
-            expect(tutorialHud.coversHotbar(true, 1, 10)).to.equal(true)
-            expect(tutorialHud.coversHotbar(true, 10, 10)).to.equal(true)
-            expect(tutorialHud.coversHotbar(true, 11, 10)).to.equal(false)
-            expect(tutorialHud.coversHotbar(false, 4, 10)).to.equal(false)
+            expect(tutorialHud.coversHotbar(true, 0, 10, true)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 1, 10, true)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 10, 10, true)).to.equal(true)
+            expect(tutorialHud.coversHotbar(true, 11, 10, true)).to.equal(false)
+            expect(tutorialHud.coversHotbar(false, 4, 10, true)).to.equal(false)
+            expect(tutorialHud.coversHotbar(true, 4, 10, false)).to.equal(false)
+        end)
+
+        it("fills every covered combat interval with the next tutorial milestone", function()
+            local tutorial = config.tutorial
+            expect(tutorialHud.combatCard(tutorial, 0)).to.equal(tutorial.combat_cards.combat_waves)
+            expect(tutorialHud.combatCard(tutorial, 2)).to.equal(tutorial.combat_cards.combat_waves)
+            expect(tutorialHud.combatCard(tutorial, 3)).to.equal(tutorial.combat_cards.cannon_waves)
+            expect(tutorialHud.combatCard(tutorial, 4)).to.equal(tutorial.combat_cards.cannon_waves)
+            expect(tutorialHud.combatCard(tutorial, 5)).to.equal(
+                tutorial.combat_cards.upgrade_waves
+            )
+            expect(tutorialHud.combatCard(tutorial, 6)).to.equal(
+                tutorial.combat_cards.upgrade_waves
+            )
+            expect(tutorialHud.combatCard(tutorial, 7)).to.equal(
+                tutorial.combat_cards.quartermaster_waves
+            )
+            expect(tutorialHud.combatCard(tutorial, 10)).to.equal(
+                tutorial.combat_cards.quartermaster_waves
+            )
+            expect(tutorialHud.combatCard(tutorial, 11)).to.equal(nil)
         end)
 
         it("resolves the ScreenGui origin without alternating positions", function()
@@ -32,6 +54,7 @@ return function()
         it("copies the responsive hotbar footprint instead of owning another size", function()
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             expect(observer:find("layoutTutorialCardOverHotbar", 1, true)).to.be.ok()
+            expect(observer:find("MergeTutorialHud.combatCard", 1, true)).to.be.ok()
             expect(observer:find('hotbarRoot:FindFirstChild("PillFrame", true)', 1, true)).to.be.ok()
             expect(observer:find("footprint.AbsolutePosition", 1, true)).to.be.ok()
             expect(observer:find("footprint.AbsoluteSize", 1, true)).to.be.ok()
@@ -289,6 +312,9 @@ return function()
             ).to.be.ok()
             expect(service:find('FindFirstChild("MergeEggPrototypeHatchPrompt")', 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_updateTutorial", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_tutorialRequired", 1, true)).to.be.ok()
+            expect(service:find('world:SetAttribute("MergeEggTutorialRequired"', 1, true)).to.be.ok()
+            expect(observer:find("MergeEggTutorialRequired", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_releaseTutorialForCombat", 1, true)
             ).to.be.ok()

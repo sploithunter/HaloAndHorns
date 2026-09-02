@@ -403,6 +403,31 @@ return {
         -- After Wave 10, reveal the potion tent and post Macros as
         -- Quartermaster. Talk only for now; the shop opens after that.
         pause_after_quartermaster_wave = 10,
+        -- The central hotbar remains covered through Wave 10. Between the hands-on lesson pauses,
+        -- keep that footprint useful with a concise preview of the next tutorial milestone instead
+        -- of leaving a blank hole in both desktop and compact HUDs.
+        combat_cards = {
+            combat_waves = {
+                progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
+                title = "DEFEND THROUGH WAVE 2",
+                body = "The Bulwark Engineer lesson begins after Wave 2.",
+            },
+            cannon_waves = {
+                progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
+                title = "DEFEND THROUGH WAVE 4",
+                body = "The Artillery Commander lesson begins after Wave 4.",
+            },
+            upgrade_waves = {
+                progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
+                title = "DEFEND THROUGH WAVE 6",
+                body = "An egg-upgrade lesson may begin after Wave 6.",
+            },
+            quartermaster_waves = {
+                progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
+                title = "DEFEND THROUGH WAVE 10",
+                body = "The Quartermaster arrives after Wave 10.",
+            },
+        },
         steps = {
             collect_setup = {
                 title = "COLLECT 600 WAYCOINS AND 1 GEM",

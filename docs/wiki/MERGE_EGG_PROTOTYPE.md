@@ -590,11 +590,14 @@ team and queue model:
   are rejected by configured movement/duration thresholds. The server remains authoritative for
   distance, inventory, and live destination tier. The tutorial and result cards use viewport-width
   sizing with desktop caps so those cues stay on-screen on phones and tablets.
-- From setup through Wave 10, Merge suppresses the central power hotbar and blocks click, keyboard,
-  controller, and auto-cast activation through the same local coverage attribute. When a tutorial
-  instruction is active, its card copies the live hotbar `PillFrame`'s final absolute bounds after
-  phone/tablet scaling, so it replaces that footprint exactly instead of owning another pixel size.
-  Wave 11 restores the hotbar. The side Pets/Powers controls are separate from this central bar.
+- While the first-visit tutorial is still required, setup through Wave 10 suppresses the central
+  power hotbar and blocks click, keyboard, controller, and auto-cast activation through the same
+  local coverage attribute. Hands-on pauses show their exact instruction; combat intervals fill the
+  same footprint with a config-authored preview of the next lesson, so a resumed session cannot
+  expose a blank hole. The card copies the live hotbar `PillFrame`'s final absolute bounds after
+  phone/tablet scaling instead of owning another pixel size. Completing or rebirth-skipping the
+  tutorial restores the hotbar immediately; Wave 11 remains the final safety boundary. Pets/Menu
+  and Powers/Board are separate flank controls and remain available while the center is covered.
 - The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,
