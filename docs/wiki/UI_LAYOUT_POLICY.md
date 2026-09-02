@@ -5,8 +5,8 @@ Responsive relationships—not guessed screen coordinates—own placement.
 
 ## Placement rule
 
-- Use anchors, scale components, layout objects, constraints, safe-area/inset APIs, or measured
-  parent-relative geometry for major placement and sizing.
+- Use anchors, scale components, layout objects, constraints, and safe-area/inset APIs for major
+  placement and sizing. Runtime pixel bounds are diagnostics, not layout inputs.
 - A pixel offset is not a placement system. Do not use large X/Y offsets to move a panel across the
   viewport, compensate for the wrong parent, or approximate a screen corner.
 - Non-zero pixel offsets are allowed only as small, local alignment corrections after the responsive
@@ -19,17 +19,11 @@ Responsive relationships—not guessed screen coordinates—own placement.
   parent, or layout relationship is wrong and must be fixed instead.
 - Prefer zero offsets. Fixed pixel sizes for icons, strokes, corner radii, and other internal chrome
   are separate from viewport placement, but still belong inside a responsively placed container.
-- When one responsive surface replaces another, copy the live surface's measured final bounds after
-  its constraints/UIScale have resolved. Do not duplicate its nominal design pixels in a second
-  config. The Merge tutorial card replacing the central hotbar is the reference implementation. If
-  a visible independent control occupies part of that footprint, preserve the replacement's aligned
-  right edge and trim only its colliding left edge. Merge applies this clearance to both the classic
-  menu pane and the expanded compact popup, so an explicit Classic preference remains usable in a
-  narrow window.
-- `FullscreenExtension` can shift a direct `ScreenGui` child by the live safe-area origin even when
-  `IgnoreGuiInset` is true. When targeting absolute screen coordinates, derive that origin from the
-  object's current assigned offset and rendered anchor, then make one idempotent assignment. The
-  Merge tutorial uses this rule to avoid alternating between raw and corrected positions.
+- When one responsive surface replaces another, mount both in a shared responsive parent and author
+  their relationship with scale components. Add `UISizeConstraint` and, where shape matters,
+  `UIAspectRatioConstraint`; never read `AbsolutePosition`/`AbsoluteSize` and feed those pixels back
+  into `UDim2.fromOffset`. Merge's lower `ResponsiveDock` is the reference implementation: Classic
+  Pets and the tutorial own non-overlapping viewport shares, with explicit minimum and maximum sizes.
 - When one independent HUD surface must follow another, use the leader's live rendered edge. In the
   Merge place, the People list docks beneath `MergeWaveBar.WaveMeter`, inherits its rendered width,
   right edge, and chrome scale, and adds a viewport-relative gap. Its per-device values are startup
@@ -56,7 +50,7 @@ Its config-owned two-column geometry must allocate all four rows of its eight ut
 its minimum scale must retain 44px touch targets. Tutorials and true modal surfaces retain higher
 display orders except where an intentionally open utility menu must remain actionable.
 
-Classic mode's full utility tray and the Pets hotbar flank share the lower-left region. On constrained
-screens, Pets docks immediately beside the tray's measured right edge; it is not allowed to remain
-under tray buttons. The Merge tutorial then treats that live Pets control as a left blocker too, so
-the complete order stays tray → Pets → tutorial without relying on a nominal viewport breakpoint.
+Classic mode's full utility tray, Pets control, and Merge tutorial share authored lower-dock regions.
+Pets and the tutorial are siblings in `HotbarBar.ResponsiveDock`, use scale-only placement, and carry
+touch/readability constraints. The config invariant is tray reserve → Pets share → tutorial share;
+headless tests reject overlap between the Pets and tutorial proportions.

@@ -361,15 +361,30 @@ return {
         resume_wave_delay_seconds = 3,
         auto_collector_attribute = "AutoCollectorEnabled",
         required_eggs = 5,
-        -- The tutorial replaces the central hotbar, but an explicitly selected classic menu can
-        -- still occupy its left edge on a short window. Keep the hotbar-aligned right edge and trim
-        -- only enough of the card's left side to leave the visible menu usable.
+        -- The tutorial and Classic Pets control occupy authored shares of the same viewport dock.
+        -- This relationship is scale-based; min/max constraints protect readability and touch size
+        -- without measuring rendered pixel bounds or converting them back into placement offsets.
         card_layout = {
-            menu_gap = 8,
-            minimum_width = 280,
-            left_clearance_controls = {
-                "PetsButton",
-                "CompactMenuButton",
+            display_order = 100,
+            feedback_display_order = 130,
+            inactive_display_order = 0,
+            relative = {
+                classic = {
+                    anchor = { x = 0, y = 1 },
+                    position = { x = 0.251, y = 0.97 },
+                    size = { x = 0.605, y = 0.24 },
+                    aspect_ratio = 4.7,
+                },
+                compact = {
+                    anchor = { x = 0.5, y = 1 },
+                    position = { x = 0.5, y = 0.97 },
+                    size = { x = 0.72, y = 0.24 },
+                    aspect_ratio = 4.7,
+                },
+            },
+            size_constraint = {
+                minimum = { width = 280, height = 60 },
+                maximum = { width = 1200, height = 320 },
             },
         },
         click_cue_purchase_count = 3,

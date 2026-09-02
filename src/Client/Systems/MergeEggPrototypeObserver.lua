@@ -51,17 +51,25 @@ local TUTORIAL_CARD_LAYOUT = assert(
     (CONFIG.tutorial or {}).card_layout,
     "merge_egg_prototype.tutorial.card_layout is required"
 )
-local TUTORIAL_CARD_MENU_GAP = assert(
-    tonumber(TUTORIAL_CARD_LAYOUT.menu_gap),
-    "merge_egg_prototype.tutorial.card_layout.menu_gap is required"
+local TUTORIAL_CARD_RELATIVE = assert(
+    TUTORIAL_CARD_LAYOUT.relative,
+    "merge_egg_prototype.tutorial.card_layout.relative is required"
 )
-local TUTORIAL_CARD_MINIMUM_WIDTH = assert(
-    tonumber(TUTORIAL_CARD_LAYOUT.minimum_width),
-    "merge_egg_prototype.tutorial.card_layout.minimum_width is required"
+local TUTORIAL_CARD_SIZE_CONSTRAINT = assert(
+    TUTORIAL_CARD_LAYOUT.size_constraint,
+    "merge_egg_prototype.tutorial.card_layout.size_constraint is required"
 )
-local TUTORIAL_CARD_LEFT_CLEARANCE_CONTROLS = assert(
-    TUTORIAL_CARD_LAYOUT.left_clearance_controls,
-    "merge_egg_prototype.tutorial.card_layout.left_clearance_controls is required"
+local TUTORIAL_CARD_DISPLAY_ORDER = assert(
+    tonumber(TUTORIAL_CARD_LAYOUT.display_order),
+    "merge_egg_prototype.tutorial.card_layout.display_order is required"
+)
+local TUTORIAL_CARD_FEEDBACK_DISPLAY_ORDER = assert(
+    tonumber(TUTORIAL_CARD_LAYOUT.feedback_display_order),
+    "merge_egg_prototype.tutorial.card_layout.feedback_display_order is required"
+)
+local TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER = assert(
+    tonumber(TUTORIAL_CARD_LAYOUT.inactive_display_order),
+    "merge_egg_prototype.tutorial.card_layout.inactive_display_order is required"
 )
 local TUTORIAL_ACTIVITY_FEEDBACK = assert(
     (CONFIG.tutorial or {}).activity_feedback,
@@ -240,6 +248,22 @@ local TUTORIAL_FINAL_WAVE = assert(
 )
 local TUTORIAL_HOTBAR_COVER_ATTRIBUTE = "MergeTutorialHotbarCovered"
 
+local function layoutVector(spec, field)
+    local value = assert(spec[field], ("tutorial.card_layout.%s is required"):format(field))
+    return Vector2.new(
+        assert(tonumber(value.x), ("tutorial.card_layout.%s.x is required"):format(field)),
+        assert(tonumber(value.y), ("tutorial.card_layout.%s.y is required"):format(field))
+    )
+end
+
+local function layoutSizeVector(spec, field)
+    local value = assert(spec[field], ("tutorial.card_layout.%s is required"):format(field))
+    return Vector2.new(
+        assert(tonumber(value.width), ("tutorial.card_layout.%s.width is required"):format(field)),
+        assert(tonumber(value.height), ("tutorial.card_layout.%s.height is required"):format(field))
+    )
+end
+
 local function createTutorialCard(parent)
     local frame = Instance.new("Frame")
     frame.Name = "MergeEggTutorial"
@@ -259,6 +283,13 @@ local function createTutorialCard(parent)
     stroke.Color = Color3.fromRGB(255, 194, 62)
     stroke.Thickness = 3
     stroke.Parent = frame
+    local aspect = Instance.new("UIAspectRatioConstraint")
+    aspect.Name = "ResponsiveAspect"
+    aspect.DominantAxis = Enum.DominantAxis.Width
+    aspect.Parent = frame
+    local sizeConstraint = Instance.new("UISizeConstraint")
+    sizeConstraint.Name = "ResponsiveBounds"
+    sizeConstraint.Parent = frame
 
     local progress = Instance.new("TextLabel")
     progress.Name = "Progress"
@@ -298,113 +329,60 @@ local function createTutorialCard(parent)
     body.TextYAlignment = Enum.TextYAlignment.Top
     body.ZIndex = 31
     body.Parent = frame
-    return { frame = frame, progress = progress, title = title, body = body }
+    return {
+        frame = frame,
+        progress = progress,
+        title = title,
+        body = body,
+        aspect = aspect,
+        sizeConstraint = sizeConstraint,
+    }
 end
 
-local function isActuallyVisible(guiObject, playerGui)
-    local current = guiObject
-    while current and current ~= playerGui do
-        if current:IsA("GuiObject") and not current.Visible then
-            return false
-        end
-        if current:IsA("LayerCollector") and not current.Enabled then
-            return false
-        end
-        current = current.Parent
+local function layoutResponsiveDockSurface(frame, aspect, sizeConstraint, displayOrder)
+    local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+    local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
+    local responsiveDock = hotbarGui and hotbarGui:FindFirstChild("ResponsiveDock")
+    if not (hotbarGui and responsiveDock and responsiveDock:IsA("GuiObject")) then
+        frame.Visible = false
+        return false
     end
-    return current == playerGui
+
+    local class = localPlayer:GetAttribute("HudLayoutResolved") == "compact" and "compact"
+        or "classic"
+    local spec = assert(TUTORIAL_CARD_RELATIVE[class], "tutorial card relative layout is required")
+    local anchor = layoutVector(spec, "anchor")
+    local position = layoutVector(spec, "position")
+    local size = layoutVector(spec, "size")
+    frame.Parent = responsiveDock
+    frame.AnchorPoint = anchor
+    frame.Position = UDim2.fromScale(position.X, position.Y)
+    frame.Size = UDim2.fromScale(size.X, size.Y)
+    aspect.AspectRatio = assert(
+        tonumber(spec.aspect_ratio),
+        "tutorial.card_layout.relative aspect_ratio is required"
+    )
+    sizeConstraint.MinSize = layoutSizeVector(TUTORIAL_CARD_SIZE_CONSTRAINT, "minimum")
+    sizeConstraint.MaxSize = layoutSizeVector(TUTORIAL_CARD_SIZE_CONSTRAINT, "maximum")
+    hotbarGui.DisplayOrder = displayOrder
+    return true
 end
 
-local function visibleMenuBlockerRight(playerGui, targetTop, targetHeight)
-    local blockers = {}
-    local base = playerGui:FindFirstChild("ProfessionalBaseUI")
-    local main = base and base:FindFirstChild("MainContainer")
-    local classicPane = main and main:FindFirstChild("menu_buttons_pane")
-    if classicPane and classicPane:IsA("GuiObject") then
-        table.insert(blockers, classicPane)
+local function setHotbarDisplayOrder(displayOrder)
+    local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+    local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
+    if hotbarGui and hotbarGui:IsA("ScreenGui") then
+        hotbarGui.DisplayOrder = displayOrder
     end
-
-    local compactOverlay = playerGui:FindFirstChild("CompactMenuOverlayGui")
-    local compactPopup = compactOverlay and compactOverlay:FindFirstChild("CompactMenuPopup")
-    if compactPopup and compactPopup:IsA("GuiObject") then
-        table.insert(blockers, compactPopup)
-    end
-    for _, controlName in ipairs(TUTORIAL_CARD_LEFT_CLEARANCE_CONTROLS) do
-        local control = playerGui:FindFirstChild(controlName, true)
-        if control and control:IsA("GuiObject") then
-            table.insert(blockers, control)
-        end
-    end
-
-    local targetBottom = targetTop + targetHeight
-    local right
-    for _, blocker in ipairs(blockers) do
-        local blockerTop = blocker.AbsolutePosition.Y
-        local blockerBottom = blockerTop + blocker.AbsoluteSize.Y
-        if
-            isActuallyVisible(blocker, playerGui)
-            and blocker.AbsoluteSize.X > 0
-            and blocker.AbsoluteSize.Y > 0
-            and blockerTop < targetBottom
-            and blockerBottom > targetTop
-        then
-            right = math.max(right or 0, blocker.AbsolutePosition.X + blocker.AbsoluteSize.X)
-        end
-    end
-    return right
 end
 
 local function layoutTutorialCardOverHotbar(card)
-    local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
-    local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
-    local hotbarRoot = hotbarGui and hotbarGui:FindFirstChild("Bar")
-    local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame", true)
-    if not (footprint and footprint:IsA("GuiObject")) then
-        card.frame.Visible = false
-        return false
-    end
-
-    local position = footprint.AbsolutePosition
-    local size = footprint.AbsoluteSize
-    if size.X <= 0 or size.Y <= 0 then
-        card.frame.Visible = false
-        return false
-    end
-    local blockerRight = visibleMenuBlockerRight(playerGui, position.Y, size.Y)
-    local fittedX, fittedWidth = MergeTutorialHud.fitLeftBlocker(
-        position.X,
-        size.X,
-        blockerRight,
-        TUTORIAL_CARD_MENU_GAP,
-        TUTORIAL_CARD_MINIMUM_WIDTH
+    return layoutResponsiveDockSurface(
+        card.frame,
+        card.aspect,
+        card.sizeConstraint,
+        TUTORIAL_CARD_DISPLAY_ORDER
     )
-    position = Vector2.new(fittedX, position.Y)
-    size = Vector2.new(fittedWidth, size.Y)
-    local currentPosition = card.frame.Position
-    local nextPosition = UDim2.fromOffset(
-        MergeTutorialHud.stableScreenOffset(
-            position.X,
-            card.frame.AbsolutePosition.X,
-            currentPosition.X.Offset
-        ),
-        MergeTutorialHud.stableScreenOffset(
-            position.Y,
-            card.frame.AbsolutePosition.Y,
-            currentPosition.Y.Offset
-        )
-    )
-    local nextSize = UDim2.fromOffset(size.X, size.Y)
-
-    -- FullscreenExtension changes the ScreenGui coordinate origin. Resolve that origin from the
-    -- current rendered bounds and assign each property only once, so the 10 Hz layout pass cannot
-    -- alternate between pre-inset and corrected positions.
-    if card.frame.Position ~= nextPosition then
-        card.frame.Position = nextPosition
-    end
-    if card.frame.Size ~= nextSize then
-        card.frame.Size = nextSize
-    end
-    return true
 end
 
 local function setTutorialHotbarCovered(world, observing)
@@ -1278,6 +1256,10 @@ local function createBoardActionFeedback(parent)
     sizeConstraint.MinSize = Vector2.new(240, 56)
     sizeConstraint.MaxSize = Vector2.new(520, 64)
     sizeConstraint.Parent = label
+    local aspect = Instance.new("UIAspectRatioConstraint")
+    aspect.Name = "ResponsiveAspect"
+    aspect.DominantAxis = Enum.DominantAxis.Width
+    aspect.Parent = label
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = label
@@ -1285,44 +1267,11 @@ local function createBoardActionFeedback(parent)
     stroke.Color = Color3.fromRGB(95, 230, 135)
     stroke.Thickness = 3
     stroke.Parent = label
-    return label, stroke, sizeConstraint
+    return label, stroke, sizeConstraint, aspect
 end
 
-local function layoutBoardActionFeedback(label, sizeConstraint, tutorialCard)
-    local tutorialFrame = tutorialCard and tutorialCard.frame
-    local target = tutorialFrame and tutorialFrame.Visible and tutorialFrame or nil
-    if not target then
-        local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
-        local hotbarGui = playerGui and playerGui:FindFirstChild("HotbarBar")
-        local hotbarRoot = hotbarGui and hotbarGui:FindFirstChild("Bar")
-        local footprint = hotbarRoot and hotbarRoot:FindFirstChild("PillFrame", true)
-        target = footprint and footprint:IsA("GuiObject") and footprint or nil
-    end
-    if target and target.AbsoluteSize.X > 0 and target.AbsoluteSize.Y > 0 then
-        label.AnchorPoint = Vector2.zero
-        local currentPosition = label.Position
-        label.Position = UDim2.fromOffset(
-            MergeTutorialHud.stableScreenOffset(
-                target.AbsolutePosition.X,
-                label.AbsolutePosition.X,
-                currentPosition.X.Offset
-            ),
-            MergeTutorialHud.stableScreenOffset(
-                target.AbsolutePosition.Y,
-                label.AbsolutePosition.Y,
-                currentPosition.Y.Offset
-            )
-        )
-        label.Size = UDim2.fromOffset(target.AbsoluteSize.X, target.AbsoluteSize.Y)
-        sizeConstraint.MinSize = Vector2.zero
-        sizeConstraint.MaxSize = Vector2.new(10000, 10000)
-        return
-    end
-    label.AnchorPoint = Vector2.new(0.5, 0.5)
-    label.Position = UDim2.fromScale(0.5, 0.72)
-    label.Size = UDim2.new(0.9, 0, 0, 64)
-    sizeConstraint.MinSize = Vector2.new(240, 56)
-    sizeConstraint.MaxSize = Vector2.new(520, 64)
+local function layoutBoardActionFeedback(label, sizeConstraint, aspect)
+    layoutResponsiveDockSurface(label, aspect, sizeConstraint, TUTORIAL_CARD_FEEDBACK_DISPLAY_ORDER)
 end
 
 local function boardActionFailureCopy(result)
@@ -4049,8 +3998,8 @@ function MergeEggPrototypeObserver.start()
     gui.DisplayOrder = 41
     gui.Enabled = false
     gui.Parent = pg
-    -- The tutorial replaces the central hotbar during the opening ten waves. This inset-ignored
-    -- sibling can copy the hotbar's final, viewport-scaled PillFrame bounds exactly.
+    -- The card is created here, then mounted into HotbarBar.ResponsiveDock so tutorial, Pets, and
+    -- milestone feedback share one scale-based coordinate system.
     local tutorialGui = Instance.new("ScreenGui")
     tutorialGui.Name = "MergeEggTutorialHud"
     tutorialGui.ResetOnSpawn = false
@@ -4076,7 +4025,7 @@ function MergeEggPrototypeObserver.start()
     feedbackGui.DisplayOrder = 130
     feedbackGui.Enabled = false
     feedbackGui.Parent = pg
-    local boardActionFeedback, boardActionFeedbackStroke, boardActionFeedbackSizeConstraint =
+    local boardActionFeedback, boardActionFeedbackStroke, boardActionFeedbackSizeConstraint, boardActionFeedbackAspect =
         createBoardActionFeedback(feedbackGui)
     local tutorialCard = createTutorialCard(tutorialGui)
     local boardActionFeedbackUntil = 0
@@ -4467,6 +4416,7 @@ function MergeEggPrototypeObserver.start()
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
             setTutorialHotbarCovered(nil, false)
+            setHotbarDisplayOrder(TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER)
             activeFeedback = nil
             table.clear(feedbackQueue)
             showFeedback(nil)
@@ -4494,8 +4444,10 @@ function MergeEggPrototypeObserver.start()
             layoutBoardActionFeedback(
                 boardActionFeedback,
                 boardActionFeedbackSizeConstraint,
-                tutorialCard
+                boardActionFeedbackAspect
             )
+        elseif not tutorialCard.frame.Visible then
+            setHotbarDisplayOrder(TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER)
         end
         local tutorialStep = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "")
         if

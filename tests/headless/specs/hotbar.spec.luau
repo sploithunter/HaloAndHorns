@@ -53,10 +53,17 @@ return function()
                 ).to.be.ok()
                 expect(controller:find("root.Visible = not tutorialCoversHotbar()", 1, true)).never.to.be.ok()
                 expect(flank:find("btn.Parent = bar", 1, true)).to.be.ok()
-                expect(flank:find("placeClassicPetsBesidePane", 1, true)).to.be.ok()
-                expect(flank:find("pane.AbsolutePosition.X + pane.AbsoluteSize.X", 1, true)).to.be.ok()
-                expect(flank:find('pane:GetPropertyChangedSignal("AbsoluteSize")', 1, true)).to.be.ok()
-                expect(observer:find('FindFirstChild("PillFrame", true)', 1, true)).to.be.ok()
+                expect(flank:find("placeRelativeClassicPets", 1, true)).to.be.ok()
+                expect(flank:find("petsButton.Position = UDim2.fromScale", 1, true)).to.be.ok()
+                expect(flank:find('bounds.Name = "ClassicPetsBounds"', 1, true)).to.be.ok()
+                expect(flank:find("pane.AbsolutePosition.X + pane.AbsoluteSize.X", 1, true)).to.equal(
+                    nil
+                )
+                expect(flank:find('pane:GetPropertyChangedSignal("AbsoluteSize")', 1, true)).to.equal(
+                    nil
+                )
+                expect(observer:find('FindFirstChild("ResponsiveDock")', 1, true)).to.be.ok()
+                expect(config.size.flank.classic_pets.minimum_size.width >= 44).to.equal(true)
                 expect(controller:find("local function activateHotbarSlot", 1, true)).to.be.ok()
 
                 local _, activationCount = controller:gsub("activateHotbarSlot%(", "")

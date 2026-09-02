@@ -297,10 +297,19 @@ function HotbarBar.start()
     root.BackgroundTransparency = 1
     root.Parent = gui
 
-    -- Keep the four mobile flank controls (Pets/Menu and Powers/Board) mounted directly under
-    -- Bar so they remain usable while Merge's opening tutorial replaces only the central slots.
-    -- HotbarFlank adopts those controls into `root` after this module starts; everything authored
-    -- by HotbarBar itself lives in this dedicated visibility layer.
+    -- Shared viewport-relative parent for lower-HUD surfaces that must remain ordered outside the
+    -- pixel-designed power bar. Children own scale-based geometry plus size constraints; this frame
+    -- deliberately does not inherit the bar's design-pixel UIScale.
+    local responsiveDock = Instance.new("Frame")
+    responsiveDock.Name = "ResponsiveDock"
+    responsiveDock.Size = UDim2.fromScale(1, 1)
+    responsiveDock.BackgroundTransparency = 1
+    responsiveDock.BorderSizePixel = 0
+    responsiveDock.Parent = gui
+
+    -- Keep the central power slots in their own visibility layer so Merge can cover only those
+    -- slots. HotbarFlank mounts compact flanks under Bar and Classic Pets under ResponsiveDock;
+    -- neither disappears with CentralContent.
     local centralContent = Instance.new("Frame")
     centralContent.Name = "CentralContent"
     centralContent.Size = UDim2.fromScale(1, 1)

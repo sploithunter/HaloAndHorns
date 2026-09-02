@@ -35,13 +35,57 @@ local SLOTS = {
 local function flankCfg()
     local size = HOTBAR_CONFIG.size
     local flank = type(size) == "table" and size.flank or nil
+    local classicPets =
+        assert(flank and flank.classic_pets, "hotbar.size.flank.classic_pets is required")
     return {
         size = tonumber(flank and flank.size) or 62,
         compactSize = tonumber(flank and flank.compact_size) or 48,
         -- Clears the bar PillFrame overhang (~23px past the root).
         gap = tonumber(flank and flank.gap) or 26,
         inner = tonumber(flank and flank.inner) or 8,
+        classicPets = classicPets,
     }
+end
+
+local function vector2(spec, field)
+    local value = assert(spec[field], ("classic_pets.%s is required"):format(field))
+    return Vector2.new(
+        assert(tonumber(value.x), ("classic_pets.%s.x is required"):format(field)),
+        assert(tonumber(value.y), ("classic_pets.%s.y is required"):format(field))
+    )
+end
+
+local function sizeVector(spec, field)
+    local value = assert(spec[field], ("classic_pets.%s is required"):format(field))
+    return Vector2.new(
+        assert(tonumber(value.width), ("classic_pets.%s.width is required"):format(field)),
+        assert(tonumber(value.height), ("classic_pets.%s.height is required"):format(field))
+    )
+end
+
+local function placeRelativeClassicPets(petsButton, responsiveDock, spec)
+    local anchor = vector2(spec, "anchor")
+    local position = vector2(spec, "position")
+    local size = vector2(spec, "size")
+    petsButton.Parent = responsiveDock
+    petsButton.AnchorPoint = anchor
+    petsButton.Position = UDim2.fromScale(position.X, position.Y)
+    petsButton.Size = UDim2.fromScale(size.X, size.Y)
+
+    local aspect = petsButton:FindFirstChild("ClassicPetsAspect")
+        or Instance.new("UIAspectRatioConstraint")
+    aspect.Name = "ClassicPetsAspect"
+    aspect.AspectRatio =
+        assert(tonumber(spec.aspect_ratio), "classic_pets.aspect_ratio is required")
+    aspect.DominantAxis = Enum.DominantAxis.Width
+    aspect.Parent = petsButton
+
+    local bounds = petsButton:FindFirstChild("ClassicPetsBounds")
+        or Instance.new("UISizeConstraint")
+    bounds.Name = "ClassicPetsBounds"
+    bounds.MinSize = sizeVector(spec, "minimum_size")
+    bounds.MaxSize = sizeVector(spec, "maximum_size")
+    bounds.Parent = petsButton
 end
 
 local function placeButton(btn, name, cfg, compact)
@@ -91,20 +135,6 @@ local function placeButton(btn, name, cfg, compact)
     btn.Size = UDim2.fromOffset(cfg.size, cfg.size)
 end
 
-local function placeClassicPetsBesidePane(petsButton, pane, bar, cfg)
-    if pane.AbsoluteSize.X <= 0 or bar.AbsoluteSize.X <= 0 then
-        return
-    end
-
-    -- Classic exposes the full utility tray. Reserve Pets immediately beside its measured live edge
-    -- instead of letting the tray paint over the ordinary left hotbar flank on a short viewport.
-    local targetLeft = pane.AbsolutePosition.X + pane.AbsoluteSize.X + cfg.inner
-    petsButton.AnchorPoint = Vector2.new(0, 0.5)
-    petsButton.Position =
-        UDim2.fromOffset(targetLeft - bar.AbsolutePosition.X, bar.AbsoluteSize.Y * 0.5)
-    petsButton.Size = UDim2.fromOffset(cfg.size, cfg.size)
-end
-
 function HotbarFlank.start()
     if started then
         return
@@ -120,10 +150,11 @@ function HotbarFlank.start()
         -- vertical tray ("old HUD" on non-owner Studio sessions). Both guis are guaranteed to appear.
         local hotbarGui = pg:WaitForChild("HotbarBar")
         local bar = hotbarGui and hotbarGui:WaitForChild("Bar", 10)
+        local responsiveDock = hotbarGui and hotbarGui:WaitForChild("ResponsiveDock", 10)
         local base = pg:WaitForChild("ProfessionalBaseUI")
         local mc = base and base:WaitForChild("MainContainer", 10)
         local pane = mc and mc:WaitForChild("menu_buttons_pane", 15)
-        if not (bar and pane and mc) then
+        if not (bar and responsiveDock and pane and mc) then
             return
         end
 
@@ -133,11 +164,15 @@ function HotbarFlank.start()
             local cfg = flankCfg()
             for name, btn in pairs(adopted) do
                 if btn.Parent then
-                    placeButton(btn, name, cfg, compact)
+                    if name == "PetsButton" and not compact then
+                        placeRelativeClassicPets(btn, responsiveDock, cfg.classicPets)
+                    else
+                        if btn.Parent ~= bar then
+                            btn.Parent = bar
+                        end
+                        placeButton(btn, name, cfg, compact)
+                    end
                 end
-            end
-            if not compact and adopted.PetsButton then
-                placeClassicPetsBesidePane(adopted.PetsButton, pane, bar, cfg)
             end
         end
 
@@ -171,10 +206,6 @@ function HotbarFlank.start()
         end
 
         player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyLayout)
-        pane:GetPropertyChangedSignal("AbsolutePosition"):Connect(applyLayout)
-        pane:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
-        bar:GetPropertyChangedSignal("AbsolutePosition"):Connect(applyLayout)
-        bar:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
     end)
 end
 
