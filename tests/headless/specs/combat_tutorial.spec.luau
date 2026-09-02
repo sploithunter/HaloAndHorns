@@ -176,6 +176,12 @@ return function()
             expect(events.combat_tutorial_door_blocked.banner).to.be.ok()
             local controller = readFile("src/Client/Systems/TutorialController.lua")
             expect(controller:find("MissionInstances", 1, true)).to.be.ok()
+            local combatOverride =
+                controller:find('if player:GetAttribute("InCombatTutorial") == true then', 1, true)
+            local mergeGate = controller:find("return isMergePlace()", 1, true)
+            expect(combatOverride ~= nil and mergeGate ~= nil and combatOverride < mergeGate).to.equal(
+                true
+            )
             expect(cfg.steps[10].spawn.shield).to.equal(true)
             local selectPet = cfg.steps[10]
             expect(selectPet.id).to.equal("select_pet")

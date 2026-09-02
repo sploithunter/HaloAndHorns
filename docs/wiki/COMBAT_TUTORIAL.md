@@ -57,6 +57,9 @@ flow described here. Merge checkpoints and releases the active bay before the mi
 owned pets cannot overlap the loaned squad; when the mission completes or is left, Merge claims an
 available bay and reconstructs the saved playstate. The Quartermaster menu labels unfinished saved
 progress as Resume and completed progress as Redo.
+The Merge shell suppresses only the Homeworld tutorial card so it cannot overlap the wave meter.
+While `InCombatTutorial == true`, the Combat Training state owns that card and its world/UI cues;
+the place-level Merge suppression must yield to the mission directions.
 
 ## Mission
 
@@ -264,4 +267,5 @@ earned inside stay. `restart_on_enter` does not wipe `CombatTutorialLoadout`.
 
 `CombatTutorialService` owns `Signals.TutorialState` only while
 `player:GetAttribute("InCombatTutorial") == true`. `TutorialService` skips push/advance in
-that window and restores the Homeworld capsule on leave.
+that window and restores the Homeworld capsule on leave. On the client, the same attribute overrides
+the dedicated Merge-place visibility gate so the mission cannot load without its direction card.

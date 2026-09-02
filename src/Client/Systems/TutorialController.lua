@@ -85,6 +85,13 @@ end
 
 local function hidesHomeTutorial(player)
     player = player or Players.LocalPlayer
+    -- Combat Training is a guided mission even when it is launched from the dedicated Merge
+    -- place. The Merge shell normally suppresses the Homeworld capsule so it cannot cover the
+    -- wave meter, but that place-level rule must yield while CombatTutorialService owns
+    -- TutorialState or the mission loads with no directions at all.
+    if player:GetAttribute("InCombatTutorial") == true then
+        return false
+    end
     return isMergePlace()
         or player:GetAttribute("InMergeEggPrototype") == true
         or player:GetAttribute("InPrologue") == true
@@ -1512,7 +1519,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "combat-training later handoff (2026-08-25)"
+local BUILD = "combat-training directions in Merge (2026-09-02)"
 
 function TutorialController.start()
     if started then
