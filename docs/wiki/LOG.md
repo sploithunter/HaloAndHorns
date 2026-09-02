@@ -7293,3 +7293,13 @@ first-session cohort rates.
   Events, Awards, Admin, and related menu buttons.
 - Added a regression contract proving the overlay parenting and confirming the menu controller does
   not hide or mutate `SquadHud`.
+
+## 2026-09-01 — Merge rebirths own personal egg progression
+
+- Inverted the personal-hatch dependency: paid Merge rebirth count now advances one canonical egg
+  per rank (Grass at Rank 1, Ice at Rank 2, Lava at Rank 3) instead of reading Farm & Fight area
+  purchases. The installed hatcher remains a second cap, and future ranks extend only when their
+  prices are explicitly authored.
+- Required Combat Training completion before any Merge defense hatch can enter durable inventory.
+  Each rebirth-owned egg also reconciles its corresponding Farm & Fight area through `ZoneService`;
+  this never bypasses the independent Level 14/21 Layer 2/3 travel gates.
