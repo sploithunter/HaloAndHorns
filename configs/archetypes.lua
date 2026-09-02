@@ -18,14 +18,16 @@ return {
     -- Respec ritual cost (changes archetype + resets powers/slots).
     respec_cost = { currency = "shadow_tokens", amount = 100 },
 
-    -- GENERIC pool — universal powers EVERY archetype can pick (farming / luck / utility). White
-    -- disc (no element origin). ArchetypeLogic.availablePowers appends these to the archetype pool,
-    -- so the player's pickable pool = origin powers + generic ≈ 20 (pick 10).
+    -- GENERIC pool — universal NATURAL powers shared by every archetype (farming / luck / utility).
+    -- Innates also live here so the Power Choice menu can render them as owned, slottable rows; the
+    -- server explicitly rejects innates as level-up picks. ArchetypeLogic.availablePowers appends
+    -- these to the archetype pool, so the player's catalog = origin powers + generic ≈ 20.
     generic_pool = {
-        -- Resonance is INNATE (owned by everyone from spawn, configs/powers.lua innate=true). It's in
-        -- the pool so it RENDERS in the NATURAL column as an owned, slottable row (unlock_level=1 sorts
-        -- it to the top, above Magnet) — but it's surfaced as already-owned, so it never costs a pick.
+        -- Resonance and Heal are INNATE (configs/powers.lua innate=true). Availability rules hide
+        -- Resonance during Combat Training and withhold Heal until that training begins; once shown,
+        -- both render as owned and slottable without consuming a level-up pick.
         "resonance",
+        "heal",
         "prospector",
         "windfall",
         "fortune",

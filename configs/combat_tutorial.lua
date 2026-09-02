@@ -303,6 +303,13 @@ return {
     -- used restart_on_enter so each walk-in started at ready.
     restart_on_enter = false,
 
+    -- One low-level, origin-less piece is delivered on first entry so it is waiting when the Heal
+    -- enhancement lesson arrives. The service records this as the normal `entry` tutorial grant;
+    -- re-entering does not duplicate it, while an admin reset creates a fresh tutorial ledger.
+    entry_grant = {
+        enhancements = { { type = "healing", origins = {}, level = 3, count = 1 } },
+    },
+
     -- Temp inventory overlay (not Range GhostPets). Three of each starter
     -- common so Inventory can mix a 3-slot squad. The track starts on three
     -- doggies; the tank lesson resets to that and asks for a bear.
@@ -544,21 +551,21 @@ return {
             lock_door = true,
             door_button = {
                 text = "ENHANCE HEAL",
-                nudge = "Put Potency into Heal first!",
+                nudge = "Put Healing into Heal first!",
             },
-            -- Reuse the Farm & Fight enhancement lesson: grant one usable piece and an
-            -- inherent slot, then require that exact power in the event payload.
+            -- The compatible Healing piece was granted on tutorial entry. Ensure the innate power
+            -- has a slot here, then require that exact power in the event payload.
             grant = {
-                enhancements = { { type = "potency", origins = {}, level = 3, count = 1 } },
                 ensure_slot = "heal",
             },
-            body = "Now improve Heal. Open POWERS, choose Heal, pick its empty slot, choose Potency, and Apply it. Enhancements make every power stronger.",
-            body_gamepad = "Press D-pad Right, choose Heal with A, select its empty slot, choose Potency, and Apply it.",
+            body = "Now improve Heal. Open POWERS, choose Heal, pick its empty slot, choose Healing, and Apply it. Enhancements make every power stronger.",
+            body_gamepad = "Press D-pad Right, choose Heal with A, select its empty slot, choose Healing, and Apply it.",
             target = {
                 kind = "ui",
                 name = "PowersButton",
                 cue = "enhance_power",
                 tutorial_guide = "Power:heal",
+                enhancement_guide = "EnhanceType:healing",
                 cue_text = "CLICK HERE",
             },
             complete_on = {

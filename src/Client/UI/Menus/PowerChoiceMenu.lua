@@ -38,6 +38,7 @@ local powersCfg = require(Configs:WaitForChild("powers"))
 local archetypesCfg = require(Configs:WaitForChild("archetypes"))
 local levelTrackCfg = require(Configs:WaitForChild("level_track"))
 local PowerSelection = require(ReplicatedStorage.Shared.Game.PowerSelection)
+local PowerAvailability = require(ReplicatedStorage.Shared.Game.PowerAvailability)
 local PetBadge = require(script.Parent.Parent.PetBadge)
 local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
@@ -1117,6 +1118,7 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             btn.Text = ""
             btn.ZIndex = 7
             btn.Parent = strip
+            btn:SetAttribute("TutorialGuide", "EnhanceType:" .. tostring(item.type))
             if item.type == "potency" and not strip:FindFirstChild("EnhancePotency") then
                 btn.Name = "EnhancePotency"
                 btn:SetAttribute("TutorialGuide", "EnhancePotency")
@@ -1888,6 +1890,14 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
     if not pool then
         return
     end
+    -- The catalog contains innate powers so unlocked ones render as owned/slottable rows. Apply the
+    -- same config-authored availability rules as PowerService/HotbarService before building rows:
+    -- Heal is withheld until Combat Training starts, and Resonance is hidden during that mission.
+    pool = PowerAvailability.filterAvailableIds(
+        pool,
+        powersCfg.powers,
+        PowerAvailability.snapshotForPlayer(Players.LocalPlayer)
+    )
     if self:_isRangeCatalog() then
         local banned = self:_rangeBanned()
         local filtered = {}

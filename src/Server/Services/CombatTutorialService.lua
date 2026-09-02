@@ -1103,6 +1103,10 @@ function CombatTutorialService:_enter(player)
     end
     self:_rewindLeaveResume(player)
     local data = self:_ensureProgress(player)
+    -- Normal first-entry grant: one low-level Healing enhancement is waiting by the time the player
+    -- reaches the Heal lesson. `_applyGrant` records `entry` in the tutorial ledger, so reconnects
+    -- and repeat visits do not mint duplicates.
+    self:_applyGrant(player, data, { id = "entry", grant = self._config.entry_grant })
     self:_applyStepSideEffects(player, data, true)
     local look = (self._config.venue and self._config.venue.leave_prompt) or {}
     session.lobbyLeaveReadyAt = os.clock() + math.max(0, tonumber(look.enable_after) or 0.8)

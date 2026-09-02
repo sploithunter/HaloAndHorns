@@ -152,9 +152,12 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
    `unlock_when` list is all true: at least one pet equipped, Heal on the
    saved bar, and the hotbar **not** in edit mode (Done). Named checks live
    in `src/Shared/Game/TutorialUnlock.lua`.
+On first entry, the tutorial grants one low-level natural Healing enhancement. The `entry` receipt
+in the normal tutorial grant ledger makes this idempotent across reconnects and repeat visits.
+
 9. `enhance_heal` — lobby; reuse the five-click Farm & Fight enhancement flow:
-   Powers → Heal → empty slot → Potency → Apply. The step grants one natural
-   level-3 Potency plus an inherent Heal slot and advances only for an
+   Powers → Heal → empty slot → Healing → Apply. The step ensures an inherent Heal slot for the
+   compatible level-3 Healing enhancement received on entry, and advances only for an
    `enhancement_slotted` event whose configured context is `powerId = "heal"`.
    Existing v10 test saves keep their later position; reset-to-beginning exercises
    the new lesson from a clean track.
@@ -277,3 +280,11 @@ earned inside stay. `restart_on_enter` does not wipe `CombatTutorialLoadout`.
 `player:GetAttribute("InCombatTutorial") == true`. `TutorialService` skips push/advance in
 that window and restores the Homeworld capsule on leave. On the client, the same attribute overrides
 the dedicated Merge-place visibility gate so the mission cannot load without its direction card.
+
+## Power catalog handoff
+
+Heal and Resonance both belong to the shared NATURAL catalog as innate, slottable powers. The Power
+Choice menu applies `PowerAvailability` before rendering that catalog: Heal is hidden until Combat
+Training begins, Resonance is hidden during Combat Training, and unlocked Heal remains available in
+both Merge Defense and Farm & Fight afterward. Innates are server-rejected as level-up selections,
+so neither power consumes a pick.

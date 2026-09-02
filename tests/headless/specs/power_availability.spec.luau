@@ -32,5 +32,31 @@ return function()
                 true
             )
         end)
+
+        it("filters a catalog in order using the same contextual rules", function()
+            local ids = { "resonance", "heal", "magnet" }
+            local definitions = powers.powers
+
+            local fresh = PowerAvailability.filterAvailableIds(ids, definitions, {})
+            expect(#fresh).to.equal(2)
+            expect(fresh[1]).to.equal("resonance")
+            expect(fresh[2]).to.equal("magnet")
+
+            local training =
+                PowerAvailability.filterAvailableIds(ids, definitions, { inCombatTutorial = true })
+            expect(#training).to.equal(2)
+            expect(training[1]).to.equal("heal")
+            expect(training[2]).to.equal("magnet")
+
+            local graduated = PowerAvailability.filterAvailableIds(
+                ids,
+                definitions,
+                { combatTutorialHealUnlocked = true }
+            )
+            expect(#graduated).to.equal(3)
+            expect(graduated[1]).to.equal("resonance")
+            expect(graduated[2]).to.equal("heal")
+            expect(graduated[3]).to.equal("magnet")
+        end)
     end)
 end
