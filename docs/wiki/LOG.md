@@ -7386,5 +7386,6 @@ first-session cohort rates.
 - Quartermaster entry now switches an active Simple-mode Merge record through its existing Full
   pet transition before closing the session. Prototype escort ghosts are removed and parked real
   pets are restored before Combat Training applies its inventory-backed loaned squad.
-- The handoff is transient: it neither bypasses Full-mode eligibility nor mutates the saved setting,
-  and normal mode resolution runs when the player returns to Merge Defense.
+- The handoff does not bypass eligibility. Leaving training incomplete runs normal mode resolution
+  and rebuilds Simple for a fresh player; completing training persists Full through the existing
+  Settings service before Merge resumes, while still allowing the player to choose Simple later.

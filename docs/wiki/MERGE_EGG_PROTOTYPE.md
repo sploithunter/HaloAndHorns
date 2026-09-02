@@ -435,8 +435,10 @@ team and queue model:
   never repeat; changing the setting directly also resolves a pending unlock choice.
 - Opening Combat Training from the Quartermaster performs a transient Simple-to-Full pet handoff
   before closing the Merge session. The prototype escort is removed and parked durable models are
-  restored before Combat Training applies its inventory-backed tutorial loan. This does not grant
-  Full-mode eligibility or change the saved preference; returning to Merge resolves the normal mode.
+  restored before Combat Training applies its inventory-backed tutorial loan. Leaving training
+  incomplete returns through normal eligibility (Simple for a fresh Wave-10 account). Completing
+  training persists Full through `SettingsService`, resolves the pending unlock choice, and resumes
+  Merge with real pets; the player may still choose Simple later.
 - Full uses the player's durable inventory and normal equipped-pet records. Defense hatches grant a
   real pet through `PetGrantService`, update the index and hatch counter, and fill only genuinely
   empty unlocked equip slots. They never replace a chosen pet or a downed pet, so normal combat,
