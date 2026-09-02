@@ -1405,8 +1405,7 @@ function GameAPIService:_registerCommands()
             local prog = self:_service("PlayerProgressionService")
             local powerSvc = self:_service("PowerService")
             local augSvc = self:_service("AugmentationService")
-            local dataSvc = self:_service("DataService")
-            if not (prog and powerSvc and augSvc and dataSvc) then
+            if not (prog and powerSvc and augSvc) then
                 return { ok = false, reason = "service_unavailable" }
             end
             local state = prog:GetClaimState(context.player)
@@ -1436,22 +1435,12 @@ function GameAPIService:_registerCommands()
                 if #slots < entry.slots then
                     return { ok = false, reason = "slots_required" }
                 end
-                -- PRE-validate: every slot target is an OWNED power (placement capacity is client-gated
-                -- + AugmentationService.Place is the backstop). INNATE powers (Resonance) are owned by
-                -- everyone but deliberately NEVER written to data.Powers — same rule as Place's
-                -- isPowerUnlocked / the Cast ownership bypass. This check missed that (parallel-check
-                -- drift): slotting Resonance failed the WHOLE commit with slot_target_not_owned
-                -- (Jason live, 2026-07-02).
-                local data = dataSvc:GetData(context.player)
-                local powersCfg = self:_config("powers")
-                local owned = {}
-                for _, id in ipairs((data and data.Powers) or {}) do
-                    owned[id] = true
-                end
+                -- PRE-validate through the same authoritative ownership query that supplied the
+                -- picker. Innates are absent from profile.Powers, and contextual innates (Heal /
+                -- Resonance) must not drift between menu, commit, placement, and cast paths.
                 for i = 1, entry.slots do
                     local id = slots[i]
-                    local pdef = powersCfg and powersCfg.powers and powersCfg.powers[tostring(id)]
-                    if not (owned[id] or (pdef and pdef.innate)) then
+                    if not powerSvc:IsPowerOwned(context.player, id) then
                         return { ok = false, reason = "slot_target_not_owned" }
                     end
                 end
