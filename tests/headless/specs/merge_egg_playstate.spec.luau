@@ -42,5 +42,51 @@ return function()
             expect(saved.deployed_egg_tiers[5]).to.equal(7)
             expect(saved.model).to.equal(nil)
         end)
+
+        it("persists the last-good egg identity when logout follows a defeat", function()
+            local saved = Playstate.fromRuntime({
+                wave = 43,
+                currency = "hall_coins",
+                coins = 9000,
+                objectiveEggsRemaining = 0,
+                eggInventory = {},
+                recordState = { baseEggTier = 3 },
+            }, {
+                { id = 1, eggTier = 0, resetEggTier = 7 },
+                { id = 2, eggTier = 8, resetEggTier = 6 },
+            }, options)
+            expect(saved.wave).to.equal(40)
+            expect(saved.deployed_egg_tiers[1]).to.equal(7)
+            expect(saved.deployed_egg_tiers[2]).to.equal(8)
+        end)
+
+        it("repairs legacy empty deployment slots from the same-wave checkpoint", function()
+            local repaired = Playstate.recoverCheckpointDeployments({
+                saved = true,
+                wave = 47,
+                currency = "hall_coins",
+                coins = 12000,
+                deployed_egg_tiers = { 0, 9, 0 },
+            }, {
+                wave = 40,
+                deployed_egg_tiers = { 7, 8, 6 },
+            }, options)
+            expect(repaired.wave).to.equal(40)
+            expect(repaired.coins).to.equal(12000)
+            expect(repaired.deployed_egg_tiers[1]).to.equal(7)
+            expect(repaired.deployed_egg_tiers[2]).to.equal(9)
+            expect(repaired.deployed_egg_tiers[3]).to.equal(6)
+
+            local mismatched = Playstate.recoverCheckpointDeployments({
+                saved = true,
+                wave = 37,
+                deployed_egg_tiers = { 0 },
+            }, {
+                wave = 20,
+                deployed_egg_tiers = { 7 },
+            }, options)
+            expect(mismatched.wave).to.equal(30)
+            expect(mismatched.deployed_egg_tiers[1]).to.equal(0)
+        end)
     end)
 end

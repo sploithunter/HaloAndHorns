@@ -285,7 +285,16 @@ single-owner until that place receives per-bay concurrent session state.
 
 Wave-10 boundaries are now profile-backed. The checkpoint wallet, board inventory, base tier, and
 deployed egg tiers survive logout/restart and rebuild as full-health objectives; Gems and Rebirths
-remain durable, while Rebirth/Admin Reset deliberately clear the saved boundary.
+remain durable, while Rebirth/Admin Reset deliberately clear the saved boundary. Logout after a
+failed attempt persists each destroyed hatcher's last-good deployment identity rather than the
+temporary empty live slot; same-wave legacy saves recover missing deployments from the checkpoint.
+Newly spawned combatants resolve the player's current effective level, so leveling during a run no
+longer requires rejoining before later spawns adopt the new level.
+
+Merge-only player-pet recovery is automatic and place-configured: ordinary equipped pets return
+after the 10-second slot delay and Huge identities return after 60 seconds. Farm & Fight retains
+its existing manual Summon behavior and longer canonical timers; gauntlet no-revive rules override
+automatic recovery everywhere.
 
 ## Adventure status crests uploaded (2026-08-25)
 

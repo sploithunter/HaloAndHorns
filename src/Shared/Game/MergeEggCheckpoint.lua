@@ -52,6 +52,12 @@ function MergeEggCheckpoint.fromRuntime(snapshot, teams, options)
     for _, team in ipairs(type(teams) == "table" and teams or {}) do
         local id = whole(team.id, 0)
         local tier = whole(team.eggTier, 0)
+        if tier <= 0 then
+            -- Destroyed hatcher eggs are disabled only for the failed live attempt. Their durable
+            -- deployment identity remains in resetEggTier so logout/rejoin can rebuild the same
+            -- last-good egg at full health, just like the in-session checkpoint restart.
+            tier = whole(team.resetEggTier, 0)
+        end
         if id > 0 and tier > 0 then
             deployed[id] = tier
         end

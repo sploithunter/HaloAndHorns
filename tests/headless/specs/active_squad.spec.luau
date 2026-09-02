@@ -67,6 +67,7 @@ return function()
                 down_lockout = { pet_lockout_seconds = 300 },
             }
             local place = ActiveSquad.withRecoveryOverride(shared, {
+                auto_summon_on_recovery = true,
                 slot_recovery = { down_cooldown_seconds = 10 },
                 down_lockout = { pet_lockout_seconds = 60 },
             })
@@ -74,6 +75,7 @@ return function()
             expect(ActiveSquad.slotCooldownSeconds("down", place)).to.equal(10)
             expect(ActiveSquad.petUnavailableSeconds("down", place, false)).to.equal(10)
             expect(ActiveSquad.petUnavailableSeconds("down", place, true)).to.equal(60)
+            expect(place.auto_summon_on_recovery).to.equal(true)
             expect(shared.slot_recovery.down_cooldown_seconds).to.equal(60)
             expect(shared.down_lockout.pet_lockout_seconds).to.equal(300)
         end)
@@ -94,6 +96,15 @@ return function()
             local r = ActiveSquad.canSummon(true, true, true)
             expect(r.ok).to.equal(false)
             expect(r.reason).to.equal("gauntlet_no_revive")
+        end)
+
+        it("auto-summons only after recovery in an enabled non-gauntlet place", function()
+            local place = { auto_summon_on_recovery = true }
+            expect(ActiveSquad.shouldAutoSummon(true, 110, 100, place, false)).to.equal(false)
+            expect(ActiveSquad.shouldAutoSummon(true, 100, 100, place, false)).to.equal(true)
+            expect(ActiveSquad.shouldAutoSummon(false, 100, 100, place, false)).to.equal(false)
+            expect(ActiveSquad.shouldAutoSummon(true, 100, 100, {}, false)).to.equal(false)
+            expect(ActiveSquad.shouldAutoSummon(true, 100, 100, place, true)).to.equal(false)
         end)
     end)
 end

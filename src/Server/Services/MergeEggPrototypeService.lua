@@ -4293,10 +4293,15 @@ end
 
 function MergeEggPrototypeService:_prototypeBaseLevel(record)
     local fallback = tonumber((self._config.principal or {}).level) or 1
-    if record and record.baseCombatLevel then
+    local freezeForRun = (self._config.combat_level or {}).freeze_for_run == true
+    if freezeForRun and record and record.baseCombatLevel then
         return math.max(1, math.floor(tonumber(record.baseCombatLevel) or fallback))
     end
-    return playerCombatLevel(record and record.player, fallback)
+    local liveLevel = playerCombatLevel(record and record.player, fallback)
+    if record then
+        record.baseCombatLevel = liveLevel
+    end
+    return liveLevel
 end
 
 function MergeEggPrototypeService:_ensureBreachLine(world)
@@ -9907,6 +9912,14 @@ function MergeEggPrototypeService:_restoreDurablePlaystate(record)
     if not (playstate and playstate.saved == true) then
         return false, "durable_playstate_unavailable"
     end
+    -- A pre-fix logout after a defeat could serialize destroyed deployments as zero even though
+    -- their last-good identities still existed in the same-wave combat checkpoint. Repair those
+    -- legacy holes on read. Current saves retain resetEggTier directly in fromRuntime below.
+    playstate = MergeEggPlaystate.recoverCheckpointDeployments(
+        playstate,
+        record.durableCheckpoint,
+        self:_checkpointOptions()
+    )
     return self:_restoreDurableProgress(record, playstate, "playstate")
 end
 

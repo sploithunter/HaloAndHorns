@@ -2132,6 +2132,16 @@ function EnemyService:_enforceLockouts(now)
                             pet:SetAttribute("CooldownUntil", holdUntil) -- extend to the real lockout
                             pet:SetAttribute("DownedReason", "recovering")
                         end
+                    elseif
+                        ActiveSquad.shouldAutoSummon(
+                            pet:GetAttribute("CombatDowned") == true,
+                            holdUntil,
+                            now,
+                            self._runtimeSquadConfig,
+                            player:GetAttribute("GauntletNoRevives") == true
+                        )
+                    then
+                        self:_revivePet(pet)
                     end
                 end
             end
