@@ -7182,3 +7182,17 @@ first-session cohort rates.
   viewport-relative gap instead of estimating that edge from a device-class top ratio.
 - The Wave 0–10 tutorial card resolves its ScreenGui coordinate origin before assignment, so its
   recurring layout pass no longer exposes alternating pre-inset and corrected frames.
+
+## 2026-09-01 — Merge People list inherits wave-meter scale
+
+- The Merge People list now follows the live wave meter's rendered width and vertical chrome scale,
+  rather than expanding to the phone mode's generic 36%-wide list. A one-player iPhone list shrinks
+  with the wave card while additional player rows continue to grow and scroll normally. Its quieter
+  header reads only `Players`; row count is represented by the rows themselves.
+- Hatcher-egg health BillboardGuis now use the shared viewport scale and config-owned dimensions,
+  shrinking with the phone HUD instead of retaining their desktop 156×18 visual footprint.
+- Both Merge workshop `CLICK HERE` cues now apply the config-owned phone scale of 0.5 to their
+  footprint, type, border, target stroke, gap, and pulse travel while preserving exact anchoring.
+- Tower-shot bloom and directed knockback now resolve asserted numeric values before passing them to
+  variadic `math.max`; Luau otherwise forwards the assert diagnostic string as an extra argument and
+  crashes the live step loop.

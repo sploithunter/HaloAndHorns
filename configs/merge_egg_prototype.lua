@@ -63,6 +63,18 @@ return {
     stream_timeout = 8,
     tier_art = MERGE_TIER_ART,
 
+    ui = {
+        egg_health_billboard = {
+            width = 156,
+            height = 18,
+            max_distance = 180,
+            vertical_gap = 0.8,
+            label_text_size = 11,
+            viewport_scale_min = 0.45,
+            viewport_scale_max = 1,
+        },
+    },
+
     gate = {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
@@ -351,6 +363,22 @@ return {
         auto_collector_attribute = "AutoCollectorEnabled",
         required_eggs = 5,
         click_cue_purchase_count = 3,
+        click_cue = {
+            width = 330,
+            height = 108,
+            text_size = 45,
+            target_stroke_thickness = 12,
+            callout_stroke_thickness = 7,
+            corner_radius = 18,
+            target_gap = 12,
+            pulse_travel = 12,
+            display_scale = {
+                desktop = 1,
+                tablet = 0.75,
+                phone = 0.5,
+                ten_foot = 1,
+            },
+        },
         disable_after_rebirth = true,
         -- Locked drip: Wave 0 eggs → Wave 2 Impaler → Wave 4 Heal →
         -- Wave 6 optional coins + egg upgrades → Wave 10 Quartermaster.

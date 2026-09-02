@@ -369,8 +369,16 @@ end
 function PeopleList.layout(config, state)
     state = assert(state, "People list viewport state is required")
     local mode, layout = layoutMode(config, state)
-    requiredNumber(state.viewportWidth, "viewportWidth")
+    local viewportWidth = requiredNumber(state.viewportWidth, "viewportWidth")
     local viewportHeight = requiredNumber(state.viewportHeight, "viewportHeight")
+    local mergeWaveWidth = tonumber(state.mergeWaveWidth)
+    local mergeWaveHeight = tonumber(state.mergeWaveHeight)
+    local mergeWaveRight = tonumber(state.mergeWaveRight)
+    local followsMergeWave = state.mergePlace == true
+        and mergeWaveWidth ~= nil
+        and mergeWaveWidth > 0
+        and mergeWaveHeight ~= nil
+        and mergeWaveHeight > 0
     local top
     if state.tutorialOwnsCorner == true then
         top = math.floor(viewportHeight * requiredNumber(mode.tutorial_top, "tutorial_top") + 0.5)
@@ -389,19 +397,56 @@ function PeopleList.layout(config, state)
             else requiredNumber(mode.top, "top")
         top = math.floor(viewportHeight * topScale + 0.5)
     end
-    return {
-        widthScale = requiredNumber(mode.width, "width"),
+
+    local widthScale = requiredNumber(mode.width, "width")
+    local rightScale = requiredNumber(mode.right, "right")
+    local headerHeight =
+        math.floor(viewportHeight * requiredNumber(mode.header_height, "header_height") + 0.5)
+    local rowHeight =
+        math.floor(viewportHeight * requiredNumber(mode.row_height, "row_height") + 0.5)
+    local columnHeaderHeight = math.floor(
+        viewportHeight
+                * requiredNumber(mode.header_height, "header_height")
+                * requiredNumber(layout.column_header_to_header, "column_header_to_header")
+            + 0.5
+    )
+    if followsMergeWave then
+        widthScale = mergeWaveWidth
+            * requiredNumber(layout.merge_wave_width_ratio, "merge_wave_width_ratio")
+            / viewportWidth
         headerHeight = math.floor(
-            viewportHeight * requiredNumber(mode.header_height, "header_height") + 0.5
-        ),
+            mergeWaveHeight
+                    * requiredNumber(
+                        layout.merge_wave_header_height_ratio,
+                        "merge_wave_header_height_ratio"
+                    )
+                + 0.5
+        )
         rowHeight = math.floor(
-            viewportHeight * requiredNumber(mode.row_height, "row_height") + 0.5
-        ),
+            mergeWaveHeight
+                    * requiredNumber(
+                        layout.merge_wave_row_height_ratio,
+                        "merge_wave_row_height_ratio"
+                    )
+                + 0.5
+        )
+        columnHeaderHeight = math.floor(
+            headerHeight * requiredNumber(layout.column_header_to_header, "column_header_to_header")
+                + 0.5
+        )
+        if mergeWaveRight ~= nil then
+            rightScale = math.max(0, (viewportWidth - mergeWaveRight) / viewportWidth)
+        end
+    end
+    return {
+        widthScale = widthScale,
+        headerHeight = headerHeight,
+        rowHeight = rowHeight,
         maximumBodyHeight = math.floor(
             viewportHeight * requiredNumber(mode.max_body_height, "max_body_height") + 0.5
         ),
         top = top,
-        rightScale = requiredNumber(mode.right, "right"),
+        rightScale = rightScale,
         cardWidthScale = requiredNumber(mode.card_width, "card_width"),
         cardGapScale = requiredNumber(mode.card_gap, "card_gap"),
         cardHeadshotHeight = math.floor(
@@ -410,12 +455,7 @@ function PeopleList.layout(config, state)
         cardViewportHeight = math.floor(
             viewportHeight * requiredNumber(mode.card_viewport_height, "card_viewport_height") + 0.5
         ),
-        columnHeaderHeight = math.floor(
-            viewportHeight
-                    * requiredNumber(mode.header_height, "header_height")
-                    * requiredNumber(layout.column_header_to_header, "column_header_to_header")
-                + 0.5
-        ),
+        columnHeaderHeight = columnHeaderHeight,
         columnGutter = requiredNumber(layout.column_gutter, "column_gutter"),
     }
 end

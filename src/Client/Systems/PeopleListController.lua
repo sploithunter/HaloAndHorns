@@ -94,6 +94,9 @@ local function dockState()
     local viewport = camera.ViewportSize
     local mergePlace = isMergePlace()
     local mergeWaveBottom = nil
+    local mergeWaveWidth = nil
+    local mergeWaveHeight = nil
+    local mergeWaveRight = nil
     if mergePlace then
         local playerGui = player:FindFirstChildOfClass("PlayerGui")
         local waveGui = playerGui and playerGui:FindFirstChild("MergeWaveBar")
@@ -108,12 +111,18 @@ local function dockState()
             and waveMeter.AbsoluteSize.Y > 0
         then
             mergeWaveBottom = waveMeter.AbsolutePosition.Y + waveMeter.AbsoluteSize.Y
+            mergeWaveWidth = waveMeter.AbsoluteSize.X
+            mergeWaveHeight = waveMeter.AbsoluteSize.Y
+            mergeWaveRight = waveMeter.AbsolutePosition.X + waveMeter.AbsoluteSize.X
         end
     end
     return {
         tutorialOwnsCorner = player:GetAttribute("TutorialCornerOwned") == true,
         mergePlace = mergePlace,
         mergeWaveBottom = mergeWaveBottom,
+        mergeWaveWidth = mergeWaveWidth,
+        mergeWaveHeight = mergeWaveHeight,
+        mergeWaveRight = mergeWaveRight,
         displayClass = tostring(player:GetAttribute("DisplayClass") or "desktop"),
         viewportWidth = viewport.X,
         viewportHeight = viewport.Y,
@@ -721,9 +730,6 @@ local function refreshRows()
         end
     end
     local count = #Players:GetPlayers()
-    if headerLabel then
-        headerLabel.Text = ("Players  %d"):format(count)
-    end
     if rowsFrame then
         local dimensions = PeopleList.layout(config, dockState())
         local rowH = dimensions.rowHeight
@@ -1027,8 +1033,9 @@ local function build()
     header.Parent = headerBar
     headerLabel = Instance.new("TextLabel")
     headerLabel.BackgroundTransparency = 1
-    headerLabel.Size = UDim2.new(0.88, 0, 1, 0)
-    headerLabel.Position = UDim2.fromScale(0.02, 0)
+    -- Keep the title quieter than the player rows; the list itself already communicates count.
+    headerLabel.Size = UDim2.fromScale(0.88, 0.65)
+    headerLabel.Position = UDim2.fromScale(0.02, 0.175)
     headerLabel.Font = Enum.Font.GothamBold
     headerLabel.TextScaled = true
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
