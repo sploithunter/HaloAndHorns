@@ -5,6 +5,7 @@
 
 local FocusMath = loadModule("src/Shared/Game/FocusMath.lua")
 local config = loadModule("configs/focus.lua")
+local focusServiceSource = readFile("src/Server/Services/FocusService.lua")
 
 return function()
     describe("FocusMath.maximum", function()
@@ -69,6 +70,26 @@ return function()
             expect(FocusMath.regen(0, 1, stunCfg)).to.equal(0)
             -- but a non-zero pool still regenerates under the stun flag
             expect(FocusMath.regen(10, 1, stunCfg)).to.equal(15)
+        end)
+    end)
+
+    describe("FocusService contextual regeneration", function()
+        it("multiplies regeneration without changing maximum Focus", function()
+            expect(focusServiceSource:find('"FocusRegenMultiplier"', 1, true)).to.be.ok()
+            expect(
+                focusServiceSource:find(
+                    "self._config.regen_per_second * regenMultiplierFor(player)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(
+                focusServiceSource:find(
+                    "FocusMath.maximum(self._config, player and player:GetAttribute(MAX_MULTIPLIER_ATTRIBUTE))",
+                    1,
+                    true
+                )
+            ).to.be.ok()
         end)
     end)
 

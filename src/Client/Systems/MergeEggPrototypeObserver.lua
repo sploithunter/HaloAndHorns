@@ -3035,10 +3035,10 @@ local function createManagementBoardSurface(host)
             action = { action = "purchase_upgrade", upgradeId = "pet_endurance" },
         },
         {
-            id = "player_focus",
+            id = "focus_regen",
             panel = upgradePanel,
             color = Color3.fromRGB(84, 198, 210),
-            action = { action = "purchase_upgrade", upgradeId = "player_focus" },
+            action = { action = "purchase_upgrade", upgradeId = "focus_regen" },
         },
     }
     local buttons = {}
@@ -3418,7 +3418,7 @@ local function updateBoardWallControls(controls, observing)
         fire_rate = { title = "FIRE RATE", attribute = "FireRate", suffix = "%" },
         egg_health = { title = "EGG HP", attribute = "EggHealth", suffix = "%" },
         pet_endurance = { title = "PET ENDURANCE", attribute = "PetEndurance", suffix = "%" },
-        player_focus = { title = "PLAYER FOCUS", attribute = "PlayerFocus", suffix = "%" },
+        focus_regen = { title = "FOCUS REGEN", attribute = "FocusRegen", suffix = "%" },
     }
     for id, data in pairs(upgradeData) do
         local card = buttons[id]

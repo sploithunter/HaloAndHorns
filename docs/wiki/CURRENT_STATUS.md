@@ -1171,9 +1171,10 @@ then live through the bus.
   `regen_pauses_at_zero=false`) + pure `FocusMath` (cast/canCast, regen clamp,
   sunder clamp-to-0). `FocusService` owns the runtime-only pool (lazy-init to max) and a
   CharacterAdded **invulnerability** hook (MaxHealth=∞, Dead state disabled — no HP,
-  can't die). A mode may set the transient `FocusMaxMultiplier` Player attribute; every spend,
-  restore, regen, and HUD publication then uses that contextual cap without changing the shared
-  config or persisting current Focus. Open design Q resolved (always regenerate; DECISIONS.md).
+  can't die). A mode may set transient `FocusMaxMultiplier` and `FocusRegenMultiplier` Player
+  attributes; the first changes the contextual cap, while the second scales base regeneration.
+  Neither changes shared config or persists current Focus. Open design Q resolved (always
+  regenerate; DECISIONS.md).
 - **Combat** (Feature 10): `configs/enemies.lua` (hp, attack {damage,cadence,
   sundering}, drop_table) + `configs/combat.lua` (spawners, auto_target nearest,
   group_scaling, pet-down threshold). Pure `Targeting` (nearestEnemy) +
