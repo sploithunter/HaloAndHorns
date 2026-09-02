@@ -134,6 +134,15 @@ return function()
             local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
 
             expect(config.quartermaster.services.training_label).to.equal("COMBAT TRAINING")
+            expect(config.quartermaster.greeting:find("Rebirths unlock new eggs", 1, true)).to.be.ok()
+            expect(config.quartermaster.services.body:find("Finish Combat Training", 1, true)).to.be.ok()
+            expect(
+                config.quartermaster.services.training_body:find(
+                    "Keep pets from rebirth-unlocked eggs",
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(combatTutorial:find("function CombatTutorialService:OpenForPlayer", 1, true)).to.be.ok()
             expect(combatTutorial:find("self:_caveMissionId()", 1, true)).to.be.ok()
             expect(mergeService:find('elseif action == "quartermaster" then', 1, true)).to.be.ok()
@@ -141,9 +150,16 @@ return function()
             expect(mergeService:find("trainingAvailable = not done", 1, true)).to.be.ok()
             expect(mergeService:find('return false, "combat_tutorial_complete"', 1, true)).to.be.ok()
             expect(config.quartermaster.services.training_redo_label).to.equal(nil)
-            expect(config.quartermaster.services.body_complete).to.equal(
-                "Stock your pets or strengthen your command."
-            )
+            expect(config.quartermaster.greeting_complete:find("Training complete", 1, true)).to.be.ok()
+            expect(
+                config.quartermaster.services.body_complete:find(
+                    "now enter your inventory",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(mergeService:find("(done and post.greeting_complete)", 1, true)).to.be.ok()
+            expect(mergeService:find("self:_setQuartermasterSpeech(live, value.greeting)", 1, true)).to.be.ok()
             expect(
                 mergeService:find(
                     "self._combatTrainingReturns[player] = { bayId = bayId }",
@@ -376,7 +392,7 @@ return function()
             )
             expect(config.tutorial.pause_after_quartermaster_wave).to.equal(10)
             expect(config.quartermaster.user_id).to.equal(873359641)
-            expect(config.quartermaster.greeting).to.equal("I'll get you whatever you need.")
+            expect(config.quartermaster.greeting:find("Finish Combat Training", 1, true)).to.be.ok()
             expect(config.quartermaster.shop_visible_transparency).to.equal(0)
             expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
             expect(config.world.potion_shop_hell).to.equal("HellPotionShop")

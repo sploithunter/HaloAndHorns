@@ -7303,3 +7303,9 @@ first-session cohort rates.
 - Required Combat Training completion before any Merge defense hatch can enter durable inventory.
   Each rebirth-owned egg also reconciles its corresponding Farm & Fight area through `ZoneService`;
   this never bypasses the independent Level 14/21 Layer 2/3 travel gates.
+
+## 2026-09-01 — Quartermaster explains the personal-pet reward
+
+- Rewrote Macros' pre-training greeting and service copy to explain that rebirths unlock personal
+  eggs and Combat Training lets pets from those eggs enter durable inventory. The completed-state
+  conversation now acknowledges that those hatchlings are the player's to keep.

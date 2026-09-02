@@ -667,6 +667,10 @@ team and queue model:
     full persistent Combat Training mission. Macros and tent stay planted and hidden (Transparency
     1, no collide/query,
     prompt off) until this beat.
+    His unfinished-training conversation makes the progression bargain explicit: Merge rebirths
+    unlock personal eggs, while completing Combat Training lets pets from those eggs enter durable
+    inventory. After completion, the same conversation acknowledges that those pets are now the
+    player's to keep and the training service disappears as before.
   After Wave 2 clears, combat pauses (`TutorialIntermission`). Vendors are
   always in the bay but invisible (`Transparency = 1`, no collide/query,
   prompt off) until `_setVendorPosted`. The gold-line engineer is revealed
