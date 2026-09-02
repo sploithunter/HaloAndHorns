@@ -8655,10 +8655,9 @@ function MergeEggPrototypeService:_ensureAutoCombineControl(world, board, equipB
     local sizeCfg = type(cfg.auto_combine_size) == "table" and cfg.auto_combine_size or {}
     local width = math.max(3, tonumber(sizeCfg.x) or equipBestControl.Size.X)
     local depth = math.max(3, tonumber(sizeCfg.z) or equipBestControl.Size.Z)
-    local gap = math.max(
-        0,
-        assert(tonumber(cfg.auto_combine_gap), "team.merge_board.auto_combine_gap is required")
-    )
+    local configuredGap = tonumber(cfg.auto_combine_gap)
+    assert(configuredGap, "team.merge_board.auto_combine_gap is required")
+    local gap = math.max(0, configuredGap)
     local function halfExtentAlong(size, cframe, direction)
         return math.abs(cframe.RightVector:Dot(direction)) * size.X * 0.5
             + math.abs(cframe.UpVector:Dot(direction)) * size.Y * 0.5
