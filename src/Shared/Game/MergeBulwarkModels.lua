@@ -1,8 +1,6 @@
 -- Spawnable Merge bulwark model access. Authored maps own only placement anchors; visuals are
 -- cloned from ReplicatedStorage.Assets.Models.MergeBulwarks when a defense exists.
 
-local AssetService = game:GetService("AssetService")
-local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MergeTierArt = require(script.Parent.MergeTierArt)
@@ -25,12 +23,8 @@ local LONG_AXIS = {
     land_shark = "Z",
 }
 
--- Split/repaired saw MeshIds are 200-stud Roblox assets (cm FBX). Studio QA previews shrink them
--- with Model.Scale 0.04 / 0.05 to the 8–10 stud tile. The lune assembler copied those tile Sizes
--- onto new MeshParts at scale 1 and cannot bake MeshSize, so the renderer draws the 200-stud
--- native mesh. Recreate each MeshPart through AssetService so Size is authoritative again.
 local TILE_REFERENCE_LENGTH = 10
-local SAW_BLADE_IMPORT_SCALE = 0.04
+local SCALE_EPSILON = 0.001
 
 local function templatesRoot(rootOverride)
     if rootOverride then
@@ -92,13 +86,14 @@ function MergeBulwarkModels.MatchesTemplate(model, family, tier, rootOverride, t
     if contentId(model:GetAttribute("RobloxTextureAssetId")) ~= expected.textureId then
         return false
     end
-    if normalizedFamily == "saw_blade" then
-        return true
-    end
     local matched = false
     for _, descendant in ipairs(model:GetDescendants()) do
         if descendant:IsA("MeshPart") then
-            if
+            if normalizedFamily == "saw_blade" then
+                if descendant.MeshSize.Magnitude < 0.01 then
+                    return false
+                end
+            elseif
                 contentId(descendant.MeshId) ~= expected.meshId
                 or contentId(descendant.TextureID) ~= expected.textureId
             then
@@ -106,6 +101,9 @@ function MergeBulwarkModels.MatchesTemplate(model, family, tier, rootOverride, t
             end
             matched = true
         end
+    end
+    if normalizedFamily == "saw_blade" then
+        return matched and model:GetAttribute("MergeBulwarkPrebakedPlacement") == true
     end
     return matched
 end
@@ -193,113 +191,6 @@ function MergeBulwarkModels.FitToTile(model, placementScale)
     return model
 end
 
-local function bakeMeshPart(part)
-    if not (part:IsA("MeshPart") and part.MeshId ~= "") then
-        return part
-    end
-    if part.MeshSize.Magnitude >= 0.01 then
-        return part
-    end
-    local ok, baked = pcall(function()
-        -- selene: allow(undefined_variable)
-        return AssetService:CreateMeshPartAsync(Content.fromUri(part.MeshId))
-    end)
-    if not (ok and baked) then
-        return part
-    end
-    local desiredSize = part.Size
-    baked.Name = part.Name
-    baked.Size = desiredSize
-    baked.CFrame = part.CFrame
-    baked.Anchored = part.Anchored
-    baked.CanCollide = part.CanCollide
-    baked.CanTouch = part.CanTouch
-    baked.CanQuery = part.CanQuery
-    baked.Massless = part.Massless
-    baked.CastShadow = part.CastShadow
-    baked.Material = part.Material
-    baked.Color = part.Color
-    baked.Reflectance = part.Reflectance
-    baked.Transparency = part.Transparency
-    baked.TextureID = part.TextureID
-    for name, value in pairs(part:GetAttributes()) do
-        baked:SetAttribute(name, value)
-    end
-    for _, child in ipairs(part:GetChildren()) do
-        child.Parent = baked
-    end
-    local parent = part.Parent
-    local model = part:FindFirstAncestorOfClass("Model")
-    if model and model.PrimaryPart == part then
-        model.PrimaryPart = baked
-    end
-    baked.Parent = parent
-    part:Destroy()
-    return baked
-end
-
-function MergeBulwarkModels.ApplySawBladeImportScale(model, placementScale)
-    if not model then
-        return model
-    end
-    if tostring(model:GetAttribute("MergeBulwarkFamily") or "") ~= "saw_blade" then
-        return model
-    end
-    local pending = false
-    for _, descendant in ipairs(model:GetDescendants()) do
-        if
-            descendant:IsA("MeshPart")
-            and descendant.MeshId ~= ""
-            and descendant.MeshSize.Magnitude < 0.01
-        then
-            bakeMeshPart(descendant)
-            pending = true
-        end
-    end
-    -- If CreateMeshPartAsync is unavailable, fall back to the Studio-accepted 0.04 shrink.
-    local stillNative = false
-    for _, descendant in ipairs(model:GetDescendants()) do
-        if descendant:IsA("MeshPart") and descendant.MeshSize.Magnitude < 0.01 then
-            stillNative = true
-            break
-        end
-    end
-    if stillNative and model:GetAttribute("MergeBulwarkImportScaled") ~= true and model.Parent then
-        local current = model:GetScale()
-        if current > 0 then
-            model:ScaleTo(current * SAW_BLADE_IMPORT_SCALE)
-        end
-        restoreTileSizes(model, placementScale)
-        model:SetAttribute("MergeBulwarkImportScaled", true)
-    elseif pending then
-        restoreTileSizes(model, placementScale)
-        model:SetAttribute("MergeBulwarkMeshesBaked", true)
-    end
-    if model.Parent then
-        return MergeBulwarkModels.FitToTile(model, placementScale)
-    end
-    return model
-end
-
-local function refitWhenMeshesLoad(model, placementScale)
-    task.defer(function()
-        local meshes = {}
-        for _, descendant in ipairs(model:GetDescendants()) do
-            if descendant:IsA("MeshPart") and descendant.MeshId ~= "" then
-                table.insert(meshes, descendant)
-            end
-        end
-        if #meshes > 0 then
-            pcall(function()
-                ContentProvider:PreloadAsync(meshes)
-            end)
-        end
-        if model.Parent then
-            MergeBulwarkModels.FitToTile(model, placementScale)
-        end
-    end)
-end
-
 function MergeBulwarkModels.Spawn(
     family,
     tier,
@@ -332,7 +223,17 @@ function MergeBulwarkModels.Spawn(
     local sourceUniformScale = tonumber(model:GetAttribute("MergeBulwarkSourceUniformScale")) or 1
     local placementScale = if scale and scale > 0 then scale else 1
     local uniform = sourceUniformScale * placementScale
-    if nativePackage or (scale and scale > 0) then
+    if normalizedFamily == "saw_blade" then
+        local bakedScale = tonumber(model:GetAttribute("MergeBulwarkBakedPlacementScale"))
+        if model:GetAttribute("MergeBulwarkPrebakedPlacement") ~= true or bakedScale == nil then
+            model:Destroy()
+            return nil, "bulwark_template_not_prebaked"
+        end
+        if math.abs(placementScale - bakedScale) > SCALE_EPSILON then
+            model:Destroy()
+            return nil, "bulwark_baked_scale_mismatch"
+        end
+    elseif nativePackage or (scale and scale > 0) then
         model:ScaleTo(uniform)
     end
     model.Parent = parent or workspace
@@ -348,10 +249,7 @@ function MergeBulwarkModels.Spawn(
     model:SetAttribute("MergeBulwarkTier", math.clamp(math.floor(tonumber(tier) or 1), 1, 4))
     model:SetAttribute("MergeBulwarkSpawnScale", placementScale)
     model:SetAttribute("MergeBulwarkGroundY", target.Position.Y)
-    if normalizedFamily == "saw_blade" then
-        MergeBulwarkModels.ApplySawBladeImportScale(model, placementScale)
-        refitWhenMeshesLoad(model, placementScale)
-    else
+    if normalizedFamily ~= "saw_blade" then
         MergeBulwarkModels.FitToTile(model, placementScale)
     end
     return model

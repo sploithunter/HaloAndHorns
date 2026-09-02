@@ -417,6 +417,7 @@
             3.8867202
           ],
           "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier1/model.rbxm",
+          "finalPlacementModelAssetId": "131293606253067",
           "speedDegrees": 180,
           "idleSoundKey": "merge_saw_idle",
           "impactSoundKey": "merge_saw_hit",
@@ -461,6 +462,7 @@
             4.13756
           ],
           "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier2/model.rbxm",
+          "finalPlacementModelAssetId": "96489651557570",
           "speedDegrees": 360,
           "idleSoundKey": "merge_saw_idle",
           "impactSoundKey": "merge_saw_hit",
@@ -500,6 +502,7 @@
             5.1350194
           ],
           "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier3/model.rbxm",
+          "finalPlacementModelAssetId": "123953356519958",
           "speedDegrees": 180,
           "idleSoundKey": "merge_saw_idle",
           "impactSoundKey": "merge_saw_hit",
@@ -546,6 +549,7 @@
             5.19531
           ],
           "approvedNativeSource": "assets/source/props/merge_bulwarks/roblox_approved/saw_blade/tier4/model.rbxm",
+          "finalPlacementModelAssetId": "109773296441883",
           "speedDegrees": 360,
           "idleSoundKey": "merge_saw_idle",
           "impactSoundKey": "merge_saw_hit",

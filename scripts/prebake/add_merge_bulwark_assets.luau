@@ -74,12 +74,39 @@ for _, familyId in ipairs(familyOrder) do
         model:SetAttribute("RobloxModelAssetId", entry.modelAssetId)
         model:SetAttribute("RobloxMeshAssetId", entry.meshId)
         model:SetAttribute("RobloxTextureAssetId", entry.textureId)
-        model:SetAttribute("MergeBulwarkNativePackage", true)
-        model:SetAttribute(
-            "MergeBulwarkSourceUniformScale",
-            manifest.tileReferenceLength
-                / math.max(entry.rawRobloxSize[1], entry.rawRobloxSize[2], entry.rawRobloxSize[3])
-        )
+        if familyId == "saw_blade" then
+            local bakedPlacementScale = tonumber(
+                model:GetAttribute("MergeBulwarkBakedPlacementScale")
+            )
+            assert(
+                model:GetAttribute("MergeBulwarkPrebakedPlacement") == true,
+                "Saw Blade source must be an engine-authored final-size template"
+            )
+            assert(
+                bakedPlacementScale and bakedPlacementScale > 0,
+                "Saw Blade source must declare its baked placement scale"
+            )
+            assert(
+                math.abs(
+                    (tonumber(model:GetAttribute("MergeBulwarkBakedWidth")) or 0)
+                        - manifest.tileReferenceLength * bakedPlacementScale
+                ) < 0.001,
+                "Saw Blade source width does not match its placement-scale contract"
+            )
+            model:SetAttribute("MergeBulwarkNativePackage", nil)
+            model:SetAttribute("MergeBulwarkSourceUniformScale", nil)
+        else
+            model:SetAttribute("MergeBulwarkNativePackage", true)
+            model:SetAttribute(
+                "MergeBulwarkSourceUniformScale",
+                manifest.tileReferenceLength
+                    / math.max(
+                        entry.rawRobloxSize[1],
+                        entry.rawRobloxSize[2],
+                        entry.rawRobloxSize[3]
+                    )
+            )
+        end
         if family.animationClass then
             model:SetAttribute("MergeBulwarkAnimationClass", family.animationClass)
         end

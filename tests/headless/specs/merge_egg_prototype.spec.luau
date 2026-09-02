@@ -2640,29 +2640,39 @@ return function()
             expect(menu:find('"MAXIMUM"', 1, true)).to.be.ok()
         end)
 
-        it("preserves native bulwark packages and scales every axis uniformly", function()
-            local models = readFile("src/Shared/Game/MergeBulwarkModels.lua")
-            local prebake = readFile("scripts/prebake/add_merge_bulwark_assets.luau")
+        it(
+            "preserves native packages and clones engine-authored Saw Blades without resizing",
+            function()
+                local models = readFile("src/Shared/Game/MergeBulwarkModels.lua")
+                local prebake = readFile("scripts/prebake/add_merge_bulwark_assets.luau")
+                local extractor = readFile("scripts/prebake/extract_authored_merge_saw_blades.luau")
 
-            expect(prebake:find("roblox_originals", 1, true)).to.be.ok()
-            expect(prebake:find("roblox.deserializeModel", 1, true)).to.be.ok()
-            expect(prebake:find('roblox.Instance.new("MeshPart")', 1, true)).to.equal(nil)
-            expect(models:find("MergeBulwarkNativePackage", 1, true)).to.be.ok()
-            expect(models:find("sourceUniformScale * placementScale", 1, true)).to.be.ok()
-            expect(models:find("model:ScaleTo(uniform)", 1, true)).to.be.ok()
-            expect(models:find("SAW_BLADE_IMPORT_SCALE", 1, true)).to.be.ok()
-            expect(models:find("CreateMeshPartAsync", 1, true)).to.be.ok()
-            expect(models:find("function MergeBulwarkModels.ApplySawBladeImportScale", 1, true)).to.be.ok()
-            expect(models:find("function MergeBulwarkModels.FitToTile", 1, true)).to.be.ok()
-            expect(
-                models:find(
-                    "model.PrimaryPart.PivotOffset = CFrame.new(model.PrimaryPart.PivotOffset.Position)",
-                    1,
-                    true
-                )
-            ).to.be.ok()
-            expect(models:find("target *= nativeRotation", 1, true)).to.equal(nil)
-        end)
+                expect(prebake:find("roblox_originals", 1, true)).to.be.ok()
+                expect(prebake:find("roblox.deserializeModel", 1, true)).to.be.ok()
+                expect(prebake:find('roblox.Instance.new("MeshPart")', 1, true)).to.equal(nil)
+                expect(models:find("MergeBulwarkNativePackage", 1, true)).to.be.ok()
+                expect(models:find("sourceUniformScale * placementScale", 1, true)).to.be.ok()
+                expect(models:find("model:ScaleTo(uniform)", 1, true)).to.be.ok()
+                expect(models:find("SAW_BLADE_IMPORT_SCALE", 1, true)).to.equal(nil)
+                expect(models:find("CreateMeshPartAsync", 1, true)).to.equal(nil)
+                expect(models:find("ApplySawBladeImportScale", 1, true)).to.equal(nil)
+                expect(models:find("MergeBulwarkPrebakedPlacement", 1, true)).to.be.ok()
+                expect(models:find("bulwark_baked_scale_mismatch", 1, true)).to.be.ok()
+                expect(models:find('normalizedFamily ~= "saw_blade"', 1, true)).to.be.ok()
+                expect(models:find("function MergeBulwarkModels.FitToTile", 1, true)).to.be.ok()
+                expect(
+                    models:find(
+                        "model.PrimaryPart.PivotOffset = CFrame.new(model.PrimaryPart.PivotOffset.Position)",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(models:find("target *= nativeRotation", 1, true)).to.equal(nil)
+                expect(extractor:find("SawBladeFinalAuthoring", 1, true)).to.be.ok()
+                expect(extractor:find("roblox.serializeModel", 1, true)).to.be.ok()
+                expect(extractor:find('roblox.Instance.new("MeshPart")', 1, true)).to.equal(nil)
+            end
+        )
 
         it("animates approved saw rigs locally and separates idle from contact audio", function()
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
@@ -2673,7 +2683,7 @@ return function()
             expect(sounds.merge_saw_idle.looped).to.equal(true)
             expect(sounds.merge_saw_hit.id).to.equal("rbxassetid://137143310095075")
             expect(observer:find("registerSawBladeRig", 1, true)).to.be.ok()
-            expect(observer:find("MergeBulwarkModels.ApplySawBladeImportScale(model)", 1, true)).to.be.ok()
+            expect(observer:find("ApplySawBladeImportScale", 1, true)).to.equal(nil)
             expect(observer:find("updateSawBladeRigs(dt, observing)", 1, true)).to.be.ok()
             expect(observer:find('world:FindFirstChild("MergeEggBulwarks")', 1, true)).to.be.ok()
             expect(

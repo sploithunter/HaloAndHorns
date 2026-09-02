@@ -1615,9 +1615,6 @@ local function sawBladeRotation(axis, angle)
 end
 
 local function registerSawBladeRig(model)
-    -- Fit before capturing startCFrame. Import-scale meshes render ~100× until this lands;
-    -- fitting after register makes rotors orbit the oversized frame.
-    MergeBulwarkModels.ApplySawBladeImportScale(model)
     local blades = {}
     for _, descendant in ipairs(model:GetDescendants()) do
         if descendant:IsA("BasePart") and string.match(descendant.Name, "^Blade%d+$") then
