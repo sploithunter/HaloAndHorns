@@ -51,26 +51,6 @@ local TUTORIAL_CARD_LAYOUT = assert(
     (CONFIG.tutorial or {}).card_layout,
     "merge_egg_prototype.tutorial.card_layout is required"
 )
-local TUTORIAL_CARD_RELATIVE = assert(
-    TUTORIAL_CARD_LAYOUT.relative,
-    "merge_egg_prototype.tutorial.card_layout.relative is required"
-)
-local TUTORIAL_CARD_SIZE_CONSTRAINT = assert(
-    TUTORIAL_CARD_LAYOUT.size_constraint,
-    "merge_egg_prototype.tutorial.card_layout.size_constraint is required"
-)
-local TUTORIAL_CARD_DISPLAY_ORDER = assert(
-    tonumber(TUTORIAL_CARD_LAYOUT.display_order),
-    "merge_egg_prototype.tutorial.card_layout.display_order is required"
-)
-local TUTORIAL_CARD_FEEDBACK_DISPLAY_ORDER = assert(
-    tonumber(TUTORIAL_CARD_LAYOUT.feedback_display_order),
-    "merge_egg_prototype.tutorial.card_layout.feedback_display_order is required"
-)
-local TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER = assert(
-    tonumber(TUTORIAL_CARD_LAYOUT.inactive_display_order),
-    "merge_egg_prototype.tutorial.card_layout.inactive_display_order is required"
-)
 local TUTORIAL_ACTIVITY_FEEDBACK = assert(
     (CONFIG.tutorial or {}).activity_feedback,
     "merge_egg_prototype.tutorial.activity_feedback is required"
@@ -350,7 +330,11 @@ local function layoutResponsiveDockSurface(frame, aspect, sizeConstraint, displa
 
     local class = localPlayer:GetAttribute("HudLayoutResolved") == "compact" and "compact"
         or "classic"
-    local spec = assert(TUTORIAL_CARD_RELATIVE[class], "tutorial card relative layout is required")
+    local relative = assert(
+        TUTORIAL_CARD_LAYOUT.relative,
+        "merge_egg_prototype.tutorial.card_layout.relative is required"
+    )
+    local spec = assert(relative[class], "tutorial card relative layout is required")
     local anchor = layoutVector(spec, "anchor")
     local position = layoutVector(spec, "position")
     local size = layoutVector(spec, "size")
@@ -362,8 +346,12 @@ local function layoutResponsiveDockSurface(frame, aspect, sizeConstraint, displa
         tonumber(spec.aspect_ratio),
         "tutorial.card_layout.relative aspect_ratio is required"
     )
-    sizeConstraint.MinSize = layoutSizeVector(TUTORIAL_CARD_SIZE_CONSTRAINT, "minimum")
-    sizeConstraint.MaxSize = layoutSizeVector(TUTORIAL_CARD_SIZE_CONSTRAINT, "maximum")
+    local bounds = assert(
+        TUTORIAL_CARD_LAYOUT.size_constraint,
+        "merge_egg_prototype.tutorial.card_layout.size_constraint is required"
+    )
+    sizeConstraint.MinSize = layoutSizeVector(bounds, "minimum")
+    sizeConstraint.MaxSize = layoutSizeVector(bounds, "maximum")
     hotbarGui.DisplayOrder = displayOrder
     return true
 end
@@ -381,7 +369,10 @@ local function layoutTutorialCardOverHotbar(card)
         card.frame,
         card.aspect,
         card.sizeConstraint,
-        TUTORIAL_CARD_DISPLAY_ORDER
+        assert(
+            tonumber(TUTORIAL_CARD_LAYOUT.display_order),
+            "tutorial.card_layout.display_order is required"
+        )
     )
 end
 
@@ -1271,7 +1262,15 @@ local function createBoardActionFeedback(parent)
 end
 
 local function layoutBoardActionFeedback(label, sizeConstraint, aspect)
-    layoutResponsiveDockSurface(label, aspect, sizeConstraint, TUTORIAL_CARD_FEEDBACK_DISPLAY_ORDER)
+    layoutResponsiveDockSurface(
+        label,
+        aspect,
+        sizeConstraint,
+        assert(
+            tonumber(TUTORIAL_CARD_LAYOUT.feedback_display_order),
+            "tutorial.card_layout.feedback_display_order is required"
+        )
+    )
 end
 
 local function boardActionFailureCopy(result)
@@ -4416,7 +4415,12 @@ function MergeEggPrototypeObserver.start()
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
             setTutorialHotbarCovered(nil, false)
-            setHotbarDisplayOrder(TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER)
+            setHotbarDisplayOrder(
+                assert(
+                    tonumber(TUTORIAL_CARD_LAYOUT.inactive_display_order),
+                    "tutorial.card_layout.inactive_display_order is required"
+                )
+            )
             activeFeedback = nil
             table.clear(feedbackQueue)
             showFeedback(nil)
@@ -4447,7 +4451,12 @@ function MergeEggPrototypeObserver.start()
                 boardActionFeedbackAspect
             )
         elseif not tutorialCard.frame.Visible then
-            setHotbarDisplayOrder(TUTORIAL_CARD_INACTIVE_DISPLAY_ORDER)
+            setHotbarDisplayOrder(
+                assert(
+                    tonumber(TUTORIAL_CARD_LAYOUT.inactive_display_order),
+                    "tutorial.card_layout.inactive_display_order is required"
+                )
+            )
         end
         local tutorialStep = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "")
         if
