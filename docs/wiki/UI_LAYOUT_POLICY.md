@@ -21,7 +21,11 @@ Responsive relationships—not guessed screen coordinates—own placement.
   are separate from viewport placement, but still belong inside a responsively placed container.
 - When one responsive surface replaces another, copy the live surface's measured final bounds after
   its constraints/UIScale have resolved. Do not duplicate its nominal design pixels in a second
-  config. The Merge tutorial card replacing the central hotbar is the reference implementation.
+  config. The Merge tutorial card replacing the central hotbar is the reference implementation. If
+  a visible independent control occupies part of that footprint, preserve the replacement's aligned
+  right edge and trim only its colliding left edge. Merge applies this clearance to both the classic
+  menu pane and the expanded compact popup, so an explicit Classic preference remains usable in a
+  narrow window.
 - `FullscreenExtension` can shift a direct `ScreenGui` child by the live safe-area origin even when
   `IgnoreGuiInset` is true. When targeting absolute screen coordinates, derive that origin from the
   object's current assigned offset and rendered anchor, then make one idempotent assignment. The
@@ -48,4 +52,6 @@ the unlock and install targets so the callout does not obscure the menu it expla
 Cross-`ScreenGui` overlap must use config-owned `DisplayOrder`; descendant `ZIndex` cannot establish
 priority between independent screen roots. The compact expanded menu therefore owns a dedicated
 overlay above ordinary HUD cards such as `SquadHud`, while the pet cards remain visible underneath.
-Tutorials and true modal surfaces retain higher display orders.
+Its config-owned two-column geometry must allocate all four rows of its eight utility actions, and
+its minimum scale must retain 44px touch targets. Tutorials and true modal surfaces retain higher
+display orders except where an intentionally open utility menu must remain actionable.

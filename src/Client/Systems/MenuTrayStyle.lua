@@ -23,6 +23,30 @@ local COMPACT_MENU_DISPLAY_ORDER = assert(
     tonumber(UI_CONFIG.display_order and UI_CONFIG.display_order.compact_menu_overlay),
     "configs/ui.lua display_order.compact_menu_overlay is required"
 )
+local COMPACT_MENU_LAYOUT = assert(
+    UI_CONFIG.hud and UI_CONFIG.hud.compact_menu,
+    "configs/ui.lua hud.compact_menu is required"
+)
+local COMPACT_MENU_COLUMNS = assert(
+    tonumber(COMPACT_MENU_LAYOUT.columns),
+    "configs/ui.lua hud.compact_menu.columns is required"
+)
+local COMPACT_MENU_CELL =
+    assert(COMPACT_MENU_LAYOUT.cell, "configs/ui.lua hud.compact_menu.cell is required")
+local COMPACT_MENU_GAP =
+    assert(COMPACT_MENU_LAYOUT.gap, "configs/ui.lua hud.compact_menu.gap is required")
+local COMPACT_MENU_MINIMUM_SCALE = assert(
+    tonumber(COMPACT_MENU_LAYOUT.minimum_scale),
+    "configs/ui.lua hud.compact_menu.minimum_scale is required"
+)
+local COMPACT_MENU_ANCHOR_GAP = assert(
+    tonumber(COMPACT_MENU_LAYOUT.anchor_gap),
+    "configs/ui.lua hud.compact_menu.anchor_gap is required"
+)
+local COMPACT_MENU_LEFT_FLOOR = assert(
+    tonumber(COMPACT_MENU_LAYOUT.left_floor),
+    "configs/ui.lua hud.compact_menu.left_floor is required"
+)
 
 local MenuTrayStyle = {}
 local started = false
@@ -185,17 +209,25 @@ function MenuTrayStyle.start()
             popup.Name = "CompactMenuPopup"
             popup.AnchorPoint = Vector2.new(0, 1)
             popup.Position = UDim2.new(0, 15, 1, -88)
-            popup.Size = UDim2.fromOffset(140, 204)
+            local popupRows = math.ceil(#COMPACT_MENU_BUTTONS / COMPACT_MENU_COLUMNS)
+            popup.Size = UDim2.fromOffset(
+                COMPACT_MENU_COLUMNS * COMPACT_MENU_CELL.width
+                    + (COMPACT_MENU_COLUMNS - 1) * COMPACT_MENU_GAP.x,
+                popupRows * COMPACT_MENU_CELL.height + (popupRows - 1) * COMPACT_MENU_GAP.y
+            )
             popup.BackgroundTransparency = 1
             popup.Visible = false
             popup.ZIndex = 19
             popup.Parent = overlayGui
-            require(script.Parent.Parent.UI.UIViewportScale).attach(popup, { min = 0.78 })
+            require(script.Parent.Parent.UI.UIViewportScale).attach(
+                popup,
+                { min = COMPACT_MENU_MINIMUM_SCALE }
+            )
             local popupGrid = Instance.new("UIGridLayout")
-            popupGrid.CellSize = UDim2.fromOffset(66, 66)
-            popupGrid.CellPadding = UDim2.fromOffset(4, 3)
+            popupGrid.CellSize = UDim2.fromOffset(COMPACT_MENU_CELL.width, COMPACT_MENU_CELL.height)
+            popupGrid.CellPadding = UDim2.fromOffset(COMPACT_MENU_GAP.x, COMPACT_MENU_GAP.y)
             popupGrid.FillDirection = Enum.FillDirection.Horizontal
-            popupGrid.FillDirectionMaxCells = 2
+            popupGrid.FillDirectionMaxCells = COMPACT_MENU_COLUMNS
             popupGrid.HorizontalAlignment = Enum.HorizontalAlignment.Left
             popupGrid.SortOrder = Enum.SortOrder.LayoutOrder
             popupGrid.VerticalAlignment = Enum.VerticalAlignment.Bottom
@@ -212,7 +244,10 @@ function MenuTrayStyle.start()
             compactMenu.Visible = false
             compactMenu.ZIndex = 20
             compactMenu.Parent = mc
-            require(script.Parent.Parent.UI.UIViewportScale).attach(compactMenu, { min = 0.78 })
+            require(script.Parent.Parent.UI.UIViewportScale).attach(
+                compactMenu,
+                { min = COMPACT_MENU_MINIMUM_SCALE }
+            )
 
             local menuIcon = Instance.new("TextLabel")
             menuIcon.Name = "Icon"
@@ -284,10 +319,13 @@ function MenuTrayStyle.start()
                 local menuSize = compactMenu.AbsoluteSize
                 local origin = mc.AbsolutePosition
                 local x = menuPos.X + menuSize.X * 0.5 - origin.X
-                local y = menuPos.Y - 6 - origin.Y
+                local y = menuPos.Y - COMPACT_MENU_ANCHOR_GAP - origin.Y
                 popup.AnchorPoint = Vector2.new(0.5, 1)
-                -- 8px floor so a left-of-bar Menu does not clip the popup.
-                popup.Position = UDim2.fromOffset(math.max(8, math.floor(x)), math.floor(y))
+                -- The config-owned floor keeps a left-of-bar Menu from clipping the popup.
+                popup.Position = UDim2.fromOffset(
+                    math.max(COMPACT_MENU_LEFT_FLOOR, math.floor(x)),
+                    math.floor(y)
+                )
             end
 
             applyCompactTray = function()
@@ -311,7 +349,8 @@ function MenuTrayStyle.start()
                             btn.Parent = popup
                         end
                         btn.AnchorPoint = Vector2.zero
-                        btn.Size = UDim2.fromOffset(66, 66)
+                        btn.Size =
+                            UDim2.fromOffset(COMPACT_MENU_CELL.width, COMPACT_MENU_CELL.height)
                         btn.Visible = saved.visible
                     end
                 else

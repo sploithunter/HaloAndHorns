@@ -5,6 +5,7 @@
 
 local HotbarLogic = loadModule("src/Shared/Game/HotbarLogic.lua")
 local config = loadModule("configs/hotbar.lua")
+local uiConfig = loadModule("configs/ui.lua")
 local archetypes = loadModule("configs/archetypes.lua")
 local ArchetypeLogic = loadModule("src/Shared/Game/ArchetypeLogic.lua")
 
@@ -21,6 +22,21 @@ return function()
             expect(tray:find("overlayGui.DisplayOrder = COMPACT_MENU_DISPLAY_ORDER", 1, true)).to.be.ok()
             expect(tray:find("popup.Parent = overlayGui", 1, true)).to.be.ok()
             expect(tray:find('FindFirstChild("SquadHud"', 1, true)).never.to.be.ok()
+        end)
+
+        it("fits all utility buttons in complete touch-sized rows", function()
+            local tray = readFile("src/Client/Systems/MenuTrayStyle.lua")
+            local menu = uiConfig.hud.compact_menu
+            local utilityButtonCount = 8
+            local rows = math.ceil(utilityButtonCount / menu.columns)
+
+            expect(rows).to.equal(4)
+            expect(menu.cell.height * menu.minimum_scale >= uiConfig.mobile.touch_target_min_size).to.equal(
+                true
+            )
+            expect(tray:find("popupRows = math.ceil", 1, true)).to.be.ok()
+            expect(tray:find("COMPACT_MENU_CELL.height", 1, true)).to.be.ok()
+            expect(tray:find("COMPACT_MENU_MINIMUM_SCALE", 1, true)).to.be.ok()
         end)
     end)
 
