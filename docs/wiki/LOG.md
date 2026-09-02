@@ -7479,3 +7479,13 @@ first-session cohort rates.
 - Added a config-owned non-collidable character contract for Merge Defense Hatcher Captains. Every
   current and late-added R15 body part remains visible/queryable but cannot physically obstruct a
   player moving between a crowded line of deployed eggs.
+
+## 2026-09-02 — Saw Blade templates authored at final deployment size
+
+- Replaced four 1–2 KB Lune-created Saw Blade placeholders with engine-authored Studio snapshots
+  that retain native `MeshSize`, rotor pivots, identity model pivots, and a final 9.4-stud width.
+- Saw Blade spawn is now clone/rotate/ground only. Removed the runtime `CreateMeshPartAsync`,
+  import-scale fallback, `ScaleTo`, preload, and deferred refit path that briefly rendered raw
+  ~200-stud meshes and stalled spawning.
+- Added a lossless Studio-place extractor and an Edit-mode production-spawn regression script.
+  Edit round-trip, isolated live-server spawning, and all four user-placed gameplay tiers passed.

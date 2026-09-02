@@ -1321,19 +1321,20 @@ clean.
   three submerged hazards per bay. Saw Blade also has explicit six-stud depth and height ceilings so
   a deck-sized import cannot pass. The repeatable server audit is
   `scripts/studio/test_merge_bulwark_fit.luau` (2,120 placements under the current presentation rules).
-- Saw Blade has four approved independently pivoted Roblox rigs. The accepted runtime snapshots live
-  under `assets/source/props/merge_bulwarks/roblox_approved/saw_blade/` and are reproducibly rebuilt
-  by `scripts/prebake/build_approved_merge_saw_blades.luau`; the Blender working sources remain under
+- Saw Blade has four approved independently pivoted Roblox rigs. The accepted engine-authored
+  runtime snapshots live under `assets/source/props/merge_bulwarks/roblox_approved/saw_blade/`.
+  They are extracted from a Studio-downloaded Edit-mode authoring place by
+  `scripts/prebake/extract_authored_merge_saw_blades.luau`; the Blender working sources remain under
   `assets/source/props/merge_bulwarks/saw_blade/`. Tier 1 uses the repaired brown rotor and wood hub,
   Tier 3 uses three repaired dark-metal rotors with the center rotor counter-rotating, and the
   accepted Tier 2 / Tier 4 mechanisms run at twice the Tier 1 / Tier 3 speed. Live spin is 2×
   those authored degrees, and each tile starts at a random phase so the line does not lockstep.
-  All scaling remains
-  uniform. The split/repaired MeshIds are 200-stud Roblox assets; Studio QA previews shrink them
-  with Model.Scale `0.04` / `0.05`. The lune-assembled templates copy the 8–10 stud Size boxes
-  without MeshSize, so spawn recreates each MeshPart through `CreateMeshPartAsync` and keeps the
-  authored tile Size. `Models.rbxm` is the runtime authority and contains only these four approved
-  variants.
+  Each `Models.rbxm` template is already at the final 9.4-stud deployment width with engine-authored
+  `MeshSize`, Model.Scale `0.047`, an identity model pivot, and its rotor pivots intact. Spawn clones,
+  rotates, and grounds the template but never calls `CreateMeshPartAsync`, `ScaleTo`, or a deferred
+  fit for Saw Blade. The prebake rejects a non-final source, and runtime rejects a placement-scale
+  mismatch instead of silently resizing. `scripts/studio/test_prebaked_merge_saw_blades.luau`
+  rechecks all four production clones in Edit mode and leaves them in Workspace for visual QA.
 - Saw rotors animate locally in `MergeEggPrototypeObserver`, scoped to the current bay's
   `MergeEggBulwarks` folder; the server never streams per-frame rotor CFrames. An installed line has
   one spatial idle-whirl loop centered on the line. The circular-saw contact asset plays at the
