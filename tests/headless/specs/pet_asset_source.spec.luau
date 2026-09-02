@@ -98,6 +98,29 @@ return function()
             ).to.equal(true)
         end)
 
+        it("keeps rebuilt local pet projections inside the owner's streaming set", function()
+            local source = readFile("src/Server/Services/PetHandler.server.lua")
+            local seed = source:find("local projectionSeedCFrame", 1, true)
+            local wholeModelSeed = source:find("PetModel:PivotTo(projectionSeedCFrame)", 1, true)
+            local persistentMode = source:find(
+                "PetModel.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer",
+                1,
+                true
+            )
+            local persistentOwner = source:find("PetModel:AddPersistentPlayer(Player)", 1, true)
+            local parent = source:find("PetModel.Parent = petModelsLocation", 1, true)
+
+            expect(seed ~= nil).to.equal(true)
+            expect(wholeModelSeed ~= nil).to.equal(true)
+            expect(persistentMode ~= nil).to.equal(true)
+            expect(parent ~= nil).to.equal(true)
+            expect(persistentOwner ~= nil).to.equal(true)
+            expect(seed < wholeModelSeed).to.equal(true)
+            expect(wholeModelSeed < persistentMode).to.equal(true)
+            expect(persistentMode < parent).to.equal(true)
+            expect(parent < persistentOwner).to.equal(true)
+        end)
+
         it("preserves imported orientation in cached and lazy inventory cards", function()
             local preload = readFile("src/Server/Services/AssetPreloadService.lua")
             local inventory = readFile("src/Client/UI/Menus/InventoryPanel.lua")

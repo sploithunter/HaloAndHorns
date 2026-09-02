@@ -7389,3 +7389,13 @@ first-session cohort rates.
 - The handoff does not bypass eligibility. Leaving training incomplete runs normal mode resolution
   and rebuilds Simple for a fresh player; completing training persists Full through the existing
   Settings service before Merge resumes, while still allowing the player to choose Simple later.
+
+## 2026-09-02 — Equipped-pet rebuilds stay visible in streamed missions
+
+- Fixed the post-Activate Combat Training regression where server combat retained the equipped
+  squad but the client showed three empty slots. `PetHandler` had created every replacement at
+  world origin while the mission/player lived on the far-X instance band, so Atomic streaming
+  removed the models before `PetFollowController` could position them.
+- Replacement models and control boxes now seed from the player's current root (or the prior squad
+  region during a character transition), move as a complete model, and remain persistent for their
+  owning player while retaining all-or-nothing model streaming for observers.
