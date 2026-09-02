@@ -7167,3 +7167,11 @@ first-session cohort rates.
   manifest-owned transparent PNG previews. New cannon/fling/effect code now requires its authored
   config values instead of restoring silent numeric fallbacks. The architecture ratchet fell from
   1,641 fallbacks in 239 files to 1,621 in 238 files.
+
+## 2026-09-01 — Mobile HUD safe-area verification
+
+- Verified the merged Merge HUD in Studio's iPhone device simulator rather than relying only on
+  headless layout tests.
+- Corrected the live `FullscreenExtension` top-inset displacement so the Wave 0–10 tutorial matches
+  the hidden hotbar's rendered bounds exactly and the responsive People list is not clipped above
+  the phone viewport.

@@ -29,6 +29,8 @@ return function()
             expect(observer:find('hotbarRoot:FindFirstChild("PillFrame")', 1, true)).to.be.ok()
             expect(observer:find("footprint.AbsolutePosition", 1, true)).to.be.ok()
             expect(observer:find("footprint.AbsoluteSize", 1, true)).to.be.ok()
+            expect(observer:find("position - card.frame.AbsolutePosition", 1, true)).to.be.ok()
+            expect(observer:find("size - card.frame.AbsoluteSize", 1, true)).to.be.ok()
             expect(observer:find("pause_after_quartermaster_wave", 1, true)).to.be.ok()
             expect(observer:find("tutorialGui.IgnoreGuiInset = true", 1, true)).to.be.ok()
             expect(observer:find("sizeConstraint.MinSize = Vector2.new(270, 126)", 1, true)).to.equal(
