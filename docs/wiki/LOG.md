@@ -7507,3 +7507,15 @@ first-session cohort rates.
   expand a player's Focus ceiling while active; cast, restore, regen, bonus regen, and HUD values
   all share the derived cap, while the runtime resource remains unsaved and the base config stays
   unchanged.
+
+## 2026-09-02 — Split Merge management wall and floor Auto-Combine
+
+- Replaced the dense nine-card wall with a large Rebirth/Buy Egg action column and a same-height
+  2×4 upgrade grid. Added durable Gem upgrades for Pet Endurance and Player Focus.
+- Moved Auto-Combine to a dedicated floor plate beside Equip Best, with placement derived from the
+  live authored board orientation so Heaven and Hell bays mirror correctly.
+- Pet Endurance now reaches every Merge pet-defense spawn path; Player Focus uses the shared
+  runtime Focus-capacity seam without persisting the volatile Focus pool.
+- Rebirth now credits and snapshots 600 starter Waycoins directly instead of spawning five
+  temporary piles, eliminating the immediate-logout empty-wallet soft lock without changing the
+  first-visit collection lesson.

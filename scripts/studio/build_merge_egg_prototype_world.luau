@@ -432,6 +432,18 @@ equipBestControl.CanCollide = false
 equipBestControl.CanTouch = false
 equipBestControl:SetAttribute("MergeEggEquipBestControl", true)
 
+local autoCombineControl = part(
+    "AutoCombineControl",
+    Vector3.new(7, 0.16, 12),
+    CFrame.new(ORIGIN + Vector3.new(8.5, 2.13, -252.2)) * CFrame.Angles(0, math.rad(90), 0),
+    Color3.fromRGB(177, 82, 225),
+    Enum.Material.Neon,
+    0.04
+)
+autoCombineControl.CanCollide = false
+autoCombineControl.CanTouch = false
+autoCombineControl:SetAttribute("MergeEggAutoCombineControl", true)
+
 local hatcher = part(
     "HatcherControl",
     Vector3.new(12, 3, 12),

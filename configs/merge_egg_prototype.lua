@@ -118,6 +118,7 @@ return {
         egg_base_upgrade_control = "EggBaseUpgradeControl",
         egg_merge_control = "EggMergeControl",
         equip_best_control = "EquipBestControl",
+        auto_combine_control = "AutoCombineControl",
         merge_board = "MergeBoard",
         reset_control = "ResetControl",
         exit_control = "ExitControl",
@@ -295,6 +296,20 @@ return {
             },
             egg_health = {
                 display_name = "Egg HP",
+                base_cost = 100,
+                cost_growth = 1.75,
+                step = 0.05,
+                max_level = 20,
+            },
+            pet_endurance = {
+                display_name = "Pet Endurance",
+                base_cost = 100,
+                cost_growth = 1.75,
+                step = 0.05,
+                max_level = 20,
+            },
+            player_focus = {
+                display_name = "Player Focus",
                 base_cost = 100,
                 cost_growth = 1.75,
                 step = 0.05,
@@ -729,6 +744,8 @@ return {
             egg_sign_transparency = 0.12,
             equip_best_size = { x = 7, z = 12 },
             equip_best_gap = 1.5,
+            auto_combine_size = { x = 7, z = 12 },
+            auto_combine_gap = 1.5,
             -- The plate points upfield; turn its copy back toward the management side.
             equip_best_rotation_degrees = 90,
             equip_best_text_rotation_degrees = 180,
@@ -2040,6 +2057,9 @@ return {
         currency = "hall_coins",
         max_rank = 50,
         indexed_egg_value_multiplier = 200,
+        -- Rebirth starts from a durable wallet credit, not collectible world drops. A player who
+        -- logs out immediately after confirming can therefore always buy back onto the board.
+        starting_wallet_amount = 600,
         requirements = {
             minimum_deployed_egg_tier_by_rank = {},
         },
