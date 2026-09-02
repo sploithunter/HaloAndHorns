@@ -4053,6 +4053,28 @@ function MergeEggPrototypeObserver.start()
     local cannonMenu = MergeCannonMenu.new(gui, function(action)
         Signals.MergeEggPrototypeBoardAction:FireServer(action)
     end)
+    local function openQuartermasterPasses(value)
+        local menuManager = _G.MenuManager
+        if not menuManager then
+            return
+        end
+        local function open()
+            menuManager:OpenShopPanel("scale_in", {
+                title = tostring(value.title or "QUARTERMASTER PASSES"),
+                subtitle = tostring(
+                    value.subtitle or "Permanent upgrades selected for Merge Defense"
+                ),
+                passIds = type(value.passIds) == "table" and value.passIds or {},
+                showProducts = false,
+                showFoundersChoice = false,
+            })
+        end
+        if menuManager:GetPanel("Shop") then
+            task.defer(open)
+        else
+            menuManager:OnPanelRegistered("Shop", open)
+        end
+    end
     Signals.MergeEggPrototypeBoardResult.OnClientEvent:Connect(function(result)
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true or type(result) ~= "table" then
             return
@@ -4082,6 +4104,9 @@ function MergeEggPrototypeObserver.start()
             end)
         elseif action == "quartermaster" and success then
             QuartermasterServicesMenu.hide()
+            if operation == "game_passes_opened" and type(result.value) == "table" then
+                openQuartermasterPasses(result.value)
+            end
             return
         end
         local placed = operation == "installed"

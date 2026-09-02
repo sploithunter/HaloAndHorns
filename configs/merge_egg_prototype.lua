@@ -531,9 +531,11 @@ return {
         },
     },
 
-    -- Macros sits at the bay supply booth. Hidden with the booth until Wave 10, then owns both
-    -- potion sales and the full Combat Training mission. The authored tent remains scenery only;
-    -- its legacy Browse Potions prompt is deliberately disabled by the Merge service.
+    -- Macros sits at the bay supply booth. Hidden with the booth until Wave 10, then owns potion
+    -- sales, the Merge-relevant permanent-pass catalog, and the full Combat Training mission. The
+    -- authored tent remains scenery only; its legacy Browse Potions prompt is deliberately
+    -- disabled by the Merge service. Pass membership lives here rather than in client UI code so
+    -- Quartermaster inventory remains configuration-as-code and independently auditable.
     quartermaster = {
         enabled = true,
         user_id = 873359641,
@@ -548,12 +550,26 @@ return {
         greeting = "I'll get you whatever you need.",
         services = {
             title = "QUARTERMASTER",
-            body = "Stock your pets or learn to command them in combat.",
+            body = "Stock your pets, strengthen your command, or train for combat.",
+            body_complete = "Stock your pets or strengthen your command.",
+            game_passes_label = "GAME PASSES",
+            game_passes_body = "Permanent upgrades for speed, pets, hatches, and recovery.",
+            game_passes_shop_title = "QUARTERMASTER PASSES",
+            game_passes_shop_subtitle = "Permanent upgrades selected for Merge Defense",
+            game_pass_ids = {
+                "vip_pass",
+                "auto_collect",
+                "speed_boost",
+                "golden_luck_pass",
+                "rainbow_luck_pass",
+                "huge_luck_pass",
+                "pet_slot_pass",
+                "second_wind",
+            },
             potions_label = "BROWSE POTIONS",
             potions_body = "Buy supplies for your own pets.",
             training_label = "COMBAT TRAINING",
             training_resume_label = "RESUME COMBAT TRAINING",
-            training_redo_label = "REDO COMBAT TRAINING",
             training_body = "Learn powers, targeting, healing, and team tactics.",
             close_label = "NOT NOW",
         },

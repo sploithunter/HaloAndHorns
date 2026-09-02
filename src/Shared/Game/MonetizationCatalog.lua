@@ -44,6 +44,35 @@ function MonetizationCatalog.petShopPasses(config)
     return result
 end
 
+-- A world vendor may present a deliberate subset of the general Pet Shop without cloning its
+-- purchase, price, or owned-state logic. The requested IDs define display order. Dedicated-vendor
+-- passes remain excluded because the input is projected from petShopPasses, not all live passes.
+function MonetizationCatalog.selectedPetShopPasses(config, passIds)
+    if type(passIds) ~= "table" then
+        return MonetizationCatalog.petShopPasses(config)
+    end
+    local available = {}
+    for _, entry in ipairs(MonetizationCatalog.petShopPasses(config)) do
+        available[entry.id] = entry
+    end
+    local result = {}
+    local seen = {}
+    for order, passId in ipairs(passIds) do
+        local entry = available[passId]
+        if entry and not seen[passId] then
+            seen[passId] = true
+            result[#result + 1] = {
+                config = entry.config,
+                id = entry.id,
+                kind = entry.kind,
+                order = order,
+                robloxId = entry.robloxId,
+            }
+        end
+    end
+    return result
+end
+
 function MonetizationCatalog.liveProducts(config)
     return project(config, config and config.products, "product")
 end

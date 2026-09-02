@@ -1,4 +1,4 @@
--- Responsive two-service menu owned by the Merge Quartermaster.
+-- Responsive, config-fed service menu owned by the Merge Quartermaster.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -23,11 +23,11 @@ local function stroke(parent, color, thickness)
     value.Parent = parent
 end
 
-local function serviceButton(parent, name, titleText, bodyText, color, position)
+local function serviceButton(parent, name, titleText, bodyText, color, order)
     local button = Instance.new("TextButton")
     button.Name = name
-    button.Position = position
-    button.Size = UDim2.new(1, -52, 0, 92)
+    button.Size = UDim2.new(1, 0, 0, 78)
+    button.LayoutOrder = order
     button.BackgroundColor3 = color
     button.BorderSizePixel = 0
     button.AutoButtonColor = true
@@ -39,12 +39,12 @@ local function serviceButton(parent, name, titleText, bodyText, color, position)
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Position = UDim2.fromOffset(22, 11)
-    title.Size = UDim2.new(1, -44, 0, 32)
+    title.Position = UDim2.fromOffset(22, 8)
+    title.Size = UDim2.new(1, -44, 0, 28)
     title.BackgroundTransparency = 1
     title.Text = titleText
     title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextSize = 25
+    title.TextSize = 22
     title.Font = Enum.Font.GothamBlack
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 6
@@ -52,12 +52,12 @@ local function serviceButton(parent, name, titleText, bodyText, color, position)
 
     local body = Instance.new("TextLabel")
     body.Name = "Description"
-    body.Position = UDim2.fromOffset(22, 44)
-    body.Size = UDim2.new(1, -44, 0, 34)
+    body.Position = UDim2.fromOffset(22, 37)
+    body.Size = UDim2.new(1, -44, 0, 30)
     body.BackgroundTransparency = 1
     body.Text = bodyText
     body.TextColor3 = Color3.fromRGB(229, 237, 247)
-    body.TextSize = 20
+    body.TextSize = 16
     body.Font = Enum.Font.GothamMedium
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
@@ -92,9 +92,13 @@ function QuartermasterServicesMenu.show(payload, respond)
         return
     end
     local priorSelection = GuiService.SelectedObject
+    local trainingAvailable = payload.trainingAvailable ~= false
+    local serviceCount = trainingAvailable and 3 or 2
     local gui = Instance.new("ScreenGui")
     gui.Name = "QuartermasterServicesMenu"
     gui.IgnoreGuiInset = true
+    gui.ScreenInsets = Enum.ScreenInsets.None
+    gui.ClipToDeviceSafeArea = false
     gui.ResetOnSpawn = false
     gui.DisplayOrder = 1160
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -117,8 +121,8 @@ function QuartermasterServicesMenu.show(payload, respond)
     local panel = Instance.new("Frame")
     panel.Name = "Services"
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
-    panel.Position = UDim2.fromScale(0.5, 0.54)
-    panel.Size = UDim2.fromOffset(680, 410)
+    panel.Position = UDim2.fromScale(0.5, 0.5)
+    panel.Size = UDim2.fromOffset(680, serviceCount == 3 and 498 or 410)
     panel.BackgroundColor3 = Color3.fromRGB(20, 25, 36)
     panel.BorderSizePixel = 0
     panel.ZIndex = 2
@@ -183,22 +187,47 @@ function QuartermasterServicesMenu.show(payload, respond)
     body.ZIndex = 3
     body.Parent = panel
 
+    local serviceList = Instance.new("Frame")
+    serviceList.Name = "ServiceList"
+    serviceList.Position = UDim2.fromOffset(26, 138)
+    serviceList.Size = UDim2.new(1, -52, 0, serviceCount * 78 + (serviceCount - 1) * 10)
+    serviceList.BackgroundTransparency = 1
+    serviceList.ZIndex = 4
+    serviceList.Parent = panel
+
+    local serviceLayout = Instance.new("UIListLayout")
+    serviceLayout.FillDirection = Enum.FillDirection.Vertical
+    serviceLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    serviceLayout.Padding = UDim.new(0, 10)
+    serviceLayout.Parent = serviceList
+
+    local gamePasses = serviceButton(
+        serviceList,
+        "GamePasses",
+        tostring(payload.gamePassesLabel or "GAME PASSES"),
+        tostring(payload.gamePassesBody or "Permanent upgrades for Merge Defense."),
+        Color3.fromRGB(151, 101, 38),
+        1
+    )
     local potions = serviceButton(
-        panel,
+        serviceList,
         "BrowsePotions",
         tostring(payload.potionsLabel or "BROWSE POTIONS"),
         tostring(payload.potionsBody or "Buy supplies for your own pets."),
         Color3.fromRGB(40, 151, 86),
-        UDim2.fromOffset(26, 138)
+        2
     )
-    local training = serviceButton(
-        panel,
-        "CombatTraining",
-        tostring(payload.trainingLabel or "COMBAT TRAINING"),
-        tostring(payload.trainingBody or "Learn powers, targeting, healing, and team tactics."),
-        Color3.fromRGB(42, 112, 181),
-        UDim2.fromOffset(26, 240)
-    )
+    local training
+    if trainingAvailable then
+        training = serviceButton(
+            serviceList,
+            "CombatTraining",
+            tostring(payload.trainingLabel or "COMBAT TRAINING"),
+            tostring(payload.trainingBody or "Learn powers, targeting, healing, and team tactics."),
+            Color3.fromRGB(42, 112, 181),
+            3
+        )
+    end
 
     local notNow = Instance.new("TextButton")
     notNow.Name = "NotNow"
@@ -244,14 +273,19 @@ function QuartermasterServicesMenu.show(payload, respond)
     potions.Activated:Connect(function()
         resolve("potions")
     end)
-    training.Activated:Connect(function()
-        resolve("combat_training")
+    gamePasses.Activated:Connect(function()
+        resolve("game_passes")
     end)
+    if training then
+        training.Activated:Connect(function()
+            resolve("combat_training")
+        end)
+    end
 
     gui.Parent = playerGui
     UIViewportScale.attach(panel, { min = 0.65 })
     if player:GetAttribute("InputMode") == "gamepad" then
-        GuiService.SelectedObject = potions
+        GuiService.SelectedObject = gamePasses
     end
 end
 

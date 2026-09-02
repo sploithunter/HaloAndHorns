@@ -651,9 +651,10 @@ team and queue model:
     `tutorial_upgrade_completed` stamps when that beat finishes. Skip
     leaves it false so Wave 10 can still land.
   - **End of Wave 10:** reveal the bay supply booth and post Macros as
-    Quartermaster. His first interaction completes `tutorial_completed`, then opens two services:
-    Browse Potions for the player's own pets, or the full persistent Combat Training mission. Macros
-    and tent stay planted and hidden (Transparency 1, no collide/query,
+    Quartermaster. His first interaction completes `tutorial_completed`, then opens the configured
+    Merge pass catalog, Browse Potions for the player's own pets, and (until it is completed) the
+    full persistent Combat Training mission. Macros and tent stay planted and hidden (Transparency
+    1, no collide/query,
     prompt off) until this beat.
   After Wave 2 clears, combat pauses (`TutorialIntermission`). Vendors are
   always in the bay but invisible (`Transparency = 1`, no collide/query,
@@ -685,8 +686,14 @@ team and queue model:
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
   hidden transparency as the reveal value. The legacy `Browse Potions` tent prompt stays suppressed;
   the Quartermaster's responsive Services menu is the only Merge interaction and reuses the ordinary
-  potion catalog/transaction service. Combat Training checkpoints and releases the Merge session
-  before opening the existing mission, then reconstructs the saved playstate when the mission ends.
+  potion catalog/transaction service. Its Game Passes choice reuses the ordinary Pet Shop's
+  Marketplace price, ownership, and purchase pipeline with the config-authored Merge subset: VIP,
+  Auto Collector, Speed Boost, Golden Touch, Rainbow Radiance, Huge Hunter, Extra Pet, and Second
+  Wind. Kade's rocketboards remain exclusive to his vendor. Combat Training checkpoints and
+  releases the Merge session before opening the existing mission, then reconstructs the saved
+  playstate when the mission ends. Once Combat Training is complete, it is removed from the
+  Quartermaster menu rather than offered as a replay; player-pet kill XP remains gated on that
+  completion.
   The first Quartermaster interaction completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
   that Talk finishes. A Wave 6 skip does not stamp it. Later entries

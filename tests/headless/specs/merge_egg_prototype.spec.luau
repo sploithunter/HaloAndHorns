@@ -69,6 +69,26 @@ return function()
     end)
 
     describe("Merge Quartermaster services", function()
+        it("authors every live Merge-relevant pass in one config-owned catalog", function()
+            local MonetizationCatalog = loadModule("src/Shared/Game/MonetizationCatalog.lua")
+            local monetization = loadModule("configs/monetization.lua")
+            local passIds = config.quartermaster.services.game_pass_ids
+            expect(table.concat(passIds, ",")).to.equal(table.concat({
+                "vip_pass",
+                "auto_collect",
+                "speed_boost",
+                "golden_luck_pass",
+                "rainbow_luck_pass",
+                "huge_luck_pass",
+                "pet_slot_pass",
+                "second_wind",
+            }, ","))
+            local passes = MonetizationCatalog.selectedPetShopPasses(monetization, passIds)
+            expect(#passes).to.equal(#passIds)
+            expect(passes[1].id).to.equal("vip_pass")
+            expect(passes[#passes].id).to.equal("second_wind")
+        end)
+
         it("makes the Quartermaster the only Merge potion interaction", function()
             local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local potionShop = readFile("src/Server/Services/PotionShopService.lua")
@@ -90,7 +110,7 @@ return function()
             expect(mergeService:find("service:OpenForPlayer(player, shop, live)", 1, true)).to.be.ok()
         end)
 
-        it("opens the existing full Combat Training track and resumes Merge afterward", function()
+        it("offers Combat Training only until completion and resumes Merge afterward", function()
             local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
 
@@ -99,6 +119,12 @@ return function()
             expect(combatTutorial:find("self:_caveMissionId()", 1, true)).to.be.ok()
             expect(mergeService:find('elseif action == "quartermaster" then', 1, true)).to.be.ok()
             expect(mergeService:find('if choice == "combat_training" then', 1, true)).to.be.ok()
+            expect(mergeService:find("trainingAvailable = not done", 1, true)).to.be.ok()
+            expect(mergeService:find('return false, "combat_tutorial_complete"', 1, true)).to.be.ok()
+            expect(config.quartermaster.services.training_redo_label).to.equal(nil)
+            expect(config.quartermaster.services.body_complete).to.equal(
+                "Stock your pets or strengthen your command."
+            )
             expect(
                 mergeService:find(
                     "self._combatTrainingReturns[player] = { bayId = bayId }",
@@ -115,15 +141,26 @@ return function()
             ).to.be.ok()
         end)
 
-        it("uses a responsive two-choice client menu", function()
+        it("uses one responsive service menu and the authoritative pass storefront", function()
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             local menu = readFile("src/Client/UI/Components/QuartermasterServicesMenu.lua")
+            local shop = readFile("src/Client/UI/Menus/RewardShopPanel.lua")
+            local manager = readFile("src/Client/UI/MenuManager.lua")
 
             expect(observer:find("QuartermasterServicesMenu.show", 1, true)).to.be.ok()
             expect(observer:find('choice = "combat_training"', 1, true)).to.equal(nil)
+            expect(observer:find("openQuartermasterPasses", 1, true)).to.be.ok()
+            expect(menu:find('resolve("game_passes")', 1, true)).to.be.ok()
             expect(menu:find('resolve("potions")', 1, true)).to.be.ok()
             expect(menu:find('resolve("combat_training")', 1, true)).to.be.ok()
+            expect(menu:find("payload.trainingAvailable ~= false", 1, true)).to.be.ok()
+            expect(menu:find("gui.ScreenInsets = Enum.ScreenInsets.None", 1, true)).to.be.ok()
             expect(menu:find("UIViewportScale.attach(panel", 1, true)).to.be.ok()
+            expect(shop:find("function RewardShopPanel:SetPresentation", 1, true)).to.be.ok()
+            expect(shop:find("MonetizationCatalog.selectedPetShopPasses", 1, true)).to.be.ok()
+            expect(
+                manager:find("function MenuManager:OpenShopPanel(effect, presentation)", 1, true)
+            ).to.be.ok()
         end)
     end)
 

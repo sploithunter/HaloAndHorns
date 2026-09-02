@@ -40,6 +40,21 @@ return function()
             expect(passes[2].id).to.equal("speed")
         end)
 
+        it("projects a configured vendor subset in requested order", function()
+            local passes = MonetizationCatalog.selectedPetShopPasses(config, {
+                "speed",
+                "missing",
+                "vip",
+                "speed",
+                "kade_rocket",
+            })
+            expect(#passes).to.equal(2)
+            expect(passes[1].id).to.equal("speed")
+            expect(passes[1].order).to.equal(1)
+            expect(passes[2].id).to.equal("vip")
+            expect(passes[2].order).to.equal(3)
+        end)
+
         it("hides developer-product placeholders until their IDs are live", function()
             expect(#MonetizationCatalog.liveProducts(config)).to.equal(0)
         end)

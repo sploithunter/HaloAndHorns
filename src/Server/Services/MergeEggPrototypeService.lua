@@ -6958,21 +6958,35 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
         and done ~= true
         and math.max(1, math.floor(tonumber(progress.step) or 1)) > 1
     local trainingLabel = services.training_label or "COMBAT TRAINING"
-    if done then
-        trainingLabel = services.training_redo_label or "REDO COMBAT TRAINING"
-    elseif started then
+    if started then
         trainingLabel = services.training_resume_label or "RESUME COMBAT TRAINING"
+    end
+    local gamePassIds = {}
+    for _, passId in ipairs(services.game_pass_ids or {}) do
+        if type(passId) == "string" and passId ~= "" then
+            gamePassIds[#gamePassIds + 1] = passId
+        end
     end
     return {
         operation = "quartermaster_services",
         greeting = tostring(post.greeting or "I'll get you whatever you need."),
         title = tostring(services.title or "QUARTERMASTER"),
-        body = tostring(services.body or "Choose a service."),
+        body = tostring((done and services.body_complete) or services.body or "Choose a service."),
+        gamePassesLabel = tostring(services.game_passes_label or "GAME PASSES"),
+        gamePassesBody = tostring(
+            services.game_passes_body or "Permanent upgrades for Merge Defense."
+        ),
+        gamePassesShopTitle = tostring(services.game_passes_shop_title or "QUARTERMASTER PASSES"),
+        gamePassesShopSubtitle = tostring(
+            services.game_passes_shop_subtitle or "Permanent upgrades selected for Merge Defense"
+        ),
+        gamePassIds = gamePassIds,
         potionsLabel = tostring(services.potions_label or "BROWSE POTIONS"),
         potionsBody = tostring(services.potions_body or "Buy supplies for your pets."),
         trainingLabel = tostring(trainingLabel),
         trainingBody = tostring(services.training_body or "Learn to use powers in combat."),
         closeLabel = tostring(services.close_label or "NOT NOW"),
+        trainingAvailable = not done,
         combatTutorialDone = done,
         combatTutorialStarted = started,
     }
@@ -7010,6 +7024,19 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
         return false, accessReason
     end
     local choice = tostring(type(request) == "table" and request.choice or "")
+    local menuState = self:_quartermasterMenuState(record)
+    if choice == "game_passes" then
+        if #menuState.gamePassIds == 0 then
+            return false, "game_pass_catalog_unavailable"
+        end
+        return true,
+            {
+                operation = "game_passes_opened",
+                passIds = menuState.gamePassIds,
+                title = menuState.gamePassesShopTitle,
+                subtitle = menuState.gamePassesShopSubtitle,
+            }
+    end
     if choice == "potions" then
         local shop = self:_findPotionShop(record.world)
         local service = self._potionShopService
@@ -7023,6 +7050,9 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
         return true, { operation = "potions_opened" }
     end
     if choice == "combat_training" then
+        if menuState.trainingAvailable ~= true then
+            return false, "combat_tutorial_complete"
+        end
         local service = self._combatTutorialService
         if not (service and service.OpenForPlayer) then
             return false, "combat_tutorial_unavailable"
