@@ -35,6 +35,7 @@ return function()
                 "brew_fight",
                 "advance_brew",
                 "bind_heal",
+                "enhance_heal",
                 "ready_heal",
                 "select_pet",
                 "cast_heal",
@@ -146,6 +147,13 @@ return function()
             expect(bindHeal.unlock_when[1].check).to.equal("pets_equipped")
             expect(bindHeal.unlock_when[2].target).to.equal("heal")
             expect(bindHeal.unlock_when[3].check).to.equal("hotbar_not_editing")
+            local enhanceHeal = cfg.steps[9]
+            expect(enhanceHeal.id).to.equal("enhance_heal")
+            expect(enhanceHeal.grant.enhancements[1].type).to.equal("potency")
+            expect(enhanceHeal.grant.ensure_slot).to.equal("heal")
+            expect(enhanceHeal.target.cue).to.equal("enhance_power")
+            expect(enhanceHeal.target.tutorial_guide).to.equal("Power:heal")
+            expect(enhanceHeal.complete_on.context.powerId).to.equal("heal")
             local unlock = loadModule("src/Shared/Game/TutorialUnlock.lua")
             for _, cond in ipairs(bindHeal.unlock_when) do
                 expect(unlock.hasCheck(cond.check)).to.equal(true)
@@ -159,6 +167,9 @@ return function()
             expect(powers.powers.heal.hidden_while.until_combat_tutorial).to.equal(true)
             expect(service:find("_unlockHeal", 1, true)).to.be.ok()
             expect(service:find("CombatTutorialHealUnlocked", 1, true)).to.be.ok()
+            expect(service:find("self._enhancementService", 1, true)).to.be.ok()
+            expect(service:find("enhancements:Grant", 1, true)).to.be.ok()
+            expect(service:find('type(grant.ensure_slot) == "string"', 1, true)).to.be.ok()
             expect(service:find("restart_on_enter wipes that table", 1, true)).to.be.ok()
             local watchAt = service:find("function CombatTutorialService:_ensureWatchers", 1, true)
             local plateAt = watchAt and service:find("self:_applyDoorPlate(player)", watchAt, true)
@@ -182,8 +193,8 @@ return function()
             expect(combatOverride ~= nil and mergeGate ~= nil and combatOverride < mergeGate).to.equal(
                 true
             )
-            expect(cfg.steps[10].spawn.shield).to.equal(true)
-            local selectPet = cfg.steps[10]
+            expect(cfg.steps[11].spawn.shield).to.equal(true)
+            local selectPet = cfg.steps[11]
             expect(selectPet.id).to.equal("select_pet")
             expect(selectPet.wound.remaining_fraction >= 0.4).to.equal(true)
             expect(selectPet.wound.remaining_fraction <= 0.5).to.equal(true)
@@ -197,19 +208,20 @@ return function()
             expect(enemy:find("function EnemyService:NotePetHit", 1, true)).to.be.ok()
             expect(controller:find("InjuredSlot", 1, true)).to.be.ok()
             expect(controller:find('cueSide == "left"', 1, true)).to.be.ok()
-            expect(cfg.steps[11].drop_shields).to.equal(true)
-            expect(cfg.steps[12].id).to.equal("heal_fight")
-            expect(cfg.steps[12].complete_on.event).to.equal("combat_tutorial_room_cleared")
-            expect(cfg.steps[12].activate_beacon).to.equal(nil)
-            expect(cfg.steps[13].id).to.equal("advance_heal")
-            expect(cfg.steps[13].return_to_lobby).to.equal(true)
-            expect(cfg.steps[14].grant.potions[1].id).to.equal("weakening_vial")
-            local selectEnemy = cfg.steps[15]
+            expect(cfg.steps[12].drop_shields).to.equal(true)
+            expect(cfg.steps[13].id).to.equal("heal_fight")
+            expect(cfg.steps[13].complete_on.event).to.equal("combat_tutorial_room_cleared")
+            expect(cfg.steps[13].activate_beacon).to.equal(nil)
+            expect(cfg.steps[14].id).to.equal("advance_heal")
+            expect(cfg.steps[14].return_to_lobby).to.equal(true)
+            expect(cfg.steps[15].grant.potions[1].id).to.equal("weakening_vial")
+            local selectEnemy = cfg.steps[16]
             expect(selectEnemy.id).to.equal("select_enemy")
             expect(selectEnemy.spawn.shield).to.equal(true)
             expect(selectEnemy.mark_enemy).to.equal(true)
             expect(selectEnemy.target.name).to.equal("TutorialEnemy")
             expect(selectEnemy.target.cue_side).to.equal("right")
+            expect(selectEnemy.target.force_overlay).to.equal(true)
             expect(service:find("_markTargetEnemy", 1, true)).to.be.ok()
             expect(service:find("CombatTutorialTargetEnemy", 1, true)).to.be.ok()
             expect(service:find("CombatTutorialMark", 1, true)).to.be.ok()
@@ -222,17 +234,17 @@ return function()
             expect(service:find("packSpawned", 1, true)).to.be.ok()
             expect(controller:find("TutorialEnemy", 1, true)).to.be.ok()
             expect(controller:find('cueSide == "right"', 1, true)).to.be.ok()
-            local throwWeaken = cfg.steps[16]
+            local throwWeaken = cfg.steps[17]
             expect(throwWeaken.id).to.equal("throw_weaken")
             expect(throwWeaken.complete_on.potion).to.equal("weakening_vial")
             expect(throwWeaken.drop_shields).to.equal(true)
-            expect(cfg.steps[17].id).to.equal("weaken_fight")
-            expect(cfg.steps[17].complete_on.event).to.equal("combat_tutorial_room_cleared")
-            expect(cfg.steps[17].activate_beacon).to.equal(nil)
-            expect(cfg.steps[18].id).to.equal("advance_weaken")
-            expect(cfg.steps[18].return_to_lobby).to.equal(true)
+            expect(cfg.steps[18].id).to.equal("weaken_fight")
+            expect(cfg.steps[18].complete_on.event).to.equal("combat_tutorial_room_cleared")
+            expect(cfg.steps[18].activate_beacon).to.equal(nil)
+            expect(cfg.steps[19].id).to.equal("advance_weaken")
+            expect(cfg.steps[19].return_to_lobby).to.equal(true)
             expect(cfg.steps[4].complete_on.potion).to.equal("berserk_brew")
-            local stackBrew = cfg.steps[19]
+            local stackBrew = cfg.steps[20]
             expect(stackBrew.id).to.equal("stack_brew")
             expect(stackBrew.grant.potions[1].count).to.equal(10)
             expect(stackBrew.complete_on.count).to.equal(5)
@@ -246,18 +258,18 @@ return function()
             )
             expect(TutorialFlow.doorButtonCopy(stackBrew, { count = 3 })).to.equal("DRINK TWO MORE")
             expect(TutorialFlow.doorButtonCopy(stackBrew, { count = 4 })).to.equal("DRINK ONE MORE")
-            expect(cfg.steps[20].ensure_meter.id).to.equal("damage")
-            expect(cfg.steps[21].id).to.equal("stack_fight")
-            expect(cfg.steps[21].spawn.hp).to.equal(400)
-            expect(cfg.steps[21].ensure_meter.min_charge >= 0.9).to.equal(true)
-            expect(cfg.steps[23].id).to.equal("ready_tank")
-            expect(cfg.steps[23].reset_squad).to.equal(true)
-            expect(cfg.steps[23].unlock_when[1].role).to.equal("tank")
-            expect(cfg.steps[23].target.cue).to.equal("equip_tank")
-            expect(cfg.steps[23].guide.unequip.cue_text).to.equal("TAKE OFF")
-            expect(cfg.steps[23].guide.pick.body:find("Best Pets", 1, true)).to.be.ok()
-            expect(cfg.steps[23].guide.activate.cue_text).to.equal("ACTIVATE")
-            expect(cfg.steps[23].guide.activate.body:find("close", 1, true)).to.be.ok()
+            expect(cfg.steps[21].ensure_meter.id).to.equal("damage")
+            expect(cfg.steps[22].id).to.equal("stack_fight")
+            expect(cfg.steps[22].spawn.hp).to.equal(400)
+            expect(cfg.steps[22].ensure_meter.min_charge >= 0.9).to.equal(true)
+            expect(cfg.steps[24].id).to.equal("ready_tank")
+            expect(cfg.steps[24].reset_squad).to.equal(true)
+            expect(cfg.steps[24].unlock_when[1].role).to.equal("tank")
+            expect(cfg.steps[24].target.cue).to.equal("equip_tank")
+            expect(cfg.steps[24].guide.unequip.cue_text).to.equal("TAKE OFF")
+            expect(cfg.steps[24].guide.pick.body:find("Best Pets", 1, true)).to.be.ok()
+            expect(cfg.steps[24].guide.activate.cue_text).to.equal("ACTIVATE")
+            expect(cfg.steps[24].guide.activate.body:find("close", 1, true)).to.be.ok()
             expect(inventory:find("self:_commitDraft(function()", 1, true)).to.be.ok()
             expect(inventory:find("self:Hide()", 1, true)).to.be.ok()
             expect(controller:find("showEquipTankGuidance", 1, true)).to.be.ok()
@@ -268,21 +280,23 @@ return function()
             expect(controller:find("IgnoreGuiInset = false", 1, true)).to.be.ok()
             expect(controller:find("GetGuiInset", 1, true)).to.be.ok()
             expect(controller:find("useOverlay", 1, true)).to.be.ok()
+            expect(controller:find("options.forceOverlay == true", 1, true)).to.be.ok()
             -- Inset is read from the ScreenGui parent, not the ancestorClips boolean.
             expect(controller:find("host.IgnoreGuiInset", 1, true)).to.be.ok()
             expect(inventory:find("_stampTankLessonGuides", 1, true)).to.be.ok()
             expect(inventory:find("UnequipWeakest", 1, true)).to.be.ok()
             expect(inventory:find("StrongestTank", 1, true)).to.be.ok()
             expect(inventory:find("_removeWeakestDraftMember", 1, true)).to.be.ok()
-            expect(cfg.steps[27].complete_on.enemy).to.equal("rabid_bunny")
-            expect(cfg.steps[27].spawn.units[1].mark).to.equal(true)
-            expect(cfg.steps[27].id).to.equal("healer_hunt")
-            expect(cfg.steps[27].target.cue).to.equal("healer_focus")
-            expect(cfg.steps[27].lost_banner:find("healer", 1, true)).to.be.ok()
+            expect(cfg.steps[28].complete_on.enemy).to.equal("rabid_bunny")
+            expect(cfg.steps[28].spawn.units[1].mark).to.equal(true)
+            expect(cfg.steps[28].id).to.equal("healer_hunt")
+            expect(cfg.steps[28].target.cue).to.equal("healer_focus")
+            expect(cfg.steps[28].target.force_overlay).to.equal(true)
+            expect(cfg.steps[28].lost_banner:find("healer", 1, true)).to.be.ok()
             expect(service:find("_updateHealerFocus", 1, true)).to.be.ok()
             expect(service:find("FocusSquadOnEnemy", 1, true)).to.be.ok()
             expect(service:find("healer_focus", 1, true)).to.be.ok()
-            expect(cfg.steps[27].healer_focus.pin_seconds).to.equal(600)
+            expect(cfg.steps[28].healer_focus.pin_seconds).to.equal(600)
             expect(service:find("roomClearToken", 1, true)).to.be.ok()
             expect(service:find("this step still has to", 1, true)).to.be.ok()
             expect(service:find("CombatTutorialHealerCue", 1, true)).to.be.ok()
@@ -292,21 +306,21 @@ return function()
             expect(controller:find('CombatTutorialHealerCue") == true', 1, true)).to.be.ok()
             expect(service:find("HealerFocus.tick", 1, true)).to.be.ok()
             expect(events.combat_tutorial_healer_lost.banner).to.be.ok()
-            expect(cfg.steps[28].id).to.equal("healer_fight")
-            expect(cfg.steps[28].complete_on.event).to.equal("combat_tutorial_room_cleared")
-            expect(cfg.steps[28].activate_beacon).to.equal(nil)
-            expect(cfg.steps[28].lock_door).to.equal(true)
-            expect(cfg.steps[31].complete_on.event).to.equal("combat_tutorial_room_cleared")
-            expect(cfg.steps[31].target.kind).to.equal("none")
+            expect(cfg.steps[29].id).to.equal("healer_fight")
+            expect(cfg.steps[29].complete_on.event).to.equal("combat_tutorial_room_cleared")
+            expect(cfg.steps[29].activate_beacon).to.equal(nil)
+            expect(cfg.steps[29].lock_door).to.equal(true)
+            expect(cfg.steps[32].complete_on.event).to.equal("combat_tutorial_room_cleared")
+            expect(cfg.steps[32].target.kind).to.equal("none")
             expect(cfg.combat_shield.pool).to.equal(400)
             expect(cfg.combat_shield.duration).to.equal(12)
-            expect(cfg.steps[31].spawn.units[1].auto_heal).to.be.ok()
-            expect(cfg.steps[31].spawn.units[2].count).to.equal(2)
-            expect(cfg.steps[31].spawn.units[2].shield).to.equal(nil)
-            expect(cfg.steps[31].spawn.units[2].absorb).to.equal(nil)
-            expect(cfg.steps[32].id).to.equal("advance_together")
-            expect(cfg.steps[32].return_to_exit).to.equal(true)
-            expect(cfg.steps[32].return_to_lobby).to.equal(nil)
+            expect(cfg.steps[32].spawn.units[1].auto_heal).to.be.ok()
+            expect(cfg.steps[32].spawn.units[2].count).to.equal(2)
+            expect(cfg.steps[32].spawn.units[2].shield).to.equal(nil)
+            expect(cfg.steps[32].spawn.units[2].absorb).to.equal(nil)
+            expect(cfg.steps[33].id).to.equal("advance_together")
+            expect(cfg.steps[33].return_to_exit).to.equal(true)
+            expect(cfg.steps[33].return_to_lobby).to.equal(nil)
             expect(cfg.completion.grant_earned_level).to.equal(2)
             expect(cfg.completion.apply_level_grant).to.equal(true)
             expect(cfg.completion.grant_earned_level).to.equal(2)
@@ -473,7 +487,7 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(brew.version).to.equal(10)
+            expect(brew.version).to.equal(11)
             expect(TutorialFlow.current(cfg, brew).id).to.equal("battle_brew")
             local arena, _ = TutorialFlow.migrateProgress(cfg, {
                 version = 1,
@@ -482,6 +496,42 @@ return function()
                 done = false,
             })
             expect(TutorialFlow.current(cfg, arena).id).to.equal("select_pet")
+        end)
+
+        it("adds the Heal enhancement lesson without rewinding existing test saves", function()
+            local bind = TutorialFlow.migrateProgress(cfg, {
+                version = 10,
+                step = 8,
+                count = 0,
+                done = false,
+            })
+            expect(TutorialFlow.current(cfg, bind).id).to.equal("bind_heal")
+
+            local alreadyPast = TutorialFlow.migrateProgress(cfg, {
+                version = 10,
+                step = 9,
+                count = 0,
+                done = false,
+            })
+            expect(TutorialFlow.current(cfg, alreadyPast).id).to.equal("ready_heal")
+
+            local fresh = feed(TutorialFlow.fresh(cfg), {
+                "combat_tutorial_entered_arena",
+                "enemy_defeated",
+                "combat_tutorial_advance",
+                { "potion_used", { potion = "berserk_brew" } },
+                "combat_tutorial_entered_arena",
+                "enemy_defeated",
+                "combat_tutorial_advance",
+                "tutorial_hotbar_finished",
+            })
+            expect(TutorialFlow.current(cfg, fresh).id).to.equal("enhance_heal")
+            local wrongPower =
+                TutorialFlow.advance(cfg, fresh, "enhancement_slotted", { powerId = "resonance" })
+            expect(TutorialFlow.current(cfg, wrongPower).id).to.equal("enhance_heal")
+            local completed =
+                TutorialFlow.advance(cfg, fresh, "enhancement_slotted", { powerId = "heal" })
+            expect(TutorialFlow.current(cfg, completed).id).to.equal("ready_heal")
         end)
 
         it("uses the existing absorb shield instead of a special unkillable flag", function()
@@ -511,6 +561,7 @@ return function()
                 "enemy_defeated",
                 "combat_tutorial_advance",
                 "tutorial_hotbar_finished",
+                { "enhancement_slotted", { powerId = "heal" } },
                 "combat_tutorial_entered_arena",
                 "pet_target_selected",
                 "pet_healed",
@@ -565,6 +616,7 @@ return function()
                 "enemy_defeated",
                 "combat_tutorial_advance",
                 "tutorial_hotbar_finished",
+                { "enhancement_slotted", { powerId = "heal" } },
                 "combat_tutorial_entered_arena",
                 "pet_target_selected",
                 "pet_healed",
@@ -599,6 +651,7 @@ return function()
                 "enemy_defeated",
                 "combat_tutorial_advance",
                 "tutorial_hotbar_finished",
+                { "enhancement_slotted", { powerId = "heal" } },
                 "combat_tutorial_entered_arena",
                 "pet_target_selected",
                 "pet_healed",
@@ -648,6 +701,7 @@ return function()
                 "enemy_defeated",
                 "combat_tutorial_advance",
                 "tutorial_hotbar_finished",
+                { "enhancement_slotted", { powerId = "heal" } },
                 "combat_tutorial_entered_arena",
                 "pet_target_selected",
                 "pet_healed",
@@ -700,7 +754,7 @@ return function()
             expect(cfg.steps[1].theme).to.equal("grass")
             expect(cfg.steps[4].theme).to.equal("lava")
             expect(cfg.steps[8].theme).to.equal("heaven")
-            expect(cfg.steps[14].theme).to.equal("hell")
+            expect(cfg.steps[15].theme).to.equal("hell")
             expect(mission.seed_policy).to.equal("gauntlet_room")
             expect(mission.gauntlet.mode).to.equal("combat_tutorial")
             expect(mission.gauntlet.rooms).to.equal(1)

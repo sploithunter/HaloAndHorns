@@ -252,12 +252,12 @@ return function()
                 expect(client:find('nextPhase = "pick_slot"', 1, true)).to.be.ok()
                 expect(client:find('nextPhase = "pick_potency"', 1, true)).to.be.ok()
                 expect(client:find('nextPhase = "apply"', 1, true)).to.be.ok()
-                expect(client:find('tutorialGuide = "Resonance"', 1, true)).to.be.ok()
+                expect(client:find('tutorialGuide or "Power:resonance"', 1, true)).to.be.ok()
                 expect(client:find('tutorialGuide = "EnhanceEmptySlot"', 1, true)).to.be.ok()
                 expect(client:find('tutorialGuide = "EnhancePotency"', 1, true)).to.be.ok()
                 expect(client:find('tutorialGuide = "EnhanceApply"', 1, true)).to.be.ok()
                 expect(menu:find("_syncEnhanceTutorialAttrs", 1, true)).to.be.ok()
-                expect(menu:find('TutorialGuide", "Resonance"', 1, true)).to.be.ok()
+                expect(menu:find('TutorialGuide", "Power:" .. r.id', 1, true)).to.be.ok()
                 expect(menu:find('TutorialGuide", "EnhanceEmptySlot"', 1, true)).to.be.ok()
                 expect(menu:find('TutorialGuide", "EnhancePotency"', 1, true)).to.be.ok()
                 expect(menu:find('TutorialGuide", "EnhanceApply"', 1, true)).to.be.ok()
@@ -479,7 +479,7 @@ return function()
                 "tutorial_squad_reviewed", -- build_squad (unequip + equip + Activate)
                 "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
-                "enhancement_slotted", -- slot_power
+                { "enhancement_slotted", { powerId = "resonance" } }, -- slot_power
                 "combat_training_quest_ack", -- first_fight (Quest handoff)
                 "rally_used", -- rally_call (the flag at the top-left, slot 11) → done
             })
@@ -499,7 +499,7 @@ return function()
                 "tutorial_squad_reviewed",
                 "tutorial_hotbar_finished",
                 "power_cast",
-                "enhancement_slotted",
+                { "enhancement_slotted", { powerId = "resonance" } },
                 "combat_tutorial_complete",
             })
             expect(TutorialFlow.current(cfg, p).id).to.equal("rally_call")

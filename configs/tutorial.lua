@@ -245,7 +245,10 @@ return {
                 cue = "click",
                 cue_text = "CLICK HERE",
             },
-            complete_on = { event = "enhancement_slotted" },
+            complete_on = {
+                event = "enhancement_slotted",
+                context = { powerId = "resonance" },
+            },
         },
         -- Combat training lives in the Earth cave. The FIGHT trail stays
         -- until they enter, or they tap Later and Okay the Quest banner.

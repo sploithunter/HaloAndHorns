@@ -66,7 +66,7 @@ return function()
         end)
 
         it("ends onboarding at Rally and measures optional goals on Activation", function()
-            expect(retention.version).to.equal(8)
+            expect(retention.version).to.equal(9)
             local last = retention.onboarding.steps[#retention.onboarding.steps]
             expect(last.id).to.equal("tutorial_rally_call")
             local seen = {}

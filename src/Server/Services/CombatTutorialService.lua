@@ -249,6 +249,7 @@ function CombatTutorialService:Init()
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
     self._potionService = self._modules and self._modules.PotionService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._enemyService = self._modules and self._modules.EnemyService
     self._missionInstanceService = self._modules and self._modules.MissionInstanceService
     self._tutorialService = self._modules and self._modules.TutorialService
@@ -1536,6 +1537,7 @@ function CombatTutorialService:_applyGrant(player, data, step)
         return
     end
     data.CombatTutorial.granted[id] = true
+    local grantFailed = false
     if type(grant.potions) == "table" then
         local potions = self._potionService
         if potions and potions.Grant then
@@ -1553,7 +1555,52 @@ function CombatTutorialService:_applyGrant(player, data, step)
             )
         end
     end
-    self._dataService:RequestSave(player, "combat_tutorial_grant")
+    if type(grant.enhancements) == "table" then
+        local enhancements = self._enhancementService
+        if enhancements and enhancements.Grant then
+            for _, enhancement in ipairs(grant.enhancements) do
+                for _ = 1, math.max(1, math.floor(tonumber(enhancement.count) or 1)) do
+                    local ok, result = pcall(function()
+                        return enhancements:Grant(player, {
+                            type = enhancement.type,
+                            origins = enhancement.origins or {},
+                            level = enhancement.level or 1,
+                        })
+                    end)
+                    if not ok or (type(result) == "table" and result.ok == false) then
+                        grantFailed = true
+                        if self._logger then
+                            self._logger:Warn("combat tutorial enhancement grant FAILED", {
+                                player = player.Name,
+                                enhancement = tostring(enhancement.type),
+                                err = not ok and tostring(result)
+                                    or tostring(result and result.reason),
+                            })
+                        end
+                    end
+                end
+            end
+        else
+            grantFailed = true
+            if self._logger then
+                self._logger:Warn(
+                    "combat tutorial enhancement grant SKIPPED — EnhancementService not injected",
+                    { step = tostring(step.id) }
+                )
+            end
+        end
+    end
+    if type(grant.ensure_slot) == "string" then
+        data.Slots = type(data.Slots) == "table" and data.Slots or {}
+        local slots = data.Slots[grant.ensure_slot]
+        if type(slots) ~= "table" or #slots == 0 then
+            data.Slots[grant.ensure_slot] = { { inherent = true } }
+        end
+    end
+    if grantFailed then
+        data.CombatTutorial.granted[id] = nil
+    end
+    self._dataService:RequestSave(player, "combat_tutorial_grant", { critical = true })
 end
 
 function CombatTutorialService:_grantPotions(player, potions)

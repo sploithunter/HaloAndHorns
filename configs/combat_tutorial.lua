@@ -11,7 +11,7 @@
 ]]
 
 return {
-    version = 10,
+    version = 11,
     -- Rhythm is lobby → ENTER door → fight → pillar back to lobby.
     -- The frost door stays sealed until the current lobby lesson is done.
     -- Pillar / leave-resume lobby returns wipe Heal/Revive CDs, pet recovery,
@@ -209,6 +209,40 @@ return {
             [31] = { step = 31 },
             [32] = { step = 32 }, -- advance_together
             [33] = { step = 33 }, -- more_coming past the end → done
+        },
+        [10] = {
+            [1] = { step = 1 },
+            [2] = { step = 2 },
+            [3] = { step = 3 },
+            [4] = { step = 4 },
+            [5] = { step = 5 },
+            [6] = { step = 6 },
+            [7] = { step = 7 },
+            [8] = { step = 8 }, -- bind_heal remains the binding lesson
+            [9] = { step = 10 }, -- existing saves continue at ready_heal (no rewind)
+            [10] = { step = 11 },
+            [11] = { step = 12 },
+            [12] = { step = 13 },
+            [13] = { step = 14 },
+            [14] = { step = 15 },
+            [15] = { step = 16 },
+            [16] = { step = 17 },
+            [17] = { step = 18 },
+            [18] = { step = 19 },
+            [19] = { step = 20 },
+            [20] = { step = 21 },
+            [21] = { step = 22 },
+            [22] = { step = 23 },
+            [23] = { step = 24 },
+            [24] = { step = 25 },
+            [25] = { step = 26 },
+            [26] = { step = 27 },
+            [27] = { step = 28 },
+            [28] = { step = 29 },
+            [29] = { step = 30 },
+            [30] = { step = 31 },
+            [31] = { step = 32 },
+            [32] = { step = 33 },
         },
     },
     entry = {
@@ -503,6 +537,36 @@ return {
             complete_on = { event = "tutorial_hotbar_finished" },
         },
         {
+            id = "enhance_heal",
+            theme = "heaven",
+            localization_key = "combat_tutorial.enhance_heal",
+            title = "Enhance your Heal",
+            lock_door = true,
+            door_button = {
+                text = "ENHANCE HEAL",
+                nudge = "Put Potency into Heal first!",
+            },
+            -- Reuse the Farm & Fight enhancement lesson: grant one usable piece and an
+            -- inherent slot, then require that exact power in the event payload.
+            grant = {
+                enhancements = { { type = "potency", origins = {}, level = 3, count = 1 } },
+                ensure_slot = "heal",
+            },
+            body = "Now improve Heal. Open POWERS, choose Heal, pick its empty slot, choose Potency, and Apply it. Enhancements make every power stronger.",
+            body_gamepad = "Press D-pad Right, choose Heal with A, select its empty slot, choose Potency, and Apply it.",
+            target = {
+                kind = "ui",
+                name = "PowersButton",
+                cue = "enhance_power",
+                tutorial_guide = "Power:heal",
+                cue_text = "CLICK HERE",
+            },
+            complete_on = {
+                event = "enhancement_slotted",
+                context = { powerId = "heal" },
+            },
+        },
+        {
             id = "ready_heal",
             localization_key = "combat_tutorial.ready_heal",
             title = "Ready to heal",
@@ -599,6 +663,7 @@ return {
                 cue = "click",
                 cue_side = "right",
                 cue_text = "CLICK HERE",
+                force_overlay = true,
             },
             complete_on = { event = "enemy_target_selected" },
         },
@@ -844,6 +909,7 @@ return {
                 cue = "healer_focus",
                 cue_side = "right",
                 cue_text = "KILL THIS",
+                force_overlay = true,
             },
             -- Click pins the squad on the healer (assist + wipe other pet threat)
             -- so dogs cannot peel pets off. Assist expiry is not a miss.

@@ -7362,3 +7362,11 @@ first-session cohort rates.
 - Serialized each player's `PetRuntimeBridge` worker across yielding model rebuilds. An equipment
   change received while a rebuild is active now latches one final pass instead of being rejected by
   the active-load guard and leaving the live squad blank.
+
+## 2026-09-02 — Combat Training teaches enhanced Heal
+
+- Added a mandatory lobby lesson after Heal binding that reuses the existing Powers enhancement
+  walkthrough, grants a natural Potency and a Heal slot, and advances only when Heal itself is
+  enhanced. Existing progressed test saves are migrated forward without a rewind.
+- Enemy-card tutorial callouts now opt into the top tutorial overlay, keeping `CLICK HERE` and
+  `KILL THIS` above the mission map.
