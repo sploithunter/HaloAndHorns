@@ -27,10 +27,20 @@ Responsive relationships—not guessed screen coordinates—own placement.
   object's current assigned offset and rendered anchor, then make one idempotent assignment. The
   Merge tutorial uses this rule to avoid alternating between raw and corrected positions.
 - When one independent HUD surface must follow another, use the leader's live rendered edge. In the
-  Merge place, the People list docks beneath `MergeWaveBar.WaveMeter` with a viewport-relative gap;
-  its per-device `merge_top` values are startup fallbacks only. Clamp followers to the viewport when
-  the leader's safe-area coordinate extends slightly beyond an edge on a small device.
+  Merge place, the People list docks beneath `MergeWaveBar.WaveMeter`, inherits its rendered width,
+  right edge, and chrome scale, and adds a viewport-relative gap. Its per-device values are startup
+  fallbacks only. Clamp followers to the viewport when the leader's safe-area coordinate extends
+  slightly beyond an edge on a small device.
 
 The quest/tutorial upper-right surfaces illustrate the boundary: their shared `{1,0},{0,0}` dock and
 right anchor perform placement. The quest tracker's measured 14px top and 4px right adjustments only
 match Roblox's rounded-screen People-list inset; they do not carry the panel across the screen.
+
+World-space BillboardGuis are still viewport-facing UI. Pixel-designed billboard contents must use
+the shared viewport `UIScale`, with bounds and scale limits authored in config. Merge hatcher-egg
+health bars follow the same viewport factor as the wave meter, so they shrink on phones without
+changing their world offset or maximum viewing distance.
+
+Tutorial target callouts are part of the responsive HUD too. The Merge `CLICK HERE` cue keeps one
+authored desktop footprint and applies a config-owned display-class scale; phone uses 0.5 for both
+the unlock and install targets so the callout does not obscure the menu it explains.

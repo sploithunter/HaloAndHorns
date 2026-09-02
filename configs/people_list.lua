@@ -75,8 +75,12 @@ return {
             },
         },
         -- When the live Merge wave meter exists, dock beneath its rendered bottom with a
-        -- viewport-relative breathing gap. merge_top remains the startup fallback.
+        -- viewport-relative breathing gap and inherit its rendered chrome scale. This keeps the
+        -- phone list from becoming wider/taller than the scaled wave card above it.
         merge_wave_gap = 0.006,
+        merge_wave_width_ratio = 1.0,
+        merge_wave_header_height_ratio = 0.32,
+        merge_wave_row_height_ratio = 0.30,
         column_header_to_header = 0.67,
         column_gutter = 0.012,
     },

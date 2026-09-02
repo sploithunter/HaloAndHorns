@@ -24,6 +24,7 @@ return function()
             expect(people.layout.modes.tablet.width).to.equal(0.30)
             expect(people.layout.modes.desktop.width).to.equal(0.221)
             expect(people.layout.merge_wave_gap).to.equal(0.006)
+            expect(people.layout.merge_wave_width_ratio).to.equal(1.0)
             expect(people.columns[1].width).to.equal(0.43)
             expect(people.columns[4].width).to.equal(0.20)
             expect(people.toggle.key).to.equal("Tab")
@@ -214,6 +215,25 @@ return function()
             expect(PeopleList.topOffset(cfg(), merge)).to.equal(0)
         end)
 
+        it("inherits the live Merge wave meter footprint on a phone", function()
+            local dimensions = PeopleList.layout(cfg(), {
+                displayClass = "phone",
+                viewportWidth = 750,
+                viewportHeight = 380,
+                mergePlace = true,
+                mergeWaveBottom = -5,
+                mergeWaveWidth = 199,
+                mergeWaveHeight = 39,
+                mergeWaveRight = 746,
+            })
+            expect(dimensions.widthScale).to.equal(199 / 750)
+            expect(dimensions.rightScale).to.equal(4 / 750)
+            expect(dimensions.headerHeight).to.equal(12)
+            expect(dimensions.columnHeaderHeight).to.equal(8)
+            expect(dimensions.rowHeight).to.equal(12)
+            expect(dimensions.top).to.equal(0)
+        end)
+
         it("keeps phone and tablet rows proportional to their viewports", function()
             local phone = PeopleList.layout(cfg(), {
                 displayClass = "phone",
@@ -399,6 +419,10 @@ return function()
             expect(controller:find("inst.TextScaled = true", 1, true)).to.be.ok()
             expect(controller:find("absoluteAnchorYOffset", 1, true)).to.be.ok()
             expect(controller:find("mergeWaveBottom", 1, true)).to.be.ok()
+            expect(controller:find("mergeWaveWidth", 1, true)).to.be.ok()
+            expect(controller:find("mergeWaveRight", 1, true)).to.be.ok()
+            expect(controller:find('headerLabel.Text = "Players"', 1, true)).to.be.ok()
+            expect(controller:find('("Players  %d"):format(count)', 1, true)).to.equal(nil)
             expect(controller:find('GetAttribute("ClaimedLevel")', 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("AscensionUnlocked")', 1, true)).to.be.ok()
             expect(controller:find("PromptSendFriendRequest", 1, true)).to.be.ok()

@@ -1714,10 +1714,10 @@ function PowerService:PlaceDirectedKnockback(center, opts)
         )
     end
     local enemyService = self._enemyService
-    local distance = math.max(
-        0,
+    -- Luau assert returns its diagnostic argument too; keep it outside variadic math.max.
+    local distance =
         assert(tonumber(opts.distance), "PlaceDirectedKnockback requires opts.distance")
-    )
+    distance = math.max(0, distance)
     if distance <= 0 or not enemyService then
         return { ok = true, shoved = 0, radius = radius }
     end

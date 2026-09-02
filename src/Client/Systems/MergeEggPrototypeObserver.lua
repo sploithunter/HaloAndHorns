@@ -39,6 +39,13 @@ local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
 local PLACES = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
+local EGG_HEALTH_BILLBOARD = assert(
+    (CONFIG.ui or {}).egg_health_billboard,
+    "merge_egg_prototype.ui.egg_health_billboard is required"
+)
+local TUTORIAL_CLICK_CUE =
+    assert((CONFIG.tutorial or {}).click_cue, "merge_egg_prototype.tutorial.click_cue is required")
+
 local MergeEggPrototypeObserver = {}
 
 local localPlayer = Players.LocalPlayer
@@ -338,6 +345,18 @@ local function clearTutorialClickCue()
     end
 end
 
+local function tutorialClickCueScale()
+    local scales = assert(
+        TUTORIAL_CLICK_CUE.display_scale,
+        "merge_egg_prototype.tutorial.click_cue.display_scale is required"
+    )
+    local displayClass = tostring(localPlayer:GetAttribute("DisplayClass") or "desktop")
+    return assert(
+        tonumber(scales[displayClass] or scales.desktop),
+        "tutorial.click_cue display scale is required"
+    )
+end
+
 local function setTutorialClickCueTarget(target)
     if tutorialClickCueTarget == target and tutorialClickCue and tutorialClickCue.Parent then
         return
@@ -348,6 +367,9 @@ local function setTutorialClickCueTarget(target)
     end
 
     tutorialClickCueTarget = target
+    local displayScale = tutorialClickCueScale()
+    local targetGap =
+        assert(tonumber(TUTORIAL_CLICK_CUE.target_gap), "tutorial.click_cue.target_gap is required")
 
     -- Match the established tutorial callout: a pulsing gold target outline with a dark
     -- CLICK HERE pill and a downward pointer. Parenting it to the real SurfaceGui button keeps
@@ -356,7 +378,10 @@ local function setTutorialClickCueTarget(target)
     pulse.Name = "TutorialClickPulse"
     pulse.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     pulse.Color = Color3.fromRGB(255, 215, 70)
-    pulse.Thickness = 12
+    pulse.Thickness = assert(
+        tonumber(TUTORIAL_CLICK_CUE.target_stroke_thickness),
+        "tutorial.click_cue.target_stroke_thickness is required"
+    ) * displayScale
     pulse.Transparency = 0.05
     pulse.ZIndex = 30
     pulse.Parent = target
@@ -364,28 +389,46 @@ local function setTutorialClickCueTarget(target)
     local callout = Instance.new("TextLabel")
     callout.Name = "MergeEggTutorialClickHere"
     callout.AnchorPoint = Vector2.new(0.5, 1)
-    callout.Position = UDim2.new(0.5, 0, 0, -12)
-    callout.Size = UDim2.fromOffset(330, 108)
+    callout.Position = UDim2.new(0.5, 0, 0, -targetGap * displayScale)
+    callout.Size = UDim2.fromOffset(
+        assert(tonumber(TUTORIAL_CLICK_CUE.width), "tutorial.click_cue.width is required")
+            * displayScale,
+        assert(tonumber(TUTORIAL_CLICK_CUE.height), "tutorial.click_cue.height is required")
+            * displayScale
+    )
     callout.BackgroundColor3 = Color3.fromRGB(16, 18, 28)
     callout.BackgroundTransparency = 0.08
     callout.BorderSizePixel = 0
     callout.Font = Enum.Font.GothamBlack
     callout.Text = "CLICK HERE\n\226\150\188"
     callout.TextColor3 = Color3.new(1, 1, 1)
-    callout.TextSize = 45
+    callout.TextSize = assert(
+        tonumber(TUTORIAL_CLICK_CUE.text_size),
+        "tutorial.click_cue.text_size is required"
+    ) * displayScale
     callout.TextStrokeColor3 = Color3.new(0, 0, 0)
     callout.TextStrokeTransparency = 0.3
     callout.TextWrapped = true
     callout.ZIndex = 31
+    callout:SetAttribute("TutorialClickCueScale", displayScale)
     callout.Parent = target
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 18)
+    corner.CornerRadius = UDim.new(
+        0,
+        assert(
+            tonumber(TUTORIAL_CLICK_CUE.corner_radius),
+            "tutorial.click_cue.corner_radius is required"
+        ) * displayScale
+    )
     corner.Parent = callout
 
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(255, 215, 70)
-    stroke.Thickness = 7
+    stroke.Thickness = assert(
+        tonumber(TUTORIAL_CLICK_CUE.callout_stroke_thickness),
+        "tutorial.click_cue.callout_stroke_thickness is required"
+    ) * displayScale
     stroke.Parent = callout
 
     tutorialClickCue = callout
@@ -408,7 +451,18 @@ local function updateTutorialClickCue()
     if pulse and pulse:IsA("UIStroke") then
         pulse.Transparency = 0.05 + 0.45 * phase
     end
-    tutorialClickCue.Position = UDim2.new(0.5, 0, 0, -12 - math.floor(12 * phase))
+    local displayScale = assert(
+        tonumber(tutorialClickCue:GetAttribute("TutorialClickCueScale")),
+        "TutorialClickCueScale is required"
+    )
+    local targetGap =
+        assert(tonumber(TUTORIAL_CLICK_CUE.target_gap), "tutorial.click_cue.target_gap is required")
+    local pulseTravel = assert(
+        tonumber(TUTORIAL_CLICK_CUE.pulse_travel),
+        "tutorial.click_cue.pulse_travel is required"
+    )
+    tutorialClickCue.Position =
+        UDim2.new(0.5, 0, 0, -math.floor((targetGap + pulseTravel * phase) * displayScale))
 end
 
 local function ensureTutorialPath()
@@ -2562,19 +2616,45 @@ local function createEggHealthBillboard(teamId, objective)
     billboard.Active = false
     billboard.AlwaysOnTop = true
     billboard.LightInfluence = 0
-    billboard.MaxDistance = 180
-    billboard.Size = UDim2.fromOffset(156, 18)
-    billboard.StudsOffsetWorldSpace = Vector3.new(0, objective:GetExtentsSize().Y * 0.5 + 0.8, 0)
+    billboard.MaxDistance = assert(
+        tonumber(EGG_HEALTH_BILLBOARD.max_distance),
+        "egg_health_billboard.max_distance is required"
+    )
+    billboard.Size = UDim2.fromOffset(
+        assert(tonumber(EGG_HEALTH_BILLBOARD.width), "egg_health_billboard.width is required"),
+        assert(tonumber(EGG_HEALTH_BILLBOARD.height), "egg_health_billboard.height is required")
+    )
+    billboard.StudsOffsetWorldSpace = Vector3.new(
+        0,
+        objective:GetExtentsSize().Y * 0.5
+            + assert(
+                tonumber(EGG_HEALTH_BILLBOARD.vertical_gap),
+                "egg_health_billboard.vertical_gap is required"
+            ),
+        0
+    )
     billboard.ResetOnSpawn = false
     billboard.Parent = localPlayer:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame")
     frame.Name = "EggHealthBar"
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
     frame.Size = UDim2.fromScale(1, 1)
     frame.BackgroundColor3 = Color3.fromRGB(27, 31, 39)
     frame.BackgroundTransparency = 0.1
     frame.BorderSizePixel = 0
     frame.Parent = billboard
+    UIViewportScale.attach(frame, {
+        min = assert(
+            tonumber(EGG_HEALTH_BILLBOARD.viewport_scale_min),
+            "egg_health_billboard.viewport_scale_min is required"
+        ),
+        max = assert(
+            tonumber(EGG_HEALTH_BILLBOARD.viewport_scale_max),
+            "egg_health_billboard.viewport_scale_max is required"
+        ),
+    })
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
@@ -2603,7 +2683,10 @@ local function createEggHealthBillboard(teamId, objective)
     label.Font = Enum.Font.GothamBold
     label.Text = "5000 / 5000"
     label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextSize = 11
+    label.TextSize = assert(
+        tonumber(EGG_HEALTH_BILLBOARD.label_text_size),
+        "egg_health_billboard.label_text_size is required"
+    )
     label.TextStrokeColor3 = Color3.fromRGB(20, 22, 28)
     label.TextStrokeTransparency = 0.25
     label.ZIndex = 2
@@ -2663,8 +2746,15 @@ local function updateEggHealthBillboard(controls, teamId, folder)
     local eggMaxHealth =
         math.max(1, tonumber(folder:GetAttribute("MergeEggInstalledMaxHealth")) or 1)
     local fraction = math.clamp(eggHealth / eggMaxHealth, 0, 1)
-    control.billboard.StudsOffsetWorldSpace =
-        Vector3.new(0, objective:GetExtentsSize().Y * 0.5 + 0.8, 0)
+    control.billboard.StudsOffsetWorldSpace = Vector3.new(
+        0,
+        objective:GetExtentsSize().Y * 0.5
+            + assert(
+                tonumber(EGG_HEALTH_BILLBOARD.vertical_gap),
+                "egg_health_billboard.vertical_gap is required"
+            ),
+        0
+    )
     control.fill.Size = UDim2.fromScale(fraction, 1)
     control.fill.BackgroundColor3 = HudCard.healthColor(fraction)
     control.label.Text =

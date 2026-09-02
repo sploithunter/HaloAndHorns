@@ -7791,10 +7791,11 @@ function MergeEggPrototypeService:_stepTowerShotBloom(flight, now)
     if not (part and part.Parent and flight.landedAt) then
         return
     end
-    local duration = math.max(
-        1e-3,
+    -- Luau assert returns every argument it receives. Resolve first so the diagnostic string is
+    -- never forwarded to variadic math.max as an accidental third value.
+    local landSeconds =
         assert(tonumber(flight.landSeconds), "tower shot state requires landSeconds")
-    )
+    local duration = math.max(1e-3, landSeconds)
     local alpha = (now - flight.landedAt) / duration
     local diameter = MergeTowerBallistics.bloomScale(alpha, flight.startDiameter, flight.bloomScale)
     local fade = MergeTowerBallistics.bloomFade(alpha)
