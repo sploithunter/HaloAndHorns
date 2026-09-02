@@ -177,13 +177,7 @@ return function()
             ).to.be.ok()
             expect(mergeService:find("(done and post.greeting_complete)", 1, true)).to.be.ok()
             expect(mergeService:find("self:_setQuartermasterSpeech(live, value.greeting)", 1, true)).to.be.ok()
-            expect(
-                mergeService:find(
-                    "self._combatTrainingReturns[player] = { bayId = bayId }",
-                    1,
-                    true
-                )
-            ).to.be.ok()
+            expect(mergeService:find("previousPetMode = previousPetMode", 1, true)).to.be.ok()
             expect(
                 mergeService:find(
                     "function MergeEggPrototypeService:_resumeAfterCombatTraining",
@@ -191,6 +185,53 @@ return function()
                     true
                 )
             ).to.be.ok()
+            local prepareAt = mergeService:find(
+                "function MergeEggPrototypeService:_prepareCombatTrainingPets",
+                1,
+                true
+            )
+            local switchAt = prepareAt
+                and mergeService:find(
+                    'self:_switchPlayerCombatMode(record, "full")',
+                    prepareAt,
+                    true
+                )
+            local openCallbackAt = mergeService:find("beforeOpen = function()", switchAt, true)
+            local handoffAt = openCallbackAt
+                and mergeService:find(
+                    "self:_prepareCombatTrainingPets(record)",
+                    openCallbackAt,
+                    true
+                )
+            local endAt = handoffAt
+                and mergeService:find("self:_end(record, false, false)", handoffAt, true)
+            expect(prepareAt ~= nil and switchAt ~= nil).to.equal(true)
+            expect(openCallbackAt ~= nil and handoffAt ~= nil and endAt ~= nil).to.equal(true)
+            expect(handoffAt < endAt).to.equal(true)
+            local resumeAt = mergeService:find(
+                "function MergeEggPrototypeService:_resumeAfterCombatTraining",
+                1,
+                true
+            )
+            local completionAt = resumeAt
+                and mergeService:find("data.CombatTutorial.done == true", resumeAt, true)
+            local retainFullAt = completionAt
+                and mergeService:find(
+                    'self._settingsService:SetMergeDefenseMode(player, "full")',
+                    completionAt,
+                    true
+                )
+            local reenterAt = retainFullAt
+                and mergeService:find("self:_begin(player, pending.bayId)", retainFullAt, true)
+            expect(completionAt ~= nil and retainFullAt ~= nil and reenterAt ~= nil).to.equal(true)
+            expect(retainFullAt < reenterAt).to.equal(true)
+            expect(
+                mergeService:find(
+                    'self._settingsService:SetMergeDefenseMode(player, "simple")',
+                    resumeAt,
+                    true
+                )
+            ).never.to.be.ok()
         end)
 
         it("uses one responsive service menu and the authoritative pass storefront", function()

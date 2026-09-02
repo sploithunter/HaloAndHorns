@@ -7380,3 +7380,12 @@ first-session cohort rates.
 - Corrected the Heal enhancement lesson to grant one compatible natural Healing piece on Combat
   Training entry instead of a Potency piece that the picker correctly filtered out. The normal
   tutorial grant ledger prevents duplicate entry grants, and the cue targets the configured item.
+
+## 2026-09-02 — Combat Training leaves Merge Simple-pet mode explicitly
+
+- Quartermaster entry now switches an active Simple-mode Merge record through its existing Full
+  pet transition before closing the session. Prototype escort ghosts are removed and parked real
+  pets are restored before Combat Training applies its inventory-backed loaned squad.
+- The handoff does not bypass eligibility. Leaving training incomplete runs normal mode resolution
+  and rebuilds Simple for a fresh player; completing training persists Full through the existing
+  Settings service before Merge resumes, while still allowing the player to choose Simple later.

@@ -7084,6 +7084,21 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     return true
 end
 
+-- Combat Training manages ordinary inventory-backed pets, including its temporary tutorial loan
+-- records. If Merge is currently in Simple mode, first leave the prototype escort path through the
+-- existing Full-mode transition: destroy the ghosts and restore the parked durable models before
+-- the Merge session closes. The handoff itself does not unlock eligibility. If training completes,
+-- the return path persists Full through Settings; otherwise normal eligibility rebuilds Simple.
+function MergeEggPrototypeService:_prepareCombatTrainingPets(record)
+    if not self:_isRecordActive(record) then
+        return false
+    end
+    if record.playerCombatMode == "full" then
+        return true
+    end
+    return self:_switchPlayerCombatMode(record, "full")
+end
+
 function MergeEggPrototypeService:UseQuartermasterService(player, request)
     local accessOk, accessReason, record, live = self:_canUseQuartermaster(player)
     if not accessOk then
@@ -7124,12 +7139,19 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
             return false, "combat_tutorial_unavailable"
         end
         local bayId = record.bayId
+        local previousPetMode = record.playerCombatMode
         local opened, result = service:OpenForPlayer(player, {
             beforeOpen = function()
                 if not self:_isRecordActive(record) then
                     return false
                 end
-                self._combatTrainingReturns[player] = { bayId = bayId }
+                if not self:_prepareCombatTrainingPets(record) then
+                    return false
+                end
+                self._combatTrainingReturns[player] = {
+                    bayId = bayId,
+                    previousPetMode = previousPetMode,
+                }
                 self:_end(record, false, false)
                 return true
             end,
@@ -16803,6 +16825,26 @@ function MergeEggPrototypeService:_resumeAfterCombatTraining(player, reason)
         end
         if not player.Parent or self:_recordFor(player) then
             return
+        end
+        local data = self._dataService and self._dataService:GetData(player)
+        local completed = data
+            and type(data.CombatTutorial) == "table"
+            and data.CombatTutorial.done == true
+        if completed then
+            -- Success keeps the real-pet mode used inside training. Going through Settings both
+            -- persists Full and resolves the locked-Simple onboarding choice; the player may still
+            -- choose Simple later. An incomplete exit skips this and normal eligibility resolution
+            -- restores the pre-training mode (Simple for a fresh Wave-10 player).
+            local switched = self._settingsService
+                and self._settingsService.SetMergeDefenseMode
+                and self._settingsService:SetMergeDefenseMode(player, "full")
+            if switched ~= true then
+                self:_log("Warn", "Combat Training completion could not retain Full pet mode", {
+                    player = player.Name,
+                    trigger = reason,
+                    previousPetMode = pending.previousPetMode,
+                })
+            end
         end
         local began, beginReason = self:_begin(player, pending.bayId)
         if not began and beginReason == "bay_occupied" then
