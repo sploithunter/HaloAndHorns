@@ -7,6 +7,18 @@ local FocusMath = loadModule("src/Shared/Game/FocusMath.lua")
 local config = loadModule("configs/focus.lua")
 
 return function()
+    describe("FocusMath.maximum", function()
+        it("scales a mode-owned runtime cap without changing the base config", function()
+            expect(FocusMath.maximum(config, 1.25)).to.equal(config.focus_max * 1.25)
+            expect(FocusMath.maximum(config, nil)).to.equal(config.focus_max)
+            expect(config.focus_max).to.equal(100)
+        end)
+
+        it("keeps the contextual cap positive", function()
+            expect(FocusMath.maximum({ focus_max = 0 }, 0)).to.equal(1)
+        end)
+    end)
+
     describe("FocusMath.cast", function()
         it("spends Focus when the pool covers the cost", function()
             -- focus 100, Stone Skin costs 20 -> 80

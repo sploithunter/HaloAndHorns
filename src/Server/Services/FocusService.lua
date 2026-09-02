@@ -24,6 +24,7 @@ local FocusMath = require(ReplicatedStorage.Shared.Game.FocusMath)
 -- Regen cadence: fine enough that a 20s fight doesn't feel stepped (Jason: 1s ≈ 5% of a fight).
 -- Runtime-only state means NO per-tick save cost, so we can tick as fine as we like — 0.2s = +1/tick.
 local REGEN_INTERVAL = 0.2
+local MAX_MULTIPLIER_ATTRIBUTE = "FocusMaxMultiplier"
 
 local FocusService = {}
 FocusService.__index = FocusService
@@ -37,11 +38,25 @@ function FocusService:Init()
     self._focus = setmetatable({}, { __mode = "k" })
 end
 
--- The player's live Focus, lazy-initialized to focus_max on first access (i.e. effectively on join).
+local function maximumFor(self, player)
+    return FocusMath.maximum(self._config, player and player:GetAttribute(MAX_MULTIPLIER_ATTRIBUTE))
+end
+
+local function runtimeConfig(self, player)
+    return {
+        focus_max = maximumFor(self, player),
+        regen_per_second = self._config.regen_per_second,
+        regen_pauses_at_zero = self._config.regen_pauses_at_zero,
+    }
+end
+
+-- The player's live Focus, lazy-initialized to the contextual maximum on first access. A mode may
+-- raise or lower that cap through FocusMaxMultiplier; the resource itself remains runtime-only.
 local function focusOf(self, player)
+    local maximum = maximumFor(self, player)
     local v = self._focus[player]
-    if type(v) ~= "number" then
-        v = self._config.focus_max
+    if type(v) ~= "number" or v > maximum then
+        v = maximum
         self._focus[player] = v
     end
     return v
@@ -72,6 +87,9 @@ end
 function FocusService:Start()
     local function hookPlayer(player)
         self:_push(player) -- start full, so the HUD bar fills immediately on join
+        player:GetAttributeChangedSignal(MAX_MULTIPLIER_ATTRIBUTE):Connect(function()
+            self:_push(player)
+        end)
         if player.Character then
             self:_makeInvulnerable(player.Character)
         end
@@ -99,14 +117,14 @@ function FocusService:Start()
 end
 
 function FocusService:Get(player)
-    return { ok = true, focus = focusOf(self, player), max = self._config.focus_max }
+    return { ok = true, focus = focusOf(self, player), max = maximumFor(self, player) }
 end
 
 -- Mirror the live pool to the client via `Focus` / `FocusMax` player attributes so the HUD bar
 -- (PlayerBar) can read + animate it the same way it reads Level/XP.
 function FocusService:_push(player)
     player:SetAttribute("Focus", focusOf(self, player))
-    player:SetAttribute("FocusMax", self._config.focus_max)
+    player:SetAttribute("FocusMax", maximumFor(self, player))
 end
 
 -- Spend Focus to cast a power. Rejects (no spend) if the pool can't cover it.
@@ -123,7 +141,7 @@ end
 -- A Sundering enemy attack drains Focus (never below 0).
 function FocusService:Sunder(player, amount)
     local before = focusOf(self, player)
-    self._focus[player] = FocusMath.sunder(before, amount, self._config)
+    self._focus[player] = FocusMath.sunder(before, amount, runtimeConfig(self, player))
     self:_push(player)
     return { ok = true, focus = self._focus[player], drained = before - self._focus[player] }
 end
@@ -145,14 +163,15 @@ end
 function FocusService:Restore(player, amount)
     local before = focusOf(self, player)
     local restored = math.max(0, tonumber(amount) or 0)
-    self._focus[player] = math.min(self._config.focus_max, before + restored)
+    self._focus[player] = math.min(maximumFor(self, player), before + restored)
     self:_push(player)
     return { ok = true, focus = self._focus[player], restored = self._focus[player] - before }
 end
 
 -- Regenerate Focus over `elapsed` seconds (clamped to focus_max), then mirror to the HUD.
 function FocusService:RegenTick(player, elapsed)
-    self._focus[player] = FocusMath.regen(focusOf(self, player), elapsed, self._config)
+    local config = runtimeConfig(self, player)
+    self._focus[player] = FocusMath.regen(focusOf(self, player), elapsed, config)
     -- GUARDIAN WISH AURA (Genie of the Dunes — "the genie grants wishes"): a summon stamps
     -- FocusRegenBonus (+per-second) while FocusRegenBonusUntil is live — EXTRA regen on top of
     -- the base curve, same focus_max clamp. Generic seam: any future power can grant it.
@@ -170,9 +189,10 @@ function FocusService:RegenTick(player, elapsed)
         bonus += auraRegen
     end
     if bonus > 0 then
-        local maxFocus = tonumber(self._config and self._config.focus_max) or 100
-        self._focus[player] =
-            math.min(maxFocus, (self._focus[player] or 0) + bonus * (tonumber(elapsed) or 0))
+        self._focus[player] = math.min(
+            config.focus_max,
+            (self._focus[player] or 0) + bonus * (tonumber(elapsed) or 0)
+        )
     end
     self:_push(player)
     return { ok = true, focus = self._focus[player] }
