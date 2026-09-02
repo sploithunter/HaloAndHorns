@@ -7342,3 +7342,11 @@ first-session cohort rates.
 - Added one full-viewport `ResponsiveDock`: Pets and the tutorial use config-owned scale positions
   and sizes, `UISizeConstraint`, and aspect constraints. The milestone toast uses the same path, and
   tests enforce a positive proportional gap between Pets and the tutorial.
+
+## 2026-09-02 — Combat Training directions render from Merge
+
+- Corrected the tutorial visibility gate so the dedicated Merge place suppresses only Homeworld
+  guidance. While `InCombatTutorial` is true, the shared Combat Training direction card and target
+  cues now render over the mission as they do from the Homeworld entry.
+- Added regression coverage for the Combat-Training-before-Merge-gate ordering and verified the live
+  client renders step 1 while both `InCombatTutorial` and `InMergeEggPrototype` are true.
