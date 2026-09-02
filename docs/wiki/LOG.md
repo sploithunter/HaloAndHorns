@@ -7465,3 +7465,10 @@ first-session cohort rates.
   still-equipped pet when its applicable deadline ends. The squad HUD resolves those same
   place-specific durations for its progress bars; Farm & Fight remains manual and gauntlets remain
   no-revive.
+
+## 2026-09-02 — Rebirth clears live defense placements
+
+- Merge rebirth now clears cannon and bulwark slot state in both the durable profile and active
+  encounter, invalidates the runtime reconciliation caches, and immediately removes the installed
+  chassis from the bay. Family unlock flags remain permanent, but every pad/wall must be installed
+  and upgraded again after rebirth.
