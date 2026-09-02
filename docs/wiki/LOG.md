@@ -1,5 +1,14 @@
 # Log
 
+## 2026-09-01 — Trained durable pets earn Farm & Fight drops in Merge Defense
+
+- Kept Merge enemies on `rewardPolicy = "none"` and retained their isolated physical Waycoin/Gem
+  economy, but preserved a separate canonical enemy reward definition at spawn time.
+- A durable Full-mode player pet that lands the actual final damaging hit after Combat Training now
+  runs the same per-player defeat bundle as Farm & Fight: configured currency/tokens (or normal area
+  coin fallback), combat XP, enhancement/potion rolls, boss-exclusive eggs, event, and kill stat.
+  NPC hatchers, Simple ghosts, summons, powers, participants, and nearby teammates remain excluded.
+
 ## 2026-08-28 — Merge Egg architectural reference correction
 
 - Superseded the loose neon opposing-flow strip with the supplied architectural sketch as the
