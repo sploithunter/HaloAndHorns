@@ -2765,6 +2765,33 @@ function MergeEggPrototypeService:_eggProgression(context)
     return { "grass_egg" }
 end
 
+function MergeEggPrototypeService:_eggDisplayName(eggId)
+    local source = self._petsConfig
+        and self._petsConfig.egg_sources
+        and self._petsConfig.egg_sources[eggId]
+    return tostring(source and source.name or eggId)
+end
+
+-- Highest tier the player can currently point to on the board, generator, or a deployed hatcher.
+-- This lets an action result distinguish a genuinely new tier from another copy without adding a
+-- second persisted unlock ledger: consuming a tier always leaves either that tier deployed or a
+-- still-higher tier on the board.
+function MergeEggPrototypeService:_highestOwnedEggTier(record)
+    local progression = self:_eggProgression(record)
+    local highest = self:_baseEggTier(record)
+    for tier = 1, #progression do
+        if self:_eggInventoryCount(record, tier) > 0 then
+            highest = math.max(highest, tier)
+        end
+    end
+    for _, team in ipairs(record and record.teams or {}) do
+        if type(team.eggTier) == "number" then
+            highest = math.max(highest, team.eggTier)
+        end
+    end
+    return highest
+end
+
 function MergeEggPrototypeService:_earthEggPricing(context)
     local _, stage = self:_progressionStage(context)
     local configured = stage.egg_pricing or (self._config.team or {}).earth_egg_pricing or {}
@@ -6860,7 +6887,10 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
         ok = true,
         action = "quartermaster_talk",
-        value = { greeting = greeting },
+        value = {
+            operation = "quartermaster_ready",
+            greeting = greeting,
+        },
     })
     return true
 end
@@ -15206,10 +15236,16 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
             and self:_tutorialRequiredEggs()
         or nil
     self:_updateTutorial(record, now, true)
+    local progression = self:_eggProgression(record)
+    local eggId = progression[pricing.tier]
     return true,
         {
             eggsCreated = record.eggsCreated,
             tutorialRequiredEggs = tutorialRequiredEggs,
+            operation = "created",
+            eggTier = pricing.tier,
+            eggId = eggId,
+            eggName = self:_eggDisplayName(eggId),
         }
 end
 
@@ -15318,7 +15354,14 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
         automaticMerges = automaticMerges,
     })
     self:_updateTutorial(record, os.clock(), true)
-    return true
+    return true,
+        {
+            operation = "generator_upgraded",
+            fromTier = currentTier,
+            toTier = upgrade.tier,
+            eggId = source.eggId,
+            eggName = source.eggName,
+        }
 end
 
 function MergeEggPrototypeService:MergeBoardEggs(player, request)
@@ -15427,6 +15470,7 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
     if record.lastEggMergeAt and now - record.lastEggMergeAt < 0.2 then
         return false, "egg_merge_throttled"
     end
+    local highestTierBefore = self:_highestOwnedEggTier(record)
     if not self:_applyEggMerge(record, sourceTier) then
         return false, "no_merge_available"
     end
@@ -15440,7 +15484,17 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
         boardDistance = boardDistance,
     })
     self:_updateTutorial(record, now, true)
-    return true
+    local resultTier = sourceTier + 1
+    local eggId = self:_eggProgression(record)[resultTier]
+    return true,
+        {
+            operation = "merged",
+            fromTier = sourceTier,
+            toTier = resultTier,
+            eggId = eggId,
+            eggName = self:_eggDisplayName(eggId),
+            unlocked = resultTier > highestTierBefore,
+        }
 end
 
 function MergeEggPrototypeService:ToggleAutoCombine(player)
@@ -15687,7 +15741,8 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
     request = type(request) == "table" and request or {}
     local upgradeId = tostring(request.upgradeId or "")
     local price = self:_managementUpgradeCost(record, upgradeId)
-    if not self:_managementUpgradeDefinition(upgradeId) then
+    local definition = self:_managementUpgradeDefinition(upgradeId)
+    if not definition then
         return false, "invalid_management_upgrade"
     end
     if not price then
@@ -15781,7 +15836,13 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
         stationDistance = stationDistance,
         activeSlots = self:_activeSlotCount(record),
     })
-    return true
+    return true,
+        {
+            operation = "purchased",
+            upgradeId = upgradeId,
+            displayName = tostring(definition.display_name or upgradeId),
+            level = levelBefore + 1,
+        }
 end
 
 function MergeEggPrototypeService:PurchaseRebirth(player, request)
@@ -16104,6 +16165,7 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if not source then
         return false, reason
     end
+    local highestTierBefore = self:_highestOwnedEggTier(record)
 
     if team.initialized ~= true and tierBefore ~= 0 then
         return false, "first_egg_required"
@@ -16225,6 +16287,9 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
             operation = wasInitialized and "upgraded" or "deployed",
             fromTier = tierBefore,
             toTier = resultTier,
+            eggId = source.eggId,
+            eggName = source.eggName,
+            unlocked = resultTier > highestTierBefore,
         }
 end
 

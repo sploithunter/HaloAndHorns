@@ -622,8 +622,8 @@ team and queue model:
   presentation. Wall steps resolve the exact lower-left Buy Egg card, pulse that real button, and
   attach the same large bobbing `CLICK HERE` pill used by the other tutorials rather than sending
   the trail to the wall origin. That explicit click cue teaches purchases one through three, then
-  retires; the tutorial card and purchase result popup continue counting the required five Earth
-  Eggs down after every click. The server then
+  retires; the tutorial card continues counting the required five Earth Eggs down after every
+  click, while the overlaid action toast confirms the actual egg created. The server then
   accepts player-directed ordering: completion requires five purchased eggs, at least one real
   equal-tier combination (board-to-board or board-to-deployed), and at least one deployed egg. It
   does not require all four hatchers or prescribe whether merging happens before deployment. Wave 1
@@ -670,7 +670,12 @@ team and queue model:
   after Wave 6 when the skip condition has not been met. Its Buy Egg result never reuses the
   opening lesson's lifetime five-purchase countdown. A successful merge, base-source upgrade, or
   deployed-egg upgrade during this beat shows the config-authored five-second encouragement; the
-  ordinary short action feedback remains unchanged outside that lesson. After Wave 10 the potion tent and Macros
+  ordinary short action feedback remains unchanged outside that lesson. Through Wave 10, the same
+  scaled tutorial/hotbar footprint doubles as a queued activity feed: server action results name
+  the real egg or upgrade for creation, tier discovery, merge, deployment, generator, management,
+  bulwark, cannon, and Quartermaster events. Gems and each cumulative 1,000 Waycoins earned in the
+  session also produce feedback. Repeated events coalesce while distinct actions queue, preventing
+  rapid purchases or currency ticks from leaving stale instructions on screen. After Wave 10 the potion tent and Macros
   unhide; the tent/sign uses the config-owned visible transparency instead of treating its authored
   hidden transparency as the reveal value. Talk completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when

@@ -243,10 +243,19 @@ return function()
             expect(config.tutorial.combat_cards.upgrade_waves.body).to.equal(
                 "The egg-upgrade lesson will begin after Wave 6."
             )
-            expect(config.tutorial.success_feedback.egg_upgraded.text).to.equal(
-                "EGG UPGRADED — GOOD JOB. YOU'VE GOT THIS."
+            expect(config.tutorial.activity_feedback.through_wave).to.equal(10)
+            expect(config.tutorial.activity_feedback.default_duration_seconds).to.equal(2.5)
+            expect(config.tutorial.activity_feedback.egg_upgrade_duration_seconds).to.equal(5)
+            expect(config.tutorial.activity_feedback.maximum_queue).to.equal(4)
+            expect(config.tutorial.activity_feedback.waycoin_milestone_amount).to.equal(1000)
+            expect(config.tutorial.activity_feedback.copies.egg_created).to.equal("%s CREATED")
+            expect(config.tutorial.activity_feedback.copies.egg_unlocked).to.equal("%s UNLOCKED")
+            expect(config.tutorial.activity_feedback.copies.tutorial_egg_upgraded).to.equal(
+                "%s UPGRADED — GREAT JOB. YOU'VE GOT THIS."
             )
-            expect(config.tutorial.success_feedback.egg_upgraded.duration_seconds).to.equal(5)
+            expect(config.tutorial.activity_feedback.copies.waycoins_collected).to.equal(
+                "%s WAYCOINS COLLECTED"
+            )
             expect(config.tutorial.pause_after_quartermaster_wave).to.equal(10)
             expect(config.quartermaster.user_id).to.equal(873359641)
             expect(config.quartermaster.greeting).to.equal("I'll get you whatever you need.")
@@ -446,8 +455,20 @@ return function()
             expect(observer:find("FIVE EARTH EGGS CREATED", 1, true)).to.be.ok()
             expect(observer:find("result.tutorialEggUpgrade == true", 1, true)).to.be.ok()
             expect(observer:find("TUTORIAL_EGG_UPGRADED_SECONDS", 1, true)).to.be.ok()
+            expect(observer:find("local function enqueueFeedback", 1, true)).to.be.ok()
+            expect(observer:find("Signals.CurrencyUpdate.OnClientEvent", 1, true)).to.be.ok()
+            expect(observer:find('currency == "hall_coins"', 1, true)).to.be.ok()
+            expect(observer:find('currency == "gems"', 1, true)).to.be.ok()
+            expect(observer:find("currentMilestone > previousMilestone", 1, true)).to.be.ok()
+            expect(observer:find("function layoutBoardActionFeedback", 1, true)).to.be.ok()
+            expect(observer:find("tutorialFrame.AbsolutePosition.X", 1, true)).to.be.ok()
             expect(service:find('record.tutorialStep == "create_five"', 1, true)).to.be.ok()
             expect(service:find("tutorialEggUpgrade = tutorialEggUpgrade", 1, true)).to.be.ok()
+            expect(service:find('operation = "created"', 1, true)).to.be.ok()
+            expect(service:find('operation = "merged"', 1, true)).to.be.ok()
+            expect(service:find('operation = "generator_upgraded"', 1, true)).to.be.ok()
+            expect(service:find("unlocked = resultTier > highestTierBefore", 1, true)).to.be.ok()
+            expect(service:find("displayName = tostring(definition.display_name", 1, true)).to.be.ok()
             expect(observer:find("BULWARK TUTORIAL", 1, true)).to.be.ok()
             expect(observer:find('targetKind == "engineer"', 1, true)).to.be.ok()
             expect(observer:find("tutorialCueButton", 1, true)).to.be.ok()

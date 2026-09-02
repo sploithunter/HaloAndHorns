@@ -45,17 +45,33 @@ local EGG_HEALTH_BILLBOARD = assert(
 )
 local TUTORIAL_CLICK_CUE =
     assert((CONFIG.tutorial or {}).click_cue, "merge_egg_prototype.tutorial.click_cue is required")
-local TUTORIAL_EGG_UPGRADED_FEEDBACK = assert(
-    ((CONFIG.tutorial or {}).success_feedback or {}).egg_upgraded,
-    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded is required"
+local TUTORIAL_ACTIVITY_FEEDBACK = assert(
+    (CONFIG.tutorial or {}).activity_feedback,
+    "merge_egg_prototype.tutorial.activity_feedback is required"
 )
-local TUTORIAL_EGG_UPGRADED_TEXT = assert(
-    TUTORIAL_EGG_UPGRADED_FEEDBACK.text,
-    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.text is required"
+local TUTORIAL_ACTIVITY_COPIES = assert(
+    TUTORIAL_ACTIVITY_FEEDBACK.copies,
+    "merge_egg_prototype.tutorial.activity_feedback.copies is required"
+)
+local TUTORIAL_ACTIVITY_THROUGH_WAVE = assert(
+    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.through_wave),
+    "merge_egg_prototype.tutorial.activity_feedback.through_wave is required"
+)
+local TUTORIAL_ACTIVITY_DEFAULT_SECONDS = assert(
+    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.default_duration_seconds),
+    "merge_egg_prototype.tutorial.activity_feedback.default_duration_seconds is required"
 )
 local TUTORIAL_EGG_UPGRADED_SECONDS = assert(
-    tonumber(TUTORIAL_EGG_UPGRADED_FEEDBACK.duration_seconds),
-    "merge_egg_prototype.tutorial.success_feedback.egg_upgraded.duration_seconds is required"
+    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.egg_upgrade_duration_seconds),
+    "merge_egg_prototype.tutorial.activity_feedback.egg_upgrade_duration_seconds is required"
+)
+local TUTORIAL_ACTIVITY_MAXIMUM_QUEUE = assert(
+    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.maximum_queue),
+    "merge_egg_prototype.tutorial.activity_feedback.maximum_queue is required"
+)
+local TUTORIAL_WAYCOIN_MILESTONE = assert(
+    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.waycoin_milestone_amount),
+    "merge_egg_prototype.tutorial.activity_feedback.waycoin_milestone_amount is required"
 )
 
 local MergeEggPrototypeObserver = {}
@@ -1153,6 +1169,17 @@ local function processPlayerHatchRevealQueue()
     end
 end
 
+local function tutorialActivityCopy(copyId, ...)
+    local template = assert(
+        TUTORIAL_ACTIVITY_COPIES[copyId],
+        string.format(
+            "merge_egg_prototype.tutorial.activity_feedback.copies.%s is required",
+            copyId
+        )
+    )
+    return string.format(tostring(template), ...)
+end
+
 local function createBoardActionFeedback(parent)
     local label = Instance.new("TextLabel")
     label.Name = "BoardActionFeedback"
@@ -1181,12 +1208,48 @@ local function createBoardActionFeedback(parent)
     stroke.Color = Color3.fromRGB(95, 230, 135)
     stroke.Thickness = 3
     stroke.Parent = label
-    return label, stroke
+    return label, stroke, sizeConstraint
+end
+
+local function layoutBoardActionFeedback(label, sizeConstraint, tutorialCard)
+    local tutorialFrame = tutorialCard and tutorialCard.frame
+    if
+        tutorialFrame
+        and tutorialFrame.Visible
+        and tutorialFrame.AbsoluteSize.X > 0
+        and tutorialFrame.AbsoluteSize.Y > 0
+    then
+        label.AnchorPoint = Vector2.zero
+        local currentPosition = label.Position
+        label.Position = UDim2.fromOffset(
+            MergeTutorialHud.stableScreenOffset(
+                tutorialFrame.AbsolutePosition.X,
+                label.AbsolutePosition.X,
+                currentPosition.X.Offset
+            ),
+            MergeTutorialHud.stableScreenOffset(
+                tutorialFrame.AbsolutePosition.Y,
+                label.AbsolutePosition.Y,
+                currentPosition.Y.Offset
+            )
+        )
+        label.Size = UDim2.fromOffset(tutorialFrame.AbsoluteSize.X, tutorialFrame.AbsoluteSize.Y)
+        sizeConstraint.MinSize = Vector2.zero
+        sizeConstraint.MaxSize = Vector2.new(10000, 10000)
+        return
+    end
+    label.AnchorPoint = Vector2.new(0.5, 0.5)
+    label.Position = UDim2.fromScale(0.5, 0.72)
+    label.Size = UDim2.new(0.9, 0, 0, 64)
+    sizeConstraint.MinSize = Vector2.new(240, 56)
+    sizeConstraint.MaxSize = Vector2.new(520, 64)
 end
 
 local function boardActionResultCopy(result)
     if result.ok == true then
         local action = tostring(result.action or "")
+        local value = type(result.value) == "table" and result.value or {}
+        local eggName = string.upper(tostring(value.eggName or "EGG"))
         if action == "equip_best" then
             return string.format(
                 "EQUIPPED %d EGG%s",
@@ -1194,31 +1257,25 @@ local function boardActionResultCopy(result)
                 tonumber(result.value) == 1 and "" or "S"
             )
         elseif action == "create" then
-            local value = type(result.value) == "table" and result.value or {}
-            local required = tonumber(value.tutorialRequiredEggs)
-            local created = tonumber(value.eggsCreated)
-            if required and created then
-                local remaining = math.max(0, math.floor(required - created))
-                if remaining > 0 then
-                    return string.format("%d MORE EGG%s", remaining, remaining == 1 and "" or "S")
-                end
-                return "FIVE EARTH EGGS CREATED"
-            end
-            return "EGG ADDED TO BOARD"
+            return tutorialActivityCopy("egg_created", eggName)
         elseif action == "upgrade_base" then
-            return "SPAWN LEVEL INCREASED"
+            return tutorialActivityCopy("generator_unlocked", eggName)
         elseif action == "purchase_upgrade" then
-            return "UPGRADE PURCHASED"
+            return tutorialActivityCopy(
+                "management_upgraded",
+                string.upper(tostring(value.displayName or "MANAGEMENT"))
+            )
         elseif action == "toggle_auto" then
             return "AUTO-COMBINE UPDATED"
         elseif action == "merge_slots" then
-            return "EGGS MERGED"
+            local copyId = value.unlocked == true and "egg_unlocked" or "egg_merged"
+            return tutorialActivityCopy(copyId, eggName)
         elseif action == "deploy_to_hatcher" then
-            return "EGG DEPLOYED"
+            local copyId = value.operation == "upgraded" and "egg_upgraded" or "egg_deployed"
+            return tutorialActivityCopy(copyId, eggName)
         elseif action == "rebirth" then
             return string.format("REBIRTH %d ACTIVE", math.max(0, tonumber(result.value) or 0))
         elseif action == "bulwark" then
-            local value = type(result.value) == "table" and result.value or {}
             if value.operation == "unlocked" then
                 return "BULWARK UNLOCKED"
             elseif value.operation == "installed" then
@@ -1230,7 +1287,6 @@ local function boardActionResultCopy(result)
             end
             return "BULWARK UPDATED"
         elseif action == "cannon" then
-            local value = type(result.value) == "table" and result.value or {}
             if value.operation == "unlocked" then
                 return "CANNON UNLOCKED"
             elseif value.operation == "installed" or value.operation == "equipped" then
@@ -1241,6 +1297,8 @@ local function boardActionResultCopy(result)
                 return string.format("CANNON UPGRADED TO TIER %d", tonumber(value.tier) or 1)
             end
             return "CANNON UPDATED"
+        elseif action == "quartermaster_talk" then
+            return tutorialActivityCopy("quartermaster_ready")
         end
         return "ACTION COMPLETE"
     end
@@ -3952,9 +4010,66 @@ function MergeEggPrototypeObserver.start()
     feedbackGui.DisplayOrder = 130
     feedbackGui.Enabled = false
     feedbackGui.Parent = pg
-    local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(feedbackGui)
+    local boardActionFeedback, boardActionFeedbackStroke, boardActionFeedbackSizeConstraint =
+        createBoardActionFeedback(feedbackGui)
     local tutorialCard = createTutorialCard(tutorialGui)
     local boardActionFeedbackUntil = 0
+    local activeFeedback = nil
+    local feedbackQueue = {}
+    local collectedWaycoins = 0
+    local function earlyActivityFeedbackAllowed()
+        if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
+            return false
+        end
+        local world = prototypeWorld()
+        local wave = world and world:GetAttribute("CurrentWave")
+        return type(wave) == "number" and wave >= 0 and wave <= TUTORIAL_ACTIVITY_THROUGH_WAVE
+    end
+    local function showFeedback(item)
+        activeFeedback = item
+        if not item then
+            boardActionFeedback.Visible = false
+            return
+        end
+        boardActionFeedback.Text = item.text
+        boardActionFeedback.TextColor3 = item.success and Color3.fromRGB(190, 255, 205)
+            or Color3.fromRGB(255, 205, 105)
+        boardActionFeedbackStroke.Color = item.success and Color3.fromRGB(95, 230, 135)
+            or Color3.fromRGB(245, 170, 60)
+        boardActionFeedback.Visible = true
+        boardActionFeedbackUntil = os.clock() + item.duration
+    end
+    local function showNextFeedback()
+        showFeedback(table.remove(feedbackQueue, 1))
+    end
+    local function enqueueFeedback(key, copy, success, duration)
+        if not copy or copy == "" then
+            return
+        end
+        local item = {
+            key = key,
+            text = copy,
+            success = success,
+            duration = math.max(0.1, duration),
+        }
+        if activeFeedback and activeFeedback.key == key then
+            showFeedback(item)
+            return
+        end
+        for index, queued in ipairs(feedbackQueue) do
+            if queued.key == key then
+                feedbackQueue[index] = item
+                return
+            end
+        end
+        feedbackQueue[#feedbackQueue + 1] = item
+        while #feedbackQueue > math.max(1, math.floor(TUTORIAL_ACTIVITY_MAXIMUM_QUEUE)) do
+            table.remove(feedbackQueue, 1)
+        end
+        if not activeFeedback then
+            showNextFeedback()
+        end
+    end
     local bulwarkMenu = MergeBulwarkMenu.new(gui, function(action)
         Signals.MergeEggPrototypeBoardAction:FireServer(action)
     end)
@@ -3996,23 +4111,74 @@ function MergeEggPrototypeObserver.start()
                 cannonMenu:show(result.value)
             end
         end
+        if success and not earlyActivityFeedbackAllowed() then
+            return
+        end
         local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
-        boardActionFeedback.Text = tutorialEggUpgrade and tostring(TUTORIAL_EGG_UPGRADED_TEXT)
+        local value = type(result.value) == "table" and result.value or {}
+        local copy = tutorialEggUpgrade
+                and tutorialActivityCopy(
+                    "tutorial_egg_upgraded",
+                    string.upper(tostring(value.eggName or "EGG"))
+                )
             or boardActionResultCopy(result)
-        boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
-            or Color3.fromRGB(255, 205, 105)
-        boardActionFeedbackStroke.Color = success and Color3.fromRGB(95, 230, 135)
-            or Color3.fromRGB(245, 170, 60)
-        boardActionFeedback.Visible = true
-        local feedbackSeconds = tutorialEggUpgrade and math.max(0.1, TUTORIAL_EGG_UPGRADED_SECONDS)
-            or 2.5
-        boardActionFeedbackUntil = os.clock() + feedbackSeconds
+        local key = tutorialEggUpgrade and "tutorial_egg_upgraded"
+            or string.format(
+                "%s:%s:%s",
+                success and "success" or "failure",
+                action,
+                success and operation or tostring(result.reason or "action_refused")
+            )
+        enqueueFeedback(
+            key,
+            copy,
+            success,
+            tutorialEggUpgrade and TUTORIAL_EGG_UPGRADED_SECONDS
+                or TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+        )
+    end)
+    Signals.CurrencyUpdate.OnClientEvent:Connect(function(data)
+        if not earlyActivityFeedbackAllowed() or type(data) ~= "table" then
+            return
+        end
+        local change = tonumber(data.change)
+        if not change or change <= 0 then
+            return
+        end
+        local currency = tostring(data.currency or "")
+        if currency == "hall_coins" then
+            local previousMilestone = math.floor(collectedWaycoins / TUTORIAL_WAYCOIN_MILESTONE)
+            collectedWaycoins += change
+            local currentMilestone = math.floor(collectedWaycoins / TUTORIAL_WAYCOIN_MILESTONE)
+            if currentMilestone > previousMilestone then
+                local milestoneAmount = currentMilestone * TUTORIAL_WAYCOIN_MILESTONE
+                enqueueFeedback(
+                    "currency:hall_coins",
+                    tutorialActivityCopy(
+                        "waycoins_collected",
+                        MergeEggCostFormat.format(milestoneAmount)
+                    ),
+                    true,
+                    TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+                )
+            end
+        elseif currency == "gems" then
+            enqueueFeedback(
+                "currency:gems",
+                tutorialActivityCopy("gem_collected"),
+                true,
+                TUTORIAL_ACTIVITY_DEFAULT_SECONDS
+            )
+        end
     end)
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
+        collectedWaycoins = 0
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
             bulwarkMenu:hide()
             cannonMenu:hide()
-            boardActionFeedback.Visible = false
+            activeFeedback = nil
+            table.clear(feedbackQueue)
+            showFeedback(nil)
         end
     end)
     Signals.MergeEggPrototypePlayerHatch.OnClientEvent:Connect(function(result)
@@ -4126,8 +4292,9 @@ function MergeEggPrototypeObserver.start()
             destroyEggFocusVisual(tutorialFocusVisual)
             tutorialFocusVisual = nil
         end
-        if boardActionFeedback.Visible and os.clock() >= boardActionFeedbackUntil then
-            boardActionFeedback.Visible = false
+        if activeFeedback and os.clock() >= boardActionFeedbackUntil then
+            activeFeedback = nil
+            showNextFeedback()
         end
         if observing and boardDrag and boardDrag.model and boardDrag.model.Parent then
             if boardDrag.mode == "drag" then
@@ -4166,7 +4333,9 @@ function MergeEggPrototypeObserver.start()
         updateBoardWallControls(boardWallControls, observing)
         if not observing then
             setTutorialHotbarCovered(nil, false)
-            boardActionFeedback.Visible = false
+            activeFeedback = nil
+            table.clear(feedbackQueue)
+            showFeedback(nil)
             updateTutorialCard(tutorialCard, nil, false)
             clearTutorialClickCue()
             waveMeter.frame.Visible = false
@@ -4186,6 +4355,13 @@ function MergeEggPrototypeObserver.start()
         updateTutorialCard(tutorialCard, world, true, bulwarkMenu, cannonMenu)
         if tutorialCard.frame.Visible then
             layoutTutorialCardOverHotbar(tutorialCard)
+        end
+        if boardActionFeedback.Visible then
+            layoutBoardActionFeedback(
+                boardActionFeedback,
+                boardActionFeedbackSizeConstraint,
+                tutorialCard
+            )
         end
         local tutorialStep = world and tostring(world:GetAttribute("MergeEggTutorialStep") or "")
         if
