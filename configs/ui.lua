@@ -585,6 +585,12 @@ local uiConfig = {
         tooltip = 3000,
     },
 
+    -- ScreenGui ordering is separate from descendant ZIndex. The compact menu popup must render
+    -- above ordinary HUD surfaces such as SquadHud while remaining below tutorial/modal overlays.
+    display_order = {
+        compact_menu_overlay = 105,
+    },
+
     -- === ACCESSIBILITY ===
     accessibility = {
         high_contrast_mode = false,

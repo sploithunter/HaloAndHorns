@@ -7285,3 +7285,11 @@ first-session cohort rates.
   synchronization path so the Hell-themed `Browse Potions` hook cannot silently return.
 - Corrected the map contract: after Wave 10 the tents reveal as scenery, while Macros' Quartermaster
   Services menu remains the only Merge potion entry point.
+
+## 2026-09-01 — Compact menu renders above pet cards
+
+- Moved only the expanded compact-menu popup into a dedicated, config-ordered `ScreenGui` above the
+  ordinary pet HUD. Pet cards remain visible, but can no longer paint over or intercept the Quest,
+  Events, Awards, Admin, and related menu buttons.
+- Added a regression contract proving the overlay parenting and confirming the menu controller does
+  not hide or mutate `SquadHud`.

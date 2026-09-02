@@ -11,6 +11,19 @@ local ArchetypeLogic = loadModule("src/Shared/Game/ArchetypeLogic.lua")
 local geoPowers = ArchetypeLogic.availablePowers("geomancer", archetypes)
 
 return function()
+    describe("compact menu HUD priority", function()
+        it("layers the expanded menu above pets without hiding the pet HUD", function()
+            local tray = readFile("src/Client/Systems/MenuTrayStyle.lua")
+            local ui = readFile("configs/ui.lua")
+
+            expect(ui:find("compact_menu_overlay = 105", 1, true)).to.be.ok()
+            expect(tray:find('overlayGui.Name = "CompactMenuOverlayGui"', 1, true)).to.be.ok()
+            expect(tray:find("overlayGui.DisplayOrder = COMPACT_MENU_DISPLAY_ORDER", 1, true)).to.be.ok()
+            expect(tray:find("popup.Parent = overlayGui", 1, true)).to.be.ok()
+            expect(tray:find('FindFirstChild("SquadHud"', 1, true)).never.to.be.ok()
+        end)
+    end)
+
     describe("Merge tutorial hotbar coverage", function()
         it(
             "hides only the central slots, preserves flank controls, and blocks activation",

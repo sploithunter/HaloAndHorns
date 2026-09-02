@@ -44,3 +44,8 @@ changing their world offset or maximum viewing distance.
 Tutorial target callouts are part of the responsive HUD too. The Merge `CLICK HERE` cue keeps one
 authored desktop footprint and applies a config-owned display-class scale; phone uses 0.5 for both
 the unlock and install targets so the callout does not obscure the menu it explains.
+
+Cross-`ScreenGui` overlap must use config-owned `DisplayOrder`; descendant `ZIndex` cannot establish
+priority between independent screen roots. The compact expanded menu therefore owns a dedicated
+overlay above ordinary HUD cards such as `SquadHud`, while the pet cards remain visible underneath.
+Tutorials and true modal surfaces retain higher display orders.
