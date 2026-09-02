@@ -11,12 +11,12 @@
 ]]
 
 return {
-    -- v8: onboarding is the Homeworld spine (join → Resonance → enter cave →
-    -- finish cave → Rally). The 32 combat-training beats are a named
+    -- v9: onboarding is the Homeworld spine (join → Resonance → enter cave →
+    -- finish cave → Rally). The 33 combat-training beats are a named
     -- Combat Training funnel so Creator Hub conversion is of people who
     -- entered the cave, not of every joiner. Activation stays optional goals.
     -- Roblox onboarding allows 100 steps; skipped steps count as completed.
-    version = 8,
+    version = 9,
     onboarding = {
         enabled = true,
         steps = {
@@ -142,6 +142,12 @@ return {
                 name = "Combat: Bind Heal",
                 event = "tutorial_step_completed",
                 match = { stepId = "combat_bind_heal" },
+            },
+            {
+                id = "combat_enhance_heal",
+                name = "Combat: Enhance Heal",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_enhance_heal" },
             },
             {
                 id = "combat_ready_heal",

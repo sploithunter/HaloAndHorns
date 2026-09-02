@@ -820,7 +820,7 @@ local function showUiPulse(token, name, options)
         pulseTarget = target
         -- Boolean: the card lives under a ScrollingFrame (or other clipper). Do not treat this
         -- as the ScreenGui — indexing that flag for GuiInset crashed and hid TAKE OFF / CLICK HERE.
-        local useOverlay = ancestorClips(target)
+        local useOverlay = options.forceOverlay == true or ancestorClips(target)
         if not useOverlay then
             pulseTargetWasClipped = target.ClipsDescendants
             target.ClipsDescendants = false
@@ -933,7 +933,8 @@ end
 -- Power up Resonance is five clicks. A single PowersButton cue dies once the
 -- menu opens. Walk live PowerChoice state the same way bind-power walks Edit:
 --   Powers -> Resonance row -> empty slot -> Potency -> Apply
-local function showSlotPowerGuidance(token)
+local function showSlotPowerGuidance(token, tutorialGuide)
+    tutorialGuide = tutorialGuide or "Power:resonance"
     local cueText = TutorialLocalization.text(
         TutorialLanguageState.getLocaleId(),
         "tutorial.cue.click_here",
@@ -979,7 +980,7 @@ local function showSlotPowerGuidance(token)
                         arrow = true,
                         clickCue = true,
                         cueText = cueText,
-                        tutorialGuide = "Resonance",
+                        tutorialGuide = tutorialGuide,
                     })
                 elseif phase == "pick_slot" then
                     showUiPulse(token, nil, {
@@ -1277,6 +1278,7 @@ local function showHealerFocusGuidance(token, state)
                         clickCue = true,
                         cueSide = target.cue_side,
                         cueText = cueText,
+                        forceOverlay = target.force_overlay == true,
                     })
                 end
             end
@@ -1488,8 +1490,8 @@ local function apply(state)
         showBindPowerGuidance(stepToken, target.hotbar_target)
     elseif state.id == "bind_power" then
         showBindPowerGuidance(stepToken, "resonance")
-    elseif state.id == "slot_power" then
-        showSlotPowerGuidance(stepToken)
+    elseif (target.kind == "ui" and target.cue == "enhance_power") or state.id == "slot_power" then
+        showSlotPowerGuidance(stepToken, target.tutorial_guide)
     elseif target.kind == "ui" and target.cue == "equip_tank" then
         showEquipTankGuidance(stepToken, state)
     elseif target.kind == "ui" and target.cue == "equip_squad" then
@@ -1509,6 +1511,7 @@ local function apply(state)
             ),
             hotbarType = target.hotbar_type,
             hotbarTarget = target.hotbar_target,
+            forceOverlay = target.force_overlay == true,
         }) -- primary ui target → arrow/callout
     end
     if target.ui and type(target.ui) == "string" then
@@ -1519,7 +1522,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "combat-training directions in Merge (2026-09-02)"
+local BUILD = "combat-training Heal enhancement + enemy overlay (2026-09-02)"
 
 function TutorialController.start()
     if started then

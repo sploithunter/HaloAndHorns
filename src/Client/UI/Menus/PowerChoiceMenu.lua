@@ -1931,9 +1931,7 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
             )
         local wrap = Instance.new("TextButton")
         wrap.Name = "Row_" .. r.id
-        if r.id == "resonance" then
-            wrap:SetAttribute("TutorialGuide", "Resonance")
-        end
+        wrap:SetAttribute("TutorialGuide", "Power:" .. r.id)
         wrap.LayoutOrder = i
         wrap.Size = UDim2.new(0.99, 0, 0, rowPixelHeight())
         wrap.BackgroundTransparency = 1

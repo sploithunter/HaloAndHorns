@@ -655,6 +655,7 @@ loader:RegisterModule(
         "ConfigLoader",
         "DataService",
         "PotionService",
+        "EnhancementService",
         "EnemyService",
         "MissionInstanceService",
         "TutorialService",

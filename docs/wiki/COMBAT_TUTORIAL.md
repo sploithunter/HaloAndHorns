@@ -1,6 +1,6 @@
 # Combat Tutorial
 
-Last checked: 2026-09-01
+Last checked: 2026-09-02
 
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
 bound, cast, and enhanced, `first_fight` points the FIGHT trail at the
@@ -96,7 +96,7 @@ the place-level Merge suppression must yield to the mission directions.
   `EnemyService` (not `model:Destroy()`), sweeps the mission AABB, then
   culls any live extras. Admin reset-to-beginning wipes
   `profile.CombatTutorial` and leaves the instance so testers do not stay
-  on 26/32 with a stacked pack.
+  on 27/33 with a stacked pack.
 - Mid-fight leave (`leave_resume`) rewinds only to that loop's lobby so
   brew / Heal / tank / vials can be prepped again. It does not restart
   the track. Pillar steps keep progress. Each completed combat beat fires
@@ -152,40 +152,47 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
    `unlock_when` list is all true: at least one pet equipped, Heal on the
    saved bar, and the hotbar **not** in edit mode (Done). Named checks live
    in `src/Shared/Game/TutorialUnlock.lua`.
-9. `ready_heal` — ENTER (same shared door checklist: pets equipped, not editing)
-10. `select_pet` — two shielded dogs; one live pet is wounded to the yellow
+9. `enhance_heal` — lobby; reuse the five-click Farm & Fight enhancement flow:
+   Powers → Heal → empty slot → Potency → Apply. The step grants one natural
+   level-3 Potency plus an inherent Heal slot and advances only for an
+   `enhancement_slotted` event whose configured context is `powerId = "heal"`.
+   Existing v10 test saves keep their later position; reset-to-beginning exercises
+   the new lesson from a clean track.
+10. `ready_heal` — ENTER (same shared door checklist: pets equipped, not editing)
+11. `select_pet` — two shielded dogs; one live pet is wounded to the yellow
     bar (`wound.remaining_fraction`); click that injured card. `CLICK HERE`
     sits to the left of that card's health bar.
-11. `cast_heal` — press Heal; **drop shields** so the dogs become killable
-12. `heal_fight` — defeat both training dogs (`combat_tutorial_room_cleared`).
+12. `cast_heal` — press Heal; **drop shields** so the dogs become killable
+13. `heal_fight` — defeat both training dogs (`combat_tutorial_room_cleared`).
     The pillar stays dark; the inner door reseals so they cannot leave yet.
-13. `advance_heal` — pillar after the room is clear
-14. `ready_weaken` — lobby; grant two Weakening Vials; ENTER
-15. `select_enemy` — two shielded dogs; click the marked enemy card
-16. `throw_weaken` — throw Weakening Vial; **drop shields**
-17. `weaken_fight` — defeat both training dogs (`combat_tutorial_room_cleared`).
+14. `advance_heal` — pillar after the room is clear
+15. `ready_weaken` — lobby; grant two Weakening Vials; ENTER
+16. `select_enemy` — two shielded dogs; click the marked enemy card. Enemy-card
+    cues are forced into `TutorialCueOverlay` so MissionMap cannot cover them.
+17. `throw_weaken` — throw Weakening Vial; **drop shields**
+18. `weaken_fight` — defeat both training dogs (`combat_tutorial_room_cleared`).
     Same as heal: the pillar stays dark until the room is clear.
-18. `advance_weaken` — pillar after the room is clear
-19. `stack_brew` — grant ten Berserk Brews; drink at least five (capsule `n / 5`).
+19. `advance_weaken` — pillar after the room is clear
+20. `stack_brew` — grant ten Berserk Brews; drink at least five (capsule `n / 5`).
     Sips fill the damage meter; `drain_seconds` stays 60. The frost-door plate
     counts down: DRINK FIVE MORE → FOUR → THREE → TWO → ONE. Extra sips
     shake the badge and leak a barely-contained halo (`BrewJuice`).
-20. `ready_stack` — ENTER. `ensure_meter` refreshes the Berserk pie so lobby
+21. `ready_stack` — ENTER. `ensure_meter` refreshes the Berserk pie so lobby
     sipping is not wasted by the walk in.
-21. `stack_fight` — 400 HP dog (was 900). Five sips are ~2.4× damage, so this
+22. `stack_fight` — 400 HP dog (was 900). Five sips are ~2.4× damage, so this
     should die faster than the 275 HP dogs, not slower. Three doggies, not a tank.
-22. `advance_stack` — pillar
-23. `ready_tank` — reset to three doggies, then walk inventory: open Pets, take
+23. `advance_stack` — pillar
+24. `ready_tank` — reset to three doggies, then walk inventory: open Pets, take
     off the last/weakest doggy, click the strongest tank (or Best Pets → Tank,
     which may replace the weakest on a full squad), Activate (Pets closes), ENTER.
     Inventory card cues use `TutorialCueOverlay` (DisplayOrder 130, same inset
     as MenuOverlay) so the same on-top sign is not clipped by `ItemsScroll`
     and does not float a topbar-height above the card.
     Door stays sealed until `squad_has_role` tank. Other pets stay legal.
-24. `tank_fight` — soak-and-finish
-25. `advance_tank` — pillar
-26. `ready_healer` — ENTER
-27. `healer_hunt` — Training Healer (`rabid_bunny` + `auto_heal`) plus two dogs.
+25. `tank_fight` — soak-and-finish
+26. `advance_tank` — pillar
+27. `ready_healer` — ENTER
+28. `healer_hunt` — Training Healer (`rabid_bunny` + `auto_heal`) plus two dogs.
     The healer card wears the game-wide green heal mark at the end of its bar.
     Completes only when that healer dies. `KILL THIS` hides after the first
     click **or** when pets already have that healer (`TargetID`). A click
@@ -193,15 +200,16 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
     cannot peel them off. It returns only when live pets leave a still-alive
     healer, not when the healer dies (the card is gone — do not ask for
     another click). HUD assist expiry is not a miss.
-28. `healer_fight` — finish the remaining dogs (`combat_tutorial_room_cleared`).
+    `KILL THIS` uses the same forced overlay as the earlier enemy-card cue.
+29. `healer_fight` — finish the remaining dogs (`combat_tutorial_room_cleared`).
     The pillar stays dark; the inner door stays sealed. A stuck-disengage
     despawn that never fires `enemy_defeated` still clears the room once no
     tutorial enemies are left.
-29. `advance_healer` — pillar after the room is clear
-30. `ready_together` — grant extra vials/brews; ENTER
-31. `together_fight` — two unshielded dogs + a healer, **no click arrows**.
+30. `advance_healer` — pillar after the room is clear
+31. `ready_together` — grant extra vials/brews; ENTER
+32. `together_fight` — two unshielded dogs + a healer, **no click arrows**.
     An easy clear (`combat_tutorial_room_cleared`).
-32. `advance_together` — pillar; this last advance marks the track **done**,
+33. `advance_together` — pillar; this last advance marks the track **done**,
     warps them back outside (`return_to_exit`), grants earned Level 2, and
     fires `combat_tutorial_complete` so Homeworld can teach Rally.
 
