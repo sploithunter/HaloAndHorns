@@ -46,34 +46,38 @@ return function()
             expect(tutorialHud.combatCard(tutorial, 11)).to.equal(nil)
         end)
 
-        it("authors non-overlapping Pets and tutorial shares of one responsive dock", function()
-            local petsLayout = hotbarConfig.size.flank.classic_pets
-            local tutorialLayout = config.tutorial.card_layout.relative.classic
-            local petsRight = petsLayout.position.x + petsLayout.size.x
-            local tutorialRight = tutorialLayout.position.x + tutorialLayout.size.x
+        it("fits both flanks and the pill in one authored assembly", function()
+            local size = hotbarConfig.size
+            local assembly = size.assembly
+            local flank = size.flank
 
-            expect(hotbarConfig.size.flank.classic_menu_reserved_end < petsLayout.position.x).to.equal(
-                true
+            expect(assembly.left_span + assembly.bar_span + assembly.right_span).to.equal(
+                size.design_span
             )
-            expect(petsRight < tutorialLayout.position.x).to.equal(true)
-            expect(tutorialRight <= 1).to.equal(true)
-            expect(petsLayout.minimum_size.width >= 44).to.equal(true)
-            expect(config.tutorial.card_layout.size_constraint.minimum.width >= 280).to.equal(true)
-            expect(config.tutorial.card_layout.size_constraint.maximum.width >= 1000).to.equal(true)
+            expect(flank.size + flank.gap).to.equal(assembly.left_span)
+            expect(flank.gap + flank.size * 2 + flank.inner).to.equal(assembly.right_span)
+            expect(assembly.pill_overhang.width > 0).to.equal(true)
+            expect(assembly.pill_overhang.height > 0).to.equal(true)
+            expect(flank.classic_pets).to.equal(nil)
             expect(config.tutorial.card_layout.background_transparency).to.equal(0.5)
         end)
 
-        it("mounts the tutorial in that dock using scale geometry and constraints", function()
+        it("mounts the tutorial over the inner pill using the same relative geometry", function()
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             local hotbar = readFile("src/Client/Systems/HotbarBar.lua")
             expect(observer:find("layoutTutorialCardOverHotbar", 1, true)).to.be.ok()
             expect(observer:find("MergeTutorialHud.combatCard", 1, true)).to.be.ok()
+            expect(hotbar:find('greaterHotbar.Name = "GreaterHotbarFrame"', 1, true)).to.be.ok()
+            expect(hotbar:find("root.Parent = greaterHotbar", 1, true)).to.be.ok()
+            expect(hotbar:find("UIViewportScale.attach(greaterHotbar)", 1, true)).to.be.ok()
             expect(hotbar:find('responsiveDock.Name = "ResponsiveDock"', 1, true)).to.be.ok()
-            expect(observer:find('hotbarGui:FindFirstChild("ResponsiveDock")', 1, true)).to.be.ok()
-            expect(observer:find("frame.Parent = responsiveDock", 1, true)).to.be.ok()
-            expect(observer:find("frame.Position = UDim2.fromScale", 1, true)).to.be.ok()
-            expect(observer:find("frame.Size = UDim2.fromScale", 1, true)).to.be.ok()
-            expect(observer:find('sizeConstraint.Name = "ResponsiveBounds"', 1, true)).to.be.ok()
+            expect(observer:find('hotbarGui:FindFirstChild("GreaterHotbarFrame")', 1, true)).to.be.ok()
+            expect(observer:find("card.frame.Parent = bar", 1, true)).to.be.ok()
+            expect(observer:find("card.frame.AnchorPoint = pillFrame.AnchorPoint", 1, true)).to.be.ok()
+            expect(observer:find("card.frame.Position = pillFrame.Position", 1, true)).to.be.ok()
+            expect(observer:find("card.frame.Size = pillFrame.Size", 1, true)).to.be.ok()
+            expect(observer:find("card.aspect", 1, true)).to.equal(nil)
+            expect(observer:find("card.sizeConstraint", 1, true)).to.equal(nil)
             expect(observer:find("TUTORIAL_CARD_LAYOUT.background_transparency", 1, true)).to.be.ok()
             expect(observer:find("visibleMenuBlockerRight", 1, true)).to.equal(nil)
             expect(observer:find("stableScreenOffset", 1, true)).to.equal(nil)

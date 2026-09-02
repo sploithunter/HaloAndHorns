@@ -361,9 +361,9 @@ return {
         resume_wave_delay_seconds = 3,
         auto_collector_attribute = "AutoCollectorEnabled",
         required_eggs = 5,
-        -- The tutorial and Classic Pets control occupy authored shares of the same viewport dock.
-        -- This relationship is scale-based; min/max constraints protect readability and touch size
-        -- without measuring rendered pixel bounds or converting them back into placement offsets.
+        -- The tutorial card mounts over the hotbar's inner PillFrame and copies that frame's UDim
+        -- relationship. `relative` and `size_constraint` below are retained for transient board
+        -- feedback in the full-screen presentation layer, not for interactive hotbar controls.
         card_layout = {
             background_transparency = 0.5,
             display_order = 100,

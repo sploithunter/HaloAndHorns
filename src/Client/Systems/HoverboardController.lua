@@ -1127,18 +1127,19 @@ function HoverboardController.start()
     local function ensureButton()
         local pg = player:WaitForChild("PlayerGui")
         local hotbarGui = pg:WaitForChild("HotbarBar")
-        local bar = hotbarGui:WaitForChild("Bar", 15)
-        if not bar then
+        local greaterHotbar = hotbarGui:WaitForChild("GreaterHotbarFrame", 15)
+        local rightControls = greaterHotbar and greaterHotbar:WaitForChild("RightControls", 15)
+        if not rightControls then
             return
         end
         -- BaseUI builds this, MenuTrayStyle pills it, HotbarFlank docks it.
         -- Destroy a leftover hand-rolled chrome copy if one is still on the bar.
         local name = buttonCfg.name or "HoverboardButton"
-        local existing = bar:FindFirstChild(name)
+        local existing = rightControls:FindFirstChild(name)
         if existing and existing:GetAttribute("Pillified") ~= true then
             existing:Destroy()
         end
-        button = bar:WaitForChild(name, 20)
+        button = rightControls:WaitForChild(name, 20)
         if not button then
             return
         end
