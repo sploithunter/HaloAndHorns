@@ -1249,8 +1249,11 @@ clean.
   shows LOCKED until that flag is set. Currently Owned and Next
   Upgrade each render the family/tier's config-owned transparent PNG
   from the generated preview manifest. The menu owns no live model,
-  WorldModel, ViewportFrame, or model-thumbnail fallback. Install pays to place
-  Tier 1 on that pad. Upgrade pays to advance only that pad. Persist is `MergeCannonPersist`: owned + per-pad
+  WorldModel, ViewportFrame, or model-thumbnail fallback. The lower Next card owns the only action
+  button: it reads UNLOCK for a locked family, repaints to INSTALL immediately after that family is
+  owned, reads UPGRADE for the installed family, and disables as MAXED at its cap. There is no
+  separate footer action. Install pays to place Tier 1 on that pad; Upgrade pays to advance only
+  that pad. Persist is `MergeCannonPersist`: owned + per-pad
   slots only. Purchase does not compare the bay record to a rebuilt
   MergeDefense table and does not read the live wave. Board-action toasts use DisplayOrder 130 so they
   sit in front of the workshop (120), not behind it. Heal aims injured pets (`CombatDamageTaken`) and
@@ -1277,9 +1280,10 @@ clean.
 
 - The walk-up workshop is a pick-then-act panel: Currently Owned and Next
   Upgrade previews on the left, the six families as a list on the right.
-  Buy unlocks the family globally. Upgrade lives in the next-upgrade
-  card and only advances this slot. Install pays to place Tier 1 on
-  this slot. Persist is `MergeBulwarkPersist` (owned + per-slot
+  The lower Next card owns the only action button: UNLOCK for a locked family, INSTALL for an owned
+  family not on this line, UPGRADE for the installed family, and disabled MAXED at its cap. Unlock
+  remains global; Install places Tier 1 on this slot; Upgrade advances only this slot. There is no
+  separate footer action. Persist is `MergeBulwarkPersist` (owned + per-slot
   installs only). Purchase does not compare the bay record to MergeDefense
   and does not read the live wave. Per-tier `upgradeNotes` and draft roles (stop, bleed,
   hunt, shred, hold, ward) live on `MergeBulwarkProgression`. Impaler Palisade
