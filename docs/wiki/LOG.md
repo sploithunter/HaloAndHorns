@@ -7406,3 +7406,9 @@ first-session cohort rates.
   celebrations also keep the shared hotbar layer below their currently open workshop, leaving the
   newly enabled Install action unobscured and clickable. Rejected-action feedback remains above the
   menu so its explanation is still readable.
+
+## 2026-09-02 — Combat-rank chip title restored
+
+- Fixed the docked combat-rank chip's title collapsing to zero width when its truncated label and
+  parent both attempted horizontal automatic sizing. The config-sized chip now gives the title the
+  remaining row width through flex layout and keeps its crest/title explicitly above the background.
