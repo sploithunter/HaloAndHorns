@@ -7227,3 +7227,13 @@ first-session cohort rates.
 - The Wave 10 potion booth now restores the config-owned visible transparency of `0`. Its authored
   parts begin at transparency `1`, which the generic vendor helper had incorrectly preserved as the
   reveal value even while Macros himself was visible.
+
+## 2026-09-01 — First-ten-wave actions use the tutorial footprint as an activity feed
+
+- Through Wave 10, successful egg creation, tier discovery, merge, deployment, generator and
+  management upgrades, defense changes, and the Quartermaster arrival display config-authored
+  feedback over the already-scaled tutorial/hotbar footprint. Server results carry canonical egg
+  and upgrade names so the client does not infer progression from stale UI state.
+- The feed also celebrates Gems and cumulative 1,000-Waycoin collection milestones. Distinct actions
+  queue, repeated action/currency bursts coalesce, and the queue is config-capped to avoid covering
+  later instructions with stale confirmations.

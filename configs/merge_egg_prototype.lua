@@ -512,10 +512,26 @@ return {
                 target = "quartermaster",
             },
         },
-        success_feedback = {
-            egg_upgraded = {
-                text = "EGG UPGRADED — GOOD JOB. YOU'VE GOT THIS.",
-                duration_seconds = 5,
+        -- Action feedback temporarily covers the already-scaled tutorial/hotbar footprint instead
+        -- of adding another mobile HUD element. Same-action bursts coalesce; distinct actions queue.
+        activity_feedback = {
+            through_wave = 10,
+            default_duration_seconds = 2.5,
+            egg_upgrade_duration_seconds = 5,
+            maximum_queue = 4,
+            waycoin_milestone_amount = 1000,
+            copies = {
+                egg_created = "%s CREATED",
+                egg_unlocked = "%s UNLOCKED",
+                egg_merged = "%s CREATED",
+                egg_deployed = "%s DEPLOYED",
+                egg_upgraded = "%s UPGRADED",
+                tutorial_egg_upgraded = "%s UPGRADED — GREAT JOB. YOU'VE GOT THIS.",
+                generator_unlocked = "%s GENERATOR UNLOCKED",
+                management_upgraded = "%s UPGRADE PURCHASED",
+                gem_collected = "GEM COLLECTED",
+                waycoins_collected = "%s WAYCOINS COLLECTED",
+                quartermaster_ready = "QUARTERMASTER READY",
             },
         },
     },
