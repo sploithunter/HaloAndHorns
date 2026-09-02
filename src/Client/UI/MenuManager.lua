@@ -752,8 +752,19 @@ function MenuManager:BounceInPanel(panelName)
 end
 
 -- Panel interface methods with effect options
-function MenuManager:OpenShopPanel(effect)
-    return self:OpenPanel("Shop", effect)
+function MenuManager:OpenShopPanel(effect, presentation)
+    local panel = self:GetPanel("Shop")
+    if self.currentPanel == panel and panel and panel.IsVisible and panel:IsVisible() then
+        self:_hideCurrentPanelForSwitch()
+    end
+    if panel and panel.SetPresentation then
+        panel:SetPresentation(presentation)
+    end
+    local opened = self:OpenPanel("Shop", effect)
+    if not opened and panel and panel.ClearPresentation then
+        panel:ClearPresentation()
+    end
+    return opened
 end
 
 function MenuManager:OpenPotionShopPanel(effect)

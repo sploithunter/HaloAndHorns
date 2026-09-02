@@ -1525,12 +1525,18 @@ quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when bal
 
 ## Halo & Horns — Unified Pet Shop monetization
 
-Last checked: 2026-08-15
+Last checked: 2026-09-01
 
 - The **Pet Shop is Robux-only**. Its default tab lists every configured live game
   pass with the Marketplace thumbnail, authored benefit description, Robux price,
   and authoritative owned/purchase state. Earned gem/coin offers belong to the
   neighboring economy shop and are deliberately excluded from this panel.
+- The Merge Quartermaster opens this same panel in a one-open filtered presentation rather than
+  owning a second purchase UI. `merge_egg_prototype.quartermaster.services.game_pass_ids` is the
+  ordered source of truth and currently selects the eight live passes that affect Merge play: VIP,
+  Auto Collector, Speed Boost, Golden Touch, Rainbow Radiance, Huge Hunter, Extra Pet, and Second
+  Wind. The Quartermaster view hides Boosts and Founder's Gift while retaining authoritative
+  Marketplace prices, owned state, and purchase signals. Kade-only rocketboards remain excluded.
 - Robux prices shown to players are resolved client-side with
   `MarketplaceService:GetProductInfo`, so Roblox Managed/Regional Pricing is the
   display authority. `configs/monetization.lua` retains the current dashboard

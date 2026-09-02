@@ -7261,3 +7261,18 @@ first-session cohort rates.
   hatcher/player pets isolated from Combat Training's loaned squad and avoids a parallel tutorial.
 - A durable player-pet final hit in Merge now receives ordinary combat XP only after
   `CombatTutorialDone`; Home tutorial/Ascension completion alone no longer unlocks Merge XP.
+
+## 2026-09-01 — Quartermaster offers the live Merge pass catalog
+
+- Added one ordered config-owned Quartermaster catalog containing every currently live pass with a
+  Merge consequence: VIP, Auto Collector, Speed Boost, Golden Touch, Rainbow Radiance, Huge Hunter,
+  Extra Pet, and Second Wind. Kade's dedicated rocketboards remain excluded.
+- The Quartermaster reuses the Pet Shop's Marketplace price, owned-state, and purchase pipeline in a
+  filtered one-open presentation; it does not duplicate Robux purchase logic or expose unrelated
+  Boosts/Founder's Gift tabs.
+- Combat Training now disappears from the service list once its durable progress is complete, and a
+  forged repeat request is rejected server-side. The existing Merge kill-XP gate remains tied to
+  `CombatTutorialDone`.
+- iPhone 17 Pro landscape validation rendered the three-service unfinished menu and the two-service
+  completed menu inside the full device bounds, then exercised the real observer/MenuManager path
+  to an eight-card, Game-Passes-only Quartermaster storefront.

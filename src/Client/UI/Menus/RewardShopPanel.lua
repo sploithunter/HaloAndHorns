@@ -63,6 +63,8 @@ function RewardShopPanel.new()
     self.ownedPasses = {}
     self.founderPasses = {}
     self.foundersChoice = nil
+    self._pendingPresentation = nil
+    self._presentation = nil
     -- Prices are deliberately client-resolved. Managed Pricing can return a
     -- different pass price for each player, and Roblox's dynamic-price test
     -- only recognizes MarketplaceService calls made from a LocalScript.
@@ -110,10 +112,50 @@ function RewardShopPanel.new()
     return self
 end
 
+-- Queue a one-open presentation without creating a parallel storefront. The Quartermaster uses
+-- this to reuse the same Marketplace price, owned-state, and purchase pipeline with a configured
+-- subset of passes. Show consumes the pending value; Hide clears the active value.
+function RewardShopPanel:SetPresentation(presentation)
+    if self.isVisible then
+        return false
+    end
+    if type(presentation) ~= "table" then
+        self._pendingPresentation = nil
+        return true
+    end
+    self._pendingPresentation = table.clone(presentation)
+    if type(presentation.passIds) == "table" then
+        self._pendingPresentation.passIds = table.clone(presentation.passIds)
+    end
+    return true
+end
+
+function RewardShopPanel:ClearPresentation()
+    self._pendingPresentation = nil
+end
+
+function RewardShopPanel:_applyPresentation()
+    local presentation = self._pendingPresentation
+    self._pendingPresentation = nil
+    self._presentation = presentation
+    self.selectedTab = "passes"
+    if presentation then
+        self.livePasses =
+            MonetizationCatalog.selectedPetShopPasses(monetization, presentation.passIds)
+        self.liveProducts = presentation.showProducts == true
+                and MonetizationCatalog.liveProducts(monetization)
+            or {}
+    else
+        self.livePasses = MonetizationCatalog.petShopPasses(monetization)
+        self.liveProducts = MonetizationCatalog.liveProducts(monetization)
+    end
+end
+
 function RewardShopPanel:Show(parent)
     if self.isVisible then
         return
     end
+    self:_applyPresentation()
     self:_createUI(parent)
     self.isVisible = true
     Signals.GetOwnedPasses:FireServer()
@@ -122,9 +164,6 @@ function RewardShopPanel:Show(parent)
 end
 
 function RewardShopPanel:Hide()
-    if not self.isVisible then
-        return
-    end
     if self.frame then
         self.frame:Destroy()
     end
@@ -134,6 +173,7 @@ function RewardShopPanel:Hide()
     self.statusLabel = nil
     self.tabs = {}
     self.isVisible = false
+    self._presentation = nil
 end
 
 function RewardShopPanel:IsVisible()
@@ -206,7 +246,7 @@ function RewardShopPanel:_createHeader()
     title.Size = UDim2.new(1, -120, 0, 38)
     title.Position = UDim2.new(0, 22, 0, 7)
     title.BackgroundTransparency = 1
-    title.Text = "PET SHOP"
+    title.Text = tostring((self._presentation and self._presentation.title) or "PET SHOP")
     title.TextColor3 = COLORS.text
     title.TextScaled = true
     title.Font = Enum.Font.GothamBlack
@@ -219,7 +259,10 @@ function RewardShopPanel:_createHeader()
     subtitle.Size = UDim2.new(1, -120, 0, 21)
     subtitle.Position = UDim2.new(0, 24, 0, 43)
     subtitle.BackgroundTransparency = 1
-    subtitle.Text = "Game passes and deterministic Robux purchases"
+    subtitle.Text = tostring(
+        (self._presentation and self._presentation.subtitle)
+            or "Game passes and deterministic Robux purchases"
+    )
     subtitle.TextColor3 = COLORS.subtext
     subtitle.TextScaled = true
     subtitle.Font = Enum.Font.GothamMedium
@@ -263,7 +306,11 @@ function RewardShopPanel:_createTabs()
     if #self.liveProducts > 0 then
         definitions[#definitions + 1] = { id = "products", text = "BOOSTS" }
     end
-    if self.foundersChoice and self.foundersChoice.canChoose == true then
+    if
+        (not self._presentation or self._presentation.showFoundersChoice == true)
+        and self.foundersChoice
+        and self.foundersChoice.canChoose == true
+    then
         definitions[#definitions + 1] = {
             id = "founder",
             text = "🎁 FOUNDER'S GIFT",
