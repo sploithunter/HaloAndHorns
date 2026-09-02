@@ -397,9 +397,12 @@ team and queue model:
   alter affordability checks.
 - Merge-only rebirth is the combat and economy escape valve when enemies overtake the current
   defense ceiling. Every player starts at Rank 1 for free and the progression cap is Rank 50. A
-  config-owned square curve prices Rank N at `50,000 × (N-1)²` Waycoins, preserving Rank 2 at 50,000
-  and Rank 3 at 200,000 while pricing Rank 50 at 120,050,000. Exact `costs_by_rank` entries override
-  the curve for future tuning. The first two paid transitions produce 2x/3x pet power, cannon power,
+  proposed Rank N indexes Merge egg tier N and costs `that tier's authored egg creation value × 200`.
+  Rank 2 therefore indexes Ice at 250 Waycoins and costs 50,000; Rank 10 indexes Black Ice at
+  64,000 and costs 12,800,000. The rank quote never reads the player's live Spawn Level or hatcher
+  capacity, so upgrading either during a run cannot make rebirth cheaper or more expensive. The
+  first two paid transitions produce
+  2x/3x pet power, cannon power,
   pet endurance, bulwark damage, defeated-enemy Waycoin amounts, and defeated-enemy Gem amounts. All
   factors live in `rebirth.per_rebirth_factors`; additive stacking means an authored factor of `2` resolves to
   1x/2x/3x at paid-rebirth counts 0/1/2. Cannon and bulwark radius factors are explicitly `1`, so
@@ -1056,6 +1059,11 @@ clean.
   Its green/gray state is server-authored from that exact assignment plan, not merely from board
   inventory count; an unusable low-tier egg therefore leaves the control gray rather than promising
   an equip action that the server will refuse.
+- Spawn Level is a global-floor shortcut, not a discounted substitute for board merging. Its
+  server-authoritative Waycoin quote is `2 × proposed egg creation value × owned hatcher slots`.
+  Purchased but currently empty slots count as available hatchers because the upgrade raises that
+  capacity's floor too. The world publishes the proposed value, slot count, multiplier, and final
+  quote from the same transaction calculation used for the debit.
 - Each floor roster owns a permanent 7.5-stud cross-lane footprint: one eight-stud station cell minus
   a 0.5-stud gap. A fixed six-slot logical canvas and 6.25-stud minimum rearward footprint keep the
   Layer-3 maximum readable when neighboring slots activate. Each local anchor raycasts to the actual

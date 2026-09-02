@@ -7489,3 +7489,14 @@ first-session cohort rates.
   ~200-stud meshes and stalled spawning.
 - Added a lossless Studio-place extractor and an Edit-mode production-spawn regression script.
   Edit round-trip, isolated live-server spawning, and all four user-placed gameplay tiers passed.
+# 2026-09-02 — Spawn Level price scales with hatcher capacity
+
+- Replaced the independent Spawn Level price curve with the server-authoritative formula
+  `2 × proposed egg creation value × owned hatcher slots`. Purchased empty slots count, so the
+  global-floor button cannot undercut building the same tier across a larger frontline. Published
+  the quote inputs as world attributes and added pure pricing regressions for four- and nine-slot
+  runs.
+- Replaced the rebirth square curve and live Spawn Level floor with the stable rank-indexed formula
+  `egg creation value at proposed rank × 200`. Rank 2 remains 50,000 and Rank 10 is 12,800,000;
+  live egg upgrades and hatcher purchases cannot move the quote. The indexed tier, egg value, and
+  multiplier are published separately for inspection.

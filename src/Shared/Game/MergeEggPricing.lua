@@ -27,4 +27,29 @@ function MergeEggPricing.doublingTierCost(firstAmount, growth, tierIndex, firstT
     return math.max(0, math.floor(amount * (multiplier ^ exponent) + 0.5))
 end
 
+-- A generator-floor upgrade replaces one board build for every available hatcher, so capacity
+-- must participate in the quote. The caller supplies the config-owned proposed-egg multiplier.
+function MergeEggPricing.generatorUpgradeCost(
+    proposedEggValue,
+    availableHatcherCount,
+    proposedEggValueMultiplier
+)
+    local eggValue = tonumber(proposedEggValue)
+    if eggValue == nil then
+        eggValue = 0
+    end
+    local hatchers = tonumber(availableHatcherCount)
+    if hatchers == nil then
+        hatchers = 1
+    end
+    local multiplier = tonumber(proposedEggValueMultiplier)
+    if multiplier == nil then
+        multiplier = 1
+    end
+    eggValue = math.max(0, math.floor(eggValue))
+    hatchers = math.max(1, math.floor(hatchers))
+    multiplier = math.max(1, multiplier)
+    return math.max(0, math.floor(eggValue * hatchers * multiplier + 0.5))
+end
+
 return MergeEggPricing

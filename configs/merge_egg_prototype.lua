@@ -693,9 +693,9 @@ return {
             -- later creation prices double to 500, 1,000, 2,000, and so on.
             first_upgraded_egg_cost = 250,
             egg_cost_growth = 2,
-            -- Grass → Ice costs 1,000; every later generator advance doubles.
-            first_upgrade_cost = 1000,
-            upgrade_cost_growth = 2,
+            -- Raising the global spawn floor promotes every owned hatcher. Charge twice the
+            -- proposed output egg's current creation value for each available hatcher slot.
+            upgrade_proposed_egg_value_multiplier = 2,
         },
         prototype_huge_progression = {
             normal_tier_count = #NORMAL_EGG_PROGRESSION,
@@ -2023,9 +2023,10 @@ return {
     },
 
     -- Merge-only prestige. Rank 1 is the free starting state and Rank 50 is the progression cap.
-    -- The square cost curve preserves the playtest anchors exactly (Rank 2 = 50,000; Rank 3 =
-    -- 200,000) while keeping every later price configuration-owned. Exact rank entries override
-    -- the curve when a future balance pass needs a bespoke transition. A future pass may add
+    -- Proposed Rank N indexes Merge egg tier N and costs that tier's authored creation value times
+    -- one constant. The quote therefore follows the egg ladder but never changes when the player
+    -- buys Spawn Level or hatcher capacity during a live run. A multiplier of 200 preserves the
+    -- first transition: Rank 2 indexes Ice at 250 Waycoins and costs 50,000. A future pass may add
     -- minimum deployed-egg tiers per rank through the empty requirements list below. Rebirth keeps
     -- permanent player progression and Gem upgrades, resets the active Merge run and wallet, and
     -- scales pets, defenses, and enemy currency payouts without compounding. A factor of 2 means
@@ -2038,15 +2039,7 @@ return {
         scope = "merge_defense_only",
         currency = "hall_coins",
         max_rank = 50,
-        cost_curve = {
-            base = 50000,
-            exponent = 2,
-            rank_offset = 1,
-        },
-        costs_by_rank = {
-            [2] = 50000,
-            [3] = 200000,
-        },
+        indexed_egg_value_multiplier = 200,
         requirements = {
             minimum_deployed_egg_tier_by_rank = {},
         },

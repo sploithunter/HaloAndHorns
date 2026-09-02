@@ -5,10 +5,8 @@ return function()
         local config = {
             enabled = true,
             currency = "hall_coins",
-            costs_by_rank = {
-                [2] = 50000,
-                [3] = 200000,
-            },
+            max_rank = 50,
+            indexed_egg_value_multiplier = 200,
             damage_stacking = "additive",
             per_rebirth_factors = {
                 stacking = "additive",
@@ -30,33 +28,33 @@ return function()
             },
         }
 
-        it("starts free at Rank 1 and uses only the two explicitly authored transitions", function()
-            local first = Rebirth.nextCost(config, 0)
-            local second = Rebirth.nextCost(config, 1)
+        it("indexes the proposed rank to its egg value and applies one constant", function()
+            local first = Rebirth.nextCost(config, 0, 250)
+            local second = Rebirth.nextCost(config, 1, 500)
             expect(Rebirth.rankForCount(0)).to.equal(1)
             expect(Rebirth.rankForCount(1)).to.equal(2)
             expect(Rebirth.rankForCount(2)).to.equal(3)
             expect(first.amount).to.equal(50000)
             expect(first.rank).to.equal(2)
+            expect(first.indexedEggTier).to.equal(2)
+            expect(first.indexedEggValue).to.equal(250)
+            expect(first.eggValueMultiplier).to.equal(200)
             expect(first.currency).to.equal("hall_coins")
-            expect(second.amount).to.equal(200000)
+            expect(second.amount).to.equal(100000)
             expect(second.rank).to.equal(3)
-            expect(Rebirth.nextCost(config, 2)).to.equal(nil)
         end)
 
-        it("extends a config-owned curve through an explicit maximum rank", function()
-            local extended = table.clone(config)
-            extended.max_rank = 50
-            extended.cost_curve = {
-                base = 50000,
-                exponent = 2,
-                rank_offset = 1,
-            }
-            expect(Rebirth.nextCost(extended, 0).amount).to.equal(50000)
-            expect(Rebirth.nextCost(extended, 1).amount).to.equal(200000)
-            expect(Rebirth.nextCost(extended, 2).amount).to.equal(450000)
-            expect(Rebirth.nextCost(extended, 48).amount).to.equal(120050000)
-            expect(Rebirth.nextCost(extended, 49)).to.equal(nil)
+        it("quotes Rank 10 from Black Ice without consulting live Spawn Level state", function()
+            local price = Rebirth.nextCost(config, 8, 64000)
+            expect(price.rank).to.equal(10)
+            expect(price.indexedEggTier).to.equal(10)
+            expect(price.indexedEggValue).to.equal(64000)
+            expect(price.amount).to.equal(12800000)
+        end)
+
+        it("stops after the configured maximum rank", function()
+            expect(Rebirth.nextCost(config, 48, 1).rank).to.equal(50)
+            expect(Rebirth.nextCost(config, 49, 1)).to.equal(nil)
         end)
 
         it("adds another base damage unit per rebirth without compounding", function()
