@@ -10,6 +10,9 @@ previews and spawned model identity. Cannon cards use 24 group-owned 256×256 tr
 assets normalized to a 78% silhouette footprint rather than model thumbnails or live
 ViewportFrames. `scripts/merge_tier_runtime_manifest.json` proves 24 cannon mappings, 24 cannon
 preview mappings, 24 bulwark mappings, 24 bulwark preview mappings, and 48 distinct model assets.
+The cannon pipeline generator also owns and round-trips each tier's world scale, wheel seating, and
+the Rage Tier-1 barrel yaw, so its deep local-source audit cannot erase or falsely reject runtime
+presentation tuning.
 Fresh Studio Edit and Play audits passed
 all 48 templates, all 48 transient runtime clones/spawns, and fail-closed rejection of a deliberately
 stale model ID. Existing world instances are replaced when their manifest identity or cannon scale
