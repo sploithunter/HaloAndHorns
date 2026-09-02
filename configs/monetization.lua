@@ -310,8 +310,8 @@ return {
                 -- battles"): 3x spirit-form/lockout recovery whenever the
                 -- player is NOT InCombat (the same server attribute the
                 -- combat music keys off). Does NOTHING mid-fight by design.
-                -- TODO(handler): recovery-rate consumer in the spirit-form
-                -- lockout tick; feature flag below is stored today.
+                -- EnemyService consumes this during the spirit-form lockout
+                -- tick; the feature remains inert during combat by design.
                 features = { fast_recovery_mult = 3 },
             },
             icon = "rbxassetid://134787629853603",
