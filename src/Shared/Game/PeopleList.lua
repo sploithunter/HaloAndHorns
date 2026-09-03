@@ -380,6 +380,7 @@ function PeopleList.layout(config, state)
         and mergeWaveHeight ~= nil
         and mergeWaveHeight > 0
     local top
+    local topScale
     if state.tutorialOwnsCorner == true then
         top = math.floor(viewportHeight * requiredNumber(mode.tutorial_top, "tutorial_top") + 0.5)
     elseif state.mergePlace == true and tonumber(state.mergeWaveBottom) ~= nil then
@@ -397,6 +398,7 @@ function PeopleList.layout(config, state)
             else requiredNumber(mode.top, "top")
         top = math.floor(viewportHeight * topScale + 0.5)
     end
+    topScale = topScale or (top / viewportHeight)
 
     local widthScale = requiredNumber(mode.width, "width")
     local rightScale = requiredNumber(mode.right, "right")
@@ -446,6 +448,7 @@ function PeopleList.layout(config, state)
             viewportHeight * requiredNumber(mode.max_body_height, "max_body_height") + 0.5
         ),
         top = top,
+        topScale = topScale,
         rightScale = rightScale,
         cardWidthScale = requiredNumber(mode.card_width, "card_width"),
         cardGapScale = requiredNumber(mode.card_gap, "card_gap"),

@@ -1,7 +1,6 @@
 --[[
-    QuestTrackerStyle (client) — dock the Current Quest tracker above Roblox's People list. Its
-    4px right inset and 397px width match that CoreGui panel, with the same justified 14px top inset
-    for rounded-screen clearance, so the objective stays predictable without covering the playfield.
+    QuestTrackerStyle (client) — place the Current Quest tracker in the shared upper-right HUD
+    stack ahead of the custom People list. The stack owns their responsive alignment and tiling.
 
     Scoped post-process of ProfessionalBaseUI's quest_tracker_pane (BaseUI logic untouched). The
     progress fill is area-themed via UITheme (blue default). Idempotent.
@@ -15,6 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 local QuestDisplayMode = require(ReplicatedStorage.Shared.Game.QuestDisplayMode)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local CloseButton = require(script.Parent.Parent.UI.Components.CloseButton)
+local UpperRightHudStack = require(script.Parent.Parent.UI.UpperRightHudStack)
 
 local QuestTrackerStyle = {}
 local placesConfig
@@ -372,29 +372,13 @@ function QuestTrackerStyle.start()
         end
         pane:SetAttribute("Restyled", true)
 
-        local trackerGui = Instance.new("ScreenGui")
-        trackerGui.Name = "QuestTrackerGui"
-        trackerGui.ResetOnSpawn = false
-        trackerGui.DisplayOrder = 90
-        trackerGui.IgnoreGuiInset = true
-        trackerGui.Parent = pg
-
-        -- Anchor at the upper-right safe edge. These measured offsets match
-        -- configs/people_list.lua (same column as the custom People list):
-        -- 4px from the right edge, 14px from the rounded-screen top, 397px wide.
-        local dock = Instance.new("Frame")
-        dock.Name = "QuestTrackerDock"
-        dock.AnchorPoint = Vector2.new(1, 0)
-        dock.Position = UDim2.fromScale(1, 0)
-        dock.Size = UDim2.fromOffset(0, 0)
-        dock.BackgroundTransparency = 1
-        dock.ClipsDescendants = false
-        dock.Parent = trackerGui
-
-        pane.AnchorPoint = Vector2.new(1, 0)
-        pane.Position = UDim2.fromOffset(-4, 14)
+        -- Quest and tutorial alternate as the first item in one shared responsive column. The
+        -- People list is the next layout item, so changing this pane between ring, pill, and full
+        -- presentations can never overlap it or leave a stale gap.
+        pane.AnchorPoint = Vector2.new(0, 0)
+        pane.Position = UDim2.fromScale(0, 0)
         pane.Size = UDim2.fromOffset(397, 40)
-        pane.Parent = dock
+        UpperRightHudStack.mount(pg, pane, UpperRightHudStack.UPPER_SURFACE_ORDER)
         -- BaseUI created this pane at Z12 because it lived beneath MainContainer. The restyled
         -- quest layers intentionally start at Z2; after moving to a fresh ScreenGui, retaining Z12
         -- makes the pane's own background paint over those layers (only the Z40 tooltip survives).
