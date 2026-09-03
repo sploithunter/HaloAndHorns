@@ -16,9 +16,11 @@ particle/orbit/lightning tuning value, and all copy. Both gates say `PORTAL TO F
 `STEP THROUGH TO RETURN`. The celestial gate leads with `FARM / GROW YOUR FORTUNE`; the infernal
 gate leads with `FIGHT / EARN IT THE HARD WAY`. The client renders a theme-colored ForceField veil,
 spark motes, orbiting points, and random circumference-to-circumference procedural lightning. Copy
-is camera-facing and projected from the authored ring into a client ScreenGui so it stays legible
-over the translucent ForceField. The effect is proximity-gated and client-only; the existing public
-return-route service remains the travel authority.
+is rendered on both physical faces of the portal veil with `SurfaceGui`, so the full composition
+scales and occludes naturally with the world instead of becoming distant HUD. A narrow theme-colored
+Neon column terminates in a floating orb-and-mote halo high above each gate as its long-range
+wayfinder. The effect is proximity-gated and client-only; the existing public return-route service
+remains the travel authority.
 
 ## Phase 1 contract
 

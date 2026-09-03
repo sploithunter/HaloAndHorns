@@ -20,7 +20,6 @@ local MergeFarmFightPortalFX = {}
 
 local started = false
 local records = {}
-local signRoot = nil
 
 local function requiredNumber(value, field)
     local number = tonumber(value)
@@ -131,43 +130,41 @@ local function makeTextLabel(parent, name, text, layout, color, stroke)
     return label
 end
 
-local function makeSignRoot(cfg)
-    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-    local rootName = tostring(cfg.root_name)
-    local oldRoot = playerGui:FindFirstChild(rootName)
-    if oldRoot then
-        oldRoot:Destroy()
-    end
+local function makeSignFace(veil, face, cfg, spec, palette)
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = "PortalLettering_" .. face.Name
+    surface.Adornee = veil
+    surface.Face = face
+    surface.AlwaysOnTop = cfg.always_on_top == true
+    surface.LightInfluence = requiredNumber(cfg.light_influence, "signage.light_influence")
+    surface.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
+    surface.CanvasSize = Vector2.new(cfg.canvas_size[1], cfg.canvas_size[2])
+    surface.MaxDistance = requiredNumber(cfg.max_distance, "signage.max_distance")
+    surface.ZOffset = requiredNumber(cfg.z_offset, "signage.z_offset")
+    surface.Parent = veil
 
-    local root = Instance.new("ScreenGui")
-    root.Name = rootName
-    root.DisplayOrder = requiredNumber(cfg.display_order, "signage.display_order")
-    root.IgnoreGuiInset = cfg.ignore_gui_inset == true
-    root.ResetOnSpawn = false
-    root.Parent = playerGui
-    return root
-end
-
-local function makeSign(cfg, spec, palette)
-    local sign = Instance.new("Frame")
-    sign.Name = "PortalLettering_" .. spec.id
-    sign.AnchorPoint = Vector2.new(0.5, 0.5)
-    sign.BackgroundTransparency = 1
-    sign.Visible = false
-    sign.Parent = signRoot
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.AnchorPoint = Vector2.new(0.5, 0.5)
+    content.Position = UDim2.fromScale(0.5, 0.5)
+    content.Size = UDim2.fromScale(1, 1)
+    content.BackgroundTransparency = 1
+    content.Rotation = requiredNumber(cfg.content_rotation, "signage.content_rotation")
+    content.Parent = surface
 
     makeTextLabel(
-        sign,
+        content,
         "Destination",
         spec.destination,
         cfg.destination,
         palette.accent,
         palette.stroke
     )
-    local word = makeTextLabel(sign, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
-    makeTextLabel(sign, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
+    local word =
+        makeTextLabel(content, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
+    makeTextLabel(content, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
     makeTextLabel(
-        sign,
+        content,
         "Invitation",
         cfg.invitation.text,
         cfg.invitation,
@@ -206,12 +203,19 @@ local function makeSign(cfg, spec, palette)
         requiredNumber(cfg.divider.transparency, "signage.divider.transparency")
     divider.Position = layoutValue(cfg.divider.position, "signage.divider.position")
     divider.Size = layoutValue(cfg.divider.size, "signage.divider.size")
-    divider.Parent = sign
+    divider.Parent = content
 
     local dividerGradient = Instance.new("UIGradient")
     dividerGradient.Color = ColorSequence.new(palette.primary, palette.secondary)
     dividerGradient.Parent = divider
-    return sign
+    return surface
+end
+
+local function makeSigns(veil, cfg, spec, palette)
+    return {
+        makeSignFace(veil, Enum.NormalId.Right, cfg, spec, palette),
+        makeSignFace(veil, Enum.NormalId.Left, cfg, spec, palette),
+    }
 end
 
 local function makeVeil(runtime, ring, cfg, spec, diameter)
@@ -305,6 +309,78 @@ local function makeOrbitParts(runtime, cfg, spec)
     return parts
 end
 
+local function makeBeacon(runtime, ring, cfg, spec, portalRadius)
+    if cfg.enabled == false then
+        return nil
+    end
+
+    local height = requiredNumber(cfg.height_above_center, "beacon.height_above_center")
+    local bottomY = ring.Position.Y
+        + portalRadius
+        + requiredNumber(cfg.column_bottom_gap, "beacon.column_bottom_gap")
+    local topY = ring.Position.Y + height
+    local columnHeight = math.max(0.1, topY - bottomY)
+    local columnWidth = requiredNumber(cfg.column_width, "beacon.column_width")
+    local colors = spec.palette.lightning
+
+    local column = Instance.new("Part")
+    column.Name = "PortalBeaconColumn"
+    setSafePart(column)
+    column.Material = asMaterial(cfg.material, "beacon.material")
+    column.Color = asColor(colors[1], spec.id .. ".beacon.column")
+    column.Size = Vector3.new(columnWidth, columnHeight, columnWidth)
+    column.Position = Vector3.new(ring.Position.X, bottomY + columnHeight * 0.5, ring.Position.Z)
+    column.Transparency = requiredNumber(cfg.column_transparency, "beacon.column_transparency")
+    column.Parent = runtime
+
+    local core = Instance.new("Part")
+    core.Name = "PortalBeaconCore"
+    setSafePart(core)
+    core.Shape = Enum.PartType.Ball
+    core.Material = asMaterial(cfg.material, "beacon.material")
+    local coreSize = requiredNumber(cfg.core_size, "beacon.core_size")
+    core.Size = Vector3.new(coreSize, coreSize, coreSize)
+    core.Color = asColor(colors[2] or colors[1], spec.id .. ".beacon.core")
+    core.Position = ring.Position + Vector3.yAxis * height
+    core.Transparency = requiredNumber(cfg.core_transparency, "beacon.core_transparency")
+    core.Parent = runtime
+
+    local light = Instance.new("PointLight")
+    light.Name = "PortalBeaconGlow"
+    light.Color = asColor(colors[3] or colors[1], spec.id .. ".beacon.light")
+    light.Brightness = requiredNumber(cfg.light_brightness, "beacon.light_brightness")
+    light.Range = requiredNumber(cfg.light_range, "beacon.light_range")
+    light.Shadows = false
+    light.Parent = core
+
+    local orbit = {}
+    local count = math.max(1, math.floor(requiredNumber(cfg.orbit_count, "beacon.orbit_count")))
+    local moteSize = requiredNumber(cfg.orbit_part_size, "beacon.orbit_part_size")
+    for index = 1, count do
+        local mote = Instance.new("Part")
+        mote.Name = "PortalBeaconMote"
+        setSafePart(mote)
+        mote.Shape = Enum.PartType.Ball
+        mote.Material = asMaterial(cfg.material, "beacon.material")
+        mote.Size = Vector3.new(moteSize, moteSize, moteSize)
+        mote.Color = asColor(colors[((index - 1) % #colors) + 1], spec.id .. ".beacon.orbit")
+        mote.Transparency = requiredNumber(cfg.orbit_transparency, "beacon.orbit_transparency")
+        mote.Parent = runtime
+        table.insert(orbit, {
+            part = mote,
+            phase = ((index - 1) / count) * math.pi * 2,
+        })
+    end
+
+    return {
+        column = column,
+        core = core,
+        light = light,
+        orbit = orbit,
+        height = height,
+    }
+end
+
 local function makeEndpoint(runtime, name, size)
     local part = Instance.new("Part")
     part.Name = name
@@ -361,7 +437,8 @@ local function buildPortal(ring, cfg, spec)
     }
     local veil, light = makeVeil(runtime, ring, cfg.veil, spec, diameter)
     local emitter = makeParticles(veil, cfg.particles, spec)
-    local sign = makeSign(cfg.signage, spec, palette)
+    local signs = makeSigns(veil, cfg.signage, spec, palette)
+    local beacon = makeBeacon(runtime, ring, cfg.beacon, spec, radius)
     local markerSize = requiredNumber(cfg.lightning.marker_size, "lightning.marker_size")
     local startMarker = makeEndpoint(runtime, "LightningStart", markerSize)
     local endMarker = makeEndpoint(runtime, "LightningEnd", markerSize)
@@ -375,13 +452,14 @@ local function buildPortal(ring, cfg, spec)
         veil = veil,
         light = light,
         emitter = emitter,
-        sign = sign,
+        signs = signs,
+        beacon = beacon,
         orbit = makeOrbitParts(runtime, cfg.orbit, spec),
         startMarker = startMarker,
         endMarker = endMarker,
         boltConfig = boltConfig,
         nextBoltAt = os.clock(),
-        active = false,
+        active = nil,
     }
 end
 
@@ -439,48 +517,20 @@ local function setActive(record, active)
     record.emitter.Enabled = active
     record.light.Enabled = active
     record.veil.LocalTransparencyModifier = active and 0 or 1
-    if not active then
-        record.sign.Visible = false
+    for _, sign in ipairs(record.signs) do
+        sign.Enabled = active
     end
     for _, mote in ipairs(record.orbit) do
         mote.part.LocalTransparencyModifier = active and 0 or 1
     end
-end
-
-local function updateSign(record, cfg)
-    local camera = Workspace.CurrentCamera
-    if not camera then
-        record.sign.Visible = false
-        return
+    if record.beacon then
+        record.beacon.column.LocalTransparencyModifier = active and 0 or 1
+        record.beacon.core.LocalTransparencyModifier = active and 0 or 1
+        record.beacon.light.Enabled = active
+        for _, mote in ipairs(record.beacon.orbit) do
+            mote.part.LocalTransparencyModifier = active and 0 or 1
+        end
     end
-
-    local ring = record.ring
-    local center, onScreen = camera:WorldToViewportPoint(ring.Position)
-    local edge = camera:WorldToViewportPoint(
-        ring.Position
-            + ring.CFrame.UpVector
-                * record.radius
-                * requiredNumber(cfg.diameter_scale, "signage.diameter_scale")
-    )
-    if not onScreen or center.Z <= 0 or edge.Z <= 0 then
-        record.sign.Visible = false
-        return
-    end
-
-    local center2d = Vector2.new(center.X, center.Y)
-    local edge2d = Vector2.new(edge.X, edge.Y)
-    local pixelDiameter = (center2d - edge2d).Magnitude * 2
-    pixelDiameter = math.clamp(
-        pixelDiameter,
-        requiredNumber(cfg.minimum_pixel_size, "signage.minimum_pixel_size"),
-        requiredNumber(cfg.maximum_pixel_size, "signage.maximum_pixel_size")
-    )
-    record.sign.Position = UDim2.fromOffset(
-        center.X + requiredNumber(cfg.pixel_offset[1], "signage.pixel_offset.x"),
-        center.Y + requiredNumber(cfg.pixel_offset[2], "signage.pixel_offset.y")
-    )
-    record.sign.Size = UDim2.fromOffset(pixelDiameter, pixelDiameter)
-    record.sign.Visible = true
 end
 
 local function updateOrbit(record, cfg, now)
@@ -508,6 +558,29 @@ local function updateOrbit(record, cfg, now)
     end
 end
 
+local function updateBeacon(record, cfg, now)
+    local beacon = record.beacon
+    if not beacon then
+        return
+    end
+
+    local center = record.ring.Position + Vector3.yAxis * beacon.height
+    local speed = requiredNumber(cfg.orbit_angular_speed, "beacon.orbit_angular_speed")
+    local radius = requiredNumber(cfg.orbit_radius, "beacon.orbit_radius")
+    local wave = requiredNumber(cfg.orbit_vertical_wave, "beacon.orbit_vertical_wave")
+    local bob = math.sin(now * speed * 1.7) * requiredNumber(cfg.core_bob, "beacon.core_bob")
+    beacon.core.Position = center + Vector3.yAxis * bob
+    for _, mote in ipairs(beacon.orbit) do
+        local angle = mote.phase + now * speed
+        mote.part.Position = center
+            + Vector3.new(
+                math.cos(angle) * radius,
+                math.sin(angle * 2) * wave,
+                math.sin(angle) * radius
+            )
+    end
+end
+
 function MergeFarmFightPortalFX.start()
     if started then
         return
@@ -521,7 +594,6 @@ function MergeFarmFightPortalFX.start()
     end
     assert(type(cfg.portals) == "table", "Merge portal FX requires configured portals")
 
-    signRoot = makeSignRoot(cfg.signage)
     scan(cfg)
     Workspace.DescendantAdded:Connect(function(instance)
         if instance.Name ~= cfg.runtime_name then
@@ -544,7 +616,6 @@ function MergeFarmFightPortalFX.start()
                 if record.runtime.Parent then
                     record.runtime:Destroy()
                 end
-                record.sign:Destroy()
                 records[ring] = nil
                 continue
             end
@@ -573,7 +644,7 @@ function MergeFarmFightPortalFX.start()
         for ring, record in pairs(records) do
             if ring.Parent and record.runtime.Parent and record.active then
                 updateOrbit(record, cfg.orbit, now)
-                updateSign(record, cfg.signage)
+                updateBeacon(record, cfg.beacon, now)
             end
         end
     end)
