@@ -148,17 +148,51 @@ return function()
             expect(missingReason).to.equal("bulwark_not_installed")
         end)
 
-        it("charges one configured Waycoin for every mutation", function()
-            local price = Progression.actionCost(config)
-            expect(price.currency).to.equal("hall_coins")
-            expect(price.amount).to.equal(1)
-            local unlock =
-                Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "impaler_palisade")
-            expect(unlock.currency).to.equal("gems")
-            expect(unlock.amount).to.equal(1)
-            local other =
-                Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", "concertina_line")
-            expect(other.currency).to.equal("hall_coins")
+        it("quotes every configured unlock and target-tier price", function()
+            local expected = {
+                impaler_palisade = { unlock = 1, tiers = { 1, 1000, 10000, 100000 } },
+                concertina_line = { unlock = 10, tiers = { 1000, 10000, 100000, 1000000 } },
+                land_shark = { unlock = 100, tiers = { 5000, 50000, 500000, 5000000 } },
+                saw_blade = { unlock = 1000, tiers = { 10000, 100000, 1000000, 10000000 } },
+                grasping_hedge = { unlock = 10000, tiers = { 25000, 250000, 2500000, 25000000 } },
+                wardstone_barrier = {
+                    unlock = 100000,
+                    tiers = { 50000, 500000, 5000000, 50000000 },
+                },
+            }
+            for family, prices in pairs(expected) do
+                local unlock =
+                    Progression.actionCost(mergeConfig.team.edge_bulwarks, "unlock", family)
+                expect(unlock.currency).to.equal("gems")
+                expect(unlock.amount).to.equal(prices.unlock)
+                for tier, amount in ipairs(prices.tiers) do
+                    local install = Progression.actionCost(
+                        mergeConfig.team.edge_bulwarks,
+                        "select",
+                        family,
+                        tier
+                    )
+                    local upgrade = Progression.actionCost(
+                        mergeConfig.team.edge_bulwarks,
+                        "upgrade",
+                        family,
+                        tier
+                    )
+                    expect(install.currency).to.equal("hall_coins")
+                    expect(install.amount).to.equal(amount)
+                    expect(upgrade.amount).to.equal(amount)
+                end
+            end
+        end)
+
+        it("fails loudly when a price row is missing", function()
+            local ok = pcall(function()
+                Progression.actionCost(config, "select", "concertina_line", 1)
+            end)
+            expect(ok).to.equal(false)
+        end)
+
+        it("keeps the authored bulwark catalog and manifests complete", function()
             local families = Progression.families(mergeConfig.tier_art)
             local modelManifest = readFile("scripts/merge_bulwark_model_ids.json")
             local previewManifest = readFile("scripts/merge_bulwark_preview_ids.json")

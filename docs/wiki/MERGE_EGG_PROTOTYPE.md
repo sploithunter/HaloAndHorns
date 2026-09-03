@@ -1250,9 +1250,8 @@ clean.
   is gone. Talk the Artillery Commander behind that pad instead: the
   workshop is the same pick-then-act panel as the bulwark menu, but the
   list is the six cannon roles and that commander only writes his pad.
-  Unlock is one-time and global (access to Tier 1). Playtest
-  unlock, place, and upgrade stay one Waycoin; final unlocks will
-  almost certainly be gems or a Robux game pass. The workshop
+  Unlock is one-time and global (access to Tier 1). Every family has
+  a config-owned Gem unlock and four Waycoin target-tier prices. The workshop
   shows LOCKED until that flag is set. Currently Owned and Next
   Upgrade each render the family/tier's config-owned transparent PNG
   from the generated preview manifest. The menu owns no live model,
@@ -1280,8 +1279,19 @@ clean.
   outward from impact (per-enemy hit roll; T4 40%). Dest is
   leashed before Y-snap so they cannot clear the back wall.
   Nullifier rolls Frost Bind per enemy. No rebuilt powers.
-  Playtest unlock is Wave 1 / one Waycoin;
+  Playtest availability is Wave 1; pricing uses the production economy table.
   production stays the Wave-10 intermission. Hits do not deal damage yet.
+
+## Cannon and bulwark economy (2026-09-02)
+
+- Unlock is a one-time, per-family Gem purchase. The six catalog positions cost
+  `1 / 10 / 100 / 1,000 / 10,000 / 100,000` Gems in their displayed order.
+- Install/replacement and upgrade charge Waycoins per physical pad/line at the target tier's
+  config-owned price. The tutorial families (Heal Cannon and Impaler Palisade) use
+  `1 / 1,000 / 10,000 / 100,000`; later families use overlapping upward windows through a
+  50,000,000 Tier-4 ceiling.
+- The server, both workshop quotes, and headless price tests read the same `unlock_costs` and
+  `tier_costs` rows. Missing family or tier prices fail loudly; there is no flat action-cost fallback.
 
 ## Bulwark defense art set
 
@@ -1342,8 +1352,9 @@ clean.
   later cannons keep the middle. Each Talk opens the same unchanged
   workshop for that slot. Wardstone is egg-only.
   Select writes that slot at Tier 1. Upgrade advances only that
-  slot. Playtest unlock remains Wave 1 / one Waycoin; production
+  slot. Playtest availability remains Wave 1; pricing uses the production economy table. Production
   stays the Wave-20 intermission.
+
 - `scripts/studio/test_merge_defense_slot_geometry.luau` is the publishing gate for the authored
   layout. It verifies ten bays, exact red/orange/gold/green spacing, ten anchors on each row, four
   cannon pads per bay, the repeated rear-pad depth, and the Rank 10/20/30 attributes.

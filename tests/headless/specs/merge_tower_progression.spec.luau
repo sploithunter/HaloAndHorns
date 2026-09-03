@@ -149,15 +149,34 @@ return function()
             expect(menu.repulsor).to.equal(nil)
         end)
 
-        it("charges one configured Waycoin for every mutation", function()
-            local price = Progression.actionCost(config)
-            expect(price.currency).to.equal("hall_coins")
-            local unlock = Progression.actionCost(mergeConfig.team.edge_towers, "unlock", "heal")
-            expect(unlock.currency).to.equal("gems")
-            expect(unlock.amount).to.equal(1)
-            local other = Progression.actionCost(mergeConfig.team.edge_towers, "unlock", "rage")
-            expect(other.currency).to.equal("hall_coins")
-            expect(price.amount).to.equal(1)
+        it("quotes every configured unlock and target-tier price", function()
+            local expected = {
+                heal = { unlock = 1, tiers = { 1, 1000, 10000, 100000 } },
+                rage = { unlock = 10, tiers = { 1000, 10000, 100000, 1000000 } },
+                debuff = { unlock = 100, tiers = { 5000, 50000, 500000, 5000000 } },
+                gravity = { unlock = 1000, tiers = { 10000, 100000, 1000000, 10000000 } },
+                repulsor = { unlock = 10000, tiers = { 25000, 250000, 2500000, 25000000 } },
+                nullifier = { unlock = 100000, tiers = { 50000, 500000, 5000000, 50000000 } },
+            }
+            for family, prices in pairs(expected) do
+                local unlock =
+                    Progression.actionCost(mergeConfig.team.edge_towers, "unlock", family)
+                expect(unlock.currency).to.equal("gems")
+                expect(unlock.amount).to.equal(prices.unlock)
+                for tier, amount in ipairs(prices.tiers) do
+                    local install =
+                        Progression.actionCost(mergeConfig.team.edge_towers, "select", family, tier)
+                    local upgrade = Progression.actionCost(
+                        mergeConfig.team.edge_towers,
+                        "upgrade",
+                        family,
+                        tier
+                    )
+                    expect(install.currency).to.equal("hall_coins")
+                    expect(install.amount).to.equal(amount)
+                    expect(upgrade.amount).to.equal(amount)
+                end
+            end
         end)
 
         it("lists every authored cannon role and persists per-pad installs", function()

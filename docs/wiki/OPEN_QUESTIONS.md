@@ -34,10 +34,9 @@ Status: current
 - After playtest, should a placed pad lock until rebirth instead
   of allowing a paid replace-at-T1 switch? Current rule is paid
   switch, no refund, no free swap.
-- What should a cannon/bulwark **unlock** cost in production?
-  Playtest keeps unlock, place, and upgrade at one Waycoin.
-  Final unlocks will almost certainly be gems or a Robux game
-  pass. Do not raise the playtest price.
+- How should the new config-owned cannon/bulwark economy be tuned after live playtests?
+  Unlocks currently span 1–100,000 Gems; per-pad/per-line target-tier prices span
+  1–50,000,000 Waycoins with overlapping family windows.
 - Should later bulwark lines use different talkable avatars (Colorado alts,
   one person per line) or one Colorado plus a line-picker in the workshop?
   Current path is one person per line and no menu change.
