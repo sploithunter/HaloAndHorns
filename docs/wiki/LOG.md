@@ -7562,3 +7562,16 @@ first-session cohort rates.
 - The Quartermaster's world-space greeting now appears only when the Wave-10 Talk completes the
   first-visit tutorial, then destroys itself after the config-owned five-second introduction.
   Repeat Services visits keep the prompt and menu without leaving a GUI over the playfield.
+
+## 2026-09-02 — Four Merge bulwark rows and four cannon pads
+
+- Added an orange bulwark row at the exact midpoint between red and gold, plus a green row one
+  equal interval beyond gold toward the gate. Orange unlocks at Rebirth Rank 10 and green at Rank
+  30; both remain install hooks while the original red/gold parts retain the only combat-plane
+  meanings.
+- Added rear-left and rear-right cannon slots. Their authored centers repeat the actual
+  red-line-to-front-pad depth behind the existing pair, and server install, commander, spawn, and
+  combat paths remain locked until Rebirth Rank 20.
+- Added an Edit-mode geometry audit covering all ten bays and moved line/pad spacing plus unlock
+  ranks into `configs/merge_egg_prototype.lua`. Merge defense persistence schema v7 carries the two
+  rear cannon slots.

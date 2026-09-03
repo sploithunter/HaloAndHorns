@@ -42,7 +42,7 @@ ask that system for permission to apply its own action.
 Pad install/upgrade does not compare the encounter record to
 `GameData.MergeDefense`, does not read `waveIndex`, and does not
 rebuild the onboarding blob. `MergeCannonPersist` owns the tower
-keys (`tower_owned`, `tower_slots`, left/right family+tier). Apply
+keys (`tower_owned`, `tower_slots`, front/rear left/right family+tier). Apply
 uses the authored unlock wave only. A click writes that slice onto
 the live profile table, then the pad respawns. Fire still lives on
 the bay heartbeat and hands off to `PowerService`.
@@ -65,9 +65,8 @@ Cannons and bulwarks use the same three-step tower-defense loop.
   on *that* pad or wall. A second pad or wall does not inherit the
   first slot's tier.
 - **Workshop:** the right list is the picker only (LOCKED /
-  UNLOCKED / TIER N). Unlock and Upgrade live on the left action
-  card. Install is the bottom slot commitment and shows its coin
-  price. Layout is unchanged.
+  UNLOCKED / TIER N). The lower action card is the one contextual
+  control: UNLOCK, INSTALL, UPGRADE, or MAXED.
 - **Switch** is allowed but is not free and is not a refund.
   Replacing the family on a slot costs a new placement and drops
   that slot to Tier 1. Unlock stays. Do not free-swap every wave,
@@ -75,8 +74,10 @@ Cannons and bulwarks use the same three-step tower-defense loop.
   play wants lock-until-rebirth instead.
 - **Upgrade** is paid per slot and only advances the chassis
   installed on the commander/engineer you talked to.
-- Cannon pads today: left and right. Bulwark slots today: lane
-  (gold) and egg (red). Mid/front stay cataloged the same way.
+- Cannon pads are front left/right at Rebirth Rank 1 and rear
+  left/right at Rank 20. Bulwark rows are egg/red and lane/gold at
+  Rank 1, orange/mid at Rank 10, and green/front at Rank 30. Orange
+  and green are install lines only, not new combat planes.
 - `owned[family]` is the unlock flag, not live chassis tier.
   Persist already stores `tower_slots` / `bulwark_slots` with
   `{ family, tier }`. Old saves that only have a global owned

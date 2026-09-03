@@ -1221,9 +1221,12 @@ clean.
   `src/Shared/Game/MergeTowerModels.lua` clones the requested gameplay role/tier,
   applies that entry's `worldScale`, and grounds it on a pad's `TowerAnchor`;
   no current-art substitution or shared edge-tower scale remains.
-- Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
-  and one immediately outside position 9, pulled one 8.4-stud pad-width back
+- Each authored bay has four distinct armored tower pads. The front pair sits immediately outside
+  egg positions 1 and 9, pulled one 8.4-stud pad-width back
   from the egg-stand depth so they are not on top of the red-line engineer.
+  The rear pair repeats the actual red-line-to-front-pair depth interval behind the front pair;
+  it is not placed from a second hardcoded world coordinate. Front pads are usable at Rebirth Rank
+  1 and rear pads at Rank 20.
   The pads live under
   `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`, expose `MergeTowerPadSlot`,
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
@@ -1300,8 +1303,9 @@ clean.
   client-only cube chips. Grasping Hedge is a temporary front-wave root plus
   pile slow. After the root expires they walk; walking back in roots them
   again. Wardstone Barrier is still visual-only and egg-only. The five lane
-  families may sit on the gold line, the red line, or both. Mid/front slots are
-  cataloged but not authored yet. Crossing `BulwarkLine` still opens pet combat;
+  families may sit on any compatible authored row. Orange/mid sits at the exact midpoint between
+  red and gold and unlocks at Rebirth Rank 10. Green/front repeats that interval beyond gold toward
+  the gate and unlocks at Rank 30. Crossing `BulwarkLine` still opens pet combat;
   crossing `BreachLine` still opens egg attacks.
 - The first bulwark catalog has six four-tier visual families: Impaler Palisade, Concertina Line,
   Land Shark, Saw Blade, Grasping Hedge, and Wardstone Barrier. Every tier is distinct art rather
@@ -1329,8 +1333,9 @@ clean.
 - `scripts/studio/author_merge_bulwark_anchors.luau` authors placement hooks from
   `MergeBulwarkSlots` without mutating `BulwarkLine` or `BreachLine`. Those two
   parts stay the combat planes (pets open / eggs become attackable). Lane
-  anchors sit on the gold line; egg anchors sit on the red line. Mid and front
-  stay dark until helper lines exist. A 96-stud line uses a 94-stud defense
+  anchors sit on the gold line; egg anchors sit on the red line. The same pass creates the orange
+  midpoint and equally spaced green forward helper lines, then authors all four anchor rows. A
+  96-stud line uses a 94-stud defense
   strip (ten 9.4-stud tiles) with one-stud wall clearance. Anchors ground to
   `LandStrip`. Talkable Bulwark Engineer vendors (`user_id` 3200870803)
   stand on the red-line left and the gold-line right so the egg row and
@@ -1339,6 +1344,9 @@ clean.
   Select writes that slot at Tier 1. Upgrade advances only that
   slot. Playtest unlock remains Wave 1 / one Waycoin; production
   stays the Wave-20 intermission.
+- `scripts/studio/test_merge_defense_slot_geometry.luau` is the publishing gate for the authored
+  layout. It verifies ten bays, exact red/orange/gold/green spacing, ten anchors on each row, four
+  cannon pads per bay, the repeated rear-pad depth, and the Rank 10/20/30 attributes.
 - Every one of the 24 family/tier variants is presentation-audited against all ten Heaven/Hell bays.
   The five static families use uniform `0.94` scaling on ten 9.4-stud anchors; each line spans 94
   studs and retains the authored one-stud wall clearance. Land Sharks are audited separately as

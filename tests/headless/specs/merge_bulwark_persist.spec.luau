@@ -9,6 +9,12 @@ return function()
             maximum_tier = 4,
             currency = "hall_coins",
             action_cost = 1,
+            slot_unlock_rebirth_ranks = {
+                lane = 1,
+                egg = 1,
+                mid = 10,
+                front = 30,
+            },
         }
 
         it("reads only bulwark keys and ignores wave or leftover owned blobs", function()

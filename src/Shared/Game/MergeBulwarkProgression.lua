@@ -180,6 +180,14 @@ function MergeBulwarkProgression.normalizeSlot(slot)
     return normalizeSlot(slot)
 end
 
+function MergeBulwarkProgression.requiredRebirthRank(slot, config)
+    return MergeBulwarkSlots.requiredRebirthRank(normalizeSlot(slot), config)
+end
+
+function MergeBulwarkProgression.isSlotUnlocked(slot, rebirthRank, config)
+    return MergeBulwarkSlots.isUnlockedAtRank(normalizeSlot(slot), rebirthRank, config)
+end
+
 function MergeBulwarkProgression.slotForFamily(family)
     local id = string.lower(tostring(family or ""))
     if not FAMILY_SET[id] then
@@ -580,7 +588,7 @@ local function cloneInstalls(state)
     return installs
 end
 
-function MergeBulwarkProgression.apply(raw, action, family, currentWave, config, slot)
+function MergeBulwarkProgression.apply(raw, action, family, currentWave, config, slot, rebirthRank)
     config = type(config) == "table" and config or {}
     local maximumTier = math.max(1, whole(config.maximum_tier, 4))
     local state = MergeBulwarkProgression.normalize(raw, maximumTier)
@@ -588,6 +596,9 @@ function MergeBulwarkProgression.apply(raw, action, family, currentWave, config,
         return nil, "bulwark_locked"
     end
     slot = normalizeSlot(slot)
+    if not MergeBulwarkProgression.isSlotUnlocked(slot, rebirthRank, config) then
+        return nil, "bulwark_slot_rebirth_locked"
+    end
 
     if action == "unlock" then
         local requested = string.lower(tostring(family or ""))

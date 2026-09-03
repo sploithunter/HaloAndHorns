@@ -10,6 +10,12 @@ return function()
             maximum_tier = 4,
             currency = "hall_coins",
             action_cost = 1,
+            slot_unlock_rebirth_ranks = {
+                left = 1,
+                right = 1,
+                rear_left = 20,
+                rear_right = 20,
+            },
         }
 
         it(
@@ -24,6 +30,22 @@ return function()
                 config.playtest_unlock_enabled = true
             end
         )
+
+        it("unlocks the rear cannon pair at Rebirth Rank 20", function()
+            expect(Progression.requiredRebirthRank("rear_left", config)).to.equal(20)
+            expect(Progression.isSlotUnlocked("rear_right", 19, config)).to.equal(false)
+            expect(Progression.isSlotUnlocked("rear_right", 20, config)).to.equal(true)
+
+            local owned = Progression.apply(nil, "unlock", "heal", 1, config, "left", 1)
+            local locked, reason =
+                Progression.apply(owned, "select", "heal", 1, config, "rear_left", 19)
+            expect(locked).to.equal(nil)
+            expect(reason).to.equal("cannon_slot_rebirth_locked")
+
+            local installed = Progression.apply(owned, "select", "heal", 1, config, "rear_left", 20)
+            expect(installed.rearLeftFamily).to.equal("heal")
+            expect(installed.rearLeftTier).to.equal(1)
+        end)
 
         it("unlocks a role once, then places and upgrades each pad on its own", function()
             local unlocked = Progression.apply(nil, "unlock", "repulsor", 0, config, "left")
@@ -165,9 +187,11 @@ return function()
             end
 
             local Slots = Progression.slots
-            expect(#Slots.ids()).to.equal(2)
+            expect(#Slots.ids()).to.equal(4)
             expect(Slots.normalizeId("Right")).to.equal("right")
             expect(Slots.normalizeId(2)).to.equal("right")
+            expect(Slots.normalizeId("Rear Left")).to.equal("rear_left")
+            expect(Slots.normalizeId(4)).to.equal("rear_right")
             expect(Slots.fromPad({
                 GetAttribute = function(_, key)
                     if key == "MergeTowerPadRole" then
@@ -183,6 +207,8 @@ return function()
                 leftTier = 2,
                 rightFamily = "heal",
                 rightTier = 1,
+                rearLeftFamily = "rage",
+                rearLeftTier = 3,
                 owned = { repulsor = 2, heal = 1 },
             })
             expect(persisted.left_tower_family).to.equal("repulsor")
@@ -190,6 +216,8 @@ return function()
             expect(persisted.right_tower_family).to.equal("heal")
             expect(persisted.tower_owned.repulsor).to.equal(2)
             expect(persisted.tower_slots.right.family).to.equal("heal")
+            expect(persisted.rear_left_tower_family).to.equal("rage")
+            expect(persisted.tower_slots.rear_left.tier).to.equal(3)
         end)
     end)
 end

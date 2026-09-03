@@ -1,24 +1,37 @@
 -- Run in Roblox Studio Edit mode after the polished Merge realm map is present.
 --
--- Adds the two initial tower mounts outside deployed egg positions 1 and 9 in every bay. The
+-- Adds two initial tower mounts outside deployed egg positions 1 and 9, plus a second pair one
+-- equal depth interval behind them. The rear pair unlocks at its config-owned Rebirth rank. The
 -- geometry deliberately uses an armored square silhouette instead of the circular/glowing egg
 -- stand language. The pass is idempotent and replaces only GeneratedMap_MergeEggVoxel.TowerStations.
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Selection = game:GetService("Selection")
 local Workspace = game:GetService("Workspace")
 
 assert(not RunService:IsRunning(), "Author Merge tower pads in Edit mode")
 
+local MergeConfig = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
+local MergeTowerSlots = require(ReplicatedStorage.Shared.Game.MergeTowerSlots)
+local towerConfig = assert(MergeConfig.team.edge_towers, "team.edge_towers is missing")
+local padLayout = assert(towerConfig.pad_layout, "team.edge_towers.pad_layout is missing")
+
 local map = assert(
     Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel"),
     "Workspace.GeneratedMap_MergeEggVoxel is missing"
 )
 local hatcherStations = assert(map:FindFirstChild("HatcherStations"), "HatcherStations is missing")
+local laneLines = assert(map:FindFirstChild("LaneLines"), "LaneLines is missing")
 
-local PAD_FOOTPRINT = 8.4
-local PAD_CLEARANCE = 0.65
+local PAD_FOOTPRINT = assert(tonumber(padLayout.footprint_studs), "pad footprint is missing")
+local PAD_CLEARANCE =
+    assert(tonumber(padLayout.lateral_clearance_studs), "pad lateral clearance is missing")
+local INITIAL_DEPTH_INTERVALS =
+    assert(tonumber(padLayout.initial_depth_intervals), "initial pad depth is missing")
+local REAR_GAP_MULTIPLIER =
+    assert(tonumber(padLayout.rear_gap_multiplier), "rear pad gap multiplier is missing")
 local BASE_HEIGHT = 0.45
 local TOP_HEIGHT = 0.18
 local DETAIL_HEIGHT = 0.12
@@ -65,20 +78,25 @@ local function findSlot(station, slot)
     return station:FindFirstChild(string.format("Pad_%02d", slot), true)
 end
 
-local function stampHook(instance, bayId, side, column, slot, role)
-    instance:SetAttribute("MergeTowerPadSlot", slot)
-    instance:SetAttribute("MergeTowerPadRole", role)
-    instance:SetAttribute("MergeTowerPadInitial", true)
+local function stampHook(instance, bayId, side, column, def)
+    instance:SetAttribute("MergeTowerSlot", def.id)
+    instance:SetAttribute("MergeTowerPadSlot", def.padSlot)
+    instance:SetAttribute("MergeTowerPadRole", def.padRole)
+    instance:SetAttribute("MergeTowerPadInitial", def.padSlot <= 2)
+    instance:SetAttribute(
+        "MergeTowerUnlockRebirthRank",
+        MergeTowerSlots.requiredRebirthRank(def, towerConfig)
+    )
     instance:SetAttribute("MergeEggBayId", bayId)
     instance:SetAttribute("MergeEggBaySide", string.lower(side))
     instance:SetAttribute("MergeEggBayColumn", column)
 end
 
-local function buildPad(parent, bayId, side, column, slot, role, center, floorTop, facing)
+local function buildPad(parent, bayId, side, column, def, center, floorTop, facing)
     local accent = side == "Heaven" and HEAVEN_ACCENT or HELL_ACCENT
     local model = Instance.new("Model")
-    model.Name = role == "Left" and "InitialTowerPad_Left" or "InitialTowerPad_Right"
-    stampHook(model, bayId, side, column, slot, role)
+    model.Name = (def.padSlot <= 2 and "InitialTowerPad_" or "RebirthTowerPad_") .. def.padRole
+    stampHook(model, bayId, side, column, def)
     model:SetAttribute("MergeTowerPadFootprint", PAD_FOOTPRINT)
     model.Parent = parent
 
@@ -97,7 +115,7 @@ local function buildPad(parent, bayId, side, column, slot, role, center, floorTo
     )
     base.CanCollide = true
     base.CanQuery = true
-    stampHook(base, bayId, side, column, slot, role)
+    stampHook(base, bayId, side, column, def)
 
     local topY = floorTop + BASE_HEIGHT
     addPart(
@@ -170,7 +188,7 @@ local function buildPad(parent, bayId, side, column, slot, role, center, floorTo
     )
     anchor.Transparency = 1
     anchor.CastShadow = false
-    stampHook(anchor, bayId, side, column, slot, role)
+    stampHook(anchor, bayId, side, column, def)
     anchor:SetAttribute("MergeTowerPadTopY", anchor.Position.Y)
     model.PrimaryPart = anchor
     return model
@@ -197,7 +215,10 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
     if side and column then
         local slotOne = findSlot(station, 1)
         local slotNine = findSlot(station, 9)
-        if slotOne and slotNine then
+        local lines = laneLines:FindFirstChild(string.format("%s_%02d_Lines", side, column))
+        local breachLine = lines
+            and lines:FindFirstChild(tostring(MergeConfig.world.breach_line or "BreachLine"))
+        if slotOne and slotNine and breachLine and breachLine:IsA("BasePart") then
             local rowDelta = Vector3.new(
                 slotNine.Position.X - slotOne.Position.X,
                 0,
@@ -217,7 +238,23 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
             -- One pad-width behind the egg-row depth so the chassis is not on
             -- top of the red-line Bulwark Engineer. March axis stays the egg
             -- stand X, then steps back a full footprint toward the player.
-            local depth = -facing * PAD_FOOTPRINT
+            local initialDepth = -facing * PAD_FOOTPRINT * INITIAL_DEPTH_INTERVALS
+            local initialLeftCenter = slotOne.Position - rowDirection * centerOffset + initialDepth
+            local initialRightCenter = slotNine.Position
+                + rowDirection * centerOffset
+                + initialDepth
+            local redToInitialDistance = math.abs(
+                Vector3.new(
+                    initialLeftCenter.X - breachLine.Position.X,
+                    0,
+                    initialLeftCenter.Z - breachLine.Position.Z
+                ):Dot(facing)
+            )
+            assert(
+                redToInitialDistance > PAD_FOOTPRINT,
+                station:GetFullName() .. " initial tower pad is not behind BreachLine"
+            )
+            local rearGap = -facing * redToInitialDistance * REAR_GAP_MULTIPLIER
             local bayId = string.format("%s_%02d", string.lower(side), column)
             local bayFolder = Instance.new("Folder")
             bayFolder.Name = string.format("%s_%02d_TowerPads", side, column)
@@ -231,9 +268,8 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
                 bayId,
                 side,
                 column,
-                1,
-                "Left",
-                slotOne.Position - rowDirection * centerOffset + depth,
+                assert(MergeTowerSlots.get("left")),
+                initialLeftCenter,
                 floorTop,
                 facing
             )
@@ -242,13 +278,32 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
                 bayId,
                 side,
                 column,
-                2,
-                "Right",
-                slotNine.Position + rowDirection * centerOffset + depth,
+                assert(MergeTowerSlots.get("right")),
+                initialRightCenter,
                 floorTop,
                 facing
             )
-            authored += 2
+            buildPad(
+                bayFolder,
+                bayId,
+                side,
+                column,
+                assert(MergeTowerSlots.get("rear_left")),
+                initialLeftCenter + rearGap,
+                floorTop,
+                facing
+            )
+            buildPad(
+                bayFolder,
+                bayId,
+                side,
+                column,
+                assert(MergeTowerSlots.get("rear_right")),
+                initialRightCenter + rearGap,
+                floorTop,
+                facing
+            )
+            authored += 4
             if bayId == "heaven_01" then
                 firstBay = bayFolder
             end
@@ -256,9 +311,9 @@ for _, station in ipairs(hatcherStations:GetChildren()) do
     end
 end
 
-map:SetAttribute("MergeTowerPadsPerBay", 2)
+map:SetAttribute("MergeTowerPadsPerBay", 4)
 map:SetAttribute("MergeTowerPadCount", authored)
 Selection:Set(firstBay and { firstBay } or { towerStations })
 ChangeHistoryService:SetWaypoint("Author Merge tower pads")
 
-print(string.format("[MergeTowerPads] authored %d initial tower pads", authored))
+print(string.format("[MergeTowerPads] authored %d tower pads", authored))

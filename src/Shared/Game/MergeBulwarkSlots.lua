@@ -5,11 +5,11 @@
 --   BreachLine  — marchers may attack hatcher eggs / count overrun.
 -- Do not add a third combat-plane meaning. Extra walls are install slots only.
 --
--- Install slots are repeatable placement lines. This pass ships lane (on
--- BulwarkLine) and egg (on BreachLine). Mid (halfway) and front (the same
--- spacing out past the gold line) are cataloged so persist/apply already
--- accept them; they stay dark until authored hooks exist. Later walls can
--- keep that same spacing outward without touching the two combat planes.
+-- Install slots are repeatable placement lines. Lane sits on the yellow
+-- BulwarkLine and egg sits on the red BreachLine. Mid is the orange line
+-- exactly halfway between them; front is the green line one equal interval
+-- beyond yellow toward the gate. Later walls can keep that spacing outward
+-- without touching the two combat planes.
 -- Towers should grow the same way: own catalog, same per-slot loop.
 
 local MergeBulwarkSlots = {}
@@ -96,7 +96,7 @@ local SLOTS = {
         bayFolderFormat = "%s_%02d_MidBulwarkAnchors",
         modelPrefix = "Mid",
         promptPrefix = "Mid",
-        promptObject = "Mid Bulwark",
+        promptObject = "Orange Bulwark",
         -- Halfway between the two combat planes. Placement hook only.
         lineConfigKey = "mid_bulwark_line",
         lineDefault = "MidBulwarkLine",
@@ -119,7 +119,7 @@ local SLOTS = {
         bayFolderFormat = "%s_%02d_FrontBulwarkAnchors",
         modelPrefix = "Front",
         promptPrefix = "Front",
-        promptObject = "Front Bulwark",
+        promptObject = "Green Bulwark",
         -- Same spacing out past BulwarkLine toward the gate. Placement hook only.
         lineConfigKey = "front_bulwark_line",
         lineDefault = "FrontBulwarkLine",
@@ -196,6 +196,24 @@ end
 
 function MergeBulwarkSlots.attrSuffix(id)
     return "_" .. MergeBulwarkSlots.normalizeId(id)
+end
+
+function MergeBulwarkSlots.requiredRebirthRank(slot, config)
+    config = type(config) == "table" and config or {}
+    local def = type(slot) == "table" and slot or MergeBulwarkSlots.get(slot)
+    if not def then
+        return math.huge
+    end
+    local gates = config.slot_unlock_rebirth_ranks
+    assert(type(gates) == "table", "edge_bulwarks.slot_unlock_rebirth_ranks is required")
+    local required = tonumber(gates[def.id])
+    assert(required ~= nil, "Missing bulwark Rebirth gate for " .. def.id)
+    return math.max(1, math.floor(required))
+end
+
+function MergeBulwarkSlots.isUnlockedAtRank(slot, rebirthRank, config)
+    local rank = math.max(1, math.floor(tonumber(rebirthRank) or 1))
+    return rank >= MergeBulwarkSlots.requiredRebirthRank(slot, config)
 end
 
 function MergeBulwarkSlots.stripLineName(slot, worldConfig)

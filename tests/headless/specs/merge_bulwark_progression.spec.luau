@@ -10,6 +10,12 @@ return function()
             maximum_tier = 4,
             currency = "hall_coins",
             action_cost = 1,
+            slot_unlock_rebirth_ranks = {
+                lane = 1,
+                egg = 1,
+                mid = 10,
+                front = 30,
+            },
         }
         local combatConfig = mergeConfig.team.edge_bulwarks
 
@@ -25,6 +31,25 @@ return function()
                 config.playtest_unlock_enabled = true
             end
         )
+
+        it("unlocks orange at Rank 10 and green at Rank 30", function()
+            expect(Progression.requiredRebirthRank("mid", config)).to.equal(10)
+            expect(Progression.requiredRebirthRank("front", config)).to.equal(30)
+            expect(Progression.isSlotUnlocked("mid", 9, config)).to.equal(false)
+            expect(Progression.isSlotUnlocked("mid", 10, config)).to.equal(true)
+            expect(Progression.isSlotUnlocked("front", 29, config)).to.equal(false)
+            expect(Progression.isSlotUnlocked("front", 30, config)).to.equal(true)
+
+            local owned = Progression.apply(nil, "unlock", "impaler_palisade", 1, config, "lane", 1)
+            local locked, reason =
+                Progression.apply(owned, "select", "impaler_palisade", 1, config, "mid", 9)
+            expect(locked).to.equal(nil)
+            expect(reason).to.equal("bulwark_slot_rebirth_locked")
+            local orange =
+                Progression.apply(owned, "select", "impaler_palisade", 1, config, "mid", 10)
+            expect(orange.midFamily).to.equal("impaler_palisade")
+            expect(orange.midTier).to.equal(1)
+        end)
 
         it("unlocks a family once, then places and upgrades each slot on its own", function()
             local unlocked = Progression.apply(nil, "unlock", "impaler_palisade", 0, config, "lane")

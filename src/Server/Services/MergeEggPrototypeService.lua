@@ -4676,6 +4676,33 @@ function MergeEggPrototypeService:_edgeBulwarkConfig()
     return type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
 end
 
+function MergeEggPrototypeService:_rebirthRank(record)
+    return MergeEggRebirth.rankForCount(record and record.rebirthCount)
+end
+
+function MergeEggPrototypeService:_towerSlotUnlocked(record, slot)
+    return MergeTowerProgression.isSlotUnlocked(
+        slot,
+        self:_rebirthRank(record),
+        (self:_edgeTowerConfig())
+    )
+end
+
+function MergeEggPrototypeService:_bulwarkSlotUnlocked(record, slot)
+    return MergeBulwarkProgression.isSlotUnlocked(
+        slot,
+        self:_rebirthRank(record),
+        self:_edgeBulwarkConfig()
+    )
+end
+
+function MergeEggPrototypeService:_bulwarkSlotFamily(record, state, slot)
+    if not self:_bulwarkSlotUnlocked(record, slot) then
+        return nil, 0
+    end
+    return MergeBulwarkProgression.slotFamily(state, slot)
+end
+
 function MergeEggPrototypeService:_rebirthScalingMultiplier(record, system, axis)
     return MergeEggRebirth.scalingMultiplier(
         self._config.rebirth,
@@ -5971,6 +5998,9 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
         if pad:IsA("Model") and pad:FindFirstChild("TowerAnchor", true) then
             local slot = MergeTowerSlots.fromPad(pad)
             local family, tier = MergeTowerProgression.slotFamily(towerState, slot)
+            if not self:_towerSlotUnlocked(record, slot) then
+                family, tier = nil, 0
+            end
             local name = pad.Name .. "_Cannon"
             local existing = folder:FindFirstChild(name)
             if not family then
@@ -6068,6 +6098,28 @@ function MergeEggPrototypeService:_collectBulwarkAnchors(anchors, namePattern)
             < (tonumber(b:GetAttribute("MergeBulwarkTileIndex")) or 0)
     end)
     return allAnchors
+end
+
+function MergeEggPrototypeService:_bulwarkSlotLine(world, def)
+    if not (world and def) then
+        return nil
+    end
+    local lineName = MergeBulwarkSlots.stripLineName(def, self._config.world)
+    local localLine = lineName and findNamedPart(world, lineName)
+    if localLine then
+        return localLine
+    end
+    local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local laneLines = map and map:FindFirstChild("LaneLines")
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local column = tonumber(world:GetAttribute("MergeEggBayColumn"))
+    if not (laneLines and (side == "heaven" or side == "hell") and column and lineName) then
+        return nil
+    end
+    local prefix = side == "hell" and "Hell" or "Heaven"
+    local lines = laneLines:FindFirstChild(string.format("%s_%02d_Lines", prefix, column))
+    local authored = lines and lines:FindFirstChild(lineName)
+    return authored and authored:IsA("BasePart") and authored or nil
 end
 
 function MergeEggPrototypeService:_spawnBulwarkSlot(
@@ -6317,9 +6369,7 @@ function MergeEggPrototypeService:_authorSlotAnchorsFromStrip(world, def)
         return nil
     end
     local prefix = side == "hell" and "Hell" or "Heaven"
-    local lines = laneLines:FindFirstChild(string.format("%s_%02d_Lines", prefix, column))
-    local lineName = MergeBulwarkSlots.stripLineName(def, self._config.world)
-    local line = lines and lineName and lines:FindFirstChild(lineName)
+    local line = self:_bulwarkSlotLine(world, def)
     local field = playFields:FindFirstChild(string.format("%s_%02d", prefix, column))
     if not (line and line:IsA("BasePart") and field and field:IsA("BasePart")) then
         return nil
@@ -6427,11 +6477,13 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                 })
             end
         else
-            local family, tier = MergeBulwarkProgression.slotFamily(state, def.id)
+            local family, tier = self:_bulwarkSlotFamily(record, state, def.id)
             local slotAnchors = self:_collectBulwarkAnchors(stations, def.anchorNamePattern)
             ready = self:_spawnBulwarkSlot(record, folder, slotAnchors, family, tier, def) and ready
             hasSaw = hasSaw or family == "saw_blade"
-            self:_stampBulwarkMenuPrompts(record, slotAnchors, folder, def)
+            if self:_bulwarkSlotUnlocked(record, def.id) then
+                self:_stampBulwarkMenuPrompts(record, slotAnchors, folder, def)
+            end
         end
     end
     self:_ensureBulwarkEngineer(record, folder)
@@ -6450,6 +6502,8 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
             and self._economyService
             and self._economyService:GetCurrency(record.player, price.currency)
         or 0
+    local rebirthRank = self:_rebirthRank(record)
+    local requiredRebirthRank = MergeBulwarkProgression.requiredRebirthRank(slot, cfg)
     return {
         slot = slot,
         family = family,
@@ -6472,6 +6526,9 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
         unlockCosts = self:_unlockCostMap(cfg),
         gemWallet = self:_tutorialGemWallet(record),
+        rebirthRank = rebirthRank,
+        requiredRebirthRank = requiredRebirthRank,
+        slotUnlocked = rebirthRank >= requiredRebirthRank,
     }
 end
 
@@ -6537,6 +6594,9 @@ end
 
 function MergeEggPrototypeService:_canUseBulwarkMenu(player, slot)
     local record = self:_recordFor(player)
+    if slot and not self:_bulwarkSlotUnlocked(record, slot) then
+        return false, "bulwark_slot_rebirth_locked"
+    end
     local root = characterRoot(player)
     local folder = record and record.world and record.world:FindFirstChild("MergeEggBulwarks")
     if not (record and root and folder) then
@@ -6597,6 +6657,9 @@ function MergeEggPrototypeService:_openBulwarkMenu(player, slot)
         return false, "not_active_encounter"
     end
     slot = MergeBulwarkProgression.normalizeSlot(slot)
+    if not self:_bulwarkSlotUnlocked(record, slot) then
+        return false, "bulwark_slot_rebirth_locked"
+    end
     if not self:_tutorialVendorsReady(record, "bulwark", slot) then
         return false, "vendor_not_ready"
     end
@@ -6722,8 +6785,7 @@ function MergeEggPrototypeService:_engineerStandCFrame(world, slot, along)
         return nil
     end
     local slotDef = MergeBulwarkSlots.get(slot)
-    local lineName = MergeBulwarkSlots.stripLineName(slotDef, self._config and self._config.world)
-    local line = lineName and findNamedPart(world, lineName)
+    local line = self:_bulwarkSlotLine(world, slotDef)
     if not line and slot == "egg" then
         line = self:_ensureBreachLine(world)
     end
@@ -7386,6 +7448,11 @@ function MergeEggPrototypeService:_ensureBulwarkEngineer(record, folder)
         return
     end
     for _, post in ipairs(self:_engineerPosts()) do
+        if not self:_bulwarkSlotUnlocked(record, post.slot) then
+            self:_clearBulwarkEngineer(folder, post.slot)
+            self:_clearSlotMenuHosts(folder, post.slot)
+            continue
+        end
         self:_clearSlotMenuHosts(folder, post.slot)
         local live = self:_findBulwarkEngineer(folder, post.slot)
         if not live then
@@ -7404,6 +7471,9 @@ function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
         return
     end
     local slot = MergeBulwarkProgression.normalizeSlot(post.slot)
+    if not self:_bulwarkSlotUnlocked(record, slot) then
+        return
+    end
     if self:_findBulwarkEngineer(folder, slot) then
         return
     end
@@ -7599,7 +7669,11 @@ function MergeEggPrototypeService:_ensureArtilleryCommanders(record, folder)
         local pad = self:_padForSlot(record.world, def.id)
         local anchor = cannon or pad
         local live = self:_findArtilleryCommander(folder, def.id)
-        if anchor and not live then
+        if not self:_towerSlotUnlocked(record, def.id) then
+            if live then
+                live:Destroy()
+            end
+        elseif anchor and not live then
             local captured = { slot = def.id, cannon = cannon, pad = pad }
             task.spawn(function()
                 self:_spawnArtilleryCommander(record, folder, captured)
@@ -7621,6 +7695,9 @@ function MergeEggPrototypeService:_spawnArtilleryCommander(record, folder, post)
         return
     end
     local slot = MergeTowerProgression.normalizeSlot(post.slot)
+    if not self:_towerSlotUnlocked(record, slot) then
+        return
+    end
     if self:_findArtilleryCommander(folder, slot) then
         return
     end
@@ -7723,6 +7800,8 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
             and self._economyService
             and self._economyService:GetCurrency(record.player, price.currency)
         or 0
+    local rebirthRank = self:_rebirthRank(record)
+    local requiredRebirthRank = MergeTowerProgression.requiredRebirthRank(slot, cfg)
     return {
         slot = slot,
         family = family,
@@ -7745,11 +7824,17 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
         unlockCosts = self:_unlockCostMap(cfg),
         gemWallet = self:_tutorialGemWallet(record),
+        rebirthRank = rebirthRank,
+        requiredRebirthRank = requiredRebirthRank,
+        slotUnlocked = rebirthRank >= requiredRebirthRank,
     }
 end
 
 function MergeEggPrototypeService:_canUseCannonMenu(player, slot)
     local record = self:_recordFor(player)
+    if slot and not self:_towerSlotUnlocked(record, slot) then
+        return false, "cannon_slot_rebirth_locked"
+    end
     local root = characterRoot(player)
     local folder = record and record.world and record.world:FindFirstChild("MergeEggTowers")
     if not (record and root and folder) then
@@ -7778,6 +7863,9 @@ function MergeEggPrototypeService:_openCannonMenu(player, slot)
         return false, "not_active_encounter"
     end
     slot = MergeTowerProgression.normalizeSlot(slot)
+    if not self:_towerSlotUnlocked(record, slot) then
+        return false, "cannon_slot_rebirth_locked"
+    end
     if not self:_tutorialVendorsReady(record, "artillery", slot) then
         return false, "vendor_not_ready"
     end
@@ -9335,7 +9423,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("MergeBulwarkTier", laneMenu.tier)
     world:SetAttribute("MergeBulwarkUnlocked", laneMenu.unlocked)
     for _, def in ipairs(MergeBulwarkSlots.all()) do
-        local family, tier = MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+        local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
         world:SetAttribute("MergeBulwark_" .. def.id .. "_Installed", family ~= nil)
         world:SetAttribute("MergeBulwark_" .. def.id .. "_Family", family)
         world:SetAttribute("MergeBulwark_" .. def.id .. "_Tier", tier)
@@ -11793,6 +11881,10 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         leftTowerTier = mergeDefenseProgress.left_tower_tier,
         rightTowerFamily = mergeDefenseProgress.right_tower_family,
         rightTowerTier = mergeDefenseProgress.right_tower_tier,
+        rearLeftTowerFamily = mergeDefenseProgress.rear_left_tower_family,
+        rearLeftTowerTier = mergeDefenseProgress.rear_left_tower_tier,
+        rearRightTowerFamily = mergeDefenseProgress.rear_right_tower_family,
+        rearRightTowerTier = mergeDefenseProgress.rear_right_tower_tier,
         towerOwned = table.clone(mergeDefenseProgress.tower_owned or {}),
         towerSlots = table.clone(mergeDefenseProgress.tower_slots or {}),
         towerActionInProgress = false,
@@ -13988,8 +14080,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     end
     local slotLines = {}
     for _, def in ipairs(MergeBulwarkSlots.all()) do
-        local name = MergeBulwarkSlots.stripLineName(def, worldCfg)
-        slotLines[def.id] = name and findNamedPart(record.world, name) or nil
+        slotLines[def.id] = self:_bulwarkSlotLine(record.world, def)
     end
     local towardFinish = marchLine
             and Vector3.new(
@@ -14109,8 +14200,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                         if stripAttr and planeDistance[def.combatPlane] == nil then
                             model:SetAttribute(stripAttr, distance)
                         end
-                        local family, tier =
-                            MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+                        local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
                         self:_tickConcertinaBleed(
                             record,
                             enemy,
@@ -14186,7 +14276,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     end
     local towardGate = towardFinish.Magnitude > 0 and -towardFinish.Unit or nil
     for _, def in ipairs(MergeBulwarkSlots.all()) do
-        local family, tier = MergeBulwarkProgression.slotFamily(bulwarkState, def.id)
+        local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
         self:_tickLandSharkHunt(record, towardGate, family, tier, def.id)
         self:_tickGraspingHedge(
             record,
@@ -16088,6 +16178,9 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     end
     local request = type(request) == "table" and request or {}
     local slot = MergeBulwarkProgression.normalizeSlot(request.slot)
+    if not self:_bulwarkSlotUnlocked(record, slot) then
+        return false, "bulwark_slot_rebirth_locked"
+    end
     if not self:_tutorialVendorsReady(record, "bulwark", slot) then
         return false, "vendor_not_ready"
     end
@@ -16104,8 +16197,14 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
         return false, "profile_unavailable"
     end
     local before = MergeBulwarkPersist.read(record, cfg)
-    local nextState, progressionReason =
-        MergeBulwarkPersist.apply(before, requestedAction, request.family, cfg, slot)
+    local nextState, progressionReason = MergeBulwarkPersist.apply(
+        before,
+        requestedAction,
+        request.family,
+        cfg,
+        slot,
+        self:_rebirthRank(record)
+    )
     if not nextState then
         return false, progressionReason
     end
@@ -16187,6 +16286,9 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
     end
     request = type(request) == "table" and request or {}
     local slot = MergeTowerProgression.normalizeSlot(request.slot)
+    if not self:_towerSlotUnlocked(record, slot) then
+        return false, "cannon_slot_rebirth_locked"
+    end
     if not self:_tutorialVendorsReady(record, "artillery", slot) then
         return false, "vendor_not_ready"
     end
@@ -16203,8 +16305,14 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
         return false, "profile_unavailable"
     end
     local before = MergeCannonPersist.read(record, cfg)
-    local nextState, progressionReason =
-        MergeCannonPersist.apply(before, requestedAction, request.family, cfg, slot)
+    local nextState, progressionReason = MergeCannonPersist.apply(
+        before,
+        requestedAction,
+        request.family,
+        cfg,
+        slot,
+        self:_rebirthRank(record)
+    )
     if not nextState then
         return false, progressionReason
     end

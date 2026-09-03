@@ -73,10 +73,10 @@ function MergeCannonPersist.resetPlacements(record, progress, config)
     return MergeCannonPersist.write(record, progress, cleared)
 end
 
-function MergeCannonPersist.apply(state, action, family, config, slot)
+function MergeCannonPersist.apply(state, action, family, config, slot, rebirthRank)
     -- Live wave is not an input. Unlock is the authored policy wave.
     local unlockAt = MergeTowerProgression.unlockWave(config)
-    return MergeTowerProgression.apply(state, action, family, unlockAt, config, slot)
+    return MergeTowerProgression.apply(state, action, family, unlockAt, config, slot, rebirthRank)
 end
 
 function MergeCannonPersist.addSpent(record, progress, charged)

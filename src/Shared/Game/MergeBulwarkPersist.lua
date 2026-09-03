@@ -63,10 +63,10 @@ function MergeBulwarkPersist.resetPlacements(record, progress, config)
     return MergeBulwarkPersist.write(record, progress, cleared)
 end
 
-function MergeBulwarkPersist.apply(state, action, family, config, slot)
+function MergeBulwarkPersist.apply(state, action, family, config, slot, rebirthRank)
     -- Live wave is not an input. Unlock is the authored policy wave.
     local unlockAt = MergeBulwarkProgression.unlockWave(config)
-    return MergeBulwarkProgression.apply(state, action, family, unlockAt, config, slot)
+    return MergeBulwarkProgression.apply(state, action, family, unlockAt, config, slot, rebirthRank)
 end
 
 function MergeBulwarkPersist.addSpent(record, progress, charged)

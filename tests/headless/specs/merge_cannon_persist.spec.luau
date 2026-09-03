@@ -9,6 +9,12 @@ return function()
             maximum_tier = 4,
             currency = "hall_coins",
             action_cost = 1,
+            slot_unlock_rebirth_ranks = {
+                left = 1,
+                right = 1,
+                rear_left = 20,
+                rear_right = 20,
+            },
             visual_catalog_owned = false,
             starter_tier = 1,
             available_roles = {

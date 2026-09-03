@@ -760,6 +760,23 @@ return {
             },
         },
         edge_towers = {
+            -- A player begins at Rebirth Rank 1. The rear pair becomes usable
+            -- together at Rank 20; the authored pads may exist before then,
+            -- but server-side install, commander, and spawn paths stay locked.
+            slot_unlock_rebirth_ranks = {
+                left = 1,
+                right = 1,
+                rear_left = 20,
+                rear_right = 20,
+            },
+            pad_layout = {
+                footprint_studs = 8.4,
+                lateral_clearance_studs = 0.65,
+                initial_depth_intervals = 1,
+                -- Rear center = initial center + this many copies of the
+                -- authored red-line-to-initial-pad depth vector.
+                rear_gap_multiplier = 1,
+            },
             -- Permanent cadence: award the first tower during the Wave-10 intermission.
             -- Pads start empty; the Artillery Commander installs a chassis.
             unlock_wave = 10,
@@ -946,6 +963,21 @@ return {
         },
         edge_bulwarks = {
             enabled = true,
+            -- Yellow/lane and red/egg are the starting rows. Orange/mid is
+            -- enabled at Rebirth Rank 10 and green/front at Rank 30.
+            slot_unlock_rebirth_ranks = {
+                lane = 1,
+                egg = 1,
+                mid = 10,
+                front = 30,
+            },
+            line_layout = {
+                -- One interval is half the red-to-yellow separation.
+                interval_fraction = 0.5,
+                mid_color = { 255, 145, 35 },
+                front_color = { 70, 220, 105 },
+                transparency = 0.05,
+            },
             tile_count = 10,
             wall_inset_studs = 1,
             canonical_tile_length_studs = 10,
