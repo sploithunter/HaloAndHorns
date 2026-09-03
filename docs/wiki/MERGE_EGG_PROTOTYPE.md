@@ -724,8 +724,8 @@ team and queue model:
   deployed-egg upgrade during this beat shows the config-authored five-second encouragement; the
   ordinary short action feedback remains unchanged outside that lesson. The same scaled
   tutorial/hotbar footprint also carries sparse progression milestones: the first creation of each
-  egg tier, each generator tier, first bulwark/cannon family unlocks, new pet-slot capacity, the
-  first 1,000 Waycoins earned in a session, and the Quartermaster tutorial arrival. Routine
+  egg tier, each generator tier, first bulwark/cannon family unlocks, new pet-slot capacity, and the
+  Quartermaster tutorial arrival. Waycoin collection never toasts. Routine
   creation, merging, deployment, installation, and management purchases do not toast, and Gem
   pickups never toast. Distinct milestones can queue without turning normal play into an activity
   feed. Auto-Combine returns every new egg-tier and pet-capacity discovery from its cascade through

@@ -71,10 +71,6 @@ local TUTORIAL_ACTIVITY_MAXIMUM_QUEUE = assert(
     tonumber(TUTORIAL_ACTIVITY_FEEDBACK.maximum_queue),
     "merge_egg_prototype.tutorial.activity_feedback.maximum_queue is required"
 )
-local TUTORIAL_WAYCOIN_MILESTONE = assert(
-    tonumber(TUTORIAL_ACTIVITY_FEEDBACK.waycoin_milestone_amount),
-    "merge_egg_prototype.tutorial.activity_feedback.waycoin_milestone_amount is required"
-)
 
 local MergeEggPrototypeObserver = {}
 
@@ -4194,8 +4190,6 @@ function MergeEggPrototypeObserver.start()
     local boardActionFeedbackUntil = 0
     local activeFeedback = nil
     local feedbackQueue = {}
-    local collectedWaycoins = 0
-    local waycoinMilestoneShown = false
     local function milestoneFeedbackAllowed()
         return localPlayer:GetAttribute("InMergeEggPrototype") == true
     end
@@ -4390,34 +4384,7 @@ function MergeEggPrototypeObserver.start()
             end
         end
     end)
-    Signals.CurrencyUpdate.OnClientEvent:Connect(function(data)
-        if not milestoneFeedbackAllowed() or type(data) ~= "table" then
-            return
-        end
-        local change = tonumber(data.change)
-        if not change or change <= 0 then
-            return
-        end
-        local currency = tostring(data.currency or "")
-        if currency == "hall_coins" then
-            collectedWaycoins += change
-            if not waycoinMilestoneShown and collectedWaycoins >= TUTORIAL_WAYCOIN_MILESTONE then
-                waycoinMilestoneShown = true
-                enqueueFeedback(
-                    "currency:hall_coins",
-                    tutorialActivityCopy(
-                        "waycoins_collected",
-                        MergeEggCostFormat.format(TUTORIAL_WAYCOIN_MILESTONE)
-                    ),
-                    true,
-                    TUTORIAL_ACTIVITY_DEFAULT_SECONDS
-                )
-            end
-        end
-    end)
     localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
-        collectedWaycoins = 0
-        waycoinMilestoneShown = false
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
             bulwarkMenu:hide()
             cannonMenu:hide()
