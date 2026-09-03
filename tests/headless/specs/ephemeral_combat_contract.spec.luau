@@ -118,6 +118,9 @@ return function()
             expect(helper ~= nil and build ~= nil and helper < build).to.equal(true)
             expect(source:find('instance:IsA("BasePart")', helper, true) < build).to.equal(true)
             expect(source:find("instance.CanCollide = false", helper, true) < build).to.equal(true)
+            expect(
+                source:find('instance:GetPropertyChangedSignal("CanCollide")', helper, true) < build
+            ).to.equal(true)
             expect(source:find("model.DescendantAdded:Connect(apply)", helper, true) < build).to.equal(
                 true
             )

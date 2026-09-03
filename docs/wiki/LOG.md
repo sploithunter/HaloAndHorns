@@ -7607,3 +7607,10 @@ first-session cohort rates.
   reconciliation now creates the orange manager at Rebirth Rank 10 and the green manager at Rank
   30, so reaching a gate in the current session no longer leaves the newly available row without an
   interaction point.
+
+## 2026-09-03 — Persistent Hatcher Captain collision guard
+
+- Live play showed Hatcher Captain rigs could become collidable after their initial non-collidable
+  construction pass. NPC principals now watch every opted-in body part and immediately restore
+  `CanCollide = false` whenever the Humanoid lifecycle or another character system changes it;
+  late-added accessory handles remain covered by the existing descendant hook.

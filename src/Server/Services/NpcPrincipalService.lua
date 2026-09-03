@@ -38,11 +38,27 @@ local NpcPrincipalService = {}
 NpcPrincipalService.__index = NpcPrincipalService
 
 local function makeCharacterNonCollidable(model)
+    local guardedParts = setmetatable({}, { __mode = "k" })
+
     local function apply(instance)
         if instance:IsA("BasePart") then
             -- Keep CanQuery/CanTouch unchanged: authored interaction and targeting still need to
             -- see the NPC; this only removes the physical wall presented to player characters.
             instance.CanCollide = false
+            if guardedParts[instance] then
+                return
+            end
+            guardedParts[instance] = true
+
+            -- Humanoids can restore body-part collision state after the description-built rig is
+            -- parented or its physics state changes. A construction-time assignment therefore
+            -- does not satisfy the non-collidable contract. Reassert it whenever Roblox or another
+            -- character system changes the property so stationary principals never become walls.
+            instance:GetPropertyChangedSignal("CanCollide"):Connect(function()
+                if instance.CanCollide then
+                    instance.CanCollide = false
+                end
+            end)
         end
     end
 

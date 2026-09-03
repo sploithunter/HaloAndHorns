@@ -1056,8 +1056,9 @@ clean.
   roots, visible pads, and floor `SurfaceGui` anchors derive from the owned-slot order, so only four
   stations deploy initially and slot 5 appears as the first purchased expansion without shifting
   any existing station. Every Hatcher Captain body part is non-collidable (including late-added
-  accessory handles), so the stationary NPC remains visible and queryable without blocking the
-  player's path through a crowded egg line.
+  accessory handles), and the NPC-principal collision guard reasserts that policy if Roblox's
+  Humanoid lifecycle later restores `CanCollide`. The stationary NPC therefore remains visible and
+  queryable without blocking the player's path through a crowded egg line.
 - Board eggs remain directly draggable either onto an equal-tier board companion or onto an owned
   frontline deployment pad. Pickup moves the gold tutorial chevron to a recommended destination;
   all compatible destinations light gold, then the destination inside the horizontal snap radius
