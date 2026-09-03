@@ -7690,3 +7690,12 @@ first-session cohort rates.
 - The only uncommitted residue was three formatter-only UI files whose whitespace-stripped content
   exactly matched their committed versions. No semantic work was discarded. The repository now has
   one checkout and one surviving branch, `main`, ready to be the canonical Rojo source.
+
+## 2026-09-03 — Merge return portals split Farm from Fight
+
+- Turned the celestial and infernal `LightningRing` cylinders into invisible authored markers for
+  a config-owned client effect: pulsing realm-colored portal veils, particles, orbiting motes, and
+  random procedural lightning arcs across each opening.
+- Both gates explicitly identify `PORTAL TO FARM & FIGHT`. Heaven presents `FARM / GROW YOUR
+  FORTUNE`; Hell presents `FIGHT / EARN IT THE HARD WAY`, with gold/mint and ember/crimson palettes
+  respectively. The existing return-route service remains authoritative for cross-place travel.
