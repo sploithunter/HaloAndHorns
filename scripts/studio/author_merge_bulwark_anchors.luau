@@ -1,7 +1,8 @@
 -- Run in Roblox Studio Edit mode after the polished Merge realm map is present.
 --
--- Authors the orange/mid and green/front placement lines, then stamps invisible
--- placement anchors across all four rows. Never create, rename, or destroy
+-- Authors the orange/mid and green/front placement lines, applies one
+-- config-owned green/yellow/orange/red appearance to all four rows, then stamps
+-- invisible placement anchors. Never create, rename, move, or destroy
 -- BulwarkLine or BreachLine — those two parts remain the only combat planes
 -- (pets open / eggs become attackable). Orange and green are install hooks only.
 
@@ -48,7 +49,18 @@ local function configColor(row, path)
     )
 end
 
-local function configureHelperLine(lines, def, template, position, color)
+local function configTransparency(key)
+    return assert(tonumber(lineLayout[key]), "edge_bulwarks.line_layout." .. key .. " is missing")
+end
+
+local function applyLineAppearance(line, color, transparency)
+    line.Color = color
+    line.Material = Enum.Material.Neon
+    line.Transparency = transparency
+    line.CastShadow = false
+end
+
+local function configureHelperLine(lines, def, template, position, color, transparency)
     local line = lines:FindFirstChild(def.lineDefault)
     if not (line and line:IsA("BasePart")) then
         if line then
@@ -65,10 +77,7 @@ local function configureHelperLine(lines, def, template, position, color)
     line.CastShadow = false
     line.Size = template.Size
     line.CFrame = CFrame.new(position) * template.CFrame.Rotation
-    line.Color = color
-    line.Material = Enum.Material.Neon
-    line.Transparency =
-        assert(tonumber(lineLayout.transparency), "bulwark line transparency is missing")
+    applyLineAppearance(line, color, transparency)
     line.TopSurface = Enum.SurfaceType.Smooth
     line.BottomSurface = Enum.SurfaceType.Smooth
     line:SetAttribute("MergeBulwarkPlacementLine", true)
@@ -85,6 +94,16 @@ for _, lines in ipairs(laneLines:GetChildren()) do
     local bulwark = lines:FindFirstChild(tostring(MergeConfig.world.bulwark_line or "BulwarkLine"))
     local breach = lines:FindFirstChild(tostring(MergeConfig.world.breach_line or "BreachLine"))
     if bulwark and bulwark:IsA("BasePart") and breach and breach:IsA("BasePart") then
+        applyLineAppearance(
+            bulwark,
+            configColor(lineLayout.lane_color, "edge_bulwarks.line_layout.lane_color"),
+            configTransparency("lane_transparency")
+        )
+        applyLineAppearance(
+            breach,
+            configColor(lineLayout.egg_color, "edge_bulwarks.line_layout.egg_color"),
+            configTransparency("egg_transparency")
+        )
         local midDef = assert(MergeBulwarkSlots.get("mid"))
         local frontDef = assert(MergeBulwarkSlots.get("front"))
         local midPosition = breach.Position:Lerp(bulwark.Position, INTERVAL_FRACTION)
@@ -94,14 +113,16 @@ for _, lines in ipairs(laneLines:GetChildren()) do
             midDef,
             bulwark,
             midPosition,
-            configColor(lineLayout.mid_color, "edge_bulwarks.line_layout.mid_color")
+            configColor(lineLayout.mid_color, "edge_bulwarks.line_layout.mid_color"),
+            configTransparency("mid_transparency")
         )
         configureHelperLine(
             lines,
             frontDef,
             bulwark,
             bulwark.Position + interval,
-            configColor(lineLayout.front_color, "edge_bulwarks.line_layout.front_color")
+            configColor(lineLayout.front_color, "edge_bulwarks.line_layout.front_color"),
+            configTransparency("front_transparency")
         )
         helperLines += 2
     end

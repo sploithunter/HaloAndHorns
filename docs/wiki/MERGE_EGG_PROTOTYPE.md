@@ -1306,7 +1306,7 @@ clean.
   hunt, shred, hold, ward) live on `MergeBulwarkProgression`. Impaler Palisade
   is the first live effect: a no-damage stop shove toward the gate (same
   displacement as tank Seismic) plus a short root. Charges are per marcher,
-  1–4 by tier; after the last bounce they walk through and the gold line
+  1–4 by tier; after the last bounce they walk through and the yellow line
   opens combat. Concertina Line is the bleed family: a lane DoT plus a graded
   slow (T1 on-strip only, T2/T3 linger, T4 stacks and stays). Land Shark is
   hunt/drag. Saw Blade is the shred line: rapid high damage on the deck plus
@@ -1341,23 +1341,26 @@ clean.
   Runtime uses uniform `Model:ScaleTo`, clears only the package's 90-degree PrimaryPart import-pivot
   rotation, and then applies the authored anchor yaw; it must never scale individual axes.
 - `scripts/studio/author_merge_bulwark_anchors.luau` authors placement hooks from
-  `MergeBulwarkSlots` without mutating `BulwarkLine` or `BreachLine`. Those two
-  parts stay the combat planes (pets open / eggs become attackable). Lane
-  anchors sit on the gold line; egg anchors sit on the red line. The same pass creates the orange
-  midpoint and equally spaced green forward helper lines, then authors all four anchor rows. A
+  `MergeBulwarkSlots` without moving, replacing, or renaming `BulwarkLine` or `BreachLine`. Those two
+  parts stay the combat planes (pets open / eggs become attackable). The pass duplicates the exact
+  Studio-approved `Heaven_01_Lines` green/yellow/orange/red colors and row-specific transparency to
+  all four rows in every bay. Lane anchors sit on the yellow line;
+  egg anchors sit on the red line. The same pass creates the orange midpoint and equally spaced
+  green forward helper lines, then authors all four anchor rows. A
   96-stud line uses a 94-stud defense
   strip (ten 9.4-stud tiles) with one-stud wall clearance. Anchors ground to
   `LandStrip`. Talkable Bulwark Engineer vendors (`user_id` 3200870803)
-  stand on the red-line left and the gold-line right so the egg row and
-  later cannons keep the middle. Each Talk opens the same unchanged
-  workshop for that slot. Wardstone is egg-only.
+  stand on the red/orange left and yellow/green right. Orange and green engineers are created only
+  once their Rank 10 and Rank 30 row gates are met, including immediately after a same-session
+  rebirth. Each Talk opens the same unchanged workshop for that slot. Wardstone is egg-only.
   Select writes that slot at Tier 1. Upgrade advances only that
   slot. Playtest availability remains Wave 1; pricing uses the production economy table. Production
   stays the Wave-20 intermission.
 
 - `scripts/studio/test_merge_defense_slot_geometry.luau` is the publishing gate for the authored
-  layout. It verifies ten bays, exact red/orange/gold/green spacing, ten anchors on each row, four
-  cannon pads per bay, the repeated rear-pad depth, and the Rank 10/20/30 attributes.
+  layout. It verifies ten bays, exact red/orange/yellow/green spacing, the configured color/material/
+  transparency of every row, ten anchors on each row, four cannon pads per bay, the repeated
+  rear-pad depth, and the Rank 10/20/30 attributes.
 - Every one of the 24 family/tier variants is presentation-audited against all ten Heaven/Hell bays.
   The five static families use uniform `0.94` scaling on ten 9.4-stud anchors; each line spans 94
   studs and retains the authored one-stud wall clearance. Land Sharks are audited separately as

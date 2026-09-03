@@ -2210,11 +2210,29 @@ return function()
             expect(authoring:find('anchor("HatcherSpawn", Vector3.new(0, 2, -218)', 1, true)).to.be.ok()
             expect(config.team.edge_bulwarks.slot_unlock_rebirth_ranks.mid).to.equal(10)
             expect(config.team.edge_bulwarks.slot_unlock_rebirth_ranks.front).to.equal(30)
+            expect(table.concat(config.team.edge_bulwarks.line_layout.front_color, ",")).to.equal(
+                "58,125,21"
+            )
+            expect(table.concat(config.team.edge_bulwarks.line_layout.lane_color, ",")).to.equal(
+                "255,255,0"
+            )
+            expect(table.concat(config.team.edge_bulwarks.line_layout.mid_color, ",")).to.equal(
+                "175,113,32"
+            )
+            expect(table.concat(config.team.edge_bulwarks.line_layout.egg_color, ",")).to.equal(
+                "151,0,0"
+            )
+            expect(config.team.edge_bulwarks.line_layout.front_transparency).to.equal(0.05)
+            expect(config.team.edge_bulwarks.line_layout.lane_transparency).to.equal(0.08)
+            expect(config.team.edge_bulwarks.line_layout.mid_transparency).to.equal(0.05)
+            expect(config.team.edge_bulwarks.line_layout.egg_transparency).to.equal(0.08)
             expect(slotAuthoring:find("breach.Position:Lerp(bulwark.Position", 1, true)).to.be.ok()
             expect(slotAuthoring:find("bulwark.Position + interval", 1, true)).to.be.ok()
+            expect(slotAuthoring:find("applyLineAppearance", 1, true)).to.be.ok()
             expect(slotAuthoring:find('MergeBulwarkSlots.get("mid")', 1, true)).to.be.ok()
             expect(slotAuthoring:find('MergeBulwarkSlots.get("front")', 1, true)).to.be.ok()
             expect(geometryAudit:find("red.Position:Lerp(yellow.Position, 0.5)", 1, true)).to.be.ok()
+            expect(geometryAudit:find("assertLineAppearance", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_bulwarkSlotLine", 1, true)).to.be.ok()
             expect(service:find('return false, "bulwark_slot_rebirth_locked"', 1, true)).to.be.ok()
         end)
@@ -2615,6 +2633,13 @@ return function()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureBulwarkEngineer", 1, true)
             ).to.be.ok()
+            expect(
+                service:find(
+                    "if record.bulwarksReady == true then\n        self:_ensureBulwarkEngineer(record, folder)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_spawnBulwarkEngineer", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_groundEngineerOnFloor", 1, true)
@@ -2631,6 +2656,10 @@ return function()
             expect(bulwarks.engineer.posts[1].along).to.equal("left")
             expect(bulwarks.engineer.posts[2].slot).to.equal("lane")
             expect(bulwarks.engineer.posts[2].along).to.equal("right")
+            expect(bulwarks.engineer.posts[3].slot).to.equal("mid")
+            expect(bulwarks.engineer.posts[3].along).to.equal("left")
+            expect(bulwarks.engineer.posts[4].slot).to.equal("front")
+            expect(bulwarks.engineer.posts[4].along).to.equal("right")
             expect(bulwarks.engineer.display_name).to.equal("Bulwark Engineer")
             expect(bulwarks.engineer.object_text).to.equal("Bulwark Engineer")
             expect(bulwarks.engineer.action_text).to.equal("Talk")
