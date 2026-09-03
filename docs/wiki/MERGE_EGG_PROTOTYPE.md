@@ -412,7 +412,9 @@ team and queue model:
   first +100% rebirth produce `1 + 0.45 + 1.00 = 2.45x`, not `1.45 × 2`. The same combined pet value
   applies to hatcher NPC squads, Simple-mode reserve pets, and Full-mode durable player pets. The
   matching pet-defense factor widens those pets' Merge-only endurance ceiling so higher-wave damage
-  cannot erase the offensive progression with one hit. Enemy stats never scale from rebirth rank:
+  cannot erase the offensive progression with one hit. Combat, world overhead bars, and every Squad
+  HUD health/shield presentation resolve that same replicated factor; durable pet Power stays
+  unchanged. Enemy stats never scale from rebirth rank:
   combat layers and the endless wave generator own enemy HP, damage, lieutenant, and boss growth, so
   rebirth changes where the player intersects that independent wave curve. The Full-mode pet factor
   is read only while the player is inside Merge Defense and is never written into durable pet records,

@@ -132,6 +132,22 @@ local SquadHud = {}
 
 local localPlayer = Players.LocalPlayer
 
+-- Match the server combat ceiling and the world overhead bar. Merge Defense widens endurance
+-- without mutating durable pet Power, so every squad-card health/shield fraction must include the
+-- replicated place-scoped multiplier. The owner fallback covers durable pets that were already
+-- present when Merge mode was enabled and have not yet received a fresh per-model stamp.
+function SquadHud.petEnduranceFactor(pet, baseFactor)
+    local multiplier = tonumber(pet and pet:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+    if not multiplier and pet then
+        local folder = pet.Parent
+        local owner = folder and Players:FindFirstChild(folder.Name)
+        if owner and owner:GetAttribute("InMergeEggPrototype") == true then
+            multiplier = tonumber(owner:GetAttribute("MergeDefenseRebirthPetDefenseMultiplier"))
+        end
+    end
+    return math.max(0.01, tonumber(baseFactor) or 1) * math.max(1, multiplier or 1)
+end
+
 -- Resolve a pet's archetype/role chip: PetRole attribute -> by_type[PetType] -> default.
 -- Returns { glyph, icon, color (Color3) }, cached per role id.
 local ROLE_CACHE = {}
@@ -244,6 +260,7 @@ end
 -- Resolve the live state the HUD renders for one pet.
 local function readSlot(pet, factor, thresholds, noResummon)
     local power = petPower(pet)
+    local enduranceFactor = SquadHud.petEnduranceFactor(pet, factor)
     local damage = pet:GetAttribute("CombatDamageTaken") or 0
     local downed = pet:GetAttribute("CombatDowned") == true
     local cdRemaining = 0
@@ -261,15 +278,15 @@ local function readSlot(pet, factor, thresholds, noResummon)
             state = cdRemaining > 0 and "Recharging" or "Ready"
         end
     else
-        state = PetEndurance.state(damage, power, factor, thresholds)
+        state = PetEndurance.state(damage, power, enduranceFactor, thresholds)
     end
-    local maxEnd = PetEndurance.maxEndurance(power, factor)
+    local maxEnd = PetEndurance.maxEndurance(power, enduranceFactor)
     local shield = pet:GetAttribute("CombatShield") or 0
     return {
         slot = petSlot(pet),
         name = tostring(pet:GetAttribute("PetType") or pet.Name),
         variant = tostring(pet:GetAttribute("Variant") or "basic"),
-        healthFraction = PetEndurance.healthFraction(damage, power, factor),
+        healthFraction = PetEndurance.healthFraction(damage, power, enduranceFactor),
         -- Shield (absorption pool) as a fraction of the pet's endurance ceiling, for the
         -- thin secondary bar. Capped at 1 so a big shield just fills it.
         shieldFraction = maxEnd > 0 and math.clamp(shield / maxEnd, 0, 1) or 0,
@@ -1075,7 +1092,7 @@ function SquadHud.start()
                             sum += PetEndurance.healthFraction(
                                 pet:GetAttribute("CombatDamageTaken") or 0,
                                 petPower(pet),
-                                factor
+                                SquadHud.petEnduranceFactor(pet, factor)
                             )
                         end
                     end
@@ -1298,7 +1315,7 @@ function SquadHud.start()
                             or PetEndurance.healthFraction(
                                 pet:GetAttribute("CombatDamageTaken") or 0,
                                 petPower(pet),
-                                factor
+                                SquadHud.petEnduranceFactor(pet, factor)
                             )
                         applyVariantName(
                             pc.name,
@@ -1327,7 +1344,10 @@ function SquadHud.start()
                         -- shield pool bar + status badges, mirrored from own cards (every
                         -- attribute replicates globally). Badges resolve against the pet's
                         -- OWNER — player-level buff channels live on them, not the caster.
-                        local maxEnd = PetEndurance.maxEndurance(petPower(pet), factor)
+                        local maxEnd = PetEndurance.maxEndurance(
+                            petPower(pet),
+                            SquadHud.petEnduranceFactor(pet, factor)
+                        )
                         local shieldF = maxEnd > 0
                                 and math.clamp(
                                     (pet:GetAttribute("CombatShield") or 0) / maxEnd,

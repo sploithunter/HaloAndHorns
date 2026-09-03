@@ -7614,3 +7614,9 @@ first-session cohort rates.
   construction pass. NPC principals now watch every opted-in body part and immediately restore
   `CanCollide = false` whenever the Humanoid lifecycle or another character system changes it;
   late-added accessory handles remain covered by the existing descendant hook.
+
+## 2026-09-03 — Merge squad endurance HUD parity
+
+- Fixed every Squad HUD health/shield presentation to use the same replicated, Merge-only combined
+  rebirth + management Pet Endurance multiplier as server combat and world overhead bars. At high
+  rebirth ranks the previous base-Power-only client calculation could show a living pet as empty.
