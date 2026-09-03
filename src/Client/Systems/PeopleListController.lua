@@ -88,17 +88,58 @@ local function isMergePlace()
     return placesConfig ~= nil and PlaceRuntime.isMerge(game.PlaceId, placesConfig)
 end
 
+local function isRendered(guiObject, playerGui)
+    if not (guiObject and guiObject:IsA("GuiObject") and guiObject.AbsoluteSize.Y > 0) then
+        return false
+    end
+    local current = guiObject
+    while current and current ~= playerGui do
+        if current:IsA("GuiObject") and current.Visible ~= true then
+            return false
+        end
+        if current:IsA("ScreenGui") and current.Enabled ~= true then
+            return false
+        end
+        current = current.Parent
+    end
+    return current == playerGui
+end
+
+local function farmUpperSurface(playerGui)
+    local tutorialGui = playerGui and playerGui:FindFirstChild("TutorialGui")
+    local tutorial = tutorialGui and tutorialGui:FindFirstChild("Objective", true)
+    if isRendered(tutorial, playerGui) then
+        return tutorial
+    end
+
+    local trackerGui = playerGui and playerGui:FindFirstChild("QuestTrackerGui")
+    local tracker = trackerGui and trackerGui:FindFirstChild("quest_tracker_pane", true)
+    if tracker and tracker:GetAttribute("Restyled") == true and isRendered(tracker, playerGui) then
+        return tracker
+    end
+    return nil
+end
+
 local function dockState()
     local player = Players.LocalPlayer
     local camera = assert(Workspace.CurrentCamera, "People list requires CurrentCamera")
     local viewport = camera.ViewportSize
     local mergePlace = isMergePlace()
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    local upperSurface = if mergePlace then nil else farmUpperSurface(playerGui)
+    local farmUpperSurfaceBottomScale = nil
+    if upperSurface and viewport.Y > 0 then
+        farmUpperSurfaceBottomScale = math.clamp(
+            (upperSurface.AbsolutePosition.Y + upperSurface.AbsoluteSize.Y) / viewport.Y,
+            0,
+            1
+        )
+    end
     local mergeWaveBottom = nil
     local mergeWaveWidth = nil
     local mergeWaveHeight = nil
     local mergeWaveRight = nil
     if mergePlace then
-        local playerGui = player:FindFirstChildOfClass("PlayerGui")
         local waveGui = playerGui and playerGui:FindFirstChild("MergeWaveBar")
         local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
         if
@@ -123,6 +164,7 @@ local function dockState()
         mergeWaveWidth = mergeWaveWidth,
         mergeWaveHeight = mergeWaveHeight,
         mergeWaveRight = mergeWaveRight,
+        farmUpperSurfaceBottomScale = farmUpperSurfaceBottomScale,
         displayClass = tostring(player:GetAttribute("DisplayClass") or "desktop"),
         viewportWidth = viewport.X,
         viewportHeight = viewport.Y,
@@ -771,7 +813,9 @@ local function dockLayout()
     local player = Players.LocalPlayer
     local state = dockState()
     local dimensions = PeopleList.layout(config, state)
-    root.Position = positionedAtAbsoluteY(root, 1 - dimensions.rightScale, dimensions.top)
+    -- The follower's major placement stays relative. Live leader geometry is normalized to the
+    -- viewport in dockState; pixels are never fed back into a screen-position offset.
+    root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, dimensions.headerHeight)
     player:SetAttribute("PeopleListTop", dimensions.top)
     if headerBar then
@@ -801,13 +845,8 @@ local function dockLayout()
     refreshRows()
 end
 
-local function watchMergeWaveDock()
-    if not isMergePlace() then
-        return
-    end
+local function watchUpperHudDock()
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-    local watchedMeter = nil
-    local watchedGui = nil
     local connections = {}
 
     local function disconnectCurrent()
@@ -817,35 +856,76 @@ local function watchMergeWaveDock()
         table.clear(connections)
     end
 
-    local function bindCurrent()
-        local waveGui = playerGui:FindFirstChild("MergeWaveBar")
-        local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
-        if waveMeter == watchedMeter and waveGui == watchedGui then
-            return
+    local function currentSources()
+        local sources = {}
+        if isMergePlace() then
+            local waveGui = playerGui:FindFirstChild("MergeWaveBar")
+            local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
+            if waveMeter and waveMeter:IsA("GuiObject") then
+                table.insert(sources, waveMeter)
+            end
+            return sources
         end
+
+        local tutorialGui = playerGui:FindFirstChild("TutorialGui")
+        local tutorial = tutorialGui and tutorialGui:FindFirstChild("Objective", true)
+        if tutorial and tutorial:IsA("GuiObject") then
+            table.insert(sources, tutorial)
+        end
+        local trackerGui = playerGui:FindFirstChild("QuestTrackerGui")
+        local tracker = trackerGui and trackerGui:FindFirstChild("quest_tracker_pane", true)
+        if tracker and tracker:IsA("GuiObject") then
+            table.insert(sources, tracker)
+        end
+        return sources
+    end
+
+    local function bindCurrent()
         disconnectCurrent()
-        watchedMeter = if waveMeter and waveMeter:IsA("GuiObject") then waveMeter else nil
-        watchedGui = if waveGui and waveGui:IsA("ScreenGui") then waveGui else nil
-        if watchedMeter then
+        local watchedGuis = {}
+        for _, source in ipairs(currentSources()) do
             for _, propertyName in ipairs({ "AbsolutePosition", "AbsoluteSize", "Visible" }) do
                 connections[#connections + 1] =
-                    watchedMeter:GetPropertyChangedSignal(propertyName):Connect(dockLayout)
+                    source:GetPropertyChangedSignal(propertyName):Connect(dockLayout)
             end
-        end
-        if watchedGui then
-            connections[#connections + 1] =
-                watchedGui:GetPropertyChangedSignal("Enabled"):Connect(dockLayout)
+            local viewportScale = source:FindFirstChildOfClass("UIScale")
+            if viewportScale then
+                connections[#connections + 1] =
+                    viewportScale:GetPropertyChangedSignal("Scale"):Connect(dockLayout)
+            end
+            local sourceGui = source:FindFirstAncestorOfClass("ScreenGui")
+            if sourceGui and not watchedGuis[sourceGui] then
+                watchedGuis[sourceGui] = true
+                connections[#connections + 1] =
+                    sourceGui:GetPropertyChangedSignal("Enabled"):Connect(dockLayout)
+            end
         end
         dockLayout()
     end
 
     playerGui.DescendantAdded:Connect(function(descendant)
-        if descendant.Name == "WaveMeter" or descendant.Name == "MergeWaveBar" then
+        if
+            descendant.Name == "WaveMeter"
+            or descendant.Name == "MergeWaveBar"
+            or descendant.Name == "TutorialGui"
+            or descendant.Name == "Objective"
+            or descendant.Name == "QuestTrackerGui"
+            or descendant.Name == "quest_tracker_pane"
+            or descendant:IsA("UIScale")
+        then
             task.defer(bindCurrent)
         end
     end)
     playerGui.DescendantRemoving:Connect(function(descendant)
-        if descendant == watchedMeter or descendant == watchedGui then
+        if
+            descendant.Name == "WaveMeter"
+            or descendant.Name == "MergeWaveBar"
+            or descendant.Name == "TutorialGui"
+            or descendant.Name == "Objective"
+            or descendant.Name == "QuestTrackerGui"
+            or descendant.Name == "quest_tracker_pane"
+            or descendant:IsA("UIScale")
+        then
             task.defer(bindCurrent)
         end
     end)
@@ -955,7 +1035,7 @@ local function build()
     root.Name = "Root"
     root.AnchorPoint = Vector2.new(1, 0)
     -- Under the quest pill. Tip may draw over this; quest tracker stays on top.
-    root.Position = UDim2.new(1 - dimensions.rightScale, 0, 0, dimensions.top)
+    root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
     player:SetAttribute("PeopleListTop", dimensions.top)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, headerH)
     root.AutomaticSize = Enum.AutomaticSize.Y
@@ -1368,7 +1448,7 @@ function PeopleListController.start()
     build()
     applyExpanded()
     applyVisibility()
-    watchMergeWaveDock()
+    watchUpperHudDock()
     bindToggle()
 
     local localPlayer = Players.LocalPlayer

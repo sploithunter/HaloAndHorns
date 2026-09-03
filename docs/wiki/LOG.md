@@ -7628,3 +7628,11 @@ first-session cohort rates.
   lessons after completing the more comprehensive Combat Training track.
 - Quest focus now treats that same completion receipt as satisfying Combat Training, so stale quest
   state cannot assign the cave again. The cave remains manually available as an optional Redo.
+
+## 2026-09-03 — Farm People list follows the live upper-right surface
+
+- Replaced the Farm & Fight People list's independent top preset with the normalized live bottom
+  edge of whichever upper-right surface is visible: tutorial first, otherwise quest tracker.
+- The list now tiles directly below that leader and relayouts when the leader expands, collapses,
+  rescales, appears, disappears, or hands the corner to the other surface. Its screen position remains
+  scale-based; rendered pixels are diagnostics converted to viewport proportion, never offsets.

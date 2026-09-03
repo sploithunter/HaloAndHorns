@@ -29,7 +29,10 @@ Responsive relationships—not guessed screen coordinates—own placement.
   Merge place, the People list docks beneath `MergeWaveBar.WaveMeter`, inherits its rendered width,
   right edge, and chrome scale, and adds a viewport-relative gap. Its per-device values are startup
   fallbacks only. Clamp followers to the viewport when the leader's safe-area coordinate extends
-  slightly beyond an edge on a small device.
+  slightly beyond an edge on a small device. In Farm & Fight, the People list similarly normalizes
+  the currently visible tutorial or quest surface's rendered bottom into viewport scale and tiles
+  directly beneath it; expansion, compact modes, viewport scaling, and tutorial/quest handoff all
+  relayout the follower. Never feed that rendered edge back into a `UDim2` pixel offset.
 
 The quest/tutorial upper-right surfaces illustrate the boundary: their shared `{1,0},{0,0}` dock and
 right anchor perform placement. The quest tracker's measured 14px top and 4px right adjustments only
