@@ -559,7 +559,6 @@ return {
             default_duration_seconds = 2.5,
             egg_upgrade_duration_seconds = 5,
             maximum_queue = 4,
-            waycoin_milestone_amount = 1000,
             copies = {
                 egg_created = "%s CREATED",
                 tutorial_egg_upgraded = "%s UPGRADED — GREAT JOB. YOU'VE GOT THIS.",
@@ -567,7 +566,6 @@ return {
                 pet_slot_unlocked = "%s PET SLOT UNLOCKED",
                 bulwark_unlocked = "BULWARK UNLOCKED",
                 cannon_unlocked = "CANNON UNLOCKED",
-                waycoins_collected = "%s WAYCOINS COLLECTED",
                 quartermaster_ready = "QUARTERMASTER READY",
             },
         },

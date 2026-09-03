@@ -7545,3 +7545,9 @@ first-session cohort rates.
   quarter-turn sideways: unlike Debuff T1/T2, the T3/T4 source meshes are authored along local +Z.
 - Their manifest-owned `barrelYawDegrees` is now 90, aligning the chassis with the common local +X
   ballistic basis without adding a role/tier special case to projectile targeting.
+
+## 2026-09-02 — Removed the 1,000-Waycoin toast
+
+- Removed the session currency accumulator, its `CurrencyUpdate` listener, and the dead milestone
+  configuration. Waycoin and Gem collection stay silent while the sparse first-time progression
+  milestones continue to use the tutorial footprint.
