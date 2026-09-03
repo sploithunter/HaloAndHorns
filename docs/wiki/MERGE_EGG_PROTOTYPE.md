@@ -412,7 +412,9 @@ team and queue model:
   first +100% rebirth produce `1 + 0.45 + 1.00 = 2.45x`, not `1.45 × 2`. The same combined pet value
   applies to hatcher NPC squads, Simple-mode reserve pets, and Full-mode durable player pets. The
   matching pet-defense factor widens those pets' Merge-only endurance ceiling so higher-wave damage
-  cannot erase the offensive progression with one hit. Enemy stats never scale from rebirth rank:
+  cannot erase the offensive progression with one hit. Combat, world overhead bars, and every Squad
+  HUD health/shield presentation resolve that same replicated factor; durable pet Power stays
+  unchanged. Enemy stats never scale from rebirth rank:
   combat layers and the endless wave generator own enemy HP, damage, lieutenant, and boss growth, so
   rebirth changes where the player intersects that independent wave curve. The Full-mode pet factor
   is read only while the player is inside Merge Defense and is never written into durable pet records,
@@ -1056,8 +1058,9 @@ clean.
   roots, visible pads, and floor `SurfaceGui` anchors derive from the owned-slot order, so only four
   stations deploy initially and slot 5 appears as the first purchased expansion without shifting
   any existing station. Every Hatcher Captain body part is non-collidable (including late-added
-  accessory handles), so the stationary NPC remains visible and queryable without blocking the
-  player's path through a crowded egg line.
+  accessory handles), and the NPC-principal collision guard reasserts that policy if Roblox's
+  Humanoid lifecycle later restores `CanCollide`. The stationary NPC therefore remains visible and
+  queryable without blocking the player's path through a crowded egg line.
 - Board eggs remain directly draggable either onto an equal-tier board companion or onto an owned
   frontline deployment pad. Pickup moves the gold tutorial chevron to a recommended destination;
   all compatible destinations light gold, then the destination inside the horizontal snap radius

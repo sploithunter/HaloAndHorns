@@ -1054,6 +1054,23 @@ return function()
             expect(enemyService:find("MergeDefenseRebirthPetDefenseMultiplier", 1, true)).to.be.ok()
             local enduranceBar = readFile("src/Server/PetEnduranceBar.lua")
             expect(enduranceBar:find("MergeDefenseRebirthPetDefenseMultiplier", 1, true)).to.be.ok()
+            local squadHud = readFile("src/Client/Systems/SquadHud.lua")
+            expect(squadHud:find("function SquadHud.petEnduranceFactor", 1, true)).to.be.ok()
+            expect(squadHud:find("MergeDefenseRebirthPetDefenseMultiplier", 1, true)).to.be.ok()
+            expect(
+                squadHud:find(
+                    "local enduranceFactor = SquadHud.petEnduranceFactor(pet, factor)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(
+                squadHud:find(
+                    "PetEndurance.healthFraction(damage, power, enduranceFactor)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(home.combat_layers[1].through_wave).to.equal(10)
             expect(home.combat_layers[2].id).to.equal("heaven_1")
             expect(home.combat_layers[2].through_wave).to.equal(20)
