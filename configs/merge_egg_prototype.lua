@@ -587,6 +587,7 @@ return {
         max_distance = 16,
         stand_front_studs = 8,
         shop_visible_transparency = 0,
+        introduction_seconds = 5,
         greeting = "Rebirths unlock new eggs. Finish Combat Training, and their pets are yours to keep.",
         greeting_complete = "Training complete. Pets from your rebirth eggs are yours to keep.",
         services = {

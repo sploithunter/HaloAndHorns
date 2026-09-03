@@ -7015,6 +7015,28 @@ function MergeEggPrototypeService:_setQuartermasterSpeech(model, text)
     end
 end
 
+function MergeEggPrototypeService:_showQuartermasterIntroduction(record, model, text)
+    self:_setQuartermasterSpeech(model, text)
+    local duration = requiredConfigNumber(
+        self:_quartermasterConfig().introduction_seconds,
+        "quartermaster.introduction_seconds"
+    )
+    record.quartermasterSpeechUntil = os.clock() + math.max(0, duration)
+end
+
+function MergeEggPrototypeService:_clearQuartermasterIntroduction(record)
+    record.quartermasterSpeechUntil = nil
+    local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
+    self:_setQuartermasterSpeech(self:_findQuartermaster(folder), nil)
+end
+
+function MergeEggPrototypeService:_stepQuartermasterIntroduction(record, now)
+    if not record.quartermasterSpeechUntil or now < record.quartermasterSpeechUntil then
+        return
+    end
+    self:_clearQuartermasterIntroduction(record)
+end
+
 function MergeEggPrototypeService:_findQuartermaster(folder)
     if not folder then
         return nil
@@ -7117,12 +7139,16 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
     local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
     local live = self:_findQuartermaster(folder)
     local value = self:_quartermasterMenuState(record)
-    self:_setQuartermasterSpeech(live, value.greeting)
     local completesTutorial = record.tutorialActive == true
         and record.tutorialStep == "talk_quartermaster"
     if completesTutorial then
+        self:_showQuartermasterIntroduction(record, live, value.greeting)
         record.tutorialTalkedQuartermaster = true
         self:_updateTutorial(record, os.clock(), true)
+    else
+        -- The speech card identifies the Quartermaster once. Later visits keep only the compact
+        -- Services prompt and menu, so the playfield is not permanently covered by world-space UI.
+        self:_clearQuartermasterIntroduction(record)
     end
     value.milestone = completesTutorial and "quartermaster_ready" or nil
     Signals.MergeEggPrototypeBoardResult:FireClient(player, {
@@ -11419,6 +11445,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     if not self:_isRecordActive(record) then
         return
     end
+    self:_clearQuartermasterIntroduction(record)
     if discardProgress ~= true then
         self:_persistPlaystate(record, "merge_defense_session_end", true)
     end
@@ -14198,6 +14225,7 @@ function MergeEggPrototypeService:_stepRecord(record, now)
     if not self:_isRecordActive(record) then
         return
     end
+    self:_stepQuartermasterIntroduction(record, now)
     self:_updateTutorial(record, now, false)
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
