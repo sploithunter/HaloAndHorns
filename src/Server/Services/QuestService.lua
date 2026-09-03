@@ -14,6 +14,7 @@ local ClaimLogic = require(ReplicatedStorage.Shared.Game.ClaimLogic)
 local QuestChain = require(ReplicatedStorage.Shared.Game.QuestChain)
 local QuestActivation = require(ReplicatedStorage.Shared.Game.QuestActivation)
 local QuestReward = require(ReplicatedStorage.Shared.Game.QuestReward)
+local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local QuestService = {}
@@ -305,9 +306,10 @@ function QuestService:_combatTrainingOffered(data)
         and data.GameData.CombatTrainingQuestOffered == true
 end
 
-function QuestService:_combatTrainingClaimed(data)
+function QuestService:_combatTrainingSatisfied(data)
     local ledger = claims(data)
     return (ledger.ct_earth_cave or 0) > 0
+        or TutorialFlow.combatTutorialCompleted(data.CombatTutorial)
 end
 
 -- ACTIVE-FOCUS invariant (Jason): a quest is the single ACTIVE task. Keep the focus right:
@@ -320,24 +322,24 @@ function QuestService:_ensureFocus(player, data, level)
     -- Mid-tutorial: leave the focus alone (don't baseline First Steps on tutorial actions). A veteran
     -- with no tutorial state, or a player past it (Tutorial.done), is eligible.
     local tutorialDone = type(data.Tutorial) ~= "table" or data.Tutorial.done == true
+    local combatTrainingSatisfied = self:_combatTrainingSatisfied(data)
     local desired = data.QuestActiveTrack
     local meta = desired and self._config.tracks and self._config.tracks[desired]
     if desired and (not meta or (tonumber(meta.unlock_level) or 1) > level) then
         desired = nil -- stale / hidden focus → clear
     end
+    if desired == "combat_training" and combatTrainingSatisfied then
+        desired = nil -- the shared completion receipt outranks a stale cross-place focus
+    end
     -- Combat Training is the post-handoff focus so the tracker matches the
     -- Okay banner. Do not steal an explicit later pick, and do not override
     -- Combat Training with First Steps until they claim (or switch away).
-    if
-        tutorialDone
-        and self:_combatTrainingOffered(data)
-        and not self:_combatTrainingClaimed(data)
-    then
+    if tutorialDone and self:_combatTrainingOffered(data) and not combatTrainingSatisfied then
         if desired == nil then
             desired = "combat_training"
         end
     elseif tutorialDone and self:_firstStepsIncomplete(data) then
-        if desired ~= "combat_training" or self:_combatTrainingClaimed(data) then
+        if desired ~= "combat_training" or combatTrainingSatisfied then
             desired = "first_steps" -- onramp owns the focus until complete
         end
     end

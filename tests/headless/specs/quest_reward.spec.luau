@@ -58,6 +58,15 @@ return function()
             )
         end)
 
+        it("does not reactivate Combat Training after the shared tutorial is complete", function()
+            local service = readFile("src/Server/Services/QuestService.lua")
+            expect(service:find("function QuestService:_combatTrainingSatisfied", 1, true)).to.be.ok()
+            expect(
+                service:find("TutorialFlow.combatTutorialCompleted(data.CombatTutorial)", 1, true)
+            ).to.be.ok()
+            expect(service:find("and not combatTrainingSatisfied", 1, true)).to.be.ok()
+        end)
+
         it("preserves the First Steps total while paying every claim", function()
             local quests = loadModule("configs/quests.lua")
             local total = 0

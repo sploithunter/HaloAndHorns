@@ -642,6 +642,24 @@ return function()
                 expect(inNewTrack.done).to.equal(false)
                 expect(inNewDecision.unlockHeal).to.equal(false)
 
+                local completedElsewhere, completedElsewhereDecision = TutorialFlow.reconcileGrandfather(
+                    cfg,
+                    {
+                        version = 6,
+                        step = 1,
+                        count = 0,
+                        done = false,
+                    },
+                    {
+                        combatTutorial = { version = 1, step = 33, done = true },
+                    }
+                )
+                expect(completedElsewhere.done).to.equal(true)
+                expect(completedElsewhereDecision.completeTutorial).to.equal(true)
+                expect(completedElsewhereDecision.unlockHeal).to.equal(true)
+                expect(completedElsewhereDecision.bindHeal).to.equal(true)
+                expect(completedElsewhereDecision.reason).to.equal("combat_tutorial_done")
+
                 local beforeFight, beforeDecision = TutorialFlow.reconcileGrandfather(cfg, {
                     version = 6,
                     step = 5,
