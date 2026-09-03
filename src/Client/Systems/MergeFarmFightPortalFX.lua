@@ -156,18 +156,25 @@ local function makeSign(cfg, spec, palette)
     sign.Visible = false
     sign.Parent = signRoot
 
+    local fullCopy = Instance.new("Frame")
+    fullCopy.Name = "FullCopy"
+    fullCopy.BackgroundTransparency = 1
+    fullCopy.Size = UDim2.fromScale(1, 1)
+    fullCopy.Parent = sign
+
     makeTextLabel(
-        sign,
+        fullCopy,
         "Destination",
         spec.destination,
         cfg.destination,
         palette.accent,
         palette.stroke
     )
-    local word = makeTextLabel(sign, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
-    makeTextLabel(sign, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
+    local word =
+        makeTextLabel(fullCopy, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
+    makeTextLabel(fullCopy, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
     makeTextLabel(
-        sign,
+        fullCopy,
         "Invitation",
         cfg.invitation.text,
         cfg.invitation,
@@ -206,12 +213,22 @@ local function makeSign(cfg, spec, palette)
         requiredNumber(cfg.divider.transparency, "signage.divider.transparency")
     divider.Position = layoutValue(cfg.divider.position, "signage.divider.position")
     divider.Size = layoutValue(cfg.divider.size, "signage.divider.size")
-    divider.Parent = sign
+    divider.Parent = fullCopy
 
     local dividerGradient = Instance.new("UIGradient")
     dividerGradient.Color = ColorSequence.new(palette.primary, palette.secondary)
     dividerGradient.Parent = divider
-    return sign
+
+    local distantLabel = makeTextLabel(
+        sign,
+        "DistantLabel",
+        cfg.distant.text,
+        cfg.distant,
+        palette.accent,
+        palette.stroke
+    )
+    distantLabel.Visible = false
+    return sign, fullCopy, distantLabel
 end
 
 local function makeVeil(runtime, ring, cfg, spec, diameter)
@@ -361,7 +378,7 @@ local function buildPortal(ring, cfg, spec)
     }
     local veil, light = makeVeil(runtime, ring, cfg.veil, spec, diameter)
     local emitter = makeParticles(veil, cfg.particles, spec)
-    local sign = makeSign(cfg.signage, spec, palette)
+    local sign, fullCopy, distantLabel = makeSign(cfg.signage, spec, palette)
     local markerSize = requiredNumber(cfg.lightning.marker_size, "lightning.marker_size")
     local startMarker = makeEndpoint(runtime, "LightningStart", markerSize)
     local endMarker = makeEndpoint(runtime, "LightningEnd", markerSize)
@@ -376,6 +393,8 @@ local function buildPortal(ring, cfg, spec)
         light = light,
         emitter = emitter,
         sign = sign,
+        fullCopy = fullCopy,
+        distantLabel = distantLabel,
         orbit = makeOrbitParts(runtime, cfg.orbit, spec),
         startMarker = startMarker,
         endMarker = endMarker,
@@ -455,6 +474,7 @@ local function updateSign(record, cfg)
     end
 
     local ring = record.ring
+    local cameraDistance = (camera.CFrame.Position - ring.Position).Magnitude
     local center, onScreen = camera:WorldToViewportPoint(ring.Position)
     local edge = camera:WorldToViewportPoint(
         ring.Position
@@ -467,6 +487,35 @@ local function updateSign(record, cfg)
         return
     end
 
+    record.sign.Position = UDim2.fromOffset(
+        center.X + requiredNumber(cfg.pixel_offset[1], "signage.pixel_offset.x"),
+        center.Y + requiredNumber(cfg.pixel_offset[2], "signage.pixel_offset.y")
+    )
+
+    if cameraDistance > requiredNumber(cfg.full_copy_distance, "signage.full_copy_distance") then
+        local distant = cfg.distant
+        local fadeStart = requiredNumber(distant.fade_start_distance, "signage.distant.fade_start")
+        local fadeEnd = requiredNumber(distant.fade_end_distance, "signage.distant.fade_end")
+        local fadeAlpha = math.clamp((cameraDistance - fadeStart) / (fadeEnd - fadeStart), 0, 1)
+        local maxTransparency =
+            requiredNumber(distant.maximum_transparency, "signage.distant.maximum_transparency")
+        record.fullCopy.Visible = false
+        record.distantLabel.Visible = true
+        record.distantLabel.TextTransparency = fadeAlpha * maxTransparency
+        record.distantLabel.TextStrokeTransparency = math.clamp(
+            requiredNumber(distant.stroke_transparency, "signage.distant.stroke_transparency")
+                + fadeAlpha * maxTransparency,
+            0,
+            1
+        )
+        record.sign.Size = UDim2.fromOffset(
+            requiredNumber(distant.pixel_size[1], "signage.distant.pixel_size.x"),
+            requiredNumber(distant.pixel_size[2], "signage.distant.pixel_size.y")
+        )
+        record.sign.Visible = true
+        return
+    end
+
     local center2d = Vector2.new(center.X, center.Y)
     local edge2d = Vector2.new(edge.X, edge.Y)
     local pixelDiameter = (center2d - edge2d).Magnitude * 2
@@ -475,10 +524,8 @@ local function updateSign(record, cfg)
         requiredNumber(cfg.minimum_pixel_size, "signage.minimum_pixel_size"),
         requiredNumber(cfg.maximum_pixel_size, "signage.maximum_pixel_size")
     )
-    record.sign.Position = UDim2.fromOffset(
-        center.X + requiredNumber(cfg.pixel_offset[1], "signage.pixel_offset.x"),
-        center.Y + requiredNumber(cfg.pixel_offset[2], "signage.pixel_offset.y")
-    )
+    record.fullCopy.Visible = true
+    record.distantLabel.Visible = false
     record.sign.Size = UDim2.fromOffset(pixelDiameter, pixelDiameter)
     record.sign.Visible = true
 end

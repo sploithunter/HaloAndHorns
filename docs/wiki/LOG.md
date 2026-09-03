@@ -7699,3 +7699,9 @@ first-session cohort rates.
 - Both gates explicitly identify `PORTAL TO FARM & FIGHT`. Heaven presents `FARM / GROW YOUR
   FORTUNE`; Hell presents `FIGHT / EARN IT THE HARD WAY`, with gold/mint and ember/crimson palettes
   respectively. The existing return-route service remains authoritative for cross-place travel.
+
+## 2026-09-03 — Merge portal copy respects bay sightlines
+
+- Replaced the full four-line portal sign at long range with one compact, distance-fading `FARM &
+  FIGHT GATE` discovery label. The complete themed sign now appears only on the final approach, so a
+  gate stays discoverable across the realm without covering play two bays away.

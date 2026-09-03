@@ -17,8 +17,10 @@ particle/orbit/lightning tuning value, and all copy. Both gates say `PORTAL TO F
 gate leads with `FIGHT / EARN IT THE HARD WAY`. The client renders a theme-colored ForceField veil,
 spark motes, orbiting points, and random circumference-to-circumference procedural lightning. Copy
 is camera-facing and projected from the authored ring into a client ScreenGui so it stays legible
-over the translucent ForceField. The effect is proximity-gated and client-only; the existing public
-return-route service remains the travel authority.
+over the translucent ForceField. Beyond the final approach, it collapses to one compact, fading
+`FARM & FIGHT GATE` discovery label; the full destination, themed word, tagline, and invitation only
+open inside the configured near distance. The effect is proximity-gated and client-only; the
+existing public return-route service remains the travel authority.
 
 ## Phase 1 contract
 
