@@ -81,9 +81,6 @@ return {
         merge_wave_width_ratio = 1.0,
         merge_wave_header_height_ratio = 0.32,
         merge_wave_row_height_ratio = 0.30,
-        -- Farm & Fight's tutorial and quest surfaces are the live leader for this vertical stack.
-        -- Zero is intentional: their lower border and the People list's upper border tile directly.
-        farm_upper_surface_gap = 0,
         column_header_to_header = 0.67,
         column_gutter = 0.012,
     },

@@ -374,7 +374,6 @@ function PeopleList.layout(config, state)
     local mergeWaveWidth = tonumber(state.mergeWaveWidth)
     local mergeWaveHeight = tonumber(state.mergeWaveHeight)
     local mergeWaveRight = tonumber(state.mergeWaveRight)
-    local farmUpperSurfaceBottomScale = tonumber(state.farmUpperSurfaceBottomScale)
     local followsMergeWave = state.mergePlace == true
         and mergeWaveWidth ~= nil
         and mergeWaveWidth > 0
@@ -382,15 +381,7 @@ function PeopleList.layout(config, state)
         and mergeWaveHeight > 0
     local top
     local topScale
-    if state.mergePlace ~= true and farmUpperSurfaceBottomScale ~= nil then
-        topScale = math.clamp(
-            farmUpperSurfaceBottomScale
-                + requiredNumber(layout.farm_upper_surface_gap, "farm_upper_surface_gap"),
-            0,
-            1
-        )
-        top = math.floor(viewportHeight * topScale + 0.5)
-    elseif state.tutorialOwnsCorner == true then
+    if state.tutorialOwnsCorner == true then
         top = math.floor(viewportHeight * requiredNumber(mode.tutorial_top, "tutorial_top") + 0.5)
     elseif state.mergePlace == true and tonumber(state.mergeWaveBottom) ~= nil then
         top = math.max(

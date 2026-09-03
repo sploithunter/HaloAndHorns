@@ -25,7 +25,6 @@ return function()
             expect(people.layout.modes.desktop.width).to.equal(0.221)
             expect(people.layout.merge_wave_gap).to.equal(0.006)
             expect(people.layout.merge_wave_width_ratio).to.equal(1.0)
-            expect(people.layout.farm_upper_surface_gap).to.equal(0)
             expect(people.columns[1].width).to.equal(0.43)
             expect(people.columns[4].width).to.equal(0.20)
             expect(people.toggle.key).to.equal("Tab")
@@ -214,18 +213,6 @@ return function()
             merge.viewportHeight = 361
             merge.mergeWaveBottom = -5
             expect(PeopleList.topOffset(cfg(), merge)).to.equal(0)
-        end)
-
-        it("tiles directly beneath the live Farm tutorial or quest surface", function()
-            local dimensions = PeopleList.layout(cfg(), {
-                displayClass = "desktop",
-                viewportWidth = 1800,
-                viewportHeight = 900,
-                mergePlace = false,
-                farmUpperSurfaceBottomScale = 0.125,
-            })
-            expect(dimensions.top).to.equal(113)
-            expect(dimensions.topScale).to.equal(0.125)
         end)
 
         it("inherits the live Merge wave meter footprint on a phone", function()
@@ -434,16 +421,11 @@ return function()
             expect(controller:find("mergeWaveBottom", 1, true)).to.be.ok()
             expect(controller:find("mergeWaveWidth", 1, true)).to.be.ok()
             expect(controller:find("mergeWaveRight", 1, true)).to.be.ok()
-            expect(controller:find("farmUpperSurfaceBottomScale", 1, true)).to.be.ok()
-            expect(controller:find('FindFirstChild("QuestTrackerGui")', 1, true)).to.be.ok()
-            expect(controller:find('FindFirstChild("TutorialGui")', 1, true)).to.be.ok()
-            expect(
-                controller:find(
-                    "root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)",
-                    1,
-                    true
-                )
-            ).to.be.ok()
+            expect(controller:find("farmUpperSurfaceBottomScale", 1, true)).to.equal(nil)
+            expect(controller:find("UpperRightHudStack.mount", 1, true)).to.be.ok()
+            expect(controller:find("UpperRightHudStack.PEOPLE_LIST_ORDER", 1, true)).to.be.ok()
+            expect(controller:find("UpperRightHudStack.setRightPadding", 1, true)).to.be.ok()
+            expect(controller:find("root.Visible = allowed", 1, true)).to.be.ok()
             expect(controller:find('headerLabel.Text = "Players"', 1, true)).to.be.ok()
             expect(controller:find('("Players  %d"):format(count)', 1, true)).to.equal(nil)
             expect(controller:find('GetAttribute("ClaimedLevel")', 1, true)).to.be.ok()

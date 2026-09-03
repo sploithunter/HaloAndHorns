@@ -23,6 +23,7 @@ local Workspace = game:GetService("Workspace")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CoreGuiStateGuard = require(script.Parent.Parent.UI.CoreGuiStateGuard)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
+local UpperRightHudStack = require(script.Parent.Parent.UI.UpperRightHudStack)
 local GameEvents = require(script.Parent.GameEvents)
 local TutorialLanguageState = require(script.Parent.TutorialLanguageState)
 local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
@@ -43,7 +44,6 @@ local PLAYER_LIST_PEEK_SECONDS = 10
 local TutorialController = {}
 local started = false
 
-local gui -- ScreenGui (capsule lives here)
 local capsule, stepLabel, titleLabel, bodyLabel
 local beacon -- BillboardGui (parented to the current nearest egg)
 local pulseStroke -- UIStroke on the current ui target
@@ -159,31 +159,10 @@ local function showPlayerListTemporarily()
 end
 
 local function buildCapsule(pg)
-    gui = Instance.new("ScreenGui")
-    gui.Name = "TutorialGui"
-    gui.ResetOnSpawn = false
-    -- Above the regular HUD (PlayerBar=80, BuffStats=100) so the full-card tap target cannot be
-    -- intercepted by a transparent HUD surface. Full menus remain above it at 120 and hide it.
-    gui.DisplayOrder = 110
-    gui.IgnoreGuiInset = true
-
-    -- Keep the screen-edge anchor outside the scaled card. UIScale scales a root's anchored
-    -- placement as well as its contents on small viewports, which left a large false margin on
-    -- phones. This dock must remain at the exact, scale-only upper-right corner; do not add pixel
-    -- offsets here. The card hangs left from the dock and handles its own responsive scale.
-    local dock = Instance.new("Frame")
-    dock.Name = "TutorialDock"
-    dock.AnchorPoint = Vector2.new(1, 0)
-    dock.Position = UDim2.fromScale(1, 0)
-    dock.Size = UDim2.fromOffset(0, 0)
-    dock.BackgroundTransparency = 1
-    dock.ClipsDescendants = false
-    dock.Parent = gui
-
     capsule = Instance.new("Frame")
     capsule.Name = "Objective"
-    capsule.AnchorPoint = Vector2.new(1, 0)
-    capsule.Position = UDim2.fromOffset(0, 0)
+    capsule.AnchorPoint = Vector2.new(0, 0)
+    capsule.Position = UDim2.fromScale(0, 0)
     -- Mobile can shrink this HUD root to nearly half size. Keep the supporting copy at 18px and
     -- the title at 20px so the objective remains readable on a physical phone.
     capsule.Size = UDim2.fromOffset(420, 124)
@@ -264,8 +243,7 @@ local function buildCapsule(pg)
         end
     end)
 
-    capsule.Parent = dock
-    gui.Parent = pg
+    UpperRightHudStack.mount(pg, capsule, UpperRightHudStack.UPPER_SURFACE_ORDER)
     require(script.Parent.Parent.UI.UIViewportScale).attach(capsule)
 
     handoffGui = Instance.new("ScreenGui")

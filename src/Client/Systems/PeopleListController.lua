@@ -19,6 +19,7 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 local PeopleList = require(ReplicatedStorage.Shared.Game.PeopleList)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local UpperRightHudStack = require(script.Parent.Parent.UI.UpperRightHudStack)
 local placesConfig
 
 local PeopleListController = {}
@@ -88,53 +89,12 @@ local function isMergePlace()
     return placesConfig ~= nil and PlaceRuntime.isMerge(game.PlaceId, placesConfig)
 end
 
-local function isRendered(guiObject, playerGui)
-    if not (guiObject and guiObject:IsA("GuiObject") and guiObject.AbsoluteSize.Y > 0) then
-        return false
-    end
-    local current = guiObject
-    while current and current ~= playerGui do
-        if current:IsA("GuiObject") and current.Visible ~= true then
-            return false
-        end
-        if current:IsA("ScreenGui") and current.Enabled ~= true then
-            return false
-        end
-        current = current.Parent
-    end
-    return current == playerGui
-end
-
-local function farmUpperSurface(playerGui)
-    local tutorialGui = playerGui and playerGui:FindFirstChild("TutorialGui")
-    local tutorial = tutorialGui and tutorialGui:FindFirstChild("Objective", true)
-    if isRendered(tutorial, playerGui) then
-        return tutorial
-    end
-
-    local trackerGui = playerGui and playerGui:FindFirstChild("QuestTrackerGui")
-    local tracker = trackerGui and trackerGui:FindFirstChild("quest_tracker_pane", true)
-    if tracker and tracker:GetAttribute("Restyled") == true and isRendered(tracker, playerGui) then
-        return tracker
-    end
-    return nil
-end
-
 local function dockState()
     local player = Players.LocalPlayer
     local camera = assert(Workspace.CurrentCamera, "People list requires CurrentCamera")
     local viewport = camera.ViewportSize
     local mergePlace = isMergePlace()
     local playerGui = player:FindFirstChildOfClass("PlayerGui")
-    local upperSurface = if mergePlace then nil else farmUpperSurface(playerGui)
-    local farmUpperSurfaceBottomScale = nil
-    if upperSurface and viewport.Y > 0 then
-        farmUpperSurfaceBottomScale = math.clamp(
-            (upperSurface.AbsolutePosition.Y + upperSurface.AbsoluteSize.Y) / viewport.Y,
-            0,
-            1
-        )
-    end
     local mergeWaveBottom = nil
     local mergeWaveWidth = nil
     local mergeWaveHeight = nil
@@ -164,7 +124,6 @@ local function dockState()
         mergeWaveWidth = mergeWaveWidth,
         mergeWaveHeight = mergeWaveHeight,
         mergeWaveRight = mergeWaveRight,
-        farmUpperSurfaceBottomScale = farmUpperSurfaceBottomScale,
         displayClass = tostring(player:GetAttribute("DisplayClass") or "desktop"),
         viewportWidth = viewport.X,
         viewportHeight = viewport.Y,
@@ -813,9 +772,16 @@ local function dockLayout()
     local player = Players.LocalPlayer
     local state = dockState()
     local dimensions = PeopleList.layout(config, state)
-    -- The follower's major placement stays relative. Live leader geometry is normalized to the
-    -- viewport in dockState; pixels are never fed back into a screen-position offset.
-    root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
+    if state.mergePlace then
+        root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
+    else
+        -- The shared UIListLayout owns vertical placement. Only the responsive column inset and
+        -- this surface's size are configured here.
+        local playerGui = root:FindFirstAncestorOfClass("PlayerGui")
+        if playerGui then
+            UpperRightHudStack.setRightPadding(playerGui, dimensions.rightScale)
+        end
+    end
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, dimensions.headerHeight)
     player:SetAttribute("PeopleListTop", dimensions.top)
     if headerBar then
@@ -847,6 +813,9 @@ end
 
 local function watchUpperHudDock()
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    if not isMergePlace() then
+        return
+    end
     local connections = {}
 
     local function disconnectCurrent()
@@ -858,24 +827,10 @@ local function watchUpperHudDock()
 
     local function currentSources()
         local sources = {}
-        if isMergePlace() then
-            local waveGui = playerGui:FindFirstChild("MergeWaveBar")
-            local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
-            if waveMeter and waveMeter:IsA("GuiObject") then
-                table.insert(sources, waveMeter)
-            end
-            return sources
-        end
-
-        local tutorialGui = playerGui:FindFirstChild("TutorialGui")
-        local tutorial = tutorialGui and tutorialGui:FindFirstChild("Objective", true)
-        if tutorial and tutorial:IsA("GuiObject") then
-            table.insert(sources, tutorial)
-        end
-        local trackerGui = playerGui:FindFirstChild("QuestTrackerGui")
-        local tracker = trackerGui and trackerGui:FindFirstChild("quest_tracker_pane", true)
-        if tracker and tracker:IsA("GuiObject") then
-            table.insert(sources, tracker)
+        local waveGui = playerGui:FindFirstChild("MergeWaveBar")
+        local waveMeter = waveGui and waveGui:FindFirstChild("WaveMeter")
+        if waveMeter and waveMeter:IsA("GuiObject") then
+            table.insert(sources, waveMeter)
         end
         return sources
     end
@@ -907,10 +862,6 @@ local function watchUpperHudDock()
         if
             descendant.Name == "WaveMeter"
             or descendant.Name == "MergeWaveBar"
-            or descendant.Name == "TutorialGui"
-            or descendant.Name == "Objective"
-            or descendant.Name == "QuestTrackerGui"
-            or descendant.Name == "quest_tracker_pane"
             or descendant:IsA("UIScale")
         then
             task.defer(bindCurrent)
@@ -920,10 +871,6 @@ local function watchUpperHudDock()
         if
             descendant.Name == "WaveMeter"
             or descendant.Name == "MergeWaveBar"
-            or descendant.Name == "TutorialGui"
-            or descendant.Name == "Objective"
-            or descendant.Name == "QuestTrackerGui"
-            or descendant.Name == "quest_tracker_pane"
             or descendant:IsA("UIScale")
         then
             task.defer(bindCurrent)
@@ -939,6 +886,7 @@ local function applyVisibility()
     end
     local allowed = listAllowed()
     gui.Enabled = allowed
+    root.Visible = allowed
     if not allowed then
         hidePopover()
         hideTooltip()
@@ -1033,16 +981,22 @@ local function build()
 
     root = Instance.new("Frame")
     root.Name = "Root"
-    root.AnchorPoint = Vector2.new(1, 0)
-    -- Under the quest pill. Tip may draw over this; quest tracker stays on top.
-    root.Position = UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
+    root.AnchorPoint = if state.mergePlace then Vector2.new(1, 0) else Vector2.new(0, 0)
+    root.Position = if state.mergePlace
+        then UDim2.fromScale(1 - dimensions.rightScale, dimensions.topScale)
+        else UDim2.fromScale(0, 0)
     player:SetAttribute("PeopleListTop", dimensions.top)
     root.Size = UDim2.new(dimensions.widthScale, 0, 0, headerH)
     root.AutomaticSize = Enum.AutomaticSize.Y
     root.BackgroundColor3 = rgb(knobs.background)
     root.BackgroundTransparency = tonumber(knobs.background_transparency) or 0.42
     root.BorderSizePixel = 0
-    root.Parent = gui
+    if state.mergePlace then
+        root.Parent = gui
+    else
+        UpperRightHudStack.mount(pg, root, UpperRightHudStack.PEOPLE_LIST_ORDER)
+        UpperRightHudStack.setRightPadding(pg, dimensions.rightScale)
+    end
 
     tooltip = Instance.new("TextLabel")
     tooltip.Name = "HoverTip"
