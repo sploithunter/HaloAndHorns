@@ -141,7 +141,7 @@ return function()
                     if family == "rage" and tier == 1 then
                         expect(art.barrelYawDegrees).to.equal(270)
                     elseif family == "debuff" and (tier == 3 or tier == 4) then
-                        expect(art.barrelYawDegrees).to.equal(90)
+                        expect(art.barrelYawDegrees).to.equal(270)
                     else
                         expect(art.barrelYawDegrees).to.equal(nil)
                     end
