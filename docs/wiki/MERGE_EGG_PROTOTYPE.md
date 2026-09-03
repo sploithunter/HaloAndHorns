@@ -504,6 +504,10 @@ team and queue model:
   reusable after 10 seconds, while the exact downed Huge identity remains unavailable for 60
   seconds. The same `player_pet_recovery` table drives Full-mode durable-pet lockouts and Simple-mode
   reserve replacements; Farm & Fight continues to use `configs/squad.lua` unchanged.
+- `EnemyService` reconciles the shared `CombatDamageTaken` state against each pet's current
+  contextual endurance before natural regeneration. This catches authored damage and endurance-pool
+  changes that bypass the normal enemy-hit terminal, preventing a zero-bar pet from remaining active
+  and walking. Merge hatcher eggs retain their separate objective-defeat lifecycle.
 - A newly discovered Full-mode pet uses the regular single-egg reveal and pet picture, but as a
   passive nonmodal presentation whose transparent layer does not consume board/HUD input. Duplicate
   index entries enter inventory silently. `Show New Defense Pets` in Egg Settings disables these

@@ -39,6 +39,28 @@ return function()
             expect(lockout ~= nil and ephemeral < lockout).to.equal(true)
         end)
 
+        it("reconciles zero-endurance actors before natural regeneration", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            local reconcile = source:find("function EnemyService:_reconcilePetEndurance", 1, true)
+            local regen = source:find("function EnemyService:_regenPass", reconcile, true)
+            local reconcileCall =
+                source:find("self:_reconcilePetEndurance(pet, now, eng)", regen, true)
+            local regenRead =
+                source:find('local taken = pet:GetAttribute("CombatDamageTaken") or 0', regen, true)
+
+            expect(reconcile ~= nil).to.equal(true)
+            expect(source:find("PetEndurance.isDowned(", reconcile, true) < regen).to.equal(true)
+            expect(
+                source:find('pet:GetAttribute("MergeEggObjective") == true', reconcile, true)
+                    < regen
+            ).to.equal(true)
+            expect(reconcileCall ~= nil and reconcileCall > regen).to.equal(true)
+            expect(regenRead ~= nil and reconcileCall < regenRead).to.equal(true)
+            expect(source:find("self:_downPet(pet, now, eng", reconcile, true) < regen).to.equal(
+                true
+            )
+        end)
+
         it("stamps construction attributes before a ghost enters the live folder", function()
             local source = readFile("src/Server/Services/NpcPrincipalService.lua")
             local spawn = source:find("function NpcPrincipalService:SpawnGhostSquad", 1, true)

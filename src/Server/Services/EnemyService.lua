@@ -2009,6 +2009,30 @@ function EnemyService:_downPet(pet, _now, _eng, reason)
     end
 end
 
+-- CombatDamageTaken is shared state: enemy hits normally own the down transition, but authored
+-- wounds and contextual endurance changes can also leave a living model at or beyond zero. Repair
+-- that split state before regen or follow locomotion can keep presenting a zero-endurance pet as
+-- active. Merge egg objectives own their separate defeat lifecycle and are deliberately excluded.
+function EnemyService:_reconcilePetEndurance(pet, now, eng)
+    if
+        not (pet and pet:IsA("Model") and pet.Parent)
+        or pet:GetAttribute("CombatDowned") == true
+        or pet:GetAttribute("MergeEggObjective") == true
+    then
+        return false
+    end
+    local taken = tonumber(pet:GetAttribute("CombatDamageTaken"))
+    if not taken then
+        return false
+    end
+    taken = math.max(0, taken)
+    if not PetEndurance.isDowned(taken, self:_petPower(pet), self:_petEnduranceFactor(pet)) then
+        return false
+    end
+    self:_downPet(pet, now, eng, "down")
+    return true
+end
+
 -- ===== #179 Down-lockout integration (pure logic in Shared/Game/PetLockout) =====
 
 function EnemyService:_dataService()
@@ -4505,12 +4529,13 @@ function EnemyService:_regenPass(now, dt, eng)
         local player = Players:FindFirstChild(folder.Name)
         local squadOutOfCombat = player ~= nil and player:GetAttribute("InCombat") ~= true
         for _, pet in ipairs(folder:GetChildren()) do
-            if
-                pet:IsA("Model")
-                and pet.PrimaryPart
-                and not pet:GetAttribute("CombatDowned")
-                and pet:GetAttribute("NoNaturalRegen") ~= true
-            then
+            if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
+                if self:_reconcilePetEndurance(pet, now, eng) then
+                    continue
+                end
+                if pet:GetAttribute("NoNaturalRegen") == true then
+                    continue
+                end
                 local taken = pet:GetAttribute("CombatDamageTaken") or 0
                 if taken > 0 then
                     local factor = self:_petEnduranceFactor(pet)
@@ -4613,6 +4638,9 @@ function EnemyService:NotePetHit(pet)
         self._petCombat[pet] = pc
     end
     pc.lastHit = os.clock()
+    if self:_reconcilePetEndurance(pet, pc.lastHit, self._combatConfig.engagement or {}) then
+        return
+    end
     self:_updateEnduranceBar(
         pet,
         tonumber(pet:GetAttribute("CombatDamageTaken")) or 0,

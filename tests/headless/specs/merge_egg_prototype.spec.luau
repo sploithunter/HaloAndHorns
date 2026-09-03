@@ -1786,7 +1786,7 @@ return function()
                     true
                 )
             ).to.be.ok()
-            expect(enemyService:find('pet:GetAttribute("NoNaturalRegen") ~= true', 1, true)).to.be.ok()
+            expect(enemyService:find('pet:GetAttribute("NoNaturalRegen") == true', 1, true)).to.be.ok()
             expect(enemyService:find('ally:GetAttribute("NoPetSupport") ~= true', 1, true)).to.be.ok()
             expect(observer:find('"%s • %d/%d HP • %d PICK%s%s"', 1, true)).to.be.ok()
             expect(observer:find('pet:GetAttribute("MergeEggObjective") ~= true', 1, true)).to.be.ok()

@@ -7714,3 +7714,11 @@ first-session cohort rates.
 - Added a slim themed Neon column with a floating orb-and-mote halo 32 studs above each portal as
   the dedicated long-range landmark; the beacon identifies a destination without putting text over
   distant combat.
+
+## 2026-09-03 — Reconcile zero-endurance Merge pets before locomotion/regen
+
+- Closed the recurring dead-pet-walking split state: `EnemyService` now compares every living pet's
+  shared `CombatDamageTaken` against its current contextual endurance before regeneration, and the
+  explicit authored-hit hook performs the same check. A depleted actor takes the normal durable
+  down/lockout path or the configured ephemeral destroy path; Merge egg objectives remain owned by
+  their objective lifecycle. Added a headless contract guard for reconciliation ordering.
