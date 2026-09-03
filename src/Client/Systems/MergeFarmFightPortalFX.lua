@@ -20,6 +20,7 @@ local MergeFarmFightPortalFX = {}
 
 local started = false
 local records = {}
+local signRoot = nil
 
 local function requiredNumber(value, field)
     local number = tonumber(value)
@@ -130,33 +131,43 @@ local function makeTextLabel(parent, name, text, layout, color, stroke)
     return label
 end
 
-local function makeSignFace(sign, face, cfg, spec, palette)
-    local surface = Instance.new("SurfaceGui")
-    surface.Name = "PortalSign_" .. face.Name
-    surface.Adornee = sign
-    surface.Face = face
-    surface.AlwaysOnTop = cfg.always_on_top == true
-    surface.LightInfluence = requiredNumber(cfg.light_influence, "signage.light_influence")
-    surface.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-    surface.CanvasSize = Vector2.new(cfg.canvas_size[1], cfg.canvas_size[2])
-    pcall(function()
-        surface.MaxDistance = requiredNumber(cfg.max_distance, "signage.max_distance")
-    end)
-    surface.Parent = sign
+local function makeSignRoot(cfg)
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local rootName = tostring(cfg.root_name)
+    local oldRoot = playerGui:FindFirstChild(rootName)
+    if oldRoot then
+        oldRoot:Destroy()
+    end
+
+    local root = Instance.new("ScreenGui")
+    root.Name = rootName
+    root.DisplayOrder = requiredNumber(cfg.display_order, "signage.display_order")
+    root.IgnoreGuiInset = cfg.ignore_gui_inset == true
+    root.ResetOnSpawn = false
+    root.Parent = playerGui
+    return root
+end
+
+local function makeSign(cfg, spec, palette)
+    local sign = Instance.new("Frame")
+    sign.Name = "PortalLettering_" .. spec.id
+    sign.AnchorPoint = Vector2.new(0.5, 0.5)
+    sign.BackgroundTransparency = 1
+    sign.Visible = false
+    sign.Parent = signRoot
 
     makeTextLabel(
-        surface,
+        sign,
         "Destination",
         spec.destination,
         cfg.destination,
         palette.accent,
         palette.stroke
     )
-    local word =
-        makeTextLabel(surface, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
-    makeTextLabel(surface, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
+    local word = makeTextLabel(sign, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
+    makeTextLabel(sign, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
     makeTextLabel(
-        surface,
+        sign,
         "Invitation",
         cfg.invitation.text,
         cfg.invitation,
@@ -195,27 +206,11 @@ local function makeSignFace(sign, face, cfg, spec, palette)
         requiredNumber(cfg.divider.transparency, "signage.divider.transparency")
     divider.Position = layoutValue(cfg.divider.position, "signage.divider.position")
     divider.Size = layoutValue(cfg.divider.size, "signage.divider.size")
-    divider.Parent = surface
+    divider.Parent = sign
 
     local dividerGradient = Instance.new("UIGradient")
     dividerGradient.Color = ColorSequence.new(palette.primary, palette.secondary)
     dividerGradient.Parent = divider
-    return surface
-end
-
-local function makeSign(runtime, ring, cfg, spec, palette, diameter)
-    local sign = Instance.new("Part")
-    sign.Name = "PortalLettering"
-    setSafePart(sign)
-    sign.Transparency = 1
-    local size = diameter * requiredNumber(cfg.diameter_scale, "signage.diameter_scale")
-    sign.Size = Vector3.new(requiredNumber(cfg.thickness, "signage.thickness"), size, size)
-    sign.CFrame = ring.CFrame
-        * CFrame.new(requiredNumber(cfg.axis_offset, "signage.axis_offset"), 0, 0)
-    sign.Parent = runtime
-
-    makeSignFace(sign, Enum.NormalId.Right, cfg, spec, palette)
-    makeSignFace(sign, Enum.NormalId.Left, cfg, spec, palette)
     return sign
 end
 
@@ -366,7 +361,7 @@ local function buildPortal(ring, cfg, spec)
     }
     local veil, light = makeVeil(runtime, ring, cfg.veil, spec, diameter)
     local emitter = makeParticles(veil, cfg.particles, spec)
-    local sign = makeSign(runtime, ring, cfg.signage, spec, palette, diameter)
+    local sign = makeSign(cfg.signage, spec, palette)
     local markerSize = requiredNumber(cfg.lightning.marker_size, "lightning.marker_size")
     local startMarker = makeEndpoint(runtime, "LightningStart", markerSize)
     local endMarker = makeEndpoint(runtime, "LightningEnd", markerSize)
@@ -444,9 +439,48 @@ local function setActive(record, active)
     record.emitter.Enabled = active
     record.light.Enabled = active
     record.veil.LocalTransparencyModifier = active and 0 or 1
+    if not active then
+        record.sign.Visible = false
+    end
     for _, mote in ipairs(record.orbit) do
         mote.part.LocalTransparencyModifier = active and 0 or 1
     end
+end
+
+local function updateSign(record, cfg)
+    local camera = Workspace.CurrentCamera
+    if not camera then
+        record.sign.Visible = false
+        return
+    end
+
+    local ring = record.ring
+    local center, onScreen = camera:WorldToViewportPoint(ring.Position)
+    local edge = camera:WorldToViewportPoint(
+        ring.Position
+            + ring.CFrame.UpVector
+                * record.radius
+                * requiredNumber(cfg.diameter_scale, "signage.diameter_scale")
+    )
+    if not onScreen or center.Z <= 0 or edge.Z <= 0 then
+        record.sign.Visible = false
+        return
+    end
+
+    local center2d = Vector2.new(center.X, center.Y)
+    local edge2d = Vector2.new(edge.X, edge.Y)
+    local pixelDiameter = (center2d - edge2d).Magnitude * 2
+    pixelDiameter = math.clamp(
+        pixelDiameter,
+        requiredNumber(cfg.minimum_pixel_size, "signage.minimum_pixel_size"),
+        requiredNumber(cfg.maximum_pixel_size, "signage.maximum_pixel_size")
+    )
+    record.sign.Position = UDim2.fromOffset(
+        center.X + requiredNumber(cfg.pixel_offset[1], "signage.pixel_offset.x"),
+        center.Y + requiredNumber(cfg.pixel_offset[2], "signage.pixel_offset.y")
+    )
+    record.sign.Size = UDim2.fromOffset(pixelDiameter, pixelDiameter)
+    record.sign.Visible = true
 end
 
 local function updateOrbit(record, cfg, now)
@@ -487,6 +521,7 @@ function MergeFarmFightPortalFX.start()
     end
     assert(type(cfg.portals) == "table", "Merge portal FX requires configured portals")
 
+    signRoot = makeSignRoot(cfg.signage)
     scan(cfg)
     Workspace.DescendantAdded:Connect(function(instance)
         if instance.Name ~= cfg.runtime_name then
@@ -509,6 +544,7 @@ function MergeFarmFightPortalFX.start()
                 if record.runtime.Parent then
                     record.runtime:Destroy()
                 end
+                record.sign:Destroy()
                 records[ring] = nil
                 continue
             end
@@ -537,6 +573,7 @@ function MergeFarmFightPortalFX.start()
         for ring, record in pairs(records) do
             if ring.Parent and record.runtime.Parent and record.active then
                 updateOrbit(record, cfg.orbit, now)
+                updateSign(record, cfg.signage)
             end
         end
     end)

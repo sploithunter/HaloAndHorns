@@ -77,8 +77,8 @@ return {
     -- The two Studio-authored return gates in the dedicated Merge place use a thin cylinder named
     -- LightningRing as their only runtime hook. The client hides that marker, then derives every
     -- effect from its live CFrame and diameter so either gate can be moved or uniformly resized in
-    -- Studio without rewriting coordinates here. Both faces name the destination explicitly;
-    -- Heaven leans into FARM while Hell leans into FIGHT.
+    -- Studio without rewriting coordinates here. Camera-facing lettering names the destination
+    -- explicitly; Heaven leans into FARM while Hell leans into FIGHT.
     farm_fight_portals = {
         enabled = true,
         marker_name = "LightningRing",
@@ -162,12 +162,12 @@ return {
         },
         signage = {
             diameter_scale = 0.78,
-            thickness = 0.03,
-            axis_offset = 0.12,
-            canvas_size = { 800, 800 },
-            max_distance = 180,
-            always_on_top = true,
-            light_influence = 0.08,
+            minimum_pixel_size = 140,
+            maximum_pixel_size = 520,
+            pixel_offset = { 0, 0 },
+            root_name = "MergeFarmFightPortalSigns",
+            display_order = 18,
+            ignore_gui_inset = true,
             destination = {
                 position = { 0.08, 0.1 },
                 size = { 0.84, 0.1 },
