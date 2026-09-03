@@ -7678,3 +7678,15 @@ first-session cohort rates.
   actual player and isolated the Home Heaven 2 `RealmPortalPrompt`. Holding E fired the real server
   prompt, set `CurrentLayer=heaven_2` / `CurrentRealm=heaven`, and moved the character to Y≈4007;
   the return portal restored base/Y≈6. Output contained no new runtime errors.
+
+## 2026-09-03 — Repository branches and worktrees consolidated into main
+
+- Rebased the last open change, the late-profile realm-access fix in PR #267, onto current `main`,
+  preserved the newer portal-presentation behavior during conflict resolution, and merged it after
+  the complete local and GitHub CI gates passed.
+- Audited every remaining remote branch against its pull-request state and `main` ancestry. All 54
+  were merged or already contained, so their remote pointers were deleted along with 39 stale local
+  branches and 14 extra worktrees.
+- The only uncommitted residue was three formatter-only UI files whose whitespace-stripped content
+  exactly matched their committed versions. No semantic work was discarded. The repository now has
+  one checkout and one surviving branch, `main`, ready to be the canonical Rojo source.
