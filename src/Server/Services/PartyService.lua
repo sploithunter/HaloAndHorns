@@ -11,6 +11,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local AccessLevel = require(ReplicatedStorage.Shared.Game.AccessLevel)
 local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
 local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 
@@ -477,9 +478,10 @@ function PartyService:FollowWarp(player, targetName)
         local access = layersConfig.access and layersConfig.access[destLayer]
         local required = access and tonumber(access.requires_level)
         if required and required > 1 then
-            local level = tonumber(player:GetAttribute("EffectiveLevel"))
-                or tonumber(player:GetAttribute("Level"))
-                or 1
+            local level = AccessLevel.resolve(
+                player:GetAttribute("Level"),
+                player:GetAttribute("EffectiveLevel")
+            )
             if level < required then
                 return { ok = false, reason = "level_too_low", required = required }
             end

@@ -14,6 +14,7 @@
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local AccessLevel = require(ReplicatedStorage.Shared.Game.AccessLevel)
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 local RealmPortalPresentation = require(ReplicatedStorage.Shared.Game.RealmPortalPresentation)
 
@@ -97,14 +98,10 @@ function RealmPortalService:_levelGate(player, target)
     if not required or required <= 1 then
         return true, 0
     end
-    -- SIDEKICK GUEST PASS (Jason: "if we're temporarily level 49, we should
-    -- get level 49 privileges for travel"): while teamed, EffectiveLevel is
-    -- the published sidekicked level — the same value PartyService's
-    -- follow_warp gates on. Without it a boosted teammate could ENTER a
-    -- realm by following but couldn't take a portal on their own to leave.
-    local level = tonumber(player:GetAttribute("EffectiveLevel"))
-        or tonumber(player:GetAttribute("Level"))
-        or 1
+    -- SIDEKICK GUEST PASS: a raised EffectiveLevel grants temporary access, while an exemplar or
+    -- stale derived attribute can never revoke access earned by the persisted progression level.
+    local level =
+        AccessLevel.resolve(player:GetAttribute("Level"), player:GetAttribute("EffectiveLevel"))
     return level >= required, required
 end
 
@@ -142,7 +139,24 @@ function RealmPortalService:_onTriggered(player, destLayer)
         return
     end
     local force = self._portalsConfig.bypass_access ~= false
-    layers:UseLayer(player, target, { force = force })
+    local result = layers:UseLayer(player, target, { force = force })
+    if type(result) == "table" and result.ok == false then
+        if self._logger then
+            self._logger:Warn("Realm portal travel failed", {
+                player = player.Name,
+                layer = target,
+                reason = result.reason,
+            })
+        end
+        Signals.RealmTravelOffer:FireClient(player, {
+            layer = target,
+            label = result.reason == "data_not_loaded"
+                    and "Your character is still loading. Please try again."
+                or "Travel is not ready yet. Please try again.",
+            locked = true,
+        })
+    end
+    return result
 end
 
 -- PRESS-E system (2026-07-08, back by request — replaces touch→yes/no offer: brushing the arch
@@ -186,6 +200,14 @@ end
 -- prompt text can't be per-player); everyone else travels immediately — _onTriggered re-runs the
 -- full gate chain (lock, base toggle, geometry, level) server-side.
 function RealmPortalService:_onPromptTriggered(player, def)
+    if player:GetAttribute("DataLoaded") ~= true then
+        Signals.RealmTravelOffer:FireClient(player, {
+            layer = def.layer,
+            label = "Your character is still loading. Please try again.",
+            locked = true,
+        })
+        return
+    end
     local layers = self._layerService
     if not layers then
         return

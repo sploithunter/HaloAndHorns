@@ -19,6 +19,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 
+local AccessLevel = require(ReplicatedStorage.Shared.Game.AccessLevel)
+
 local RealmPortalLock = {}
 
 local BADGE_NAMES = { RealmLockBadgeFront = true, RealmLockBadgeBack = true }
@@ -125,11 +127,12 @@ function RealmPortalLock.start()
     end
 
     local function level()
-        -- EffectiveLevel first: the SERVER access gate (LayerService) reads it, so a teamed
-        -- guest-pass player must see the same portals unlocked that the server will let through.
-        return tonumber(player:GetAttribute("EffectiveLevel"))
-            or tonumber(player:GetAttribute("Level"))
-            or 1
+        -- Mirror the server: sidekick increases count, while exemplaring or a stale derived value
+        -- cannot make an already-earned portal look locked.
+        return AccessLevel.resolve(
+            player:GetAttribute("Level"),
+            player:GetAttribute("EffectiveLevel")
+        )
     end
 
     -- Apply the per-player lock state to one open portal's badges.

@@ -201,8 +201,9 @@ rewards (kill credit) while mining SPLIT them. Closed:
   (CoinYieldBuff) and hatch-luck (HatchLuckBuff) buffers benefit the whole team, folded
   CONSUMER-side (BreakableSpawner / EggService) as extra BuffStack/luck sources — two
   owners' auras never clobber one attribute, same axis caps apply.
-- Sidekick guest pass: realm portals now gate on EffectiveLevel (same as follow_warp and
-  LayerService) — a boosted teammate travels at their sidekicked level.
+- Sidekick guest pass: realm portals, follow-warp, and LayerService resolve the greater of earned
+  `Level` and temporary `EffectiveLevel` — a boosted teammate travels at their sidekicked level,
+  while exemplaring never removes access the player already earned.
 - Hybrid follow: straight-line MoveTo + no-progress watchdog -> client pathfinding with
   jump labels; drops back to direct on line-of-sight (TeamFollowController).
 - Parked: team nodes ("boss crystals" — farming's raid moment, waiting on the map pass);

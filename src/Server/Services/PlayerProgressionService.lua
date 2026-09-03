@@ -16,7 +16,6 @@ local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
-local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 local PlayerListStatus = require(ReplicatedStorage.Shared.Game.PlayerListStatus)
@@ -130,12 +129,9 @@ function PlayerProgressionService:Start()
             end
         end)
     end
-    local function publishLater(player)
+    local function publishLoadedProfile(player)
         task.spawn(function()
-            if self._dataService and self._dataService.IsDataLoaded then
-                Readiness.awaitAttribute(player, "DataLoaded", true, 15)
-            end
-            if player.Parent then
+            if player.Parent and self._dataService:IsDataLoaded(player) then
                 if self._statsService then
                     player:SetAttribute(
                         "HasHatchedHuge",
@@ -164,10 +160,40 @@ function PlayerProgressionService:Start()
             end
         end)
     end
+
+    -- ProfileStore can legitimately take longer than an arbitrary timeout when a previous server
+    -- still owns the session. The old path waited 15 seconds, ignored the timeout result, and then
+    -- published unloaded defaults (including EffectiveLevel = 1). DataService later restored the
+    -- earned Level but nothing repaired EffectiveLevel, intermittently locking qualified players
+    -- out of realm portals until another progression event or rejoin. Treat DataLoaded as the
+    -- one-shot handoff instead: subscribe before checking so both fast and late loads are covered.
+    local function publishWhenLoaded(player)
+        local published = false
+        local dataLoadedConnection
+
+        local function tryPublish()
+            if
+                published
+                or not player.Parent
+                or player:GetAttribute("DataLoaded") ~= true
+                or not self._dataService:IsDataLoaded(player)
+            then
+                return
+            end
+            published = true
+            if dataLoadedConnection then
+                dataLoadedConnection:Disconnect()
+            end
+            publishLoadedProfile(player)
+        end
+
+        dataLoadedConnection = player:GetAttributeChangedSignal("DataLoaded"):Connect(tryPublish)
+        tryPublish()
+    end
     -- SIDEKICK refresh: joining/leaving a team republishes the combat level immediately
     -- (PartyService stamps TeamLead), so the accuracy/damage curves see the sync at once.
     local function hook(player)
-        publishLater(player)
+        publishWhenLoaded(player)
         player:GetAttributeChangedSignal("TeamLead"):Connect(function()
             player:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(player))
         end)
