@@ -17,6 +17,7 @@ local laneLines = assert(map:FindFirstChild("LaneLines"), "LaneLines is missing"
 local towerStations = assert(map:FindFirstChild("TowerStations"), "TowerStations is missing")
 local bulwarkConfig = assert(MergeConfig.team.edge_bulwarks, "team.edge_bulwarks is missing")
 local towerConfig = assert(MergeConfig.team.edge_towers, "team.edge_towers is missing")
+local lineLayout = assert(bulwarkConfig.line_layout, "edge_bulwarks.line_layout is missing")
 
 local EPSILON = 1e-3
 local EXPECTED_BAYS = 10
@@ -43,6 +44,31 @@ local function part(folder, name)
     return value
 end
 
+local function configColor(row, path)
+    assert(type(row) == "table" and #row >= 3, path .. " is missing")
+    return Color3.fromRGB(
+        assert(tonumber(row[1]), path .. "[1] must be numeric"),
+        assert(tonumber(row[2]), path .. "[2] must be numeric"),
+        assert(tonumber(row[3]), path .. "[3] must be numeric")
+    )
+end
+
+local function assertLineAppearance(line, colorKey, transparencyKey, label)
+    local expected = configColor(lineLayout[colorKey], "edge_bulwarks.line_layout." .. colorKey)
+    assert(line.Color == expected, label .. " has the wrong configured color")
+    assert(line.Material == Enum.Material.Neon, label .. " must use Neon")
+    assert(
+        math.abs(
+            line.Transparency
+                - assert(
+                    tonumber(lineLayout[transparencyKey]),
+                    "edge_bulwarks.line_layout." .. transparencyKey .. " is missing"
+                )
+        ) <= EPSILON,
+        label .. " has the wrong transparency"
+    )
+end
+
 local lineBays = 0
 for _, lines in ipairs(laneLines:GetChildren()) do
     local side, columnText = string.match(lines.Name, "^(Heaven)_(%d+)_Lines$")
@@ -55,6 +81,10 @@ for _, lines in ipairs(laneLines:GetChildren()) do
         local red = part(lines, tostring(MergeConfig.world.breach_line or "BreachLine"))
         local orange = part(lines, assert(MergeBulwarkSlots.get("mid")).lineDefault)
         local green = part(lines, assert(MergeBulwarkSlots.get("front")).lineDefault)
+        assertLineAppearance(green, "front_color", "front_transparency", lines.Name .. " green")
+        assertLineAppearance(yellow, "lane_color", "lane_transparency", lines.Name .. " yellow")
+        assertLineAppearance(orange, "mid_color", "mid_transparency", lines.Name .. " orange")
+        assertLineAppearance(red, "egg_color", "egg_transparency", lines.Name .. " red")
         nearVector(
             orange.Position,
             red.Position:Lerp(yellow.Position, 0.5),

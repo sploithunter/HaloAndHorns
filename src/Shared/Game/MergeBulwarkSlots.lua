@@ -56,7 +56,7 @@ local SLOTS = {
         promptPrefix = "",
         promptObject = "Bulwark",
         restrictedHint = nil,
-        -- Sits on the gold combat plane. Strip ticks use that part; they do
+        -- Sits on the yellow combat plane. Strip ticks use that part; they do
         -- not replace the plane's pet-combat meaning.
         combatPlane = "bulwark",
         required = true,

@@ -7585,3 +7585,16 @@ first-session cohort rates.
   50,000,000 Waycoins for Tier 4.
 - Server transactions and both workshop menus now resolve the same target-tier config entry, with
   exhaustive headless coverage and loud failure for missing price rows.
+
+## 2026-09-03 — Studio-approved green/yellow/orange/red Merge defense rows
+
+- Copied the exact colors and per-row transparency approved on `Heaven_01_Lines` into
+  `configs/merge_egg_prototype.lua`. The authoring pass now duplicates that master appearance onto
+  the other nine bays, including the two original combat lines, without changing any row position
+  or combat meaning.
+- Extended the Edit-mode defense geometry gate to verify the configured color, Neon material, and
+  transparency for every row in all ten bays.
+- Added gated Bulwark Engineer posts for orange and green. The existing just-in-time engineer
+  reconciliation now creates the orange manager at Rebirth Rank 10 and the green manager at Rank
+  30, so reaching a gate in the current session no longer leaves the newly available row without an
+  interaction point.

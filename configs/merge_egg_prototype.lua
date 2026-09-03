@@ -987,9 +987,16 @@ return {
             line_layout = {
                 -- One interval is half the red-to-yellow separation.
                 interval_fraction = 0.5,
-                mid_color = { 255, 145, 35 },
-                front_color = { 70, 220, 105 },
-                transparency = 0.05,
+                -- Exact appearance approved on Heaven_01_Lines in Studio.
+                -- Keep the row-specific transparency when duplicating it.
+                lane_color = { 255, 255, 0 },
+                lane_transparency = 0.08,
+                mid_color = { 175, 113, 32 },
+                mid_transparency = 0.05,
+                front_color = { 58, 125, 21 },
+                front_transparency = 0.05,
+                egg_color = { 151, 0, 0 },
+                egg_transparency = 0.08,
             },
             tile_count = 10,
             wall_inset_studs = 1,
@@ -1059,6 +1066,8 @@ return {
                 posts = {
                     { slot = "egg", along = "left" },
                     { slot = "lane", along = "right" },
+                    { slot = "mid", along = "left" },
+                    { slot = "front", along = "right" },
                 },
             },
             -- Impaler Palisade: tank-style shove + short pin, no damage. Charges are per marcher.
