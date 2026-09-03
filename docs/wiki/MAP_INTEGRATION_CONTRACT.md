@@ -63,7 +63,7 @@ central nine-card management control is the playable UI. The oversized legacy `E
 and `EggBaseUpgradeControl` remain only as invisible compatibility anchors and must never render or
 accept input when the central wall exists.
 
-Merge edge towers follow the same art-versus-hook boundary. Studio owns the two armored pad Models
+Merge edge towers follow the same art-versus-hook boundary. Studio owns four armored pad Models
 per bay and their invisible `TowerAnchor` parts under
 `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`; it must not retain visible cannon review
 objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
@@ -71,7 +71,10 @@ objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
 `src/Shared/Game/MergeTowerModels.lua`, so changing tower role or tier never mutates or duplicates
 the permanent map. All six roles have distinct Tier 1–4 templates at scale 1; the installed
 gameplay tier is the art tier. The cannon lofts a sphere from its pad and aims along the launch
-tangent. The Artillery Commander owns role acquisition, installation, and tier upgrades.
+tangent. The front left/right pair is available at Rebirth Rank 1. The rear left/right pair repeats
+the authored red-line-to-front-pair depth interval behind it and becomes usable at Rebirth Rank 20.
+The Artillery Commander owns role acquisition, installation, and tier upgrades; locked pads have
+neither commanders nor install/spawn authority.
 
 `BulwarkLine` and `BreachLine` are combat planes, not install catalogs. Crossing
 the gold line opens pet combat; crossing the red line opens hatcher-egg attacks.
@@ -81,12 +84,19 @@ Physical installs are separate hooks from `MergeBulwarkSlots`. Lane uses ten
 invisible `BulwarkAnchor` parts per bay under
 `Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`.
 Egg uses `EggBulwarkStations` / `EggBulwarkAnchor` stamped from `BreachLine`.
-Mid and front are reserved rows and stay dark until authored. Each line spans
+Orange/mid is an authored placement line at the exact midpoint between red and gold and unlocks at
+Rebirth Rank 10. Green/front repeats that half-interval beyond gold toward the enemy gate and
+unlocks at Rebirth Rank 30. These are placement lines only; they do not add combat-plane meanings.
+Each line spans
 94 studs across a 96-stud marker with one-stud wall clearance. Y is the portable
 bay `LandStrip` top, with `PlayFields` as fallback. Runtime clones the
 selected family/tier through `MergeBulwarkModels`; maps must not retain visible review copies.
 All families share the same line-width anchor orientation. The model library owns any source-axis
 correction, so map authors must not rotate individual families differently.
+
+Run `scripts/studio/author_merge_bulwark_anchors.luau` and
+`scripts/studio/author_merge_tower_pads.luau` in Edit mode, then require a clean pass from
+`scripts/studio/test_merge_defense_slot_geometry.luau` before publishing the Studio-owned map.
 
 Each selected bay also derives runtime containment from its authored `ArenaBounds` and
 `LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the

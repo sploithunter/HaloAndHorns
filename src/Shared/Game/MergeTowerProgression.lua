@@ -130,6 +130,8 @@ end
 
 MergeTowerProgression.SLOT_LEFT = "left"
 MergeTowerProgression.SLOT_RIGHT = "right"
+MergeTowerProgression.SLOT_REAR_LEFT = "rear_left"
+MergeTowerProgression.SLOT_REAR_RIGHT = "rear_right"
 MergeTowerProgression.slots = MergeTowerSlots
 
 function MergeTowerProgression.families(tierArt)
@@ -162,6 +164,14 @@ end
 
 function MergeTowerProgression.normalizeSlot(slot)
     return normalizeSlot(slot)
+end
+
+function MergeTowerProgression.requiredRebirthRank(slot, config)
+    return MergeTowerSlots.requiredRebirthRank(normalizeSlot(slot), config)
+end
+
+function MergeTowerProgression.isSlotUnlocked(slot, rebirthRank, config)
+    return MergeTowerSlots.isUnlockedAtRank(normalizeSlot(slot), rebirthRank, config)
 end
 
 function MergeTowerProgression.canInstall(family, slot)
@@ -383,7 +393,7 @@ function MergeTowerProgression.clearInstalls(raw, maximumTier)
     return decorateState(cloneOwned(state.owned), {}, cap)
 end
 
-function MergeTowerProgression.apply(raw, action, family, currentWave, config, slot)
+function MergeTowerProgression.apply(raw, action, family, currentWave, config, slot, rebirthRank)
     config = type(config) == "table" and config or {}
     local maximumTier = math.max(1, whole(config.maximum_tier, 4))
     local state = MergeTowerProgression.normalize(raw, maximumTier)
@@ -391,6 +401,9 @@ function MergeTowerProgression.apply(raw, action, family, currentWave, config, s
         return nil, "cannon_locked"
     end
     slot = normalizeSlot(slot)
+    if not MergeTowerProgression.isSlotUnlocked(slot, rebirthRank, config) then
+        return nil, "cannon_slot_rebirth_locked"
+    end
 
     if action == "select" then
         local requested = string.lower(tostring(family or ""))

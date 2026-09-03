@@ -61,6 +61,10 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         leftTier = raw.left_tower_tier,
         rightFamily = raw.right_tower_family,
         rightTier = raw.right_tower_tier,
+        rearLeftFamily = raw.rear_left_tower_family,
+        rearLeftTier = raw.rear_left_tower_tier,
+        rearRightFamily = raw.rear_right_tower_family,
+        rearRightTier = raw.rear_right_tower_tier,
         slots = raw.tower_slots,
         owned = raw.tower_owned,
     })
@@ -83,7 +87,7 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         }
     end
     return {
-        version = 6,
+        version = 7,
         visited = raw.visited == true,
         played_locked_simple = raw.played_locked_simple == true,
         full_intro_pending = raw.full_intro_pending == true,
@@ -107,6 +111,10 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         left_tower_tier = towers.left_tower_tier,
         right_tower_family = towers.right_tower_family,
         right_tower_tier = towers.right_tower_tier,
+        rear_left_tower_family = towers.rear_left_tower_family,
+        rear_left_tower_tier = towers.rear_left_tower_tier,
+        rear_right_tower_family = towers.rear_right_tower_family,
+        rear_right_tower_tier = towers.rear_right_tower_tier,
         tower_slots = towers.tower_slots,
         tower_owned = towers.tower_owned,
         tower_waycoins_spent = math.max(0, math.floor(tonumber(raw.tower_waycoins_spent) or 0)),

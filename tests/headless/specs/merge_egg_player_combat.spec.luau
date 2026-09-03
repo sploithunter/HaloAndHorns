@@ -64,7 +64,7 @@ return function()
                     deployed_egg_tiers = { 3, 4, 0, 6 },
                 },
             })
-            expect(state.version).to.equal(6)
+            expect(state.version).to.equal(7)
             expect(state.visited).to.equal(true)
             expect(state.rebirths).to.equal(2)
             expect(state.management_upgrades.damage).to.equal(3)
@@ -159,12 +159,18 @@ return function()
                 left_tower_family = "heal",
                 right_tower_family = "rage",
                 right_tower_tier = 3,
-                tower_owned = { heal = 1, rage = 3 },
+                rear_left_tower_family = "repulsor",
+                rear_left_tower_tier = 2,
+                tower_owned = { heal = 1, rage = 3, repulsor = 2 },
             })
             expect(both.left_tower_family).to.equal("heal")
             expect(both.right_tower_family).to.equal("rage")
             expect(both.right_tower_tier).to.equal(3)
             expect(both.tower_slots.right.family).to.equal("rage")
+            expect(both.rear_left_tower_family).to.equal("repulsor")
+            expect(both.rear_left_tower_tier).to.equal(2)
+            expect(both.tower_slots.rear_left.family).to.equal("repulsor")
+            expect(both.version).to.equal(7)
 
             local invalid = PlayerCombat.normalizeOnboarding({
                 left_tower_family = "not_a_cannon",
