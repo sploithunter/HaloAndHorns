@@ -68,7 +68,9 @@ function UpperRightHudStack.setRightPadding(playerGui, rightScale)
     local _, dock = getOrCreate(playerGui)
     local padding = dock:FindFirstChild(PADDING_NAME)
     if padding and padding:IsA("UIPadding") then
-        padding.PaddingRight = UDim.new(math.max(0, tonumber(rightScale) or 0), 0)
+        local normalizedRightScale = tonumber(rightScale)
+        assert(normalizedRightScale ~= nil, "Upper-right HUD stack requires a numeric right inset")
+        padding.PaddingRight = UDim.new(math.max(0, normalizedRightScale), 0)
     end
 end
 
