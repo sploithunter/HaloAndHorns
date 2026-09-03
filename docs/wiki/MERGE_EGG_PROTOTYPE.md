@@ -3,6 +3,22 @@
 Status: Phase 6 endless defense running in the dedicated Studio-authored Merge place; durable
 Wave-10 checkpoints and 56 egg tiers await live balance verification
 
+## Farm & Fight return portals
+
+The dedicated Merge place owns two Studio-authored return gates at the Heaven and Hell approaches.
+Each gate contains one cylinder named `LightningRing`; that part is an invisible, non-collidable
+layout marker rather than presentation geometry. `MergeFarmFightPortalFX` derives the live opening
+plane and radius from its CFrame/diameter, so the authored gate can move or scale without runtime
+coordinates drifting.
+
+`configs/merge_egg_prototype.lua` `farm_fight_portals` owns the two ancestor bindings, every palette,
+particle/orbit/lightning tuning value, and all copy. Both gates say `PORTAL TO FARM & FIGHT` and
+`STEP THROUGH TO RETURN`. The celestial gate leads with `FARM / GROW YOUR FORTUNE`; the infernal
+gate leads with `FIGHT / EARN IT THE HARD WAY`. The client renders a theme-colored ForceField veil,
+spark motes, orbiting points, and random circumference-to-circumference procedural lightning. The
+effect is proximity-gated and client-only; the existing public return-route service remains the
+travel authority.
+
 ## Phase 1 contract
 
 Phase 1 answers only the core feel question: hatch a small temporary squad, send it down a long

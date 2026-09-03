@@ -235,6 +235,17 @@ do
     end
 end
 
+-- The dedicated Merge place's authored Farm & Fight return portals use their LightningRing parts
+-- as invisible layout markers for themed FARM/FIGHT lettering, energy veils, and random ring arcs.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeFarmFightPortalFX).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeFarmFightPortalFX", { error = tostring(err) })
+    end
+end
+
 -- Team follow (docs/TEAMING.md): CoH-style /follow of a TEAMMATE — walk-follow with a
 -- manual-input break; realm-portal hops ride team.follow_warp. Toggled from SquadHud
 -- (follow chip on the mate card / F with the teammate selected).
