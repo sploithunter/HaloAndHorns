@@ -7645,3 +7645,17 @@ first-session cohort rates.
 - The layout now consumes live visibility, presentation size, and `UIScale` automatically. Quest
   compact/full transitions and tutorial resizing therefore move the People list without coordinate
   conversion, overlap, or a stale gap; the column's right inset remains viewport-relative.
+
+## 2026-09-03 — First-session hatch framing waits for stable GUI bounds
+
+- Diagnosed the Farm & Fight first-hatch-only left shift as a client presentation race: before the
+  first presentation, Roblox reported the disabled full-screen hatch container at bootstrap
+  `800x600` geometry even though the live Studio viewport was `1835x869`. Later hatches inherited
+  settled geometry, explaining why only a rejoin reproduced it.
+- `EggInteractionService` now primes the persistent hatch GUI during client startup, and
+  `EggHatchingService` waits for a config-owned run of stable rendered container bounds before
+  calculating its offset grid. The live first-presentation check resolved `1835x811`, observed the
+  required three stable frames, and centered the 300-wide card at x=767.
+- Added pure headless coverage for transient, resized, and bootstrap-sized observations; the full
+  headless suite passed 2523/2523. Animation debug state and the primary Studio animation contract
+  expose the readiness result so future first-frame regressions fail visibly.

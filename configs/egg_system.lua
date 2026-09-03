@@ -69,6 +69,16 @@ return {
             use_authored_egg_visual = true,
             authored_visual_scale = 1.25,
             fast_hatch_speed_scale = 0.5,
+            -- The persistent hatch GUI is primed at client boot. Its first visible layout still
+            -- waits for stable rendered bounds so Studio/device resizing cannot freeze a transient
+            -- half-width AbsoluteSize into offset-based card positions.
+            viewport_readiness = {
+                stable_frames = 3,
+                max_wait_frames = 30,
+                min_width = 320,
+                min_height = 240,
+                size_tolerance = 1,
+            },
             layout = {
                 padding = 20,
                 min_egg_size = 100,

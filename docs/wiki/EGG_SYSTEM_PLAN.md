@@ -57,6 +57,11 @@ Implemented so far:
   post-reveal rarity/name/count labels plus a safe edge margin. Headless bounds coverage includes
   desktop, landscape-phone, partial-row, and 99-hatch layouts; Studio smokes assert the same final
   reveal footprint.
+- The persistent hatch GUI is primed during client startup, before the first purchase. When a hatch
+  becomes visible, `EggHatchingService` waits for `HatchingContainer.AbsoluteSize` to remain stable
+  for the config-owned `hatching.animation.viewport_readiness` window before freezing its offset
+  grid. This avoids accepting Roblox's first-session `800x600` bootstrap geometry while the actual
+  rendered viewport is still settling; readiness observations are exposed in animation debug state.
 - `HatchEntitlementService` now centralizes the server hatch shop/unlock stubs. `EggService` resolves Auto/Golden/Charged/Fast/Skip, max hatch count, hatch-luck bonus, and secret-luck bonus through the same service that admin tools use for snapshots and overrides.
 - The hatch settings drawer now surfaces server-protected auto-delete tiers directly from `configs/auto_systems.lua`. Secret/Exclusive/Huge protection remains a single source of truth in `auto_delete.protected_rarities`, while the UI renders the current protected list and `EggProximitySmoke` verifies it.
 - `ConfigLoader` now cross-validates egg-system rarity/filter references against pet config. Special hatch rarity ids must exist in `pets.rarities`, and hatch drawer auto-delete filter lists must reference configured rarity, pet family, and variant ids.

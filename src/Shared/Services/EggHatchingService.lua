@@ -32,6 +32,7 @@ local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
 local HatchRevealPolicy = require(ReplicatedStorage.Shared.Game.HatchRevealPolicy)
 local HatchGridLayout = require(ReplicatedStorage.Shared.Game.HatchGridLayout)
 local EggHatchFront = require(ReplicatedStorage.Shared.Game.EggHatchFront)
+local HatchViewportReadiness = require(ReplicatedStorage.Shared.Game.HatchViewportReadiness)
 local CompletionGroup = require(ReplicatedStorage.Shared.Utils.CompletionGroup)
 
 local eggSystemConfig = Locations.getConfig("egg_system")
@@ -481,6 +482,21 @@ local function getResolvedAnimationViewportSize(container)
     end
 
     return Vector2.new(1280, 720)
+end
+
+local function awaitStableAnimationViewportSize(container)
+    local policy = HatchViewportReadiness.resolvePolicy(getAnimationPolicy().viewport_readiness)
+    local state = HatchViewportReadiness.newState()
+
+    for _ = 1, policy.maxWaitFrames do
+        RunService.RenderStepped:Wait()
+        local size = container and container.AbsoluteSize or Vector2.new(0, 0)
+        if HatchViewportReadiness.observe(state, size.X, size.Y, policy) then
+            return size, state, true
+        end
+    end
+
+    return getResolvedAnimationViewportSize(container), state, false
 end
 
 -- Calculate optimal grid layout for given number of eggs
@@ -1745,12 +1761,11 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
 
     -- Enable the persistent GUI
     self._persistentGui.Enabled = true
-    -- ScreenGui insets make the rendered container shorter than CurrentCamera.ViewportSize on
-    -- several Studio/mobile surfaces. Wait one frame, then use the GuiObject's authoritative size.
-    RunService.RenderStepped:Wait()
-
-    -- Calculate grid layout using the actual usable GUI dimensions.
-    local screenSize = getResolvedAnimationViewportSize(container)
+    -- A newly-created ScreenGui can expose an intermediate width for its first rendered frame.
+    -- Wait until the authoritative GuiObject bounds remain stable before freezing the offset grid;
+    -- later hatches normally satisfy this immediately because they reuse the persistent container.
+    local screenSize, readinessState, viewportWasStable =
+        awaitStableAnimationViewportSize(container)
     local containerSize = Vector2.new(screenSize.X, screenSize.Y)
 
     local gridInfo = self:CalculateGridLayout(eggCount, containerSize.X, containerSize.Y)
@@ -1765,6 +1780,9 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     self._persistentGui:SetAttribute("GridSafeMargin", gridInfo.safeMargin)
     self._persistentGui:SetAttribute("GridResultFooter", gridInfo.resultFooter)
     self._persistentGui:SetAttribute("GridCompactMode", gridInfo.compactMode)
+    self._persistentGui:SetAttribute("GridViewportObservedFrames", readinessState.observedFrames)
+    self._persistentGui:SetAttribute("GridViewportStableFrames", readinessState.stableFrames)
+    self._persistentGui:SetAttribute("GridViewportWasStable", viewportWasStable)
 
     -- Create egg frames
     local eggFrames = {}
@@ -2724,6 +2742,9 @@ function EggHatchingService:GetActiveAnimationDebugState()
             safeMargin = self._persistentGui:GetAttribute("GridSafeMargin"),
             resultFooter = self._persistentGui:GetAttribute("GridResultFooter"),
             compactMode = self._persistentGui:GetAttribute("GridCompactMode") == true,
+            viewportObservedFrames = self._persistentGui:GetAttribute("GridViewportObservedFrames"),
+            viewportStableFrames = self._persistentGui:GetAttribute("GridViewportStableFrames"),
+            viewportWasStable = self._persistentGui:GetAttribute("GridViewportWasStable") == true,
         }
         state.timing = {
             preset = self._persistentGui:GetAttribute("TimingPreset"),

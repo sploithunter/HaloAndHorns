@@ -975,6 +975,13 @@ return function()
                             use_authored_egg_visual = true,
                             authored_visual_scale = 1.25,
                             fast_hatch_speed_scale = 0.5,
+                            viewport_readiness = {
+                                stable_frames = 3,
+                                max_wait_frames = 30,
+                                min_width = 320,
+                                min_height = 240,
+                                size_tolerance = 1,
+                            },
                             layout = {
                                 padding = 20,
                                 min_egg_size = 100,
@@ -1200,6 +1207,22 @@ return function()
                 local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
                 expect(isValid).to.equal(false)
                 expect(string.find(error, "hatching.animation.fast_hatch_speed_scale", 1, true)).to.be.ok()
+            end)
+
+            it("should reject hatch viewport stability beyond its wait window", function()
+                local invalidConfig = makeValidEggSystemConfig()
+                invalidConfig.hatching.animation.viewport_readiness.stable_frames = 31
+
+                local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
+                expect(isValid).to.equal(false)
+                expect(
+                    string.find(
+                        error,
+                        "hatching.animation.viewport_readiness.stable_frames",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
             end)
 
             it("should reject hatch animation layout min size above max size", function()

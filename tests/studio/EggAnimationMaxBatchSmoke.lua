@@ -86,6 +86,7 @@ function EggAnimationMaxBatchSmoke.run(options)
     )
     assert(state.layout.resultFooter > 0, "Max hatch animation result footer missing")
     assert(state.layout.eggSize > 0, "Max hatch animation egg size should be positive")
+    assert(state.layout.viewportWasStable == true, "Max hatch accepted unstable viewport bounds")
     assert(
         state.layout.eggSize <= layoutConfig.max_egg_size,
         "Max hatch animation egg size above configured maximum"

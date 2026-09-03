@@ -3005,6 +3005,52 @@ function ConfigLoader:_validateEggSystemConfig(config)
             )
         end
     end
+    local viewportReadiness = animation.viewport_readiness or {}
+    if type(viewportReadiness) ~= "table" then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.viewport_readiness",
+            "expected table"
+        )
+    end
+    for _, fieldName in ipairs({
+        "stable_frames",
+        "max_wait_frames",
+        "min_width",
+        "min_height",
+    }) do
+        if viewportReadiness[fieldName] ~= nil then
+            ok, err = self:_requirePositiveNumber(
+                "egg_system",
+                viewportReadiness[fieldName],
+                "hatching.animation.viewport_readiness." .. fieldName
+            )
+            if not ok then
+                return ok, err
+            end
+        end
+    end
+    if viewportReadiness.size_tolerance ~= nil then
+        ok, err = self:_requireNonNegativeNumber(
+            "egg_system",
+            viewportReadiness.size_tolerance,
+            "hatching.animation.viewport_readiness.size_tolerance"
+        )
+        if not ok then
+            return ok, err
+        end
+    end
+    if
+        viewportReadiness.stable_frames
+        and viewportReadiness.max_wait_frames
+        and viewportReadiness.stable_frames > viewportReadiness.max_wait_frames
+    then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.viewport_readiness.stable_frames",
+            "must be less than or equal to hatching.animation.viewport_readiness.max_wait_frames"
+        )
+    end
     local layout = animation.layout or {}
     if type(layout) ~= "table" then
         return self:_configError("egg_system", "hatching.animation.layout", "expected table")
