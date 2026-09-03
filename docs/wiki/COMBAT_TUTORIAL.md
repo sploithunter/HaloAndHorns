@@ -8,8 +8,10 @@ Earth cave. **Later** on that card opens the Okay banner and parks Combat
 Training in Quest. Finishing the cave still advances to Rally.
 That cave no longer fields ambient waves (`enemies.spawners.bindings.Earth.disabled`).
 The combat-training loop (lobby → ENTER → fight → pillar) runs in a
-mission-slot instance. The last pillar warps them back to the cave mouth, grants earned
-Level 2, then Homeworld continues with Rally. Progress is
+mission-slot instance. The last pillar warps them back to the cave mouth and guarantees a floor of
+earned Level 2: a player below Level 2 receives only the exact missing XP, while a player already at
+Level 2 or higher is unchanged. This grant has its own persisted receipt and retries independently
+of the one-time currency/potion reward. Homeworld then continues with Rally. Progress is
 `profile.CombatTutorial` — never a ProfileStore template field.
 Completing this track independently unlocks Ascension even when the crystal/Homeworld tutorial is
 unfinished; completing either tutorial is sufficient.

@@ -1316,6 +1316,15 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         return
     end
     data.CombatTutorial = progress
+    if progress.done then
+        local completion = self._config.completion or {}
+        local target = math.floor(tonumber(completion.grant_earned_level) or 0)
+        if completion.apply_level_grant == true and target > 1 then
+            -- Persist the target reached by this genuine completion. The independent grant
+            -- receipt can safely retry later without depending on future config changes.
+            data.CombatTutorial.completionLevelTarget = target
+        end
+    end
     self._dataService:RequestSave(
         player,
         progress.done and "combat_tutorial_complete" or "combat_tutorial_step",
@@ -1622,11 +1631,82 @@ function CombatTutorialService:_grantPotions(player, potions)
     end
 end
 
+-- Combat Training owns its own earned-level floor. Keep this receipt separate from the
+-- currencies/potions receipt below: if progression is temporarily unavailable, a completed
+-- track must retry the exact, monotonic top-up on the next state pull or join instead of losing
+-- Level 2 because the other rewards were already marked delivered.
+function CombatTutorialService:_applyCompletionLevelGrant(player, data)
+    local tutorial = data and data.CombatTutorial
+    if not (tutorial and tutorial.done) or tutorial.completionLevelGranted == true then
+        return
+    end
+
+    local completion = self._config and self._config.completion or {}
+    local configuredTarget
+    if completion.apply_level_grant == true then
+        configuredTarget = tonumber(completion.grant_earned_level)
+    end
+    local target = math.floor(tonumber(tutorial.completionLevelTarget) or configuredTarget or 0)
+    if target <= 1 then
+        return
+    end
+
+    local progression = self._playerProgressionService
+    if not (progression and progression.EnsureEarnedLevel) then
+        if self._logger then
+            self._logger:Warn("combat tutorial completion level grant deferred", {
+                player = player.Name,
+                targetLevel = target,
+                reason = "PlayerProgressionService unavailable",
+            })
+        end
+        return
+    end
+
+    local ok, result = pcall(function()
+        return progression:EnsureEarnedLevel(player, target)
+    end)
+    if not ok or type(result) ~= "table" then
+        if self._logger then
+            self._logger:Warn("combat tutorial completion level grant failed", {
+                player = player.Name,
+                targetLevel = target,
+                error = tostring(result),
+            })
+        end
+        return
+    end
+
+    if progression.GetEarnedLevel then
+        local verified, earned = pcall(function()
+            return progression:GetEarnedLevel(player)
+        end)
+        if not verified or (tonumber(earned) or 0) < target then
+            if self._logger then
+                self._logger:Warn("combat tutorial completion level grant not yet visible", {
+                    player = player.Name,
+                    targetLevel = target,
+                    earnedLevel = tonumber(earned) or 0,
+                })
+            end
+            return
+        end
+    end
+
+    tutorial.completionLevelGranted = true
+    self._dataService:RequestSave(player, "combat_tutorial_completion_level", { critical = true })
+end
+
 function CombatTutorialService:_applyCompletionReward(player, data)
     local completion = self._config and self._config.completion
     if type(completion) ~= "table" or not data then
         return
     end
+
+    -- This remains callable after the one-time item reward is delivered so a transient
+    -- progression failure cannot strand a completed player below earned Level 2.
+    self:_applyCompletionLevelGrant(player, data)
+
     if data.CombatTutorialRewardGranted == true then
         return
     end
@@ -1644,16 +1724,6 @@ function CombatTutorialService:_applyCompletionReward(player, data)
                 self._rewardService:Grant(player, {
                     currencies = grant.currencies,
                 }, "combat_tutorial_complete")
-            end)
-        end
-    end
-
-    if completion.apply_level_grant == true then
-        local target = math.floor(tonumber(completion.grant_earned_level) or 0)
-        local progression = self._playerProgressionService
-        if target > 1 and progression and progression.EnsureEarnedLevel then
-            pcall(function()
-                progression:EnsureEarnedLevel(player, target)
             end)
         end
     end

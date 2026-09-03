@@ -7551,3 +7551,9 @@ first-session cohort rates.
 - Removed the session currency accumulator, its `CurrencyUpdate` listener, and the dead milestone
   configuration. Waycoin and Gem collection stay silent while the sparse first-time progression
   milestones continue to use the tutorial footprint.
+## 2026-09-02 — Combat Training Level 2 floor made retry-safe
+
+- Confirmed Combat Training already authored `grant_earned_level = 2`, then separated that exact,
+  monotonic XP top-up from the currency/potion reward receipt. A transient progression-service
+  failure now retries on the next completed-state reconciliation; players already at earned Level 2
+  or higher remain unchanged.
