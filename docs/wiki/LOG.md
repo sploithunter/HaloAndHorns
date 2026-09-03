@@ -7557,3 +7557,8 @@ first-session cohort rates.
   monotonic XP top-up from the currency/potion reward receipt. A transient progression-service
   failure now retries on the next completed-state reconciliation; players already at earned Level 2
   or higher remain unchanged.
+## 2026-09-02 — Quartermaster speech is a first-conversation introduction
+
+- The Quartermaster's world-space greeting now appears only when the Wave-10 Talk completes the
+  first-visit tutorial, then destroys itself after the config-owned five-second introduction.
+  Repeat Services visits keep the prompt and menu without leaving a GUI over the playfield.

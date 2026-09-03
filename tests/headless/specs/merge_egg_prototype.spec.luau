@@ -173,6 +173,7 @@ return function()
             expect(mergeService:find('return false, "combat_tutorial_complete"', 1, true)).to.be.ok()
             expect(config.quartermaster.services.training_redo_label).to.equal(nil)
             expect(config.quartermaster.greeting_complete:find("Training complete", 1, true)).to.be.ok()
+            expect(config.quartermaster.introduction_seconds).to.equal(5)
             expect(
                 config.quartermaster.services.body_complete:find(
                     "now enter your inventory",
@@ -181,7 +182,12 @@ return function()
                 )
             ).to.be.ok()
             expect(mergeService:find("(done and post.greeting_complete)", 1, true)).to.be.ok()
-            expect(mergeService:find("self:_setQuartermasterSpeech(live, value.greeting)", 1, true)).to.be.ok()
+            expect(mergeService:find("_showQuartermasterIntroduction", 1, true)).to.be.ok()
+            expect(mergeService:find("_clearQuartermasterIntroduction", 1, true)).to.be.ok()
+            expect(mergeService:find("quartermaster.introduction_seconds", 1, true)).to.be.ok()
+            expect(mergeService:find("_stepQuartermasterIntroduction", 1, true)).to.be.ok()
+            expect(mergeService:find("record.quartermasterSpeechUntil", 1, true)).to.be.ok()
+            expect(mergeService:find("self:_clearQuartermasterIntroduction(record)", 1, true)).to.be.ok()
             expect(mergeService:find("previousPetMode = previousPetMode", 1, true)).to.be.ok()
             expect(
                 mergeService:find(

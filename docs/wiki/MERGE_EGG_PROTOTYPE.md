@@ -747,7 +747,9 @@ team and queue model:
   completion.
   The first Quartermaster interaction completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
-  that Talk finishes. A Wave 6 skip does not stamp it. Later entries
+  that Talk finishes. His world-space introduction appears only for that first conversation and is
+  removed after the config-owned introduction duration; later visits retain the compact Services
+  prompt and menu without leaving a speech card over the playfield. A Wave 6 skip does not stamp it. Later entries
   keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
   independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
   rebirth. Admin **Reset to Beginning** (`🔄 Reset to Beginning (keeps ALL unique pets)`) is the
