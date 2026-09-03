@@ -128,13 +128,24 @@ function TutorialFlow.startedFirstEnemy(version, step, count)
     return step == fightAt and (tonumber(count) or 0) > 0
 end
 
+-- Combat Training is a shared, universe-wide competency receipt. A player who finished it in
+-- Merge Defense already learned pets, powers, enhancements, and level claiming; Farm & Fight must
+-- not force that player through its introductory track again.
+function TutorialFlow.combatTutorialCompleted(progress)
+    return type(progress) == "table" and progress.done == true
+end
+
 -- Old first-enemy beat (v1–v5 combat start). A live CombatTutorial save is the
--- new track — leave those players alone so they can finish or keep going.
+-- new track — leave unfinished players alone so they can finish or keep going. A completed track
+-- satisfies the Homeworld introduction regardless of which place it was completed in.
 function TutorialFlow.firstEnemyEvidence(config, progress, evidence)
     progress = TutorialFlow.normalizeProgress(progress, config and config.version)
     evidence = type(evidence) == "table" and evidence or {}
     if progress.done == true or evidence.tutorialCompleted == true then
         return true, "tutorial_done"
+    end
+    if TutorialFlow.combatTutorialCompleted(evidence.combatTutorial) then
+        return true, "combat_tutorial_done"
     end
     if progress.firstEnemy == true then
         return true, "first_enemy"

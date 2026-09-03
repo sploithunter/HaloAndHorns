@@ -14,7 +14,11 @@ Level 2 or higher is unchanged. This grant has its own persisted receipt and ret
 of the one-time currency/potion reward. Homeworld then continues with Rally. Progress is
 `profile.CombatTutorial` — never a ProfileStore template field.
 Completing this track independently unlocks Ascension even when the crystal/Homeworld tutorial is
-unfinished; completing either tutorial is sufficient.
+unfinished; completing either tutorial is sufficient. Combat Training completion is also the
+universe-wide competency receipt for onboarding: a player who finishes it in Merge Defense is
+marked complete for the Farm & Fight introduction on arrival, and a stale Combat Training quest
+focus yields to First Steps instead of assigning the cave again. The cave remains available only as
+an explicit optional Redo.
 
 ## Live-save grandfather
 

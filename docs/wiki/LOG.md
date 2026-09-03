@@ -7620,3 +7620,11 @@ first-session cohort rates.
 - Fixed every Squad HUD health/shield presentation to use the same replicated, Merge-only combined
   rebirth + management Pet Endurance multiplier as server combat and world overhead bars. At high
   rebirth ranks the previous base-Power-only client calculation could show a living pet as empty.
+
+## 2026-09-03 — Cross-place Combat Training satisfies Farm & Fight onboarding
+
+- Made persisted `CombatTutorial.done` satisfy the Farm & Fight introduction when a player arrives
+  from Merge Defense. The player no longer repeats hatching, crystals, squad, power, or leveling
+  lessons after completing the more comprehensive Combat Training track.
+- Quest focus now treats that same completion receipt as satisfying Combat Training, so stale quest
+  state cannot assign the cave again. The cave remains manually available as an optional Redo.
