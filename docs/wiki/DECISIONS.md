@@ -860,9 +860,10 @@ the gameplay tier directly and must not substitute `current_art_tier`, apply a
 1 and normalize to the shared 7.953594-stud reference width. Presentation size
 is per-tier `worldScale` on `configs/merge_tier_art.lua` (every Tier 1 is
 0.375, matching the tuned Rage T1; Tiers 2–4 stay 0.5).
-Barrel facing is per-tier `barrelYawDegrees`: Rage T1 is 270, Debuff T3/T4 are
-90 because those two source meshes are authored along local +Z, and the other
-tiers are 0.
+Barrel facing is per-tier `barrelYawDegrees`: Rage T1 and Debuff T3/T4 are 270.
+The Debuff pair's source meshes are authored along local -Z, so +90 points their
+visible barrels backward; the opposite quarter-turn aligns them to the common
+local +X ballistic basis. The other tiers are 0.
 Pad sit is per-tier `seatOffsetY`, scaled with `worldScale` (0.55 at
 0.375, 0.733 at 0.5). Do not
 hardcode those numbers in the spawn/aim path. The proof manifest

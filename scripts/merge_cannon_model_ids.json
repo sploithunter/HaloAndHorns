@@ -889,7 +889,7 @@
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier3",
             "sourceArtTier": 3,
             "templateScale": 1,
-            "barrelYawDegrees": 90,
+            "barrelYawDegrees": 270,
             "worldScale": 0.5,
             "seatOffsetY": 0.733
           }
@@ -964,7 +964,7 @@
             "templatePath": "ReplicatedStorage.Assets.Models.MergeCannons.Debuff.Tier4",
             "sourceArtTier": 4,
             "templateScale": 1,
-            "barrelYawDegrees": 90,
+            "barrelYawDegrees": 270,
             "worldScale": 0.5,
             "seatOffsetY": 0.733
           }

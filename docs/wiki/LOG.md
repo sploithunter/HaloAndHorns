@@ -7546,6 +7546,15 @@ first-session cohort rates.
 - Their manifest-owned `barrelYawDegrees` is now 90, aligning the chassis with the common local +X
   ballistic basis without adding a role/tier special case to projectile targeting.
 
+## 2026-09-03 — Debuff cannon T3/T4 facing correction
+
+- Live firing exposed that the prior +90° presentation correction used the wrong sign: both visible
+  barrels pointed exactly opposite their server-owned shot direction.
+- The manifest generator now records 270° for Debuff T3/T4, the opposite quarter-turn required for
+  their authored local -Z barrel axis. Projectile targeting and shared cannon aim math are unchanged.
+- Both live tiers were hot-verified in the connected Studio session, and the playtester confirmed
+  that the cannons now face in the right direction.
+
 ## 2026-09-02 — Removed the 1,000-Waycoin toast
 
 - Removed the session currency accumulator, its `CurrencyUpdate` listener, and the dead milestone

@@ -5720,7 +5720,7 @@ end
 function MergeEggPrototypeService:_barrelCFrame(position, tangent, cannon)
     -- Always flatten. Loft belongs on the fireball, never the chassis.
     -- barrelYawDegrees rotates the authored mesh so its visual barrel
-    -- matches this +X fire basis. Default 0. Rage T1 is 270 in config.
+    -- matches this +X fire basis. Default 0; authored-axis exceptions live in tier config.
     local yawX, yawY, yawZ =
         MergeTowerBallistics.planarYaw(tangent and tangent.X or 1, 0, tangent and tangent.Z or 0)
     local rx, ry, rz, ux, uy, uz = MergeTowerBallistics.barrelBasis(yawX, yawY, yawZ)
