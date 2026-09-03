@@ -783,18 +783,31 @@ return {
             tutorial_intermission_wave = 10,
             playtest_spawn_enabled = false,
             -- Unlock is one-time and global. Robux-only roles will set this
-            -- flag via game passes; coin unlocks use the workshop Buy. Do not
+            -- flag via game passes; Gem unlocks use the workshop Buy. Do not
             -- grant the catalog for free — the menu must show LOCKED until
             -- that flag is set. Placement and upgrade are paid per pad.
             visual_catalog_owned = false,
             playtest_unlock_enabled = true,
             playtest_unlock_wave = 1,
-            -- Place and upgrade stay one Waycoin. Heal unlocks for 1 Gem so
-            -- the Wave-4 tutorial token is spent on that gun.
-            action_cost = 1,
+            -- Unlock is paid once per family in Gems. Install/replacement and
+            -- upgrade are paid per pad in Waycoins at the target tier's price.
+            -- Heal stays deliberately cheap because the tutorial requires it.
             currency = "hall_coins",
             unlock_costs = {
                 heal = { currency = "gems", amount = 1 },
+                rage = { currency = "gems", amount = 10 },
+                debuff = { currency = "gems", amount = 100 },
+                gravity = { currency = "gems", amount = 1000 },
+                repulsor = { currency = "gems", amount = 10000 },
+                nullifier = { currency = "gems", amount = 100000 },
+            },
+            tier_costs = {
+                heal = { 1, 1000, 10000, 100000 },
+                rage = { 1000, 10000, 100000, 1000000 },
+                debuff = { 5000, 50000, 500000, 5000000 },
+                gravity = { 10000, 100000, 1000000, 10000000 },
+                repulsor = { 25000, 250000, 2500000, 25000000 },
+                nullifier = { 50000, 500000, 5000000, 50000000 },
             },
             maximum_tier = 4,
             model_folder_name = "MergeCannons",
@@ -1008,15 +1021,27 @@ return {
             -- Permanent cadence is Wave 20. Unlock is one-time and global
             -- (requirements TBD). Placement and upgrade are paid per slot
             -- (lane and egg now; mid/front later). Impaler unlocks for 1 Gem;
-            -- other playtest changes stay 1 Waycoin.
+            -- install/upgrade prices are paid per line at the target tier.
             unlock_wave = 20,
             tutorial_intermission_wave = 20,
             playtest_unlock_enabled = true,
             playtest_unlock_wave = 1,
-            action_cost = 1,
             currency = "hall_coins",
             unlock_costs = {
                 impaler_palisade = { currency = "gems", amount = 1 },
+                concertina_line = { currency = "gems", amount = 10 },
+                land_shark = { currency = "gems", amount = 100 },
+                saw_blade = { currency = "gems", amount = 1000 },
+                grasping_hedge = { currency = "gems", amount = 10000 },
+                wardstone_barrier = { currency = "gems", amount = 100000 },
+            },
+            tier_costs = {
+                impaler_palisade = { 1, 1000, 10000, 100000 },
+                concertina_line = { 1000, 10000, 100000, 1000000 },
+                land_shark = { 5000, 50000, 500000, 5000000 },
+                saw_blade = { 10000, 100000, 1000000, 10000000 },
+                grasping_hedge = { 25000, 250000, 2500000, 25000000 },
+                wardstone_barrier = { 50000, 500000, 5000000, 50000000 },
             },
             prompt_distance = 14,
             -- Talkable vendors, same idea as Kade's Boards. The workshop is

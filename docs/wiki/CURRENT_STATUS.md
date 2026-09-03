@@ -169,9 +169,12 @@ strip. List rows report NOT OWNED / OWNED • TIER N / MAX.
 ## Merge pads and walls upgrade independently (2026-09-01)
 
 Unlock is one-time and global. The workshop shows LOCKED / UNLOCK
-until that family is bought. Playtest unlock, place, and upgrade
-stay one Waycoin. Final unlocks will almost certainly be gems or
-a Robux game pass and survive rebirth; placements do not.
+until that family is bought. Unlocks are config-owned Gem prices from
+1 through 100,000. Install/replacement and upgrade are per-pad or
+per-line Waycoin prices keyed by family and target tier. The Heal Cannon
+and Impaler Palisade tutorial rows cost 1 Gem to unlock, then
+1 / 1,000 / 10,000 / 100,000 Waycoins for Tiers 1–4. Unlocks survive
+rebirth; placements do not.
 Installing on a second pad or on the egg wall starts at Tier 1.
 Upgrade only advances the slot you are standing at. Workshop
 layout is unchanged. Not Play-confirmed.

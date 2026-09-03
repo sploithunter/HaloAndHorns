@@ -715,15 +715,30 @@ function MergeEggPrototypeService:_tutorialOpeningCoinTotal()
     return amount * #offsets
 end
 
-function MergeEggPrototypeService:_unlockCostMap(cfg)
+function MergeEggPrototypeService:_unlockCostMap(cfg, families, resolveCost)
     local map = {}
-    for family, row in pairs(type(cfg) == "table" and cfg.unlock_costs or {}) do
-        if type(row) == "table" then
-            map[tostring(family)] = {
-                currency = tostring(row.currency or "gems"),
-                amount = math.max(0, math.floor(tonumber(row.amount) or 1)),
-            }
+    for _, family in ipairs(type(families) == "table" and families or {}) do
+        local id = tostring(family.id or "")
+        local price = resolveCost(cfg, "unlock", id)
+        map[id] = {
+            currency = price.currency,
+            amount = price.amount,
+        }
+    end
+    return map
+end
+
+function MergeEggPrototypeService:_tierCostMap(cfg, families, resolveCost)
+    local map = {}
+    local maximumTier =
+        math.max(1, math.floor(requiredConfigNumber(cfg and cfg.maximum_tier, "maximum_tier")))
+    for _, family in ipairs(type(families) == "table" and families or {}) do
+        local id = tostring(family.id or "")
+        local tiers = {}
+        for tier = 1, maximumTier do
+            tiers[tier] = resolveCost(cfg, "select", id, tier).amount
         end
+        map[id] = tiers
     end
     return map
 end
@@ -6496,7 +6511,8 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
     local state = self:_normalizeBulwarkState(record)
     slot = MergeBulwarkProgression.normalizeSlot(slot)
     local family, tier = MergeBulwarkProgression.slotFamily(state, slot)
-    local price = MergeBulwarkProgression.actionCost(cfg)
+    local price = MergeBulwarkProgression.actionCost(cfg, "select", "impaler_palisade", 1)
+    local families = MergeBulwarkProgression.familiesForSlot(slot, self._config.tier_art)
     local currentWave = record and math.max(1, math.floor(tonumber(record.waveIndex) or 0)) or 1
     local wallet = record
             and self._economyService
@@ -6511,7 +6527,7 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         owned = MergeBulwarkProgression.menuOwned(state, slot),
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
-        families = MergeBulwarkProgression.familiesForSlot(slot, self._config.tier_art),
+        families = families,
         unlocked = MergeBulwarkProgression.isUnlocked(MergeBulwarkProgression.unlockWave(cfg), cfg),
         unlockWave = MergeBulwarkProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 20)),
@@ -6524,7 +6540,8 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         actionCost = price.amount,
         currency = price.currency,
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
-        unlockCosts = self:_unlockCostMap(cfg),
+        unlockCosts = self:_unlockCostMap(cfg, families, MergeBulwarkProgression.actionCost),
+        tierCosts = self:_tierCostMap(cfg, families, MergeBulwarkProgression.actionCost),
         gemWallet = self:_tutorialGemWallet(record),
         rebirthRank = rebirthRank,
         requiredRebirthRank = requiredRebirthRank,
@@ -7794,7 +7811,8 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
     local state = self:_normalizeTowerState(record)
     slot = MergeTowerProgression.normalizeSlot(slot)
     local family, tier = MergeTowerProgression.slotFamily(state, slot)
-    local price = MergeTowerProgression.actionCost(cfg)
+    local price = MergeTowerProgression.actionCost(cfg, "select", "heal", 1)
+    local families = MergeTowerProgression.familiesForSlot(slot, self._config.tier_art)
     local currentWave = record and math.max(1, math.floor(tonumber(record.waveIndex) or 0)) or 1
     local wallet = record
             and self._economyService
@@ -7809,7 +7827,7 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         owned = MergeTowerProgression.menuOwned(state, slot),
         installed = family ~= nil,
         maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
-        families = MergeTowerProgression.familiesForSlot(slot, self._config.tier_art),
+        families = families,
         unlocked = MergeTowerProgression.isUnlocked(MergeTowerProgression.unlockWave(cfg), cfg),
         unlockWave = MergeTowerProgression.unlockWave(cfg),
         productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 10)),
@@ -7822,7 +7840,8 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         actionCost = price.amount,
         currency = price.currency,
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
-        unlockCosts = self:_unlockCostMap(cfg),
+        unlockCosts = self:_unlockCostMap(cfg, families, MergeTowerProgression.actionCost),
+        tierCosts = self:_tierCostMap(cfg, families, MergeTowerProgression.actionCost),
         gemWallet = self:_tutorialGemWallet(record),
         rebirthRank = rebirthRank,
         requiredRebirthRank = requiredRebirthRank,
@@ -16209,7 +16228,9 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
         return false, progressionReason
     end
 
-    local price = MergeBulwarkProgression.actionCost(cfg, requestedAction, request.family)
+    local _, targetTier = MergeBulwarkProgression.slotFamily(nextState, slot)
+    local price =
+        MergeBulwarkProgression.actionCost(cfg, requestedAction, request.family, targetTier)
     local charged = nextState.charged == true and price.amount or 0
     record.bulwarkActionInProgress = true
     local commitFailure
@@ -16317,7 +16338,8 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
         return false, progressionReason
     end
 
-    local price = MergeTowerProgression.actionCost(cfg, requestedAction, request.family)
+    local _, targetTier = MergeTowerProgression.slotFamily(nextState, slot)
+    local price = MergeTowerProgression.actionCost(cfg, requestedAction, request.family, targetTier)
     local charged = nextState.charged == true and price.amount or 0
     record.towerActionInProgress = true
     local commitFailure

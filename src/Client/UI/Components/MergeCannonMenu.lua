@@ -281,7 +281,7 @@ function MergeCannonMenu.new(parent, onAction)
     local hint = label(
         panel,
         "Hint",
-        "Placeable from Wave 1 • Heal unlocks for 1 Gem • Other changes 1 Waycoin",
+        "Unlock with Gems • Install and upgrade with Waycoins",
         UDim2.new(1, 0, 0.03, 0),
         false
     )
@@ -737,12 +737,13 @@ function MergeCannonMenu.new(parent, onAction)
         local wallet = math.max(0, math.floor(tonumber(state.wallet) or 0))
         local gemWallet = math.max(0, math.floor(tonumber(state.gemWallet) or 0))
         local unlockCosts = type(state.unlockCosts) == "table" and state.unlockCosts or {}
+        local tierCosts = type(state.tierCosts) == "table" and state.tierCosts or {}
         syncCards(families)
         walletCoin.Image = WAYCOIN_ICON
         walletAmount.Text = tostring(wallet)
 
         hint.Text = state.playtestUnlock == true
-                and "Placeable from Wave 1 • Heal unlocks for 1 Gem • Other changes 1 Waycoin"
+                and "Placeable from Wave 1 • Unlock with Gems • Install/upgrade with Waycoins"
             or string.format(
                 "Unlocks at Wave %d • Tutorial during the milestone intermission",
                 tonumber(state.productionUnlockWave) or 10
@@ -815,6 +816,15 @@ function MergeCannonMenu.new(parent, onAction)
         if selected then
             controller.selectedId = selected.id
             local ownedTier = math.max(0, math.floor(tonumber(owned[selected.id]) or 0))
+            local current = installed and selected.id == state.family
+            local atMaximum = ownedTier >= maximumTier
+            local nextTier = ownedTier == 0 and 1
+                or (not current and 1)
+                or (atMaximum and ownedTier or math.min(maximumTier, ownedTier + 1))
+            local selectedTierCosts = type(tierCosts[selected.id]) == "table"
+                    and tierCosts[selected.id]
+                or {}
+            cost = math.max(0, math.floor(tonumber(selectedTierCosts[nextTier]) or cost))
             local unlockPrice = ownedTier == 0 and unlockCosts[selected.id] or nil
             local unlockCurrency = unlockPrice and unlockPrice.currency or state.currency
             local unlockAmount = unlockPrice
@@ -822,11 +832,6 @@ function MergeCannonMenu.new(parent, onAction)
                 or cost
             walletCoin.Image = unlockCurrency == "gems" and GEM_ICON or WAYCOIN_ICON
             walletAmount.Text = tostring(unlockCurrency == "gems" and gemWallet or wallet)
-            local current = installed and selected.id == state.family
-            local atMaximum = ownedTier >= maximumTier
-            local nextTier = ownedTier == 0 and 1
-                or (not current and 1)
-                or (atMaximum and ownedTier or math.min(maximumTier, ownedTier + 1))
             selectedName.Text = string.upper(tostring(selected.name or selected.id))
             if ownedTier == 0 then
                 ownedBadge.Text = "LOCKED"

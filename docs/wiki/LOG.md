@@ -7575,3 +7575,13 @@ first-session cohort rates.
 - Added an Edit-mode geometry audit covering all ten bays and moved line/pad spacing plus unlock
   ranks into `configs/merge_egg_prototype.lua`. Merge defense persistence schema v7 carries the two
   rear cannon slots.
+
+## 2026-09-02 — Config-owned cannon and bulwark economy
+
+- Replaced the flat one-Waycoin mutation price with complete per-family Gem unlocks and four
+  target-tier Waycoin prices for all six cannons and all six bulwarks. Heal Cannon and Impaler
+  Palisade retain the tutorial's 1-Gem unlock and cost 1 / 1,000 / 10,000 / 100,000 Waycoins across
+  Tiers 1–4; the later families use overlapping price windows capped at 100,000 Gems to unlock and
+  50,000,000 Waycoins for Tier 4.
+- Server transactions and both workshop menus now resolve the same target-tier config entry, with
+  exhaustive headless coverage and loud failure for missing price rows.

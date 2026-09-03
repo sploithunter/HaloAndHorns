@@ -328,21 +328,30 @@ function MergeTowerProgression.isUnlocked(currentWave, config)
     return reachedWave >= MergeTowerProgression.unlockWave(config)
 end
 
-function MergeTowerProgression.actionCost(config, action, family)
+function MergeTowerProgression.actionCost(config, action, family, targetTier)
     config = type(config) == "table" and config or {}
+    local id = string.lower(tostring(family or ""))
+    assert(FAMILY_SET[id] == true, "Unknown cannon price family: " .. tostring(family))
     if tostring(action or "") == "unlock" then
         local costs = type(config.unlock_costs) == "table" and config.unlock_costs or {}
-        local row = costs[string.lower(tostring(family or ""))]
-        if type(row) == "table" then
-            return {
-                currency = tostring(row.currency or "gems"),
-                amount = whole(row.amount, 1),
-            }
-        end
+        local row = costs[id]
+        assert(type(row) == "table", "Missing edge_towers.unlock_costs." .. id)
+        assert(tonumber(row.amount) ~= nil, "Invalid edge_towers.unlock_costs." .. id .. ".amount")
+        return {
+            currency = tostring(row.currency or "gems"),
+            amount = whole(row.amount, 1),
+        }
     end
+
+    local tier = whole(targetTier, 1)
+    local costs = type(config.tier_costs) == "table" and config.tier_costs or {}
+    local row = costs[id]
+    assert(type(row) == "table", "Missing edge_towers.tier_costs." .. id)
+    local amount = tonumber(row[tier])
+    assert(amount ~= nil, string.format("Missing edge_towers.tier_costs.%s[%d]", id, tier))
     return {
         currency = tostring(config.currency or "hall_coins"),
-        amount = whole(config.action_cost, 1),
+        amount = whole(amount, 1),
     }
 end
 
