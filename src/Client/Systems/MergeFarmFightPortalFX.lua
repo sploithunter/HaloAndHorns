@@ -459,7 +459,7 @@ local function buildPortal(ring, cfg, spec)
         endMarker = endMarker,
         boltConfig = boltConfig,
         nextBoltAt = os.clock(),
-        active = false,
+        active = nil,
     }
 end
 
