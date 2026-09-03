@@ -2376,6 +2376,14 @@ end
 function EggInteractionService:Initialize()
     Logger:Info("Initializing with CurrentTarget system", { context = "EggInteractionService" })
 
+    -- Prime the persistent hatch ScreenGui during normal client startup. The first request used to
+    -- be the first time this GUI was parented, allowing its transient initial AbsoluteSize to shift
+    -- that one hatch left; all later hatches reused settled geometry and appeared correct.
+    local hatchingService = getHatchingService()
+    if hatchingService and hatchingService.InitializePersistentGui then
+        hatchingService:InitializePersistentGui()
+    end
+
     -- Get reference to CurrentTargetService
     local success, currentTargetServiceOrError = pcall(function()
         return require(ReplicatedStorage.Shared.Services.EggCurrentTargetService)

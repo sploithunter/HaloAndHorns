@@ -112,6 +112,12 @@ function EggAnimationContractSmoke.run(options)
     assert(initial.layout.padding == layoutConfig.padding, "Animation layout padding mismatch")
     assert(initial.layout.safeMargin == layoutConfig.safe_margin, "Animation safe margin mismatch")
     assert(initial.layout.resultFooter > 0, "Animation result footer missing")
+    assert(initial.layout.viewportWasStable == true, "Animation accepted unstable viewport bounds")
+    assert(
+        initial.layout.viewportStableFrames
+            >= animationConfig.viewport_readiness.stable_frames,
+        "Animation did not observe the configured stable viewport window"
+    )
     assert(
         initial.layout.eggSize >= layoutConfig.min_egg_size,
         "Animation egg size below configured min"
@@ -136,7 +142,10 @@ function EggAnimationContractSmoke.run(options)
     )
     assert(specialFrame.badges.SpecialBadge, "Special hatch badge missing")
     assert(specialFrame.badges.RarityBadge, "Special rarity badge missing")
-    assert(specialFrame.badges.VariantBadge, "Special variant badge missing")
+    assert(
+        specialFrame.badges.VariantBadge == nil,
+        "Rainbow should be carried by the styled result name, not a duplicate variant badge"
+    )
     assert(specialFrame.newIndexEntry == true, "New-index result flag missing")
     assert(specialFrame.badges.NewBadge, "Per-card NEW badge missing")
     assert(specialFrame.badges.NewBadge.text == "NEW!", "Per-card NEW badge text mismatch")
@@ -256,7 +265,7 @@ function EggAnimationContractSmoke.run(options)
         frameCount = initial.frameCount,
         specialBadge = specialFrame.badges.SpecialBadge.text,
         rarityBadge = specialFrame.badges.RarityBadge.text,
-        variantBadge = specialFrame.badges.VariantBadge.text,
+        variantTreatment = specialFrame.variant,
         autoDeleteBadge = autoDeletedFrame.badges.AutoDeleteBadge.text,
         revealedStatus = revealed.guiStatus,
         stackedCount = stacked.frames[2].stackCount,
@@ -274,7 +283,7 @@ function EggAnimationContractSmoke.runText(options)
         result.frameCount,
         result.specialBadge,
         result.rarityBadge,
-        result.variantBadge,
+        result.variantTreatment,
         result.autoDeleteBadge,
         tostring(result.stackedName),
         tostring(result.stackedCount),
