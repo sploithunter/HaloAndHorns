@@ -111,10 +111,24 @@ local function dockState()
             and waveMeter.Visible
             and waveMeter.AbsoluteSize.Y > 0
         then
-            mergeWaveBottom = waveMeter.AbsolutePosition.Y + waveMeter.AbsoluteSize.Y
+            local localBounds = PeopleList.screenGuiLocalBounds({
+                viewportWidth = viewport.X,
+                viewportHeight = viewport.Y,
+                absoluteLeft = waveMeter.AbsolutePosition.X,
+                absoluteTop = waveMeter.AbsolutePosition.Y,
+                width = waveMeter.AbsoluteSize.X,
+                height = waveMeter.AbsoluteSize.Y,
+                anchorX = waveMeter.AnchorPoint.X,
+                anchorY = waveMeter.AnchorPoint.Y,
+                xScale = waveMeter.Position.X.Scale,
+                xOffset = waveMeter.Position.X.Offset,
+                yScale = waveMeter.Position.Y.Scale,
+                yOffset = waveMeter.Position.Y.Offset,
+            })
+            mergeWaveBottom = localBounds.bottom
             mergeWaveWidth = waveMeter.AbsoluteSize.X
             mergeWaveHeight = waveMeter.AbsoluteSize.Y
-            mergeWaveRight = waveMeter.AbsolutePosition.X + waveMeter.AbsoluteSize.X
+            mergeWaveRight = localBounds.right
         end
     end
     return {

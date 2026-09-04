@@ -358,6 +358,35 @@ local function requiredNumber(value, label)
     return number
 end
 
+-- AbsolutePosition includes ScreenGui safe-area extension, while UDim scale placement is evaluated
+-- in the ScreenGui's local viewport space. Normalize a rendered rectangle back into that local
+-- space before using one ScreenGui surface to dock another.
+function PeopleList.screenGuiLocalBounds(state)
+    state = assert(state, "ScreenGui bounds state is required")
+    local viewportWidth = requiredNumber(state.viewportWidth, "viewportWidth")
+    local viewportHeight = requiredNumber(state.viewportHeight, "viewportHeight")
+    local width = requiredNumber(state.width, "width")
+    local height = requiredNumber(state.height, "height")
+    local absoluteLeft = requiredNumber(state.absoluteLeft, "absoluteLeft")
+    local absoluteTop = requiredNumber(state.absoluteTop, "absoluteTop")
+    local anchorX = requiredNumber(state.anchorX, "anchorX")
+    local anchorY = requiredNumber(state.anchorY, "anchorY")
+    local authoredAnchorX = viewportWidth * requiredNumber(state.xScale, "xScale")
+        + requiredNumber(state.xOffset, "xOffset")
+    local authoredAnchorY = viewportHeight * requiredNumber(state.yScale, "yScale")
+        + requiredNumber(state.yOffset, "yOffset")
+    local screenGuiOriginX = absoluteLeft + anchorX * width - authoredAnchorX
+    local screenGuiOriginY = absoluteTop + anchorY * height - authoredAnchorY
+    local left = absoluteLeft - screenGuiOriginX
+    local top = absoluteTop - screenGuiOriginY
+    return {
+        left = left,
+        top = top,
+        right = left + width,
+        bottom = top + height,
+    }
+end
+
 local function layoutMode(config, state)
     local layout = assert(config and config.layout, "people_list.layout is required")
     local modes = assert(layout.modes, "people_list.layout.modes is required")

@@ -7722,3 +7722,11 @@ first-session cohort rates.
   explicit authored-hit hook performs the same check. A depleted actor takes the normal durable
   down/lockout path or the configured ephemeral destroy path; Merge egg objectives remain owned by
   their objective lifecycle. Added a headless contract guard for reconciliation ordering.
+## 2026-09-03 — Repair Merge wave/People-list safe-area overlap
+
+- Fixed the Merge People list dock after the shared Farm upper-right HUD refactor exposed a cross-
+  `ScreenGui` coordinate mismatch. The wave card's `AbsolutePosition` includes Roblox's negative
+  fullscreen safe-area origin, while the list's scale position is evaluated in local viewport
+  space; the list now normalizes the live wave bounds before deriving its dock scale.
+- Added a regression fixture from the observed 1835×869 Studio viewport: wave top `-44` normalizes
+  to local top `14`, bottom `92`, and the People list begins at `97` after its configured gap.
