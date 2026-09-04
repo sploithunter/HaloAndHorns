@@ -8003,3 +8003,19 @@ first-session cohort rates.
   exits when its owning session is canceled. Added headless contracts and isolated Studio smoke.
 - Corrected combat-audience run lookup for actual enemy `MergeRunId`, with cross-enemy helper
   coverage. This is separate from the location-based cancellation, not a change to egg ownership.
+
+### 2026-09-04 — Repository reconciliation and recovered source work
+
+- Urgent Merge entry fix landed through PR #434; all 2,603 headless checks and the isolated
+  ten-bay/three-record Studio entry and combat-audience fixtures passed.
+- Audited both old stashes. Recovered config-owned Source Sans/1400×960 board styling without
+  rolling back newer countdowns, Homeworld relocation, or internal-account publication safety.
+  Preserved the obsolete Hall/sale store copy as an explicitly historical raw draft; old build
+  stamps are superseded. No current gameplay tuning or profile migrations were reverted.
+- Added the offline-gaming source icon with a note that it does not enable an entitlement.
+- Three byte-identical ` 2` script copies were moved outside the repository to a recoverable
+  local backup alongside binary stash patches. Generated art/build caches and `.env.local`
+  remain deliberately ignored. Only canonical scripts are synced by Rojo.
+- Reconciliation gate: all 2,605 headless tests and the Rojo build pass. An isolated Studio board
+  fixture confirmed the configured canvas and Source Sans font; existing round-clock emphasis
+  remains Gotham Black, now also config-owned.
