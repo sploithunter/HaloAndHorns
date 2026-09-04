@@ -8019,3 +8019,12 @@ first-session cohort rates.
 - Reconciliation gate: all 2,605 headless tests and the Rojo build pass. An isolated Studio board
   fixture confirmed the configured canvas and Source Sans font; existing round-clock emphasis
   remains Gotham Black, now also config-owned.
+
+### 2026-09-04 — Hide unusable second-bay claims
+
+- Kept the one-bay-per-player rule and added a per-client mask to tagged authored claim prompts.
+  Current bay ownership suppresses other claims during setup, play, and pet restoration/cleanup;
+  release restores offers. Occupied bays and temporary modes are also hidden.
+- No global prompt disable for a busy viewer: an unclaimed player can still claim the same empty
+  bay. Added pure eligibility tests and a two-viewer Studio fixture including late server Enabled
+  updates. No pet movement, ownership transfer, or save behavior changed.

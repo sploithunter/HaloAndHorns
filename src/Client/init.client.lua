@@ -369,6 +369,16 @@ do
     end
 end
 
+-- Only offer an empty bay to players who are free to claim it.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeBayClaimPrompt).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeBayClaimPrompt", { error = tostring(err) })
+    end
+end
+
 -- Owner-only current/next egg templates arrive in PlayerGui. Explicitly fetch their mesh/texture
 -- dependencies so a first hatch is warm without replicating the complete model catalog.
 do
