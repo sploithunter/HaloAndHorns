@@ -8,6 +8,7 @@
                    is NOT yet role-driven — that lands as a separate A/B pass so we can compare.
       hp         — base health (10x world: pools x10 both sides, damage untouched —
                    see configs/combat.lua pet_down_threshold_factor; scaled by party size at spawn)
+      element    — defeated-combatant origin used to brand enhancement drops
       tier       — Spirit Form cooldown tier applied to a pet this enemy downs
                    (maps to configs/spirit_form.lua cooldown_tiers)
       attack     — { damage, cadence, sundering }
@@ -184,6 +185,7 @@ return {
         -- MELEE — fast, fragile, gets in your face (the new cube_dog art).
         rabid_dog = {
             role = "melee",
+            element = "grass",
             hp = 1400,
             display_name = "Rabid Dog",
             tier = "trash_mob",
@@ -201,6 +203,7 @@ return {
         -- RANGED — a murder of crows: hits a touch harder, very squishy (the new raven art).
         murder_crow = {
             role = "ranged",
+            element = "grass",
             hp = 850,
             display_name = "Murder Crow",
             tier = "trash_mob",
@@ -230,6 +233,7 @@ return {
         -- RANGED — a vicious cat: a second ranged flavour, slightly tankier than the crow (grumpy_cat).
         vicious_cat = {
             role = "ranged",
+            element = "grass",
             hp = 1000,
             display_name = "Vicious Cat",
             tier = "trash_mob",
@@ -254,6 +258,7 @@ return {
         -- Open Cloud upload returns (MeshPart.TextureID needs the underlying image, else it renders grey).
         rabid_bunny = {
             role = "support",
+            element = "grass",
             hp = 1100,
             display_name = "Jackalope",
             tier = "trash_mob",
@@ -270,6 +275,7 @@ return {
         -- TANK — the bear: thick hide, soaks for the pack (the bear art). The wall of the faction.
         raging_bear = {
             role = "tank",
+            element = "grass",
             hp = 3500,
             display_name = "Raging Bear",
             tier = "mid_tier",
@@ -291,6 +297,7 @@ return {
         -- MELEE — the sand jackal: a fast, big-eared pack hunter (Desert's mirror of the rabid_dog).
         sand_jackal = {
             role = "melee",
+            element = "desert",
             hp = 1300,
             display_name = "Sand Jackal",
             tier = "trash_mob",
@@ -308,6 +315,7 @@ return {
         -- of the murder_crow), bald-headed scavenger, very squishy.
         carrion_vulture = {
             role = "ranged",
+            element = "desert",
             hp = 900,
             display_name = "Carrion Vulture",
             tier = "trash_mob",
@@ -337,6 +345,7 @@ return {
         -- Kill it first to flip the fight (Desert's mirror of the jackalope / ember moth).
         golden_scarab = {
             role = "support",
+            element = "desert",
             hp = 2000,
             display_name = "Golden Scarab",
             tier = "trash_mob",
@@ -355,6 +364,7 @@ return {
         -- of the raging_bear / ember_brute). The shell IS the armor tell.
         dune_tortoise = {
             role = "tank",
+            element = "desert",
             hp = 3600,
             display_name = "Dune Tortoise",
             tier = "mid_tier",
@@ -372,6 +382,7 @@ return {
         -- dire_bear / magma_wyrm). Boss = deliberate encounter (admin/special spawn), NOT field waves.
         sand_scorpion = {
             role = "tank",
+            element = "desert",
             hp = 55000,
             display_name = "Sand Scorpion",
             tier = "boss",
@@ -394,6 +405,7 @@ return {
         -- MELEE — the frost fox: a quick, frost-furred pack hunter (Ice's mirror of the rabid_dog).
         frost_fox = {
             role = "melee",
+            element = "ice",
             hp = 1300,
             display_name = "Frost Fox",
             tier = "trash_mob",
@@ -410,6 +422,7 @@ return {
         -- RANGED — the snowy owl: dives + looses an ICE bolt from standoff (Ice's mirror of the crow).
         snowy_owl = {
             role = "ranged",
+            element = "ice",
             hp = 900,
             display_name = "Snowy Owl",
             tier = "trash_mob",
@@ -438,6 +451,7 @@ return {
         -- SUPPORT — the aurora seal: a gentle glowing seal that mends the most-hurt ally. Kill it first.
         aurora_seal = {
             role = "support",
+            element = "ice",
             hp = 2000,
             display_name = "Aurora Seal",
             tier = "trash_mob",
@@ -455,6 +469,7 @@ return {
         -- TANK — the glacial mammoth: a tusked woolly wall, slow + armored (Ice's mirror of the bear).
         glacial_mammoth = {
             role = "tank",
+            element = "ice",
             hp = 3600,
             display_name = "Glacial Mammoth",
             tier = "mid_tier",
@@ -472,6 +487,7 @@ return {
         -- dire_bear / magma_wyrm / sand_scorpion). Boss = deliberate encounter, NOT field waves.
         glacial_leviathan = {
             role = "tank",
+            element = "ice",
             hp = 58000,
             display_name = "Glacial Leviathan",
             tier = "boss",
@@ -494,6 +510,7 @@ return {
         -- id, not the Decal id the upload returns (else grey). See scripts/pet_pipeline.md.
         lava_imp = {
             role = "melee",
+            element = "lava",
             hp = 1200,
             display_name = "Cinder Whelp", -- the fast molten salamander (Lava's mirror of the dog)
             tier = "trash_mob",
@@ -509,6 +526,7 @@ return {
         },
         ember_brute = {
             role = "tank",
+            element = "lava",
             hp = 4000,
             display_name = "Ember Brute", -- the molten rhino: obsidian plates, lava cracks, horned charge
             tier = "mid_tier",
@@ -525,6 +543,7 @@ return {
         },
         ember_acolyte = {
             role = "support",
+            element = "lava",
             hp = 2000,
             display_name = "Ember Moth", -- the drifting lava moth healer (Lava's mirror of the jackalope)
             tier = "trash_mob",
@@ -558,6 +577,7 @@ return {
         -- MELEE — the zealous cherub: a darting winged zealot (mirror of lava_imp).
         zealous_cherub = {
             role = "melee",
+            element = "lava",
             hp = 1200,
             display_name = "Zealous Cherub",
             tier = "trash_mob",
@@ -582,6 +602,7 @@ return {
         -- RANGED — the lance seraph: holds range and hurls radiant bolts (mirror of murder_crow).
         lance_seraph_guard = {
             role = "ranged",
+            element = "lava",
             hp = 900,
             display_name = "Lance Seraph",
             tier = "trash_mob",
@@ -599,6 +620,7 @@ return {
         -- SUPPORT — the radiant sprite: heaven's healer (mirror of ember_acolyte).
         radiant_sprite_guard = {
             role = "support",
+            element = "grass",
             hp = 2000,
             display_name = "Radiant Sprite",
             tier = "trash_mob",
@@ -626,6 +648,7 @@ return {
         -- cold radiance until bespoke holy FX exist.
         celestial_archon = {
             role = "tank",
+            element = "lava",
             hp = 50000,
             display_name = "Archon of the Host",
             tier = "boss",
@@ -652,6 +675,7 @@ return {
         -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
         prism_warden = {
             role = "tank",
+            element = "lava",
             hp = 4000,
             display_name = "Prism Warden",
             tier = "mid_tier",
@@ -666,6 +690,7 @@ return {
         },
         dire_bear = {
             role = "tank",
+            element = "grass",
             hp = 65000,
             display_name = "Dire Bear",
             tier = "boss",
@@ -690,6 +715,7 @@ return {
         },
         infernal_boss = {
             role = "tank",
+            element = "lava",
             hp = 50000,
             display_name = "Magma Wyrm", -- the serpentine lava dragon: the Lava apex (mirror of dire_bear)
             tier = "boss",
@@ -739,6 +765,7 @@ return {
         -- v1 reuses the Magma Wyrm art at arch scale; bespoke art can swap in later.
         infernal_archvillain = {
             role = "tank",
+            element = "lava",
             hp = 150000,
             display_name = "Infernal Archfiend",
             tier = "archvillain",

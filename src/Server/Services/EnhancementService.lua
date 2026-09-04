@@ -467,9 +467,10 @@ function EnhancementService:RollbackRespecRefund(transaction)
     return true
 end
 
--- Roll a random drop record (type by weight). Origins: primary = the area's own origin
--- (drops.area_origins — the disc color matches the land), ring = uniform random (ring ==
--- primary -> single-origin). Unmapped areas use the legacy uniform + single_chance roll.
+-- Roll a random drop record (type by weight). Origins: primary = an explicitly supplied
+-- combatant origin, otherwise the area's own origin (drops.area_origins). The ring remains
+-- uniform random (ring == primary -> single-origin). Unmapped non-combat drops retain the
+-- legacy uniform + single_chance roll.
 -- `rng` = Random instance (injectable for tests/determinism).
 -- COMPLETION SPOILS (Jason 2026-07-11: "you should get a random single origin
 -- of your origin and level at mission completion"): one guaranteed
@@ -523,7 +524,6 @@ function EnhancementService:RollDrop(rng, areaId, opts)
             break
         end
     end
-    local origins = self._config.origins or {}
     local level = Enhancements.rollLevel(self._config, areaId, rng, opts and opts.playerLevel)
 
     -- NATURAL drops: forced for pre-origin players (opts.natural), and otherwise a
@@ -539,37 +539,19 @@ function EnhancementService:RollDrop(rng, areaId, opts)
     end
     local singleBoost = opts and tonumber(opts.single_chance)
 
-    -- PRIMARY origin = the zone's own (the disc color brands the land — Jason); the
-    -- RING is uniform random. Ring == primary -> a SINGLE-origin drop, so pure singles
-    -- only exist in their home world (~1/#origins of drops). Resolve the area id to its
-    -- BIOME (element) first, then to the origin — so all grass areas map to geomancer.
-    local zones = self._areasConfig and self._areasConfig.zones
-    local areaDef = zones and areaId and zones[areaId]
-    local element = areaDef and areaDef.element
-    local zoneOrigin = element and (drops.area_origins or {})[element]
-    if zoneOrigin then
-        -- rank single-boost: a lieutenant/boss kill in a mapped zone rolls a
-        -- pure home-origin single at the boosted rate before the ring roll
-        if singleBoost and rng:NextNumber() < singleBoost then
-            return { type = pick, origins = { zoneOrigin }, level = level }
-        end
-        local ring = origins[rng:NextInteger(1, #origins)]
-        if ring == zoneOrigin then
-            return { type = pick, origins = { zoneOrigin }, level = level }
-        end
-        return { type = pick, origins = { zoneOrigin, ring }, level = level }
+    -- Enemy drops provide primary_origin from the defeated combatant. Everything else
+    -- resolves the current area's biome exactly as before.
+    local primaryOrigin = opts and opts.primary_origin
+    if not Enhancements.isKnownOrigin(self._config, primaryOrigin) then
+        local zones = self._areasConfig and self._areasConfig.zones
+        local areaDef = zones and areaId and zones[areaId]
+        primaryOrigin = Enhancements.originForElement(self._config, areaDef and areaDef.element)
     end
-
-    -- legacy roll for unmapped areas (events/realms until they get a mapping)
-    local a = origins[rng:NextInteger(1, #origins)]
-    if rng:NextNumber() < (singleBoost or tonumber(drops.single_chance) or 0.35) then
-        return { type = pick, origins = { a }, level = level }
-    end
-    local b = a
-    while b == a do
-        b = origins[rng:NextInteger(1, #origins)]
-    end
-    return { type = pick, origins = { a, b }, level = level }
+    return {
+        type = pick,
+        origins = Enhancements.rollDropOrigins(self._config, rng, primaryOrigin, singleBoost),
+        level = level,
+    }
 end
 
 -- [admin] Empty the enhancements bucket (levelup.resetRun: a fresh L1 run starts with none).

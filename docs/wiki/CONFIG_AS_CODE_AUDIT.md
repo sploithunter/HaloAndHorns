@@ -1,6 +1,6 @@
 # Configuration-As-Code Audit
 
-Status: current as of 2026-09-01. Tracking: [issue #343](https://github.com/sploithunter/HaloAndHorns/issues/343).
+Status: current as of 2026-09-04. Tracking: [issue #343](https://github.com/sploithunter/HaloAndHorns/issues/343).
 
 ## Enforced boundary
 
@@ -13,7 +13,7 @@ contract.
 reviewed inventories:
 
 - `runtime-asset-literal`: 133 existing 8+-digit literals across 33 files.
-- `numeric-tuning-fallback`: 1,621 existing `config/tuning lookup or <number>` fallbacks across 238
+- `numeric-tuning-fallback`: 1,618 existing `config/tuning lookup or <number>` fallbacks across 238
   files.
 
 The exact per-file counts are checked into `scripts/architecture_allowlist.json`. New files, moved

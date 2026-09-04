@@ -7,6 +7,8 @@ local Enhancements = loadModule("src/Shared/Game/Enhancements.lua")
 local PowerStats = loadModule("src/Shared/Game/PowerStats.lua")
 local cfg = loadModule("configs/enhancements.lua")
 local powersCfg = loadModule("configs/powers.lua")
+local enemiesCfg = loadModule("configs/enemies.lua")
+local petsCfg = loadModule("configs/pets.lua")
 
 local PYRO_DMG = { type = "damage", origins = { "pyromancer" } }
 local GEO_CRYO_RCH = { type = "recharge", origins = { "geomancer", "cryomancer" } }
@@ -60,6 +62,75 @@ return function()
             expect(single).to.equal(cfg.values.single)
             expect(dual).to.equal(cfg.values.dual)
         end)
+    end)
+
+    describe("Defeated-combatant drop origins", function()
+        it("maps Rimelight Hare's ice origin to Cryomancer", function()
+            expect(petsCfg.pets.rimelight_hare.origin).to.equal("ice")
+            expect(Enhancements.originForElement(cfg, petsCfg.pets.rimelight_hare.origin)).to.equal(
+                "cryomancer"
+            )
+        end)
+
+        it("keeps the defeated origin first in both single and dual rolls", function()
+            local singleRng = {
+                NextNumber = function()
+                    return 0.1
+                end,
+                NextInteger = function(_, lo)
+                    return lo
+                end,
+            }
+            local single = Enhancements.rollDropOrigins(cfg, singleRng, "cryomancer", 0.6)
+            expect(#single).to.equal(1)
+            expect(single[1]).to.equal("cryomancer")
+
+            local dualRng = {
+                NextNumber = function()
+                    return 0.9
+                end,
+                NextInteger = function()
+                    return 1 -- geomancer ring, distinct from cryomancer
+                end,
+            }
+            local dual = Enhancements.rollDropOrigins(cfg, dualRng, "cryomancer", 0.6)
+            expect(#dual).to.equal(2)
+            expect(dual[1]).to.equal("cryomancer")
+            expect(dual[2]).to.equal("geomancer")
+        end)
+
+        it(
+            "maps every rewarding static combatant and leaves unsupported origins unmapped",
+            function()
+                for enemyId, def in pairs(enemiesCfg.enemies) do
+                    if type(def.drop_table) == "table" and next(def.drop_table) ~= nil then
+                        if not Enhancements.originForElement(cfg, def.element) then
+                            error(
+                                ("rewarding enemy '%s' has no enhancement origin"):format(enemyId)
+                            )
+                        end
+                    end
+                end
+                expect(Enhancements.originForElement(cfg, "creator")).to.equal(nil)
+                expect(Enhancements.originForElement(cfg, "hall")).to.equal(nil)
+                expect(Enhancements.originForElement(cfg, nil)).to.equal(nil)
+            end
+        )
+
+        it(
+            "locks enemy drops to combatant metadata while non-enemy drops stay area-based",
+            function()
+                local enemySource = readFile("src/Server/Services/EnemyService.lua")
+                local dropSource = readFile("src/Server/Services/DropService.lua")
+                local serviceSource = readFile("src/Server/Services/EnhancementService.lua")
+
+                expect(enemySource:find("enemy_element = enemyElement", 1, true)).to.be.ok()
+                expect(enemySource:find("enemy_origin_locked = true", 1, true)).to.be.ok()
+                expect(dropSource:find("Enhancements.originForElement(enhCfg", 1, true)).to.be.ok()
+                expect(dropSource:find("primary_origin = enemyOrigin", 1, true)).to.be.ok()
+                expect(serviceSource:find("opts and opts.primary_origin", 1, true)).to.be.ok()
+            end
+        )
     end)
 
     describe("Usability (player origin must be among the enhancement's origins)", function()

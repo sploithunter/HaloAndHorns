@@ -102,7 +102,7 @@
         "src/Server/Services/EggStandPlacement.server.lua": 4,
         "src/Server/Services/EnchantService.lua": 15,
         "src/Server/Services/EnemyService.lua": 168,
-        "src/Server/Services/EnhancementService.lua": 2,
+        "src/Server/Services/EnhancementService.lua": 1,
         "src/Server/Services/EventService.lua": 3,
         "src/Server/Services/FloraService.lua": 1,
         "src/Server/Services/FocusService.lua": 4,
