@@ -7751,3 +7751,10 @@ first-session cohort rates.
 - Corrected the shared focal-word nudge after confirming the infernal gate was already centered.
   Restored `FIGHT` to its original 43% center and added a per-portal layout override that keeps only
   the celestial `FARM` word at 49%, matching each gate's different visible aperture.
+
+## 2026-09-03 — Keep Merge wall decor out of flora sway
+
+- Fixed the client flora classifier selecting all eight retained Heaven/Hell wall banners because
+  their model name was `Banner`, despite their authoritative `Kind = "wall_decor"` marker.
+- Authored kinds now win over name inference, banners require an explicit `Kind = "banner"` opt-in,
+  and inferred flora names match whole tokens so `hell_infernal_crest` no longer matches `fern`.

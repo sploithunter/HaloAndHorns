@@ -240,7 +240,10 @@ picks up Merge `RealmDecor_` clones and authored map plants whose names
 match the same soft tokens. Motion is a few degrees around the base and
 sleeps beyond `configs/flora.lua` `sway.radius` (80 studs). Settings →
 Prop Effects is the player opt-out (default on). This is not a skinned
-animation and does not write the server pivot.
+animation and does not write the server pivot. An authored `Kind` is authoritative: typed
+non-flora such as `Kind = "wall_decor"` never falls back to name inference. Name inference matches
+whole tokens only, and banners must explicitly opt in with `Kind = "banner"`; a wall fixture named
+`Banner` stays rigid.
 
 Ambient fauna use invisible BaseParts tagged `AmbientFaunaAnchor`. Each anchor supplies
 `ModelName`, `Motion` (`hover` or `ground`), `MoveRadius` (or elliptical `PathRadiusX` and
