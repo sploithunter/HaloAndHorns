@@ -158,6 +158,14 @@ local function generateProfileTemplate(configLoader)
             TrialEggRewards = { tracks = {} },
             -- Server-authoritative promo-code claims and launch-link campaign attribution.
             PromoCodes = { claims = {}, attribution = {} },
+            -- Permanent player-bay cloth awards. Earned banners queue during combat and move onto
+            -- the public bay gallery only during a Merge checkpoint intermission.
+            AchievementBanners = {
+                version = 1,
+                owned = {},
+                pending = {},
+                displayed = {},
+            },
             -- One-time Merge defense mode notices. Ineligible entrants remain silently Simple;
             -- their later Full unlock requires an explicit stay/switch choice instead of an
             -- automatic combat-mode change.

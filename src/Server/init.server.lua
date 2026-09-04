@@ -1008,6 +1008,11 @@ if RunService:IsStudio() then
 end
 
 if isFeatureEnabled("map_binding") then
+    loader:RegisterModule(
+        "AchievementBannerService",
+        ServerScriptService.Server.Services.AchievementBannerService,
+        { "Logger", "ConfigLoader", "DataService" }
+    )
     -- Merge an Egg now owns production routing in both places: restricted entry from Farm &
     -- Fight and the public return door plus gameplay in the dedicated Merge place. Automation is
     -- still a Studio-only optional dependency used by balancing runs.
@@ -1028,6 +1033,7 @@ if isFeatureEnabled("map_binding") then
         "PowerService",
         "PotionShopService",
         "CombatTutorialService",
+        "AchievementBannerService",
     }
     if RunService:IsStudio() then
         table.insert(mergeEggPrototypeDeps, "AutomationService")
@@ -1451,6 +1457,7 @@ table.insert(requiredModules, "RealmPortalService")
 table.insert(requiredModules, "MissionInstanceService")
 table.insert(requiredModules, "ZoneTrackerService")
 table.insert(requiredModules, "GameAPIService")
+appendIfEnabled(requiredModules, "map_binding", "AchievementBannerService")
 appendIfEnabled(requiredModules, "map_binding", "MergeEggPrototypeService")
 if RunService:IsStudio() then
     table.insert(requiredModules, "StudioSmokeTestService")

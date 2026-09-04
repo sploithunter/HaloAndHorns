@@ -11,6 +11,7 @@ function AchievementBannerController.start()
     started = true
     require(script.Parent.AchievementBannerRenderer).start()
     require(script.Parent.AchievementBannerFlutter).start()
+    require(script.Parent.AchievementBannerCeremony).start()
 end
 
 return AchievementBannerController

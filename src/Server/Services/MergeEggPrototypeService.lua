@@ -357,6 +357,7 @@ function MergeEggPrototypeService:Init()
     self._combatTutorialService = self._modules and self._modules.CombatTutorialService
     self._worldBindingService = self._modules and self._modules.WorldBindingService
     self._zoneService = self._modules and self._modules.ZoneService
+    self._achievementBannerService = self._modules and self._modules.AchievementBannerService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._placesConfig = (self._configLoader and self._configLoader:LoadConfig("places"))
@@ -2891,6 +2892,11 @@ function MergeEggPrototypeService:_markEggTierMilestone(record, tier)
         return false
     end
     record.activityEggTierMilestones[resolvedTier] = true
+    if self._achievementBannerService and record.player then
+        self._achievementBannerService:RecordFacts(record.player, {
+            merge_egg_tier = resolvedTier,
+        }, "merge_egg_tier")
+    end
     return true
 end
 
@@ -11553,6 +11559,9 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
         return
     end
     self:_clearQuartermasterIntroduction(record)
+    if self._achievementBannerService then
+        self._achievementBannerService:ClearBay(record.world)
+    end
     if discardProgress ~= true then
         self:_persistPlaystate(record, "merge_defense_session_end", true)
     end
@@ -11992,6 +12001,16 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     self._enteringRecordByPlayer[player] = nil
     self._enteringByPlayer[player] = nil
     self._activeByPlayer[player] = record
+    if self._achievementBannerService then
+        local _, bannerReason = self._achievementBannerService:MountBay(player, record.world)
+        if bannerReason then
+            self:_log("Warn", "Achievement banner gallery could not mount on entry", {
+                player = player.Name,
+                bay = bayId,
+                reason = bannerReason,
+            })
+        end
+    end
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
     self:_ensureBayQuartermaster(record)
@@ -12208,6 +12227,25 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
             record.pendingCheckpointWave = record.waveIndex
             waveGap =
                 math.max(waveGap, math.max(0, tonumber(checkpointCfg.intermission_seconds) or 8))
+            if self._achievementBannerService then
+                local presentation = self._achievementBannerService:PresentCheckpoint(
+                    record.player,
+                    record.world,
+                    record.waveIndex,
+                    {
+                        level = record.player:GetAttribute("Level"),
+                        veteran_level = record.player:GetAttribute("VetLevel"),
+                        merge_wave = record.waveIndex,
+                        merge_egg_tier = record.maximumEggTier,
+                    }
+                )
+                if presentation and presentation.presented == true then
+                    local ceremonyMinimum = tonumber(presentation.minimumCheckpointSeconds)
+                    if ceremonyMinimum then
+                        waveGap = math.max(waveGap, ceremonyMinimum)
+                    end
+                end
+            end
         end
         record.nextWaveAt = os.clock() + waveGap
         self:_setWorldState(

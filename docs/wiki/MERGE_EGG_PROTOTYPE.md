@@ -933,6 +933,25 @@ team and queue model:
   PlayerRemoving and server shutdown before ProfileStore's final release save. Rebirth and Admin
   Reset clear both durable records; ordinary exit/logout does not.
 
+## Player-bay achievement banners (2026-09-03)
+
+- `GameData.AchievementBanners` is the permanent idempotent award ledger: `owned` records what the
+  player earned, `pending` queues an unpresented cloth, and `displayed` keeps the newest four bay
+  banners. The initial catalog covers Level 50, Veteran 100, Wave 250, and the Heaven/Hell Layer 2
+  and Layer 3 egg milestones. Definitions, copy, styles, model variants, placement, and ceremony
+  timing all live in `configs/achievement_banners.lua`.
+- Egg awards are recorded when a new Merge tier is created; level, veteran, wave, and restored
+  highest-tier facts are reconciled at checkpoints. Nothing takes the camera during combat or an
+  ordinary wave gap. At a completed tenth wave, the server mounts any pending final models outside
+  the claimed bay and sends only that owner a 1.6-second camera/glint beat inside the existing
+  eight-second intermission. The next wave remains server-timer-driven and never waits for a client
+  acknowledgement or cinematic completion.
+- Mounted models and their print attributes replicate, so every observer renders the same cloth
+  through `AchievementBannerRenderer`; only the temporary camera, highlight, light, and glints are
+  local. The gallery is rebuilt from persistence when a player claims a bay and cleared when that
+  bay is released. Models opt in exclusively through the `AchievementBanner` tag, keeping them out
+  of name-inferred flora motion.
+
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
@@ -946,9 +965,9 @@ team and queue model:
 - Repeatable Edit-mode passes: `scripts/studio/build_merge_egg_prototype_world.luau` builds the
   temporary one-bay source, then `scripts/studio/bake_merge_egg_realm.luau` consumes it and replaces
   only `Workspace.Maps.MergeEggRealm`.
-- The service is registered only when `RunService:IsStudio()` and map binding is enabled. A missing
-  authored realm fails closed and logs the exact expected Workspace path; runtime never fabricates,
-  transforms, or tiles the venue.
+- The Merge and achievement-banner services are required whenever map binding is enabled in Studio
+  or production. A missing authored realm fails closed and logs the exact expected Workspace path;
+  runtime never fabricates, transforms, or tiles the venue.
 
 ## Live verification
 

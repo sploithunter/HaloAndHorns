@@ -7772,3 +7772,13 @@ first-session cohort rates.
 - Uploaded both models to project group 15872767 and live-verified their Roblox import hierarchy,
   dynamic SurfaceAppearance updates (100 → 101 → 100), and all five fluttering deform bones. The
   controller is strictly `AchievementBanner`-tagged and sleeps beyond its configured radius.
+
+## 2026-09-03 — Mount permanent player-bay banners only at Merge checkpoints
+
+- Added permanent, idempotent awards for Level 50, Veteran 100, Wave 250, and the Heaven/Hell
+  Layer 2 and Layer 3 egg milestones. Combat-earned cloth remains pending until a tenth-wave
+  checkpoint and the claimed bay restores its newest four banners on later sessions.
+- The final tagged models replicate for every observer. Only the owner receives a short
+  camera/highlight/glint shot during the existing checkpoint intermission; ordinary wave gaps and
+  combat never seize the camera, and the server never waits for the client before starting the next
+  wave.
