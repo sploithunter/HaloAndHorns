@@ -33,6 +33,12 @@ function Service:_owned(player)
     return self._data:GetFeature(player, self._config.entitlement_feature) == true
 end
 
+function Service:_wallet(player)
+    local balance = self._economy:GetCurrency(player, self._config.currency)
+    -- A loading/missing wallet contains no spendable funds; this is data normalization, not tuning.
+    return tonumber(balance) or 0
+end
+
 function Service:_status(player, key, target)
     player:SetAttribute("MergeAutoplayStatus", self._config.labels[key])
     player:SetAttribute("MergeAutoplayTarget", target)
@@ -50,6 +56,12 @@ function Service:Report(player)
         startingWave = state.startingWave,
         actions = table.clone(state.actions),
         coinsSpent = state.spent,
+        coinsCollected = math.max(
+            0,
+            (self._economy:GetCurrency(player, self._config.currency) or 0)
+                + state.spent
+                - state.startingCoins
+        ),
         navigationFailures = state.navigationFailures,
         history = table.clone(state.history),
         testing = state.testing,
@@ -101,6 +113,7 @@ function Service:_begin(player, options)
         started = os.clock(),
         startingWave = record.waveIndex,
         startingXP = player:GetAttribute("XPTotal") or 0,
+        startingCoins = self._economy:GetCurrency(player, self._config.currency) or 0,
         cursor = 1,
         blocked = {},
         actions = {},
@@ -302,14 +315,16 @@ function Service:_tick(player, state)
     end
     if now >= state.nextReport then
         state.nextReport = now + cfg.report_seconds
-        self._modules.Logger:Info("Merge autoplay interval", self:Report(player))
+        local report = self:Report(player)
+        report.history = nil
+        self._modules.Logger:Info("Merge autoplay interval", report)
     end
     if now < state.nextAction then
         return
     end
     local candidates = self:_candidates(state)
     local action = Policy.choose(candidates, state, cfg, now)
-    if not action or action.amount > (self._economy:GetCurrency(player, cfg.currency) or 0) then
+    if not action or action.amount > self:_wallet(player) then
         local drop = merge:_nearestPrototypeCoinDrop(player)
         if drop and not state.blocked[drop] then
             action = {
@@ -361,7 +376,7 @@ function Service:_tick(player, state)
         return
     end
     self:_status(player, action.kind, nil)
-    local before = self._economy:GetCurrency(player, cfg.currency) or 0
+    local before = self:_wallet(player)
     local ok, reason = self:_execute(player, action)
     if self._states[player] ~= state then
         return
@@ -370,7 +385,7 @@ function Service:_tick(player, state)
     state.targetKey = nil
     if ok then
         state.failures = 0
-        state.spent += math.max(0, before - (self._economy:GetCurrency(player, cfg.currency) or 0))
+        state.spent += math.max(0, before - self:_wallet(player))
         state.actions[action.kind] = (state.actions[action.kind] or 0) + 1
         if action.cursor then
             state.cursor = action.cursor + 1
@@ -385,7 +400,7 @@ function Service:_tick(player, state)
         family = action.family,
         wave = state.record.waveIndex,
         ok = ok == true,
-        reason = ok and nil or tostring(reason),
+        reason = not ok and tostring(reason) or nil,
     }
     if #state.history > cfg.history_limit then
         table.remove(state.history, 1)
@@ -403,6 +418,25 @@ function Service:StudioControl(player, request)
     end
     if request.action == "report" then
         return self:Report(player)
+    end
+    if request.action == "plan" then
+        local record = self._merge:_recordFor(player)
+        if not record then
+            return nil
+        end
+        local state = self._states[player]
+            or { record = record, strategy = self._config.default_strategy }
+        local result = {}
+        for _, candidate in ipairs(self:_candidates(state)) do
+            result[#result + 1] = {
+                key = candidate.key,
+                amount = candidate.amount,
+                currency = candidate.currency,
+                host = candidate.host and candidate.host:GetFullName(),
+                allowed = Policy.allowed(candidate, self._config, state.allowReplacement),
+            }
+        end
+        return result
     end
     if request.action == "start" then
         return self:_begin(player, {

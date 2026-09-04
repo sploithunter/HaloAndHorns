@@ -1,6 +1,6 @@
 # Merge online autoplay
 
-Status: implementation and Studio verification in progress (2026-09-04).
+Status: implemented and branch-verified (2026-09-04).
 
 Baseline before work: clean main `a8c20b65`, published Merge **v594**. Studio stays open.
 
@@ -38,6 +38,7 @@ Invoke with a Player and one of:
 {action = "start", strategy = "balanced"} -- also egg_first / control
 {action = "start", strategy = "control", allowReplacement = true}
 {action = "report"}
+{action = "plan"} -- read-only current candidate prices/locations
 {action = "stop"}
 {action = "rebirth", confirmRebirth = true} -- explicit; must already be near the board
 ```
@@ -47,7 +48,7 @@ Explicit testing replacements use the same stale-state confirmation identity as 
 Test rebirth stops autoplay first, checks its currency is Waycoins, and calls the ordinary
 confirmation/proximity/requirement-checked rebirth method. It is never exposed as a player remote.
 
-Reports contain strategy, elapsed time, starting/current wave, earned XP, Waycoins spent,
+Reports contain strategy, elapsed time, starting/current wave, earned XP, Waycoins collected/spent,
 successful actions, navigation failures, and a bounded recent-action history. An aggregate report
 is logged at the configured interval; no per-frame tracing or player profile snapshots.
 Reports are diagnostic session data, not persistent analytics or a claim of optimal strategy.
@@ -56,3 +57,12 @@ Headless coverage: policy whitelist, bad prices/config, real pass mapping, line 
 defense savings, per-player cooldown isolation, catalog family IDs. `MergeAutoplaySmoke.run()`
 uses isolated actors and wallets to verify non-owner denial, near/far execution, Gem rejection,
 ignored production testing flags, stale-record cancellation, and independent player stops.
+
+Verification: 2,624 headless tests pass. Isolated Studio fixture also checks cannon preservation,
+owned-only bulwark planning and ordinary workshop dispatch. A live normal-entitlement run walked
+the real bay, made three production-tier purchases and two cannon installs, advanced wave 42–68,
+and stopped cleanly with zero navigation failures. Existing auto-collection left no loose coins in
+that run; coin pursuit remains dependent on normal DropService proximity, not remote grants.
+The compact purchase card renders, and HUD status is contained above the hotbar. Management signs
+are elevated: pathfinding retries at the player's floor height when the sign surface is NoPath;
+the authoritative station-distance check remains unchanged.

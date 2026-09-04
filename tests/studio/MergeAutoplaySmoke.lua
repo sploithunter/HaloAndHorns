@@ -45,30 +45,27 @@ function Smoke.run()
                 return nil
             end,
         }
-        local service = setmetatable(
-            {
-                _modules = {
-                    ConfigLoader = {
-                        LoadConfig = function()
-                            return Config
-                        end,
-                    },
-                    MergeEggPrototypeService = merge,
-                    DataService = {
-                        GetFeature = function(_, player)
-                            return owned[player]
-                        end,
-                    },
-                    EconomyService = {
-                        GetCurrency = function(_, player)
-                            return wallets[player]
-                        end,
-                    },
-                    Logger = { Info = function() end },
+        local service = setmetatable({
+            _modules = {
+                ConfigLoader = {
+                    LoadConfig = function()
+                        return Config
+                    end,
                 },
+                MergeEggPrototypeService = merge,
+                DataService = {
+                    GetFeature = function(_, player)
+                        return owned[player]
+                    end,
+                },
+                EconomyService = {
+                    GetCurrency = function(_, player)
+                        return wallets[player]
+                    end,
+                },
+                Logger = { Info = function() end },
             },
-            { __index = Service }
-        )
+        }, { __index = Service })
         service:Init()
         local host = Instance.new("Part")
         host.Position = Vector3.new(100, 0, 0)
@@ -118,6 +115,133 @@ function Smoke.run()
         service:HandleToggle(second, { enabled = false })
         assert(service._states[second] == nil, "Stop request failed")
         assert(first:GetAttribute("MergeAutoplayTarget") == nil, "Stop left navigation target")
+        -- Production defense planning uses only owned families, preserves the installed one,
+        -- and sends the same ordinary workshop requests as the UI.
+        local world = Instance.new("Folder")
+        world.Parent = container
+        local towerFolder = Instance.new("Folder")
+        towerFolder.Name = "MergeEggTowers"
+        towerFolder.Parent = world
+        local cannon = Instance.new("Part")
+        cannon:SetAttribute("MergeVendorPosted", true)
+        cannon.Parent = towerFolder
+        local bulwarkFolder = Instance.new("Folder")
+        bulwarkFolder.Name = "MergeEggBulwarks"
+        bulwarkFolder.Parent = world
+        local engineer = Instance.new("Part")
+        engineer:SetAttribute("MergeBulwarkSlot", "lane")
+        engineer:SetAttribute("MergeVendorPosted", true)
+        engineer.Parent = bulwarkFolder
+        local gameConfig = require(RS.Configs.merge_egg_prototype)
+        function merge:_edgeTowerConfig()
+            return gameConfig.team.edge_towers
+        end
+        function merge:_edgeBulwarkConfig()
+            return gameConfig.team.edge_bulwarks
+        end
+        function merge:_findArtilleryCommander(_, slot)
+            return slot == "left" and cannon or nil
+        end
+        function merge:_tutorialVendorsReady()
+            return true
+        end
+        function merge:_cannonMenuState()
+            return {
+                family = "heal",
+                tier = 1,
+                owned = { heal = 1, gravity = 1 },
+                maximumTier = 4,
+                slotUnlocked = true,
+            }
+        end
+        function merge:_bulwarkMenuState()
+            return {
+                tier = 0,
+                owned = { impaler_palisade = 1 },
+                maximumTier = 4,
+                slotUnlocked = true,
+            }
+        end
+        local candidateState = { record = { world = world }, strategy = "control" }
+        local candidates = {}
+        service:_defenses(candidateState, candidates, "cannon")
+        service:_defenses(candidateState, candidates, "bulwark")
+        assert(#candidates == 2, "Missing defense candidates")
+        assert(
+            candidates[1].family == "heal" and candidates[1].operation == "upgrade",
+            "Production replaced a cannon"
+        )
+        assert(
+            candidates[2].family == "impaler_palisade" and candidates[2].operation == "select",
+            "Did not select owned bulwark"
+        )
+        for _, candidate in ipairs(candidates) do
+            assert(
+                candidate.currency == Config.currency and not candidate.replacing,
+                "Unsafe defense candidate"
+            )
+        end
+        function merge:PurchaseCannonAction(_, request)
+            assert(
+                request.cannonAction == "upgrade"
+                    and request.family == "heal"
+                    and request.slot == "left",
+                "Bad cannon dispatch"
+            )
+            return true
+        end
+        function merge:PurchaseBulwarkAction(_, request)
+            assert(
+                request.bulwarkAction == "select"
+                    and request.family == "impaler_palisade"
+                    and request.slot == "lane",
+                "Bad bulwark dispatch"
+            )
+            return true
+        end
+        assert(Service._execute(service, first, candidates[1]), "Cannon dispatch failed")
+        assert(Service._execute(service, first, candidates[2]), "Bulwark dispatch failed")
+        function merge:CreateBaseEgg(_, request)
+            assert(
+                request.managementBoard == true and request.automation == nil,
+                "Bad egg purchase dispatch"
+            )
+            return true
+        end
+        function merge:UpgradeBaseEgg(_, request)
+            assert(request.managementBoard == true, "Bad egg production dispatch")
+            return true
+        end
+        function merge:EquipBestHatchers()
+            return true
+        end
+        function merge:MergeBoardEggs()
+            return true
+        end
+        for _, kind in ipairs({ "create", "upgrade_base", "place", "merge" }) do
+            assert(Service._execute(service, first, { kind = kind }), "Missing ordinary egg action")
+        end
+        assert(
+            Service._execute(service, first, { kind = "rebirth" }) == false,
+            "Production dispatcher rebirthed"
+        )
+        local rebirthCalled = false
+        function merge:_rebirthStatus()
+            return { price = { currency = "gems", amount = 1 } }
+        end
+        function merge:PurchaseRebirth(_, request)
+            rebirthCalled = request.confirm == true
+            return true
+        end
+        assert(
+            service:StudioControl(first, { action = "rebirth" }) == false,
+            "Test rebirth did not require opt-in"
+        )
+        assert(
+            service:StudioControl(first, { action = "rebirth", confirmRebirth = true }) == false,
+            "Test rebirth spent Gems"
+        )
+        assert(not rebirthCalled, "Unsafe test rebirth reached gameplay")
         return {
             passed = true,
             farPurchaseBlocked = true,

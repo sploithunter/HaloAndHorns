@@ -64,11 +64,21 @@ function Controller.start()
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(ui.corner_scale, 0)
     corner.Parent = button
+    button.Text = ""
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.fromScale(1, 0.55)
+    title.Font = button.Font
+    title.TextColor3 = button.TextColor3
+    title.TextScaled = true
+    title.Parent = button
+    textConstraint.Parent = title
     local hint = Instance.new("TextLabel")
     hint.Name = "Status"
     hint.BackgroundTransparency = 1
-    hint.Position = UDim2.fromScale(0, 1)
-    hint.Size = UDim2.fromScale(1, 0.5)
+    hint.Position = UDim2.fromScale(0, 0.55)
+    hint.Size = UDim2.fromScale(1, 0.45)
     hint.TextColor3 = rgb(ui.text_color)
     hint.TextScaled = true
     hint.Font = Enum.Font.Gotham
@@ -95,7 +105,7 @@ function Controller.start()
     local function refresh()
         local enabled = player:GetAttribute("MergeAutoplayEnabled") == true
         gui.Enabled = player:GetAttribute("InMergeEggPrototype") == true
-        button.Text = enabled and ui.on
+        title.Text = enabled and ui.on
             or (player:GetAttribute("MergeAutoplayOwned") and ui.off or ui.buy)
         button.BackgroundColor3 = rgb(enabled and ui.active_color or ui.idle_color)
         hint.Text = player:GetAttribute("MergeAutoplayStatus") or ui.off_hint
