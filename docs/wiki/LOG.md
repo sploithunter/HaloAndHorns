@@ -7975,3 +7975,15 @@ first-session cohort rates.
   See [Client Performance](CLIENT_PERFORMANCE.md) for measurements and limitations.
 - Final severe-slowdown guard caps isolated long frames but still counts repeated long frames;
   it cannot keep resetting Auto indefinitely at very low FPS. CI now passes 2,592 tests.
+
+## 2026-09-04 — Batched combat presentation and fight-aware recipients
+
+- Claimed `template/combat-presentation-batching` in Active Work #2. Added a config-owned,
+  reliable 50ms combat-result/pet-swing/enemy-swing envelope without changing combat authority.
+- Per-recipient FIFO snapshots isolate owner/foreign payloads, cap burst envelopes without hit
+  coalescing, and remove departing players' queues. Existing visual listeners remain unchanged.
+- Added nearby animation audiences and fight-owner/helper-only result audiences, including
+  short participation grace for players joining another bay's fight. No profile or combat
+  ownership fields were changed. Added headless queue/transport/audience/manifest coverage.
+- Baseline: 6,771 individual deliveries in 20.003 seconds (~338.5/sec) in the current solo
+  Studio session. Fresh-Play verification and post-change measurement follow the CI/PR gate.

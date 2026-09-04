@@ -1,5 +1,35 @@
 # Client Performance
 
+## Combat presentation batching and audiences (2026-09-04)
+
+`configs/network.lua.combat_presentation` combines `Combat_Result`, `Combat_PetHit`, and
+`Combat_EnemyHit` into one reliable, ordered `Combat_PresentationBatch` per recipient.
+The registry's logical signal API stays unchanged. Server HP, endurance, XP, loot,
+contribution accounting, and attack cadence still resolve immediately.
+
+- Flush every 0.05 seconds (up to roughly 20 normal deliveries/sec/player); 128-record
+  envelopes flush early under exceptional load, without coalescing or dropping queued hits.
+- Snapshot payloads on enqueue: PetFollowService reuses its owner hit table and subsequently
+  sets `foreign = true`. Delayed serialization must not leak that flag into the owner's copy.
+- Recipients are selected at publication, not flush. Per-player queues are removed on departure;
+  a newly joining player cannot inherit another player's queued records.
+- Attack animations retain their existing pet-owner/near-target candidate selection and add
+  a 120-stud visibility budget for observers (distance to source or target). Enemy swings no
+  longer broadcast globally. Directly involved players retain their own attack feedback.
+- Combat results go to source/target owners, the Merge run owner, and players actually helping
+  that fight. Server-observed attacks/damage/heals refresh a 10-second participation grace;
+  proximity alone does not subscribe a spectator to numbers. Run IDs scope Merge participation;
+  other fights use the enemy instance. Expired participation and departed players are removed.
+- Clients fan records back into the existing visual listeners. Startup-only buffers retain
+  the most recent 128 records per channel before its first listener; normal delivery keeps every
+  record. Destroyed targets continue to use the result's captured fallback position.
+- Setting `enabled = false` restores the original individual-remotes behavior on a fresh boot.
+
+A pre-change 20.003-second live sample on `c2b0eb5d` counted 3,714 results, 2,731 pet swings,
+and 326 enemy swings: approximately **338.5 individual deliveries/sec** in total. This differs
+from the earlier 296/sec sample because wave composition changes. Post-change measurement
+and fresh-Play verification are pending; no bandwidth or FPS reduction is claimed yet.
+
 ## Nearby adaptive shadows (2026-09-04)
 
 `configs/client_graphics.lua` owns the shadow policy and Settings copy. `ShadowController`
@@ -66,10 +96,10 @@ baseline, so these are current-state readings, not a controlled percentage perfo
 
 ## Next measured opportunities
 
-- **Batch/cull combat presentation packets.** A separate 10-second client listener counted
+- **Verify multiplayer combat interest at scale.** A separate pre-batching 10-second listener counted
   ~173 `Combat_Result`, ~86 `Combat_PetHit`, and ~37 `Combat_EnemyHit` deliveries per second.
-  Batch visual notifications and restrict observers by distance/bay; preserve server damage,
-  XP, contribution, and authoritative results. These are gameplay presentation, not trace spam.
+  The transport now batches and scopes these notifications as described above. Exercise a real
+  owner/helper/spectator multi-client session before claiming multiplayer throughput savings.
 - **UI/transparent batching.** The sampled view spent 289 draws on UI plus transparent passes
   despite low triangle counts. Audit stacked BillboardGuis, status overlays, and transparent
   effects before reducing the detail of every model.

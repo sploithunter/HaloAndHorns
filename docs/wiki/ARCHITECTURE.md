@@ -179,6 +179,12 @@ filtered out of production registries.
   harmless, and an expired offline record settles when the player returns. The same public exclusion
   switch used by the board controls eligibility.
 - `configs/network.lua.packets` is the incremental network manifest. `NetworkManifest` validates packet names, transport, direction, authorization, environments, delivery, schemas, and client-origin rate/handler metadata at boot and in headless CI. `SignalRegistry` is the sole manifest-to-transport constructor. Twenty-six exact-compatible notifications now use the manifest, including progression, economy, interaction, combat-presentation, player-status, gameplay-event, and debug packets; the legacy bridge table and remaining `Signals` declarations stay live until later compatibility slices remove them.
+- `Signals` decorates the three combat-presentation handles through `PresentationBatchTransport`.
+  One reliable manifest-owned envelope holds ordered result/swing records per recipient; damage
+  and rewards never wait for that queue. Server-side `CombatPresentationAudience` resolves existing
+  player/pet/run ownership; nearby spectators get swing visuals while owners and actual helpers
+  get combat results. All timing, capacity, and radius settings live in `configs/network.lua`.
+  See [Client Performance](CLIENT_PERFORMANCE.md) for the protocol and measurement limitations.
 - Phase 2 player actions use central `Signals` remotes: `PurchaseUpgrade`, `UpgradeResult`, `UnlockZoneRequest`, `ZoneUnlockResult`, and `ZoneTravelResult`. Admin test actions include `Admin_SetZoneLock`. Service methods remain the authority; remotes are thin request/result bridges for future UI.
 - `StudioSmokeTestService` is a Studio-only test bridge. It exposes controlled server-authoritative smoke-test actions to MCP/client runners and must remain disabled outside Studio.
 

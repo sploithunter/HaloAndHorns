@@ -3,9 +3,34 @@
 return {
     version = 1,
 
+    -- Presentation only: authoritative damage/XP still resolve immediately.
+    combat_presentation = {
+        enabled = true,
+        remote = "Combat_PresentationBatch",
+        flush_interval_seconds = 0.05,
+        max_records = 128,
+        startup_records_per_channel = 128,
+        animation_radius = 120,
+        participation_grace_seconds = 10,
+        channels = { Combat_Result = 1, Combat_PetHit = 2, Combat_EnemyHit = 3 },
+    },
+
     -- Manifest-driven packets. Signals builds these through SignalRegistry; the
     -- legacy bridge table below remains during the incremental migration.
     packets = {
+        Combat_PresentationBatch = {
+            name = "Combat_PresentationBatch",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "combat.presentation_batch",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "records", type = "table" } },
+            },
+        },
         PetIndexUpdated = {
             name = "PetIndexUpdated",
             transport = "reliable_event",

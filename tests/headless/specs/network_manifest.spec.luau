@@ -352,7 +352,8 @@ return function()
             expect(networkConfig.packets.MergeEggPrototypeModeNoticeResponse.handler).to.equal(
                 "SettingsService.ResolveMergeDefenseModeNotice"
             )
-            expect(#created).to.equal(145)
+            expect(signals.Combat_PresentationBatch.name).to.equal("Combat_PresentationBatch")
+            expect(#created).to.equal(146)
         end)
 
         it("omits Studio-only packets from a production registry", function()
