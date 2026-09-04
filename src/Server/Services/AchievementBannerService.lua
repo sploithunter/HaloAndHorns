@@ -80,6 +80,8 @@ function AchievementBannerService:Init()
     self._config = (self._configLoader and self._configLoader:LoadConfig("achievement_banners"))
         or require(ReplicatedStorage.Configs:WaitForChild("achievement_banners"))
     self._templates = {}
+    self._config = table.clone(self._config)
+    self._config.awards = table.clone(self._config.awards)
     self._templateFailures = {}
 end
 
@@ -97,6 +99,8 @@ function AchievementBannerService:_state(player)
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local state = AchievementBannerAwards.normalize(data.GameData.AchievementBanners)
     data.GameData.AchievementBanners = state
+    local progress = data.GameData.MergeDefense or {}
+    AchievementBannerAwards.expandWaveCatalog(self._config, progress.highest_wave, state.owned)
     player:SetAttribute("AchievementBannerPendingCount", countKeys(state.pending))
     player:SetAttribute("AchievementBannerOwnedCount", countKeys(state.owned))
     return state
@@ -116,6 +120,14 @@ function AchievementBannerService:RecordFacts(player, facts, source)
         return {}
     end
     facts = type(facts) == "table" and facts or {}
+    if facts.merge_wave ~= nil then
+        facts = table.clone(facts)
+        facts.merge_wave = math.max(
+            tonumber(facts.merge_wave) or 0,
+            tonumber(player:GetAttribute("MergeHighestWave")) or 0
+        )
+        AchievementBannerAwards.expandWaveCatalog(self._config, facts.merge_wave, state.owned)
+    end
     local granted = {}
     for _, awardId in ipairs(AchievementBannerAwards.eligible(self._config.awards, facts)) do
         local definition = self._config.awards[awardId]
@@ -385,7 +397,8 @@ function AchievementBannerService:PresentCheckpoint(player, bay, checkpointWave,
         state,
         pending,
         positiveWhole(configuredNumber(self._config.display.maximum, "display.maximum")),
-        os.time()
+        os.time(),
+        self._config.awards
     )
     local mounted = self:MountBay(player, bay)
     local host = mounted and mounted[primaryId]

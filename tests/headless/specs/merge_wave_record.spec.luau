@@ -15,18 +15,17 @@ return function()
             expect(Record.best({}, { owned = { level_50 = { value = 999 } } }, awards)).to.equal(0)
         end)
         it("preserves the best across normalization, checkpoint reset and rebirth", function()
-            local state =
-                Combat.normalizeOnboarding({ highest_completed_wave = 251, rebirths = 10 })
-            expect(state.highest_completed_wave).to.equal(251)
+            local state = Combat.normalizeOnboarding({ highest_wave = 251, rebirths = 10 })
+            expect(state.highest_wave).to.equal(251)
             expect(Record.best(state, nil, nil, 30)).to.equal(251)
             expect(Record.best(state, nil, nil, 252)).to.equal(252)
-            expect(Record.best({ highest_completed_wave = -10 })).to.equal(0)
-            expect(Record.best({ highest_completed_wave = math.huge })).to.equal(0)
+            expect(Record.best({ highest_wave = -10 })).to.equal(0)
+            expect(Record.best({ highest_wave = math.huge })).to.equal(0)
         end)
         it("shows each player's record instead of equipped titles only inside Merge", function()
             local state = {
                 inMergePlace = true,
-                mergeHighestCompletedWave = 251,
+                mergeHighestWave = 251,
                 level = 50,
                 veteranLevel = 149,
                 chosenTitle = "Legend",
@@ -41,7 +40,7 @@ return function()
             expect(row.inspect.body).to.equal(config.merge_status.description)
             expect(People.hoverStatus(config, {}, state):find("Wave 251", 1, true)).to.be.ok()
             expect(People.profile(config, {}, state).status).to.equal("Wave 251")
-            state.mergeHighestCompletedWave = 37
+            state.mergeHighestWave = 37
             expect(People.row(config, {}, state).status).to.equal("Wave 37")
             state.inMergePlace = false
             state.area = "Grass"
@@ -53,7 +52,7 @@ return function()
             expect(People.row(config, {}, { inMergePlace = true }).status).to.equal("Wave —")
             expect(People.row(config, {}, {
                 inMergePlace = true,
-                mergeHighestCompletedWave = 0,
+                mergeHighestWave = 0,
             }).status).to.equal("Wave 0")
         end)
     end)

@@ -464,20 +464,20 @@ function MergeEggPrototypeService:_mergeDefenseProgress(player)
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local progress = MergeEggPlayerCombat.normalizeOnboarding(data.GameData.MergeDefense)
     data.GameData.MergeDefense = progress
-    progress.highest_completed_wave = MergeWaveRecord.best(
+    progress.highest_wave = MergeWaveRecord.best(
         progress, data.GameData.AchievementBanners, self._waveAwardCatalog
     )
-    player:SetAttribute("MergeHighestCompletedWave", progress.highest_completed_wave)
+    player:SetAttribute("MergeHighestWave", progress.highest_wave)
     return progress
 end
 
-function MergeEggPrototypeService:_recordCompletedWave(record)
+function MergeEggPrototypeService:_recordHighestWave(record)
     local progress = self:_mergeDefenseProgress(record.player)
     if not progress then
         return
     end
-    progress.highest_completed_wave = MergeWaveRecord.best(progress, nil, nil, record.waveIndex)
-    record.player:SetAttribute("MergeHighestCompletedWave", progress.highest_completed_wave)
+    progress.highest_wave = MergeWaveRecord.best(progress, nil, nil, record.waveIndex)
+    record.player:SetAttribute("MergeHighestWave", progress.highest_wave)
     -- The loaded profile participates in the normal autosave/checkpoint/release saves. Do not
     -- force a DataStore write every wave or reset this lifetime field when clearing a run.
 end
@@ -12771,7 +12771,6 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
     end
     local waveCount = self:_waveCount(record)
     if record.waveIndex < waveCount then
-        self:_recordCompletedWave(record)
         if self:_shouldStartWorkshopTutorial(record) then
             self:_startWorkshopTutorial(record)
             return
@@ -12837,7 +12836,6 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
     record.nextWaveAt = nil
     record.terminal = true
     record.terminalState = "EncounterComplete"
-    self:_recordCompletedWave(record)
     self:_setPortalVisible(record, false)
     record.player:SetAttribute("MergeEggWaveComplete", true)
     self:_setWorldState("EncounterComplete", record)
@@ -13610,6 +13608,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     end
 
     record.waveIndex = waveIndex
+    self:_recordHighestWave(record)
     record.nextWaveOverride = nil
     -- AreaMusicController treats a changed cue as a request to rotate combat music without
     -- dropping combat state. Including the run id guarantees Wave 1 changes on every new session.

@@ -10,7 +10,7 @@ function Smoke.run()
     local ok, result = pcall(function()
         local profiles = {
             [first] = { GameData = { MergeDefense = { checkpoint = { wave = 120 } } } },
-            [second] = { GameData = { MergeDefense = { highest_completed_wave = 37 } } },
+            [second] = { GameData = { MergeDefense = { highest_wave = 37 } } },
         }
         local service = setmetatable({
             _dataService = {
@@ -22,28 +22,25 @@ function Smoke.run()
         }, Merge)
         service:_mergeDefenseProgress(first)
         service:_mergeDefenseProgress(second)
-        service:_recordCompletedWave({ player = first, waveIndex = 121 })
-        assert(first:GetAttribute("MergeHighestCompletedWave") == 121)
-        assert(
-            second:GetAttribute("MergeHighestCompletedWave") == 37,
-            "Other player's best changed"
-        )
+        service:_recordHighestWave({ player = first, waveIndex = 121 })
+        assert(first:GetAttribute("MergeHighestWave") == 121, "Best did not advance")
+        assert(second:GetAttribute("MergeHighestWave") == 37, "Other player's best changed")
         local progress = profiles[first].GameData.MergeDefense
         progress.checkpoint = {}
         progress.playstate = {}
         progress.rebirths = 10
-        service:_recordCompletedWave({ player = first, waveIndex = 1 })
-        assert(first:GetAttribute("MergeHighestCompletedWave") == 121, "Rebirth lowered best")
+        service:_recordHighestWave({ player = first, waveIndex = 1 })
+        assert(first:GetAttribute("MergeHighestWave") == 121, "Rebirth lowered best")
         local row = People.row(config, {}, {
             inMergePlace = true,
             chosenTitle = "Legend",
-            mergeHighestCompletedWave = first:GetAttribute("MergeHighestCompletedWave"),
+            mergeHighestWave = first:GetAttribute("MergeHighestWave"),
         })
-        assert(row.status == "Wave 121" and row.inspect.title == row.status)
+        assert(row.status == "Wave 121" and row.inspect.title == row.status, "Wrong status text")
         return {
             passed = true,
             first = row.status,
-            second = second:GetAttribute("MergeHighestCompletedWave"),
+            second = second:GetAttribute("MergeHighestWave"),
         }
     end)
     first:Destroy()

@@ -15,7 +15,7 @@ return {
     merge_status = {
         format = "Wave %d",
         loading = "Wave —",
-        description = "Highest completed Merge wave. Personal best across runs and rebirths.",
+        description = "Highest reached Merge wave. Personal best across runs and rebirths.",
     },
 
     -- Every visible list dimension is a share of the live viewport. Do not replace these with

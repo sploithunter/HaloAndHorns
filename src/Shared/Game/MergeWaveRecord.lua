@@ -1,4 +1,4 @@
--- All-time completed-wave record, independent of restart checkpoints and rebirths.
+-- All-time reached-wave record, independent of restart checkpoints and rebirths.
 local MergeWaveRecord = {}
 
 local function whole(value)
@@ -9,15 +9,15 @@ local function whole(value)
     return math.max(0, math.floor(n))
 end
 
-function MergeWaveRecord.best(progress, banners, catalog, completedWave)
+function MergeWaveRecord.best(progress, banners, catalog, currentWave)
     progress = type(progress) == "table" and progress or {}
     local checkpoint = type(progress.checkpoint) == "table" and progress.checkpoint or {}
     local playstate = type(progress.playstate) == "table" and progress.playstate or {}
     local best = math.max(
-        whole(progress.highest_completed_wave),
+        whole(progress.highest_wave),
         whole(checkpoint.wave),
         whole(playstate.wave),
-        whole(completedWave)
+        whole(currentWave)
     )
     -- Older profiles have no exact all-time counter. Existing wave awards prove a lower bound;
     -- never infer a wave from level, rebirth count, egg tier, or a different kind of award.

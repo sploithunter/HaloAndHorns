@@ -44,7 +44,7 @@ function PeopleList.mergeStatus(config, state)
         return nil
     end
     local copy = config.merge_status
-    local wave = tonumber(state.mergeHighestCompletedWave)
+    local wave = tonumber(state.mergeHighestWave)
     return {
         title = wave and string.format(copy.format, math.max(0, math.floor(wave))) or copy.loading,
         body = copy.description,

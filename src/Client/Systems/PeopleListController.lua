@@ -373,7 +373,7 @@ local function fillCard(player)
     end
     local profile = PeopleList.profile(config, ranksConfig, {
         inMergePlace = isMergePlace(),
-        mergeHighestCompletedWave = player:GetAttribute("MergeHighestCompletedWave"),
+        mergeHighestWave = player:GetAttribute("MergeHighestWave"),
         flags = PeopleList.flagsFromPlayer(player),
         displayName = player.DisplayName,
         username = player.Name,
@@ -527,7 +527,7 @@ local function inspectPlayer(player)
     local flags = PeopleList.flagsFromPlayer(player)
     local row = PeopleList.row(config, ranksConfig, {
         inMergePlace = isMergePlace(),
-        mergeHighestCompletedWave = player:GetAttribute("MergeHighestCompletedWave"),
+        mergeHighestWave = player:GetAttribute("MergeHighestWave"),
         flags = flags,
         displayName = player.DisplayName,
         level = player:GetAttribute("ClaimedLevel"),
@@ -950,7 +950,7 @@ local function watchPlayer(player)
         "ClaimedLevel",
         "AscensionUnlocked",
         "VetLevel",
-        "MergeHighestCompletedWave",
+        "MergeHighestWave",
         "CurrentArea",
         "CurrentLayer",
         "CurrentRealm",
