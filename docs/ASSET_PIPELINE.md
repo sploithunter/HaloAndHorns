@@ -232,6 +232,30 @@ The review UI can be static for read-only inspection, but anything that writes f
 
 Eggs placed in the world should clone the preloaded models from `ReplicatedStorage.Assets.Models.Eggs`. Direct `InsertService` loading is only a fallback if preload did not finish or the preloaded model is missing.
 
+## Runtime-skinned achievement banners
+
+Player-bay achievement banners are source-first Blender assets under
+`assets/source/props/achievement_banners/`. Rebuild both variants with
+`scripts/blender/build_achievement_banners.py`; the checked-in handoff includes editable `.blend`
+sources, embedded-texture FBXs, front/angle previews, and integrity reports. Both silhouettes use
+one contract: skinned `Cloth`, rigid `Mount`, a full-square `UVMap`, non-deforming `BannerRoot`, and
+five deform bones from `ClothUpper` through `ClothTip`.
+
+Roblox's FBX processor imports the armature below a generated `RootPart` sibling of `Cloth`, not
+inside the MeshPart. Bone consumers must therefore search the explicitly tagged banner host. Live
+Studio verification on 2026-09-03 confirmed both group-owned Model wrappers retain `Cloth`,
+`Mount`, `RootPart`, all six bones, and all weights.
+
+`configs/achievement_banners.lua` owns Model IDs, palettes, layout, copy defaults, and flutter
+tuning. An instance opts in only through the `AchievementBanner` CollectionService tag and can set
+`AchievementStyle`, `AchievementTitle`, `AchievementValue`, and `AchievementFooter` attributes.
+The client rasterizes a woven field, embroidered border, shield, ribbon, laurels, and a custom
+uppercase/digit glyph set into one cached RGBA buffer, uploads it to an `EditableImage`, then uses
+that image as the cloth's runtime color map. This is deliberately not a `SurfaceGui`: the complete
+design follows the UV and deforms naturally with the bones. EditableImages are client-local, so
+each observer renders the same replicated attribute spec; a tagged-only rescan handles tag/mesh
+streaming order without ever guessing from model names.
+
 ## Authored Landmark Repair
 
 Large Meshy landmarks follow the same source-first rule even though their placement remains

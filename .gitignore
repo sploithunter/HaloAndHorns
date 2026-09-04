@@ -77,6 +77,8 @@ coverage/
 /assets/source/references/pets/
 /assets/source/eggs/
 /assets/source/props/*
+!/assets/source/props/achievement_banners/
+!/assets/source/props/achievement_banners/**
 # The native Roblox package snapshots are the authoritative, lossless source for Merge bulwarks.
 # Keep these small RBXM files even though the larger generated prop source tree stays ignored.
 !/assets/source/props/merge_bulwarks/

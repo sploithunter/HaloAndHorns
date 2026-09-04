@@ -7758,3 +7758,17 @@ first-session cohort rates.
   their model name was `Banner`, despite their authoritative `Kind = "wall_decor"` marker.
 - Authored kinds now win over name inference, banners require an explicit `Kind = "banner"` opt-in,
   and inferred flora names match whole tokens so `hell_infernal_crest` no longer matches `fern`.
+
+## 2026-09-03 — Build reusable skinned player-bay achievement banners
+
+- Added two source-first Blender silhouettes: a formal shield-tail champion standard and a martial
+  victory swallowtail. Each ships as an editable `.blend`, embedded-texture FBX, posed previews,
+  and an integrity report proving a shared full-square print UV and 425/425 weighted cloth vertices
+  across the same five-bone deform chain.
+- Added a config-owned client renderer that prints the complete heraldic composition—woven field,
+  embroidered border, ribbon, shield, laurels, title, value, and footer—into a cached
+  `EditableImage` color map. Achievement attributes such as `LEVEL 100` become part of the cloth
+  texture instead of a floating TextLabel.
+- Uploaded both models to project group 15872767 and live-verified their Roblox import hierarchy,
+  dynamic SurfaceAppearance updates (100 → 101 → 100), and all five fluttering deform bones. The
+  controller is strictly `AchievementBanner`-tagged and sleeps beyond its configured radius.
