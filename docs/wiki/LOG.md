@@ -7987,3 +7987,8 @@ first-session cohort rates.
   ownership fields were changed. Added headless queue/transport/audience/manifest coverage.
 - Baseline: 6,771 individual deliveries in 20.003 seconds (~338.5/sec) in the current solo
   Studio session. Fresh-Play verification and post-change measurement follow the CI/PR gate.
+- Full CI passed all 2,600 tests. Fresh feature-branch Play delivered 2,756 records in 109
+  batches, with zero individual legacy deliveries (~96% fewer envelopes for the same records).
+  A separate client check rendered all 1,910 combat-result billboards received in ten seconds.
+  Isolated Studio audience fixtures passed owner/helper/near/far checks; real multiplayer load
+  remains unmeasured. Occasional rendering/server-frame warnings remain; no FPS gain is claimed.

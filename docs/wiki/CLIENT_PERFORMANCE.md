@@ -27,8 +27,20 @@ contribution accounting, and attack cadence still resolve immediately.
 
 A pre-change 20.003-second live sample on `c2b0eb5d` counted 3,714 results, 2,731 pet swings,
 and 326 enemy swings: approximately **338.5 individual deliveries/sec** in total. This differs
-from the earlier 296/sec sample because wave composition changes. Post-change measurement
-and fresh-Play verification are pending; no bandwidth or FPS reduction is claimed yet.
+from the earlier 296/sec sample because wave composition changes.
+
+A fresh feature-branch Play sample (20.038 seconds) delivered **2,756 records in 109 batches**
+(1,523 results, 1,150 pet swings, 83 enemy swings; largest batch 107). The three legacy remotes
+delivered zero events. This is **96.0% fewer wire deliveries than individually sending those
+same 2,756 records**, not a 96% bandwidth/FPS claim or a controlled comparison of wave load.
+In another 10-second check, all 1,910 received results created floating-text billboards.
+Occasional low-FPS/server-frame warnings remain; batching does not remove rendering/GC work.
+
+`ReplicatedStorage.Tests.studio.CombatPresentationSmoke.run()` uses isolated engine-Instance
+fixtures to check owner/helper/near/far spectator routing, including a helper retaining its home
+run while attacking another bay. It does not alter live pets/profiles. Pure CI covers 2,600 tests.
+This fixture check is not a full multi-client load test. Fresh-current-main verification follows
+PR merge; only the feature-branch Play has been exercised at this point.
 
 ## Nearby adaptive shadows (2026-09-04)
 
