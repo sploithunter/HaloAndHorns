@@ -7,6 +7,7 @@
 local AssetService = game:GetService("AssetService")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local ConfigLoader = require(Locations.ConfigLoader)
@@ -208,17 +209,20 @@ function AchievementBannerRenderer.start()
     end
     -- Tags authored in Edit can arrive before their streamed instance (or vice versa) without an
     -- AddedSignal edge on every client. A cheap tagged-only rescan closes that replication seam.
-    task.spawn(function()
-        while started do
-            task.wait(config.texture.rescan_seconds)
-            for _, host in CollectionService:GetTagged(config.tag) do
-                if not tracked[host] then
-                    remember(host)
-                elseif not applied[host] then
-                    -- The tag can stream before the imported Cloth descendant. Retry until one
-                    -- complete design has actually landed, then stay idle until attributes change.
-                    schedule(host)
-                end
+    local elapsed = 0
+    RunService.Heartbeat:Connect(function(dt)
+        elapsed += dt
+        if elapsed < config.texture.rescan_seconds then
+            return
+        end
+        elapsed = 0
+        for _, host in CollectionService:GetTagged(config.tag) do
+            if not tracked[host] then
+                remember(host)
+            elseif not applied[host] then
+                -- The tag can stream before the imported Cloth descendant. Retry until one
+                -- complete design has actually landed, then stay idle until attributes change.
+                schedule(host)
             end
         end
     end)
