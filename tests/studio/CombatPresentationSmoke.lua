@@ -56,7 +56,7 @@ function Smoke.run()
         local ownerPet, helperPet = pet(1), pet(2)
         local enemy = make("Model", "Enemy")
         enemy.PrimaryPart = make("Part", "Root", enemy)
-        enemy:SetAttribute("MergeEggRunId", "run-1")
+        enemy:SetAttribute("MergeRunId", "run-1")
         enemy:SetAttribute("MergeEggPrototypeEnemy", true)
         local audience = Audience.new(config, players)
         local function recipients(channel, payload, now)
@@ -84,6 +84,14 @@ function Smoke.run()
             "cross-run enemy attack"
         )
         assert(recipients("Combat_Result", hit, 3) == "1,2", "helper participation not retained")
+        local secondEnemy = make("Model", "SecondEnemy")
+        secondEnemy.PrimaryPart = make("Part", "Root", secondEnemy)
+        secondEnemy:SetAttribute("MergeRunId", "run-1")
+        secondEnemy:SetAttribute("MergeEggPrototypeEnemy", true)
+        assert(
+            recipients("Combat_Result", { source = secondEnemy, target = ownerPet }, 3) == "1,2",
+            "helper must receive the entire fight, not only the enemy they hit"
+        )
         assert(
             recipients("Combat_Result", hit, config.participation_grace_seconds + 3) == "1",
             "helper participation not expired"

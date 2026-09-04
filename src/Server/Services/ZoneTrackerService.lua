@@ -19,6 +19,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
@@ -33,6 +34,9 @@ function ZoneTrackerService:Init()
 
     local areasConfig = self._configLoader and self._configLoader:LoadConfig("areas") or {}
     self._bounds = ZoneResolver.boundsFromAreas(areasConfig)
+    local places = self._configLoader and self._configLoader:LoadConfig("places") or {}
+    local place = PlaceRuntime.definitionFor(game.PlaceId, places)
+    self._placeArea = PlaceRuntime.isMerge(game.PlaceId, places) and place.initial_area or nil
 
     -- Realm worlds (Heaven_1/Hell_1) are copies of Home, so their biome floors reuse Home's part
     -- NAMES ("Lava", "Ice", …). A raycast that maps by name alone would resolve a player standing in
@@ -193,6 +197,17 @@ function ZoneTrackerService:_resolveFor(player)
             )
         if player:GetAttribute(CURRENT_AREA_ATTR) ~= themed then
             player:SetAttribute(CURRENT_AREA_ATTR, themed)
+        end
+        return
+    end
+
+    -- Dedicated Merge bays reuse coordinates inside Home's biome bounds. Position-based
+    -- detection would label some bays Lava/Meadow and cancel the owner's session, including
+    -- while the entry coroutine is still restoring eggs. Place identity wins before either
+    -- raycasts or bounds, even before a character/session exists. Missions still win above.
+    if self._placeArea then
+        if player:GetAttribute(CURRENT_AREA_ATTR) ~= self._placeArea then
+            player:SetAttribute(CURRENT_AREA_ATTR, self._placeArea)
         end
         return
     end

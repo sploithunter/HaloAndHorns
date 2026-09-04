@@ -563,6 +563,11 @@ end
 -- wave back to the prior ten-wave boundary. It mutates the loaded profile synchronously so
 -- DataService's before-release hook can include it in ProfileStore's final release save.
 function MergeEggPrototypeService:_persistPlaystate(record, reason, requestSave)
+    -- A canceled join must not replace the last complete board with partially restored teams.
+    -- This also covers ProfileStore's before-release callback while a hatch is yielding.
+    if record and record.entryInitializing == true then
+        return false
+    end
     if not (record and record.encounterSpawned == true and self._economyService) then
         return false
     end
@@ -612,6 +617,9 @@ function MergeEggPrototypeService:_persistPlaystate(record, reason, requestSave)
 end
 
 function MergeEggPrototypeService:_persistCheckpoint(record)
+    if record and record.entryInitializing == true then
+        return false
+    end
     if not (record and record.checkpointSnapshot) then
         return false
     end
@@ -10551,6 +10559,10 @@ function MergeEggPrototypeService:_restoreDurableProgress(record, saved, restore
         local source = eggId and self:_buildHatchSource(record, eggId)
         if team and source then
             local spawned, reason = self:_spawnInitialTeam(record, team, source, tier)
+            if not self:_isRecordActive(record) then
+                record.restoringDurableCheckpoint = false
+                return false, "session_ended"
+            end
             if not spawned then
                 record.restoringDurableCheckpoint = false
                 return false, reason
@@ -12254,6 +12266,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         durableCheckpoint = opts.ignoreCheckpoint == true and nil
             or self:_durableCheckpoint(player),
         durablePlaystate = opts.ignoreCheckpoint == true and nil or self:_durablePlaystate(player),
+        entryInitializing = true,
         playerCombatMode = self:_playerCombatMode(player),
         runId = HttpService:GenerateGUID(false),
         baseCombatLevel = playerCombatLevel(player, (self._config.principal or {}).level),
@@ -12546,6 +12559,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
     self:_ensureBayQuartermaster(record)
+    if not self:_isRecordActive(record) then
+        return false, "session_ended"
+    end
     local escortAnchor = self:_playerEscortAnchorCFrame(record)
     player:SetAttribute(
         "MergeEggEscortAnchorPosition",
@@ -12623,7 +12639,6 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
             self:_end(record, true, false, true)
             return false, restoreReason
         end
-        self:_startTutorial(record, opts.forceTutorial == true)
     elseif resumeCheckpoint then
         local restored, restoreReason = self:_restoreDurableCheckpoint(record)
         if not restored then
@@ -12635,7 +12650,12 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
             self:_end(record, true, false, true)
             return false, restoreReason
         end
-    else
+    end
+    if not self:_isRecordActive(record) then
+        return false, "session_ended"
+    end
+    record.entryInitializing = false
+    if not resumeCheckpoint then
         self:_startTutorial(record, opts.forceTutorial == true)
     end
     self:_schedulePlayerAssetWarmup(record)
@@ -14900,7 +14920,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
 end
 
 function MergeEggPrototypeService:_stepRecord(record, now)
-    if not self:_isRecordActive(record) then
+    if not self:_isRecordActive(record) or record.entryInitializing == true then
         return
     end
     self:_stepQuartermasterIntroduction(record, now)
