@@ -40,7 +40,6 @@ local COMBAT = require(ReplicatedStorage.Configs:WaitForChild("combat"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
 local PLACES = require(ReplicatedStorage.Configs:WaitForChild("places"))
-
 local EGG_HEALTH_BILLBOARD = assert(
     (CONFIG.ui or {}).egg_health_billboard,
     "merge_egg_prototype.ui.egg_health_billboard is required"
@@ -73,6 +72,21 @@ local TUTORIAL_ACTIVITY_MAXIMUM_QUEUE = assert(
 )
 
 local MergeEggPrototypeObserver = {}
+MergeEggPrototypeObserver.MonetizationCatalog =
+    require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
+MergeEggPrototypeObserver.autoMergeConfig = assert(
+    ((CONFIG.team or {}).merge_board or {}).auto_merge,
+    "merge_egg_prototype.team.merge_board.auto_merge is required"
+)
+MergeEggPrototypeObserver.autoMergePassId = assert(
+    MergeEggPrototypeObserver.autoMergeConfig.pass_id,
+    "merge_egg_prototype.team.merge_board.auto_merge.pass_id is required"
+)
+MergeEggPrototypeObserver.autoMergeLabels = assert(
+    MergeEggPrototypeObserver.autoMergeConfig.labels,
+    "merge_egg_prototype.team.merge_board.auto_merge.labels is required"
+)
+MergeEggPrototypeObserver.autoMergeOwned = false
 
 local localPlayer = Players.LocalPlayer
 local boardDrag = nil
@@ -161,6 +175,10 @@ local BOARD_ACTION_FAILURE_COPY = {
     egg_tier_mismatch = "THOSE EGGS DO NOT MATCH",
     automation_owns_board = "AUTOMATION IS USING THE BOARD",
     automation_owns_hatchers = "AUTOMATION IS USING THE HATCHERS",
+    auto_merge_pass_required = assert(
+        MergeEggPrototypeObserver.autoMergeConfig.pass_required_copy,
+        "merge_egg_prototype.team.merge_board.auto_merge.pass_required_copy is required"
+    ),
     bulwark_locked = "BULWARK UNLOCKED AT ITS WAVE MILESTONE",
     bulwark_slot_rebirth_locked = "THIS BULWARK LINE UNLOCKS AT A LATER REBIRTH",
     bulwark_station_too_far = "MOVE CLOSER TO A BULWARK EDGE",
@@ -3274,7 +3292,7 @@ function MergeEggPrototypeObserver._createAutoCombineSurface(host)
     button.AutoButtonColor = true
     button.Active = true
     button.Font = Enum.Font.GothamBlack
-    button.Text = "AUTO-COMBINE\nOFF\nFUTURE GAME PASS"
+    button.Text = tostring(MergeEggPrototypeObserver.autoMergeLabels.locked)
     button.TextColor3 = Color3.new(1, 1, 1)
     button.TextScaled = true
     button.TextStrokeColor3 = Color3.fromRGB(30, 16, 38)
@@ -3295,7 +3313,14 @@ function MergeEggPrototypeObserver._createAutoCombineSurface(host)
     stroke.Parent = button
 
     button.Activated:Connect(function()
-        Signals.MergeEggPrototypeBoardAction:FireServer({ action = "toggle_auto" })
+        if MergeEggPrototypeObserver.autoMergeOwned or button:GetAttribute("PassOwned") == true then
+            Signals.MergeEggPrototypeBoardAction:FireServer({ action = "toggle_auto" })
+        else
+            Signals.InitiatePurchase:FireServer({
+                productId = MergeEggPrototypeObserver.autoMergePassId,
+                productType = "gamepass",
+            })
+        end
     end)
     return { surface = surface, host = host, button = button, stroke = stroke }
 end
@@ -3388,16 +3413,25 @@ local function updateBoardWallControls(controls, observing)
     local autoCombine = controls.autoCombine
     if autoCombine then
         local autoEnabled = world and world:GetAttribute("AutoCombineEnabled") == true
+        local passOwned = MergeEggPrototypeObserver.autoMergeOwned
+            or (world and world:GetAttribute("AutoMergeOwned") == true)
         local stateColor = autoEnabled and Color3.fromRGB(75, 190, 105)
-            or Color3.fromRGB(177, 82, 225)
+            or passOwned and Color3.fromRGB(177, 82, 225)
+            or Color3.fromRGB(70, 74, 84)
         autoCombine.surface.Enabled = observing
         autoCombine.button.Active = observing
         autoCombine.button.AutoButtonColor = observing
         autoCombine.button.BackgroundColor3 = stateColor
-        autoCombine.stroke.Color = autoEnabled and Color3.fromRGB(150, 255, 180)
-            or Color3.fromRGB(225, 174, 255)
-        autoCombine.button.Text =
-            string.format("AUTO-COMBINE\n%s\nFUTURE GAME PASS", autoEnabled and "ON" or "OFF")
+        autoCombine.stroke.Color = if autoEnabled
+            then Color3.fromRGB(150, 255, 180)
+            else passOwned and Color3.fromRGB(225, 174, 255) or Color3.fromRGB(132, 138, 151)
+        autoCombine.button.Text = if not passOwned
+            then tostring(MergeEggPrototypeObserver.autoMergeLabels.locked)
+            else autoEnabled and tostring(MergeEggPrototypeObserver.autoMergeLabels.on) or tostring(
+                MergeEggPrototypeObserver.autoMergeLabels.off
+            )
+        autoCombine.button:SetAttribute("PassOwned", passOwned)
+        autoCombine.button:SetAttribute("AutoMergeEnabled", autoEnabled)
         local host = autoCombine.host
         if host and host:IsA("BasePart") then
             host.Color = stateColor
@@ -4420,6 +4454,12 @@ function MergeEggPrototypeObserver.start()
     local teamDisplayFolder = nil
     local teamDisplayOwnedSlots = 0
     local boardWallControls = createBoardWallControls()
+    Signals.OwnedPasses.OnClientEvent:Connect(function(snapshot)
+        MergeEggPrototypeObserver.autoMergeOwned = MergeEggPrototypeObserver.MonetizationCatalog.ownedSet(
+            snapshot
+        )[MergeEggPrototypeObserver.autoMergePassId] == true
+    end)
+    Signals.GetOwnedPasses:FireServer()
     local touchCfg = (((CONFIG.team or {}).merge_board or {}).touch_input or {})
     local maximumTapMovement = assert(
         tonumber(touchCfg.max_movement_pixels),

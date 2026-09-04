@@ -32,6 +32,7 @@ local MergeEggDefenseAssignment = require(ReplicatedStorage.Shared.Game.MergeEgg
 local MergeEggCheckpoint = require(ReplicatedStorage.Shared.Game.MergeEggCheckpoint)
 local MergeEggDamageScope = require(ReplicatedStorage.Shared.Game.MergeEggDamageScope)
 local MergeEggDraft = require(ReplicatedStorage.Shared.Game.MergeEggDraft)
+local MergeEggAutoMergePriority = require(ReplicatedStorage.Shared.Game.MergeEggAutoMergePriority)
 local MergeEggEquipBest = require(ReplicatedStorage.Shared.Game.MergeEggEquipBest)
 local MergeEggEnemyRoster = require(ReplicatedStorage.Shared.Game.MergeEggEnemyRoster)
 local MergeEggGateAccess = require(ReplicatedStorage.Shared.Game.MergeEggGateAccess)
@@ -3479,23 +3480,101 @@ function MergeEggPrototypeService:_publishBoardMutation(record)
     )
 end
 
-function MergeEggPrototypeService:_autoCombineBoard(record)
-    local merged = 0
-    local milestones = {}
+function MergeEggPrototypeService:_autoMergeConfig()
+    local board = type((self._config.team or {}).merge_board) == "table"
+            and (self._config.team or {}).merge_board
+        or {}
+    return type(board.auto_merge) == "table" and board.auto_merge or {}
+end
+
+function MergeEggPrototypeService:_autoMergeOwned(player)
+    local cfg = self:_autoMergeConfig()
+    local feature = tostring(cfg.entitlement_feature or "")
+    return cfg.enabled == true
+        and feature ~= ""
+        and self._dataService ~= nil
+        and self._dataService.GetFeature ~= nil
+        and self._dataService:GetFeature(player, feature) == true
+end
+
+function MergeEggPrototypeService:_autoMergeActive(record)
+    if not (record and record.autoCombineEnabled == true) then
+        return false
+    end
+    if self:_autoMergeOwned(record.player) then
+        return true
+    end
+    record.autoCombineEnabled = false
+    return false
+end
+
+local function appendAutoMergeMilestone(milestones, result)
+    if type(result) == "table" and (result.milestone or result.petSlotMilestone) then
+        milestones[#milestones + 1] = result
+    end
+end
+
+function MergeEggPrototypeService:_autoMergeEggs(record)
+    local outcome = {
+        lineAdvances = 0,
+        boardMerges = 0,
+        milestones = {},
+    }
+    local progression = self:_eggProgression(record)
+    local mergeCfg = (self._config.team or {}).merge_board or {}
+    local ratio = math.max(
+        2,
+        math.floor(assert(tonumber(mergeCfg.merge_ratio), "merge_board.merge_ratio is required"))
+    )
     while true do
-        local tier = self:_mergeableEggTier(record)
-        if not tier then
+        local inventory = {}
+        for tier = 1, #progression do
+            inventory[tier] = self:_eggInventoryCount(record, tier)
+        end
+        local action = MergeEggAutoMergePriority.nextAction({
+            linePlan = self:_equipBestPlan(record),
+            inventory = inventory,
+            maximumTier = #progression,
+            mergeRatio = ratio,
+        })
+        if not action then
             break
         end
-        local applied, eggMilestone, petSlotMilestone = self:_applyEggMerge(record, tier)
+
+        if action.kind == "line" then
+            local team = record.teamById[action.teamId]
+            local sourceSlot = self:_boardSourceSlotForTier(record, action.sourceTier)
+            if not (team and sourceSlot) then
+                break
+            end
+            local applied, result = self:_advanceHatcherEgg(record.player, {
+                teamId = team.id,
+                boardSourceSlot = sourceSlot,
+            }, true)
+            if not applied then
+                self:_log("Warn", "Merge Auto Merge could not advance its planned line egg", {
+                    player = record.player.Name,
+                    team = team.id,
+                    sourceTier = action.sourceTier,
+                    reason = result,
+                })
+                break
+            end
+            outcome.lineAdvances += 1
+            appendAutoMergeMilestone(outcome.milestones, result)
+            continue
+        end
+
+        local applied, eggMilestone, petSlotMilestone =
+            self:_applyEggMerge(record, action.sourceTier)
         if not applied then
             break
         end
-        merged += 1
+        outcome.boardMerges += 1
         if eggMilestone or petSlotMilestone then
-            local resultTier = tier + 1
-            local eggId = self:_eggProgression(record)[resultTier]
-            milestones[#milestones + 1] = {
+            local resultTier = action.sourceTier + 1
+            local eggId = progression[resultTier]
+            outcome.milestones[#outcome.milestones + 1] = {
                 milestone = eggMilestone and "egg_created" or nil,
                 eggTier = resultTier,
                 eggId = eggId,
@@ -3504,11 +3583,13 @@ function MergeEggPrototypeService:_autoCombineBoard(record)
             }
         end
     end
-    if merged > 0 then
+    if outcome.boardMerges > 0 then
         record.lastEggMergeAt = os.clock()
+    end
+    if outcome.lineAdvances > 0 or outcome.boardMerges > 0 then
         self:_publishBoardMutation(record)
     end
-    return merged, milestones
+    return outcome
 end
 
 function MergeEggPrototypeService:_publishEggInventory(record)
@@ -3539,7 +3620,12 @@ function MergeEggPrototypeService:_publishEggInventory(record)
     world:SetAttribute("EggsCreated", record and record.eggsCreated or 0)
     world:SetAttribute("EggsMerged", record and record.eggsMerged or 0)
     world:SetAttribute("EggsPlaced", record and record.eggsPlaced or 0)
+    local autoMergeOwned = record ~= nil and self:_autoMergeOwned(record.player) or false
+    if record and record.autoCombineEnabled == true and not autoMergeOwned then
+        record.autoCombineEnabled = false
+    end
     world:SetAttribute("AutoCombineEnabled", record and record.autoCombineEnabled == true or false)
+    world:SetAttribute("AutoMergeOwned", autoMergeOwned)
 
     local mergeTier, mergeRatio = self:_mergeableEggTier(record)
     local mergePrompt =
@@ -8896,7 +8982,7 @@ function MergeEggPrototypeService:_ensureEquipBestControl(world, board, toward)
     return control
 end
 
--- Auto-Combine is a board action, so it belongs beside Equip Best on the floor instead of inside
+-- Auto Merge is a board action, so it belongs beside Equip Best on the floor instead of inside
 -- the wall economy. Place it outward from the board using the authored Equip Best transform; this
 -- mirrors correctly between Heaven and Hell bays and does not depend on a global-axis guess.
 function MergeEggPrototypeService:_ensureAutoCombineControl(world, board, equipBestControl)
@@ -16032,12 +16118,15 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
     record.coreEggCoinsSpent = (record.coreEggCoinsSpent or 0) + pricing.amount
     local eggMilestone = self:_markEggTierMilestone(record, pricing.tier)
     local petSlotMilestone = self:_markPetSlotMilestone(record, pricing.tier)
-    local automaticMerges = 0
-    local automaticMilestones = {}
-    if record.autoCombineEnabled == true then
-        automaticMerges, automaticMilestones = self:_autoCombineBoard(record)
+    local automatic = {
+        lineAdvances = 0,
+        boardMerges = 0,
+        milestones = {},
+    }
+    if self:_autoMergeActive(record) then
+        automatic = self:_autoMergeEggs(record)
     end
-    if automaticMerges == 0 then
+    if automatic.lineAdvances == 0 and automatic.boardMerges == 0 then
         self:_publishBoardMutation(record)
     end
     self:_log("Info", "Merge Egg prototype base egg created", {
@@ -16047,7 +16136,8 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
         tier = pricing.tier,
         baseEggs = self:_eggInventoryCount(record, pricing.tier),
         stationDistance = stationDistance,
-        automaticMerges = automaticMerges,
+        automaticLineAdvances = automatic.lineAdvances,
+        automaticMerges = automatic.boardMerges,
     })
     -- The five-purchase counter belongs only to the opening create_five lesson. Wave 6 also has
     -- an active tutorial while the lifetime eggsCreated counter is already at least five; sending
@@ -16069,7 +16159,7 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
             eggName = self:_eggDisplayName(eggId),
             milestone = eggMilestone and "egg_created" or nil,
             petSlotMilestone = petSlotMilestone,
-            milestones = automaticMilestones,
+            milestones = automatic.milestones,
         }
 end
 
@@ -16160,12 +16250,15 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
     record.baseEggUpgradeCoinsSpent = (record.baseEggUpgradeCoinsSpent or 0) + upgrade.amount
     record.coreEggCoinsSpent = (record.coreEggCoinsSpent or 0) + upgrade.amount
     local petSlotMilestone = self:_markPetSlotMilestone(record, upgrade.tier)
-    local automaticMerges = 0
-    local automaticMilestones = {}
-    if record.autoCombineEnabled == true then
-        automaticMerges, automaticMilestones = self:_autoCombineBoard(record)
+    local automatic = {
+        lineAdvances = 0,
+        boardMerges = 0,
+        milestones = {},
+    }
+    if self:_autoMergeActive(record) then
+        automatic = self:_autoMergeEggs(record)
     end
-    if automaticMerges == 0 then
+    if automatic.lineAdvances == 0 and automatic.boardMerges == 0 then
         self:_publishBoardMutation(record)
     end
     self:_log("Info", "Merge Egg prototype base egg upgraded", {
@@ -16182,7 +16275,8 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
         promotedHatchers = promotedHatchers,
         addedUnits = addedUnits,
         expansionFailures = expansionFailures,
-        automaticMerges = automaticMerges,
+        automaticLineAdvances = automatic.lineAdvances,
+        automaticMerges = automatic.boardMerges,
     })
     self:_updateTutorial(record, os.clock(), true)
     return true,
@@ -16194,7 +16288,7 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
             eggName = source.eggName,
             milestone = "generator_unlocked",
             petSlotMilestone = petSlotMilestone,
-            milestones = automaticMilestones,
+            milestones = automatic.milestones,
         }
 end
 
@@ -16351,21 +16445,33 @@ function MergeEggPrototypeService:ToggleAutoCombine(player)
     if not accessOk then
         return false, accessReason
     end
-    -- Prototype-only entitlement seam: this toggle becomes Game Pass-gated when the product ships.
-    record.autoCombineEnabled = record.autoCombineEnabled ~= true
-    local merged = 0
-    local milestones = {}
-    if record.autoCombineEnabled then
-        merged, milestones = self:_autoCombineBoard(record)
+    if record.coinRunnerRunning == true then
+        return false, "automation_owns_board"
     end
-    if merged == 0 then
+    if not self:_autoMergeOwned(player) then
+        record.autoCombineEnabled = false
+        self:_publishBoardMutation(record)
+        return false, "auto_merge_pass_required"
+    end
+    record.autoCombineEnabled = record.autoCombineEnabled ~= true
+    local outcome = {
+        lineAdvances = 0,
+        boardMerges = 0,
+        milestones = {},
+    }
+    if record.autoCombineEnabled then
+        outcome = self:_autoMergeEggs(record)
+    end
+    if outcome.lineAdvances == 0 and outcome.boardMerges == 0 then
         self:_publishBoardMutation(record)
     end
     return true,
         {
             operation = record.autoCombineEnabled and "auto_enabled" or "auto_disabled",
             enabled = record.autoCombineEnabled,
-            milestones = milestones,
+            automaticLineAdvances = outcome.lineAdvances,
+            automaticMerges = outcome.boardMerges,
+            milestones = outcome.milestones,
         }
 end
 
@@ -16933,7 +17039,7 @@ end
 -- One click performs one fair board-to-frontline pass. Empty hatchers receive the strongest
 -- available board eggs first. Remaining hatchers then receive at most one matching-tier upgrade,
 -- weakest deployed tier first. It deliberately does not merge board eggs or repeatedly advance a
--- single hatcher; Auto Combine remains a separate future entitlement.
+-- single hatcher; the paid Auto Merge loop repeatedly recomputes this same one-pass plan.
 function MergeEggPrototypeService:EquipBestHatchers(player)
     if not self:_allowsGameplayActions() then
         return false, "merge_place_only"
@@ -17036,6 +17142,13 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if type(request) == "table" and request.automation == "coin_runner" then
         return self:StartCoinRunner(player, request)
     end
+    return self:_advanceHatcherEgg(player, request, false)
+end
+
+function MergeEggPrototypeService:_advanceHatcherEgg(player, request, trustedAutoMerge)
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
+    end
     local record = self:_recordFor(player)
     if
         not record
@@ -17067,7 +17180,9 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     end
     local boardSourceSlot = math.floor(tonumber(request.boardSourceSlot) or 0)
     local accessOk, accessReason, bulwarkDepth, hatcherDistance
-    if boardSourceSlot > 0 then
+    if trustedAutoMerge == true then
+        accessOk = true
+    elseif boardSourceSlot > 0 then
         accessOk, accessReason, hatcherDistance = self:_canUseMergeBoard(player)
     else
         accessOk, accessReason, bulwarkDepth, hatcherDistance = self:_canUseHatcher(player, team)
@@ -17084,7 +17199,11 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
         return false, accessReason
     end
     local now = os.clock()
-    if team.lastEggAdvanceAt and now - team.lastEggAdvanceAt < 0.25 then
+    if
+        trustedAutoMerge ~= true
+        and team.lastEggAdvanceAt
+        and now - team.lastEggAdvanceAt < 0.25
+    then
         return false, "egg_advance_throttled"
     end
     local transaction = self:_deployedEggTransaction(team, record)

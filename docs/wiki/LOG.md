@@ -7850,3 +7850,14 @@ first-session cohort rates.
 - The confirmation carries the exact slot, installed family/tier, and target family. The server
   recomputes that identity and rejects missing or stale confirmations before any currency charge.
   Unlocks, empty-slot installs, and ordinary upgrades remain one-click actions.
+
+## 2026-09-04 — Enable the line-first Auto Merge pass
+
+- Added the live 49-Robux Auto Merge game pass (`1970690426`) to the config-owned monetization and
+  Quartermaster catalogs. The existing Merge floor control now prompts nonowners to purchase it and
+  gives owners an explicit session-only ON/OFF state; the server independently enforces the feature.
+- Automatic management reevaluates the frontline before every mutation. It deploys or advances a
+  hatcher whenever possible, otherwise combines exactly one lowest-tier board pair and checks the
+  line again before continuing, so the board cannot cascade past an egg tier the line needs.
+- Added a pure priority seam and headless coverage for line precedence, lowest-tier board ordering,
+  and the no-action case. The pass artwork source is retained under `assets/ui/game_passes/`.

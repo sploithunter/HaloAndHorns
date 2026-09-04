@@ -811,6 +811,7 @@ return {
             game_passes_shop_title = "QUARTERMASTER PASSES",
             game_passes_shop_subtitle = "Permanent upgrades selected for Merge Defense",
             game_pass_ids = {
+                "auto_merge",
                 "vip_pass",
                 "auto_collect",
                 "speed_boost",
@@ -940,6 +941,17 @@ return {
         },
         merge_board = {
             merge_ratio = 2,
+            auto_merge = {
+                enabled = true,
+                pass_id = "auto_merge",
+                entitlement_feature = "merge_auto_merge",
+                labels = {
+                    locked = "AUTO MERGE\nBUY PASS",
+                    off = "AUTO MERGE\nOFF",
+                    on = "AUTO MERGE\nON",
+                },
+                pass_required_copy = "AUTO MERGE PASS REQUIRED",
+            },
             station_use_distance = 16,
             board_use_distance = 36,
             rows = 4,

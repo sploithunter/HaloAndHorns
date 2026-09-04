@@ -49,6 +49,7 @@ return {
         huge_luck_pass = 1912772276, -- LIVE (dashboard 2026-07-14)
         pet_slot_pass = 1912340314, -- LIVE (dashboard 2026-07-14)
         second_wind = 1912664284, -- LIVE (dashboard 2026-07-14)
+        auto_merge = 1970690426, -- LIVE: "Auto Merge" pass (dashboard 2026-09-04)
         hoverboard_rocket_blue = 1954662606, -- LIVE: "Blue Rocketboard" pass (dashboard 2026-08-21)
         hoverboard_rocket_lightblue = 1952355180, -- LIVE: "Light Blue Rocketboard" pass (dashboard 2026-08-21)
         hoverboard_rocket_green = 1955478550, -- LIVE: "Green Rocketboard" pass (dashboard 2026-08-21)
@@ -229,6 +230,19 @@ return {
                 },
             },
             icon = "rbxassetid://89924974140822", -- live Marketplace thumbnail
+            test_mode_enabled = true,
+        },
+        {
+            id = "auto_merge",
+            name = "Auto Merge",
+            description = "Automatically feeds your egg line first, then combines the board.",
+            price_robux = 49,
+            benefits = {
+                features = {
+                    merge_auto_merge = true,
+                },
+            },
+            icon = "rbxthumb://type=GamePass&id=1970690426&w=150&h=150",
             test_mode_enabled = true,
         },
         {
