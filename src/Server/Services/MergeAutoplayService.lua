@@ -376,7 +376,6 @@ function Service:_tick(player, state)
         return
     end
     self:_status(player, action.kind, nil)
-    local before = self:_wallet(player)
     local ok, reason = self:_execute(player, action)
     if self._states[player] ~= state then
         return
@@ -385,7 +384,9 @@ function Service:_tick(player, state)
     state.targetKey = nil
     if ok then
         state.failures = 0
-        state.spent += math.max(0, before - self:_wallet(player))
+        -- Income can arrive while a successful purchase builds its models. Record the verified
+        -- purchase price, not a wallet delta that would subtract those concurrent earnings.
+        state.spent += action.amount
         state.actions[action.kind] = (state.actions[action.kind] or 0) + 1
         if action.cursor then
             state.cursor = action.cursor + 1

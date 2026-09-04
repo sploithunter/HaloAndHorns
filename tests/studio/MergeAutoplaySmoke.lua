@@ -86,6 +86,7 @@ function Smoke.run()
         function service:_execute(player)
             executed[player] = (executed[player] or 0) + 1
             wallets[player] -= 10
+            wallets[player] += 5 -- A combat drop arrives while the purchase completes.
             return true
         end
         owned[first] = false
@@ -101,7 +102,11 @@ function Smoke.run()
         assert(executed[first] == nil, "Bought from far away")
         root.Position = host.Position
         service:_tick(first, service._states[first])
-        assert(executed[first] == 1 and wallets[first] == 90, "Near purchase failed")
+        assert(executed[first] == 1 and wallets[first] == 95, "Near purchase failed")
+        assert(
+            service:Report(first).coinsSpent == 10 and service:Report(first).coinsCollected == 5,
+            "Concurrent income corrupted telemetry"
+        )
         assert(wallets[second] == 100, "Changed another player's wallet")
         currency = "gems"
         service._states[first].nextAction = 0
