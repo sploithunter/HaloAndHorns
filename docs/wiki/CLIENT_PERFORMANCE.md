@@ -58,6 +58,12 @@ LibMP returned a snapshot with no frame records; neither supports a per-script C
 An attempted on/off/on shadow benchmark was rejected: the camera moved up to 60 studs and
 146 degrees across the test. It is not evidence for a percentage FPS improvement.
 
+After adding nearby shadows, a fresh 20-second stationary-camera sample recorded ~49.6 FPS
+(20.15ms mean, 29.16ms p95), 10.35ms render CPU, 12.18ms render GPU, and 528.8MB texture tag.
+Shadows remained enabled for all 994 frames. Visible geometry was 5.31M triangles / 662 draws;
+shadow-pass geometry was separately 5.79M triangles. The wave/view differed from the earlier
+baseline, so these are current-state readings, not a controlled percentage performance gain.
+
 ## Next measured opportunities
 
 - **Batch/cull combat presentation packets.** A separate 10-second client listener counted
