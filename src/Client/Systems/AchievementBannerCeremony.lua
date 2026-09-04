@@ -7,6 +7,7 @@ local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -21,14 +22,18 @@ local config: any = nil
 local generation = 0
 local activeCleanup: (() -> ())? = nil
 
-local function rgb(values: any, fallback: Color3): Color3
-    if type(values) ~= "table" then
-        return fallback
-    end
+local function configuredNumber(value: any, path: string): number
+    local parsed = tonumber(value)
+    assert(parsed ~= nil, "achievement_banners is missing numeric " .. path)
+    return parsed
+end
+
+local function rgb(values: any, path: string): Color3
+    assert(type(values) == "table", "achievement_banners is missing color " .. path)
     return Color3.fromRGB(
-        tonumber(values[1]) or math.floor(fallback.R * 255),
-        tonumber(values[2]) or math.floor(fallback.G * 255),
-        tonumber(values[3]) or math.floor(fallback.B * 255)
+        configuredNumber(values[1], path .. "[1]"),
+        configuredNumber(values[2], path .. "[2]"),
+        configuredNumber(values[3], path .. "[3]")
     )
 end
 
@@ -68,7 +73,14 @@ local function findHost(presentation: any): Instance?
 end
 
 local function waitForHost(presentation: any, token: number): Instance?
-    local deadline = os.clock() + math.max(0, tonumber(config.ceremony.stream_timeout_seconds) or 0)
+    local deadline = os.clock()
+        + math.max(
+            0,
+            configuredNumber(
+                config.ceremony.stream_timeout_seconds,
+                "ceremony.stream_timeout_seconds"
+            )
+        )
     repeat
         if generation ~= token then
             return nil
@@ -77,9 +89,24 @@ local function waitForHost(presentation: any, token: number): Instance?
         if host then
             return host
         end
-        task.wait()
+        RunService.RenderStepped:Wait()
     until os.clock() >= deadline
     return nil
+end
+
+local function waitForPresentation(
+    seconds: number,
+    token: number,
+    isCleaned: () -> boolean
+): boolean
+    local deadline = os.clock() + math.max(0, seconds)
+    while os.clock() < deadline do
+        if generation ~= token or isCleaned() then
+            return false
+        end
+        RunService.RenderStepped:Wait()
+    end
+    return generation == token and not isCleaned()
 end
 
 local function cameraTarget(host: Instance): CFrame?
@@ -103,18 +130,30 @@ end
 local function makeLocalFx(host: Instance): { Instance }
     local created = {}
     local ceremony = config.ceremony
-    local color = rgb(ceremony.highlight_color, Color3.fromRGB(255, 214, 92))
+    local color = rgb(ceremony.highlight_color, "ceremony.highlight_color")
 
     local highlight = Instance.new("Highlight")
     highlight.Name = "AchievementBannerCeremonyGlow"
     highlight.Adornee = host
     highlight.DepthMode = Enum.HighlightDepthMode.Occluded
     highlight.FillColor = color
-    highlight.FillTransparency =
-        math.clamp(tonumber(ceremony.highlight_fill_transparency) or 0.68, 0, 1)
+    highlight.FillTransparency = math.clamp(
+        configuredNumber(
+            ceremony.highlight_fill_transparency,
+            "ceremony.highlight_fill_transparency"
+        ),
+        0,
+        1
+    )
     highlight.OutlineColor = color
-    highlight.OutlineTransparency =
-        math.clamp(tonumber(ceremony.highlight_outline_transparency) or 0.05, 0, 1)
+    highlight.OutlineTransparency = math.clamp(
+        configuredNumber(
+            ceremony.highlight_outline_transparency,
+            "ceremony.highlight_outline_transparency"
+        ),
+        0,
+        1
+    )
     highlight.Parent = host
     table.insert(created, highlight)
 
@@ -140,15 +179,27 @@ local function makeLocalFx(host: Instance): { Instance }
     glints.Texture = tostring(ceremony.glint_texture)
     glints.Color = ColorSequence.new(color, Color3.new(1, 1, 1))
     glints.LightEmission = 1
-    glints.Lifetime =
-        NumberRange.new(math.max(0.05, tonumber(ceremony.glint_lifetime_seconds) or 0.75))
-    glints.Speed = NumberRange.new(math.max(0, tonumber(ceremony.glint_speed) or 4))
-    local spread = math.clamp(tonumber(ceremony.glint_spread_degrees) or 180, 0, 180)
+    glints.Lifetime = NumberRange.new(
+        math.max(
+            0.05,
+            configuredNumber(ceremony.glint_lifetime_seconds, "ceremony.glint_lifetime_seconds")
+        )
+    )
+    glints.Speed =
+        NumberRange.new(math.max(0, configuredNumber(ceremony.glint_speed, "ceremony.glint_speed")))
+    local spread = math.clamp(
+        configuredNumber(ceremony.glint_spread_degrees, "ceremony.glint_spread_degrees"),
+        0,
+        180
+    )
     glints.SpreadAngle = Vector2.new(spread, spread)
     glints.Shape = Enum.ParticleEmitterShape.Box
     glints.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
     glints.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, math.max(0.05, tonumber(ceremony.glint_size) or 0.42)),
+        NumberSequenceKeypoint.new(
+            0,
+            math.max(0.05, configuredNumber(ceremony.glint_size, "ceremony.glint_size"))
+        ),
         NumberSequenceKeypoint.new(1, 0),
     })
     glints.Transparency = NumberSequence.new({
@@ -158,12 +209,15 @@ local function makeLocalFx(host: Instance): { Instance }
     glints.Parent = attachment
     attachment.Position = Vector3.new(0, 0, 0)
     attachment.Axis = Vector3.new(0, 1, 0)
-    glints:Emit(math.max(1, math.floor(tonumber(ceremony.glint_count) or 32)))
+    glints:Emit(
+        math.max(1, math.floor(configuredNumber(ceremony.glint_count, "ceremony.glint_count")))
+    )
 
     local light = Instance.new("PointLight")
     light.Color = color
-    light.Brightness = math.max(0, tonumber(ceremony.light_brightness) or 2.4)
-    light.Range = math.max(0, tonumber(ceremony.light_range) or 18)
+    light.Brightness =
+        math.max(0, configuredNumber(ceremony.light_brightness, "ceremony.light_brightness"))
+    light.Range = math.max(0, configuredNumber(ceremony.light_range, "ceremony.light_range"))
     light.Shadows = false
     light.Parent = attachment
 
@@ -203,11 +257,16 @@ local function play(presentation: any)
     local cleaned = false
     local depth: DepthOfFieldEffect? = nil
     local localFx: { Instance } = {}
+    local safetyConnection: RBXScriptConnection? = nil
     local function cleanup()
         if cleaned then
             return
         end
         cleaned = true
+        if safetyConnection then
+            safetyConnection:Disconnect()
+            safetyConnection = nil
+        end
         pcall(function()
             camera.CFrame = oldCFrame
             camera.Focus = oldFocus
@@ -229,7 +288,19 @@ local function play(presentation: any)
         end
     end
     activeCleanup = cleanup
-    task.delay(math.max(0.1, tonumber(config.ceremony.safety_timeout_seconds) or 2.5), cleanup)
+    local safetyDeadline = os.clock()
+        + math.max(
+            0.1,
+            configuredNumber(
+                config.ceremony.safety_timeout_seconds,
+                "ceremony.safety_timeout_seconds"
+            )
+        )
+    safetyConnection = RunService.RenderStepped:Connect(function()
+        if os.clock() >= safetyDeadline then
+            cleanup()
+        end
+    end)
 
     local ok, err = xpcall(function()
         local oldDepth = Lighting:FindFirstChild("AchievementBannerCeremonyDepth")
@@ -239,21 +310,39 @@ local function play(presentation: any)
 
         depth = Instance.new("DepthOfFieldEffect")
         depth.Name = "AchievementBannerCeremonyDepth"
-        depth.FarIntensity =
-            math.clamp(tonumber(config.ceremony.depth_far_intensity) or 0.12, 0, 1)
+        depth.FarIntensity = math.clamp(
+            configuredNumber(config.ceremony.depth_far_intensity, "ceremony.depth_far_intensity"),
+            0,
+            1
+        )
         depth.FocusDistance = (target.Position - hostCFrame.Position).Magnitude
-        depth.InFocusRadius =
-            math.max(0, tonumber(config.ceremony.depth_in_focus_radius) or 12)
-        depth.NearIntensity =
-            math.clamp(tonumber(config.ceremony.depth_near_intensity) or 0.08, 0, 1)
+        depth.InFocusRadius = math.max(
+            0,
+            configuredNumber(
+                config.ceremony.depth_in_focus_radius,
+                "ceremony.depth_in_focus_radius"
+            )
+        )
+        depth.NearIntensity = math.clamp(
+            configuredNumber(config.ceremony.depth_near_intensity, "ceremony.depth_near_intensity"),
+            0,
+            1
+        )
         depth.Parent = Lighting
         localFx = makeLocalFx(host)
         setControlsEnabled(false)
         camera.CameraType = Enum.CameraType.Scriptable
 
-        local cameraIn = math.max(0, tonumber(config.ceremony.camera_in_seconds) or 0.35)
-        local hold = math.max(0, tonumber(config.ceremony.hold_seconds) or 0.85)
-        local cameraOut = math.max(0, tonumber(config.ceremony.camera_out_seconds) or 0.4)
+        local cameraIn = math.max(
+            0,
+            configuredNumber(config.ceremony.camera_in_seconds, "ceremony.camera_in_seconds")
+        )
+        local hold =
+            math.max(0, configuredNumber(config.ceremony.hold_seconds, "ceremony.hold_seconds"))
+        local cameraOut = math.max(
+            0,
+            configuredNumber(config.ceremony.camera_out_seconds, "ceremony.camera_out_seconds")
+        )
         TweenService
             :Create(
                 camera,
@@ -261,27 +350,33 @@ local function play(presentation: any)
                 {
                     CFrame = target,
                     Focus = CFrame.new(hostCFrame.Position),
-                    FieldOfView =
-                        math.clamp(tonumber(config.ceremony.field_of_view) or 44, 20, 100),
+                    FieldOfView = math.clamp(
+                        configuredNumber(config.ceremony.field_of_view, "ceremony.field_of_view"),
+                        20,
+                        100
+                    ),
                 }
             )
             :Play()
-        task.wait(cameraIn + hold)
-        if generation ~= token or cleaned then
+        if
+            not waitForPresentation(cameraIn + hold, token, function()
+                return cleaned
+            end)
+        then
             return
         end
-        TweenService
-            :Create(
-                camera,
-                TweenInfo.new(cameraOut, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-                {
-                    CFrame = oldCFrame,
-                    Focus = oldFocus,
-                    FieldOfView = oldFieldOfView,
-                }
-            )
-            :Play()
-        task.wait(cameraOut)
+        TweenService:Create(
+            camera,
+            TweenInfo.new(cameraOut, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
+            {
+                CFrame = oldCFrame,
+                Focus = oldFocus,
+                FieldOfView = oldFieldOfView,
+            }
+        ):Play()
+        waitForPresentation(cameraOut, token, function()
+            return cleaned
+        end)
     end, debug.traceback)
     cleanup()
     if not ok then

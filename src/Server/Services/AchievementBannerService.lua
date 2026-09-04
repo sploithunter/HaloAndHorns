@@ -16,6 +16,17 @@ local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
 local AchievementBannerService = {}
 AchievementBannerService.__index = AchievementBannerService
 
+local function configuredNumber(value, path)
+    local parsed = tonumber(value)
+    assert(parsed ~= nil, "achievement_banners is missing numeric " .. path)
+    return parsed
+end
+
+local function configuredString(value, path)
+    assert(type(value) == "string" and value ~= "", "achievement_banners is missing " .. path)
+    return value
+end
+
 local function positiveWhole(value, fallback)
     local number = tonumber(value)
     if number == nil then
@@ -132,7 +143,7 @@ end
 
 function AchievementBannerService:_referencePart(bay)
     local display = self._config.display or {}
-    local name = tostring(display.reference_name or "")
+    local name = configuredString(display.reference_name, "display.reference_name")
     local named = {}
     local claimPads = {}
     for _, descendant in ipairs(bay and bay:GetDescendants() or {}) do
@@ -180,7 +191,7 @@ function AchievementBannerService:_template(variantId)
         })
         return nil
     end
-    local clothName = tostring((self._config.model or {}).cloth_name or "Cloth")
+    local clothName = configuredString(self._config.model.cloth_name, "model.cloth_name")
     local model = modelWithCloth(container, clothName)
     if not model then
         container:Destroy()
@@ -214,37 +225,66 @@ function AchievementBannerService:_mountOne(folder, reference, slot, player, awa
     end
     local model = template:Clone()
     model.Name = "AchievementBanner_" .. awardId
-    local scale = math.max(0.1, tonumber((self._config.display or {}).model_scale) or 1)
+    local scale =
+        math.max(0.1, configuredNumber(self._config.display.model_scale, "display.model_scale"))
     pcall(function()
         model:ScaleTo(model:GetScale() * scale)
     end)
 
-    local localPosition =
-        Vector3.new(tonumber(slot.x) or 0, tonumber(slot.y) or 0, tonumber(slot.z) or 0)
+    local localPosition = Vector3.new(
+        configuredNumber(slot.x, "display.slots[].x"),
+        configuredNumber(slot.y, "display.slots[].y"),
+        configuredNumber(slot.z, "display.slots[].z")
+    )
     local position = reference.CFrame:PointToWorldSpace(localPosition)
-    local camera = (self._config.display or {}).camera or {}
+    local camera = self._config.display.camera
     local cameraPosition = position
-        - reference.CFrame.LookVector * math.max(1, tonumber(camera.distance) or 17)
-        + reference.CFrame.UpVector * (tonumber(camera.height) or 0)
-    local target = position + reference.CFrame.UpVector * (tonumber(camera.target_height) or 0)
+        - reference.CFrame.LookVector * math.max(
+            1,
+            configuredNumber(camera.distance, "display.camera.distance")
+        )
+        + reference.CFrame.UpVector * configuredNumber(camera.height, "display.camera.height")
+    local target = position
+        + reference.CFrame.UpVector
+            * configuredNumber(camera.target_height, "display.camera.target_height")
     local mount = CFrame.lookAt(position, cameraPosition, reference.CFrame.UpVector)
         * CFrame.Angles(
             0,
-            math.rad(tonumber((self._config.display or {}).model_yaw_degrees) or 0),
+            math.rad(
+                configuredNumber(
+                    self._config.display.model_yaw_degrees,
+                    "display.model_yaw_degrees"
+                )
+            ),
             0
         )
     model:PivotTo(mount)
     model:SetAttribute("AchievementAwardId", awardId)
     model:SetAttribute("AchievementOwnerUserId", player.UserId)
-    model:SetAttribute("AchievementVariant", tostring(award.variant or ""))
-    model:SetAttribute("AchievementStyle", tostring(award.style or "champion"))
-    model:SetAttribute("AchievementTitle", tostring(award.title or ""))
-    model:SetAttribute("AchievementValue", tostring(award.value or ""))
-    model:SetAttribute("AchievementFooter", tostring(award.footer or ""))
+    model:SetAttribute(
+        "AchievementVariant",
+        configuredString(award.variant, "awards." .. awardId .. ".variant")
+    )
+    model:SetAttribute(
+        "AchievementStyle",
+        configuredString(award.style, "awards." .. awardId .. ".style")
+    )
+    model:SetAttribute(
+        "AchievementTitle",
+        configuredString(award.title, "awards." .. awardId .. ".title")
+    )
+    model:SetAttribute(
+        "AchievementValue",
+        configuredString(award.value, "awards." .. awardId .. ".value")
+    )
+    model:SetAttribute(
+        "AchievementFooter",
+        configuredString(award.footer, "awards." .. awardId .. ".footer")
+    )
     model:SetAttribute("AchievementFlutter", true)
 
     local cameraValue = Instance.new("CFrameValue")
-    cameraValue.Name = tostring(camera.value_name or "AchievementCameraCFrame")
+    cameraValue.Name = configuredString(camera.value_name, "display.camera.value_name")
     cameraValue.Value = CFrame.lookAt(cameraPosition, target, reference.CFrame.UpVector)
     cameraValue.Parent = model
     model.Parent = folder
@@ -253,7 +293,7 @@ function AchievementBannerService:_mountOne(folder, reference, slot, player, awa
 end
 
 function AchievementBannerService:ClearBay(bay)
-    local name = tostring((self._config.display or {}).folder_name or "PlayerAchievementBanners")
+    local name = configuredString(self._config.display.folder_name, "display.folder_name")
     local existing = bay and bay:FindFirstChild(name)
     if existing then
         existing:Destroy()
@@ -274,7 +314,7 @@ function AchievementBannerService:MountBay(player, bay)
     end
 
     local folder = Instance.new("Folder")
-    folder.Name = tostring(display.folder_name or "PlayerAchievementBanners")
+    folder.Name = configuredString(display.folder_name, "display.folder_name")
     folder:SetAttribute("AchievementOwnerUserId", player.UserId)
     local mounted = {}
     local mountedCount = 0
@@ -329,7 +369,7 @@ function AchievementBannerService:PresentCheckpoint(player, bay, checkpointWave,
     AchievementBannerAwards.present(
         state,
         pending,
-        positiveWhole((self._config.display or {}).maximum, 4),
+        positiveWhole(configuredNumber(self._config.display.maximum, "display.maximum")),
         os.time()
     )
     local mounted = self:MountBay(player, bay)
@@ -365,7 +405,10 @@ function AchievementBannerService:PresentCheckpoint(player, bay, checkpointWave,
         presented = true,
         minimumCheckpointSeconds = math.max(
             0,
-            tonumber((self._config.ceremony or {}).checkpoint_minimum_seconds) or 0
+            configuredNumber(
+                self._config.ceremony.checkpoint_minimum_seconds,
+                "ceremony.checkpoint_minimum_seconds"
+            )
         ),
     }
 end
