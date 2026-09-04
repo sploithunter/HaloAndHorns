@@ -189,6 +189,56 @@ function NetworkManifest.validate(config)
         end
     end
 
+    local batching = config.combat_presentation
+    if batching ~= nil then
+        if type(batching) ~= "table" or type(batching.enabled) ~= "boolean" then
+            return false, "network.combat_presentation: expected table with enabled boolean"
+        end
+        for _, key in ipairs({
+            "flush_interval_seconds",
+            "animation_radius",
+            "participation_grace_seconds",
+            "max_records",
+            "startup_records_per_channel",
+        }) do
+            local value = batching[key]
+            if type(value) ~= "number" or value <= 0 or value ~= value or value == math.huge then
+                return false,
+                    "network.combat_presentation." .. key .. ": expected finite positive number"
+            end
+        end
+        if batching.max_records % 1 ~= 0 or batching.startup_records_per_channel % 1 ~= 0 then
+            return false, "network.combat_presentation: record limits must be integers"
+        end
+        local remote = config.packets[batching.remote]
+        if
+            not remote
+            or remote.transport ~= "reliable_event"
+            or remote.direction ~= "server_to_client"
+        then
+            return false, "network.combat_presentation.remote: expected server reliable event"
+        end
+        if type(batching.channels) ~= "table" or next(batching.channels) == nil then
+            return false, "network.combat_presentation.channels: expected nonempty table"
+        end
+        local ids = {}
+        for name, id in pairs(batching.channels) do
+            local packet = config.packets[name]
+            if
+                not packet
+                or packet.transport ~= "reliable_event"
+                or packet.direction ~= "server_to_client"
+                or name == batching.remote
+            then
+                return false, "network.combat_presentation.channels: expected server reliable event"
+            end
+            if type(id) ~= "number" or id < 1 or id % 1 ~= 0 or ids[id] then
+                return false,
+                    "network.combat_presentation.channels: expected unique positive integer ids"
+            end
+            ids[id] = true
+        end
+    end
     return true
 end
 

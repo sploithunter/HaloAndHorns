@@ -16,4 +16,16 @@ local environment = RunService:IsStudio() and "studio" or "production"
 local transport = RuntimeTransport.new(Net, ReplicatedStorage)
 
 -- Central registry of RemoteEvents and RemoteFunctions used by client/server.
-return SignalRegistry.build(networkConfig, transport, { environment = environment })
+local signals = SignalRegistry.build(networkConfig, transport, { environment = environment })
+local batchConfig = networkConfig.combat_presentation
+if batchConfig and batchConfig.enabled then
+    local batching = require(script.Parent.PresentationBatchTransport)
+    if RunService:IsServer() then
+        local players = game:GetService("Players")
+        local audience = require(script.Parent.CombatPresentationAudience).new(batchConfig, players)
+        batching.installServer(signals, batchConfig, players, RunService.Heartbeat, audience)
+    else
+        batching.installClient(signals, batchConfig)
+    end
+end
+return signals
