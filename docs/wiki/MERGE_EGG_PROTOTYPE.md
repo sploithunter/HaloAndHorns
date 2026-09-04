@@ -967,9 +967,11 @@ team and queue model:
 
 - `GameData.AchievementBanners` is the permanent idempotent award ledger: `owned` records what the
   player earned, `pending` queues an unpresented cloth, and `displayed` keeps up to eight bay
-  banners. The initial catalog covers Level 50, Veteran 100, Wave 250, and the Heaven/Hell Layer 2
-  and Layer 3 egg milestones. Definitions, copy, styles, model variants, placement, and ceremony
-  timing all live in `configs/achievement_banners.lua`.
+  banners. The catalog covers Level 50, Veteran 100, Wave 100, Wave 250, and the Heaven/Hell Layer
+  2 and Layer 3 egg milestones. Level and wave awards remain separate cloth: reaching the first
+  Merge century adds `WAVE 100 · CENTURY HELD` without replacing `LEVEL 50`. Definitions, copy,
+  styles, model variants, placement, and ceremony timing all live in
+  `configs/achievement_banners.lua`.
 - Egg awards are recorded when a new Merge tier is created; level, veteran, wave, and restored
   highest-tier facts are reconciled at checkpoints. Nothing takes the camera during combat or an
   ordinary wave gap. At a completed tenth wave, the server mounts any pending final models outside

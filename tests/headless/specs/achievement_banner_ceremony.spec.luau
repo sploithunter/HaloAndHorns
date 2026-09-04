@@ -65,6 +65,16 @@ return function()
             expect(checkpoint).to.be.ok()
             expect(presentation > checkpoint).to.equal(true)
             expect(timer > presentation).to.equal(true)
+            expect(merge:find('level = record.player:GetAttribute("Level")', checkpoint, true)).to.be.ok()
+            expect(
+                merge:find(
+                    'veteran_level = record.player:GetAttribute("VetLevel")',
+                    checkpoint,
+                    true
+                )
+            ).to.be.ok()
+            expect(merge:find("merge_wave = record.waveIndex", checkpoint, true)).to.be.ok()
+            expect(merge:find("merge_egg_tier = record.maximumEggTier", checkpoint, true)).to.be.ok()
         end)
 
         it("never waits for a client acknowledgement before the next wave", function()
