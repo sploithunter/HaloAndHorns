@@ -1559,8 +1559,16 @@ return function()
             expect(combatApplication:find('source:GetAttribute("PetRecordKey")', 1, true)).to.be.ok()
             local enemyService = readFile("src/Server/Services/EnemyService.lua")
             expect(enemyService:find('model:GetAttribute("MergeEggPlayerPetKillUserId")', 1, true)).to.be.ok()
+            expect(
+                enemyService:find(
+                    'killer:GetAttribute("MergeEggPlayerCombatMode") == "full"',
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(enemyService:find('killer:GetAttribute("CombatTutorialDone") == true', 1, true)).to.be.ok()
             expect(enemyService:find("function EnemyService:_awardCombatDefeat", 1, true)).to.be.ok()
+            expect(enemyService:find("combat:AwardExperience(", 1, true)).to.be.ok()
             expect(enemyService:find("combat:AwardLoot(", 1, true)).to.be.ok()
             expect(enemyService:find("entry.combatRewardDef or entry.def", 1, true)).to.be.ok()
             expect(service:find("combatRewardDef = spec.enemyDef", 1, true)).to.be.ok()

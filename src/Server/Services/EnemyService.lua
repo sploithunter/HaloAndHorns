@@ -1724,22 +1724,28 @@ function EnemyService:_onDefeated(targetId)
     if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true then
         local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
         local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
-        -- The whole canonical Farm & Fight payout (currencies/tokens, XP, enhancement/potion/boss
-        -- drops, event, and kill stat) stays locked until Combat Training is complete. Merge keeps
-        -- a reward definition separate from its drop-less combat clone so NPC kills remain isolated.
+        -- A durable pet fielded in effective Full mode always earns its owner's combat XP. Combat
+        -- Training still gates the broader Farm & Fight payout (currencies/tokens,
+        -- enhancement/potion/boss drops, event, and kill stat). The trained path already includes
+        -- XP through AwardLoot, so the untrained branch calls AwardExperience directly exactly once.
         if
             killer
             and killer.Parent
-            and killer:GetAttribute("CombatTutorialDone") == true
             and combat
+            and killer:GetAttribute("MergeEggPlayerCombatMode") == "full"
         then
-            self:_awardCombatDefeat(
-                killer,
-                entry,
-                model,
-                combat,
-                entry.combatRewardDef or entry.def
-            )
+            local rewardDef = entry.combatRewardDef or entry.def
+            if killer:GetAttribute("CombatTutorialDone") == true then
+                self:_awardCombatDefeat(killer, entry, model, combat, rewardDef)
+            else
+                combat:AwardExperience(
+                    killer,
+                    entry.enemyId,
+                    model:GetAttribute("Level"),
+                    model:GetAttribute("EnemyTier"),
+                    rewardDef
+                )
+            end
         end
     end
 

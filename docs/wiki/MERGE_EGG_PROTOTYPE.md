@@ -524,14 +524,17 @@ team and queue model:
   `enemies_defeated` counter or publish the ordinary `enemy_defeated` event. A durable Full-mode pet
   may earn exactly one global kill only when it lands the final damaging hit; participation and
   nearby-team credit do not qualify. Direct, AoE, aura, burn, and contagion final hits preserve this
-  real-pet attribution. After `CombatTutorial.done` publishes `CombatTutorialDone = true`, that
-  qualifying final hit runs the complete per-player Farm & Fight defeat path: the canonical enemy
-  currency/token table (or the normal level-scaled area-coin fallback), combat XP, enhancement and
-  potion rolls, boss-exclusive egg roll, `enemy_defeated`, and `enemies_defeated`. Home onboarding or
-  Ascension alone is intentionally insufficient because powers and targeting have not been taught.
-  Before Combat Training completion, Merge grants none of those ordinary rewards; autonomous and
-  Simple-mode combat never grants them. Merge's own physical Waycoin/Gem callback remains separate,
-  so reusing the combat reward path neither duplicates it nor gives NPCs contributor credit.
+  real-pet attribution. Any such final hit while the player is in effective Full mode earns exactly
+  one normal combat-XP award, including players who reached Full through the configured minimum
+  level instead of Combat Training. After `CombatTutorial.done` publishes
+  `CombatTutorialDone = true`, the same hit also runs the rest of the complete per-player Farm &
+  Fight defeat path: the canonical enemy currency/token table (or the normal level-scaled area-coin
+  fallback), enhancement and potion rolls, boss-exclusive egg roll, `enemy_defeated`, and
+  `enemies_defeated`. Home onboarding or Ascension alone remains insufficient for those broader
+  rewards because powers and targeting have not been taught. Autonomous and Simple-mode combat
+  never grants ordinary combat XP or those broader rewards. Merge's own physical Waycoin/Gem
+  callback remains separate, so reusing the combat reward path neither duplicates it nor gives NPCs
+  contributor credit.
 
 ## Simple-mode session reserve roster (2026-08-26)
 
