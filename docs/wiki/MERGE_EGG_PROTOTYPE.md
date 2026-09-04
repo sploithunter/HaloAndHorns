@@ -909,8 +909,12 @@ team and queue model:
 - The dedicated `Halo and Horns: Merge` place is configured as place id `84544653387905` in the
   same universe as main. Session ownership is per player (`_activeByPlayer` plus per-entry records),
   and every record owns its claimed bay/world reference. Heartbeat stepping iterates those records;
-  NPC principals and transient folders include the player identity. This replaces the former
-  singleton `_active`/`_world` assumption and is the runtime seam for simultaneous occupied bays.
+  NPC principals and transient folders include the player identity. Every hatcher's actual
+  `NpcPrincipalService` registry/model/folder key is derived from owner UserId plus position; the
+  captain display name is never used as that key. Teardown also matches the retained owner, folder,
+  and model before deleting a principal, so stale session cleanup cannot remove a replacement.
+  This replaces the former singleton `_active`/`_world` assumption and is the runtime seam for
+  simultaneous occupied bays.
 - While the place remains unreleased, the main/Farm and Fight door keeps its sealed `COMING SOON`
   presentation and exposes the Merge teleport prompt only to the canonical internal-account IDs
   plus Kade (`536245038`). The client hides the prompt for everyone else, the server validates every

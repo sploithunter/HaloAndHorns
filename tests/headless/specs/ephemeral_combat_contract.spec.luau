@@ -131,6 +131,21 @@ return function()
             expect(source:find("elseif rec.stationary then", step, true)).to.be.ok()
         end)
 
+        it("refuses stale principal cleanup when the live owner or instances differ", function()
+            local source = readFile("src/Server/Services/NpcPrincipalService.lua")
+            local despawn =
+                source:find("function NpcPrincipalService:Despawn(name, reason, expected)", 1, true)
+            local step = source:find("function NpcPrincipalService:_step", despawn, true)
+            local block = source:sub(despawn, step - 1)
+
+            expect(despawn).to.be.ok()
+            expect(block:find("rec.owner == expected.owner", 1, true)).to.be.ok()
+            expect(block:find("rec.folder == expected.folder", 1, true)).to.be.ok()
+            expect(block:find("rec.model == expected.model", 1, true)).to.be.ok()
+            expect(block:find("return false", 1, true)).to.be.ok()
+            expect(block:find("self:_dissolveAlliance(rec)", 1, true)).to.be.ok()
+        end)
+
         it("honors config-owned non-collidable NPC character bodies", function()
             local source = readFile("src/Server/Services/NpcPrincipalService.lua")
             local config = readFile("configs/merge_egg_prototype.lua")
