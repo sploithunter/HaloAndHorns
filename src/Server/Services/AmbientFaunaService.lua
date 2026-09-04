@@ -193,8 +193,8 @@ function AmbientFaunaService:_update(deltaTime: number)
 end
 
 function AmbientFaunaService:Start()
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
+    local models = ModelTemplateStore.root()
     local faunaFolder = models and models:FindFirstChild("AmbientFauna")
     if not faunaFolder then
         self:_log("Warn", "Assets.Models.AmbientFauna missing", nil)

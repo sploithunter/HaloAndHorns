@@ -652,7 +652,7 @@ team and queue model:
   `StartPlatform`: its player-side edge exactly meets the pedestal's rear edge rather than relying on
   a guessed offset.
 - Crafted inventory is mirrored into the 16 cells using the real cached egg assets from
-  `ReplicatedStorage.Assets.Models.Eggs`. Board eggs are anchored, non-colliding, queryable, and
+  `ServerStorage.Assets.Models.Eggs`. Board eggs are anchored, non-colliding, queryable, and
   rotate locally so the avatar can run through the board while still grabbing them with the cursor.
   The player drags one egg onto a same-color/equal-tier companion and the server validates both slot
   identities before performing one merge. Nine thin deployment pads share the permanent station
@@ -1321,7 +1321,7 @@ clean.
   and do not create ViewportFrames. A cached world instance is replaced when its Model/Mesh/Texture identity or cannon
   scale differs from the selected family/tier, even if its tier attributes look current.
 - Cannon visuals are repo-owned spawnable assets under
-  `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
+  `ServerStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2|Tier3|Tier4`, prebaked into
   `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
   Workspace review lineup is removed; maps own mounts, not cannon visuals. Every tier is normalized
   to the corrected 7.953594-stud reference width at template scale 1. Presentation
@@ -1452,7 +1452,7 @@ clean.
   after approval, and rechecked at 3,984–5,968 watertight triangles. Group-owned Model, Mesh, and
   Texture IDs plus Meshy task provenance live in `scripts/merge_bulwark_model_ids.json`.
 - Runtime-ready templates are prebaked under
-  `ReplicatedStorage.Assets.Models.MergeBulwarks/<Family>/Tier1|Tier2|Tier3|Tier4` by
+  `ServerStorage.Assets.Models.MergeBulwarks/<Family>/Tier1|Tier2|Tier3|Tier4` by
   `scripts/prebake/add_merge_bulwark_assets.luau`; maps should own only placement anchors.
   `src/Shared/Game/MergeBulwarkModels.lua` supplies clone/spawn access and grounds a template at a
   supplied CFrame or `BulwarkAnchor`.

@@ -14,9 +14,13 @@ fine-tooth-comb audit + the consolidation plan. Update it as phases land.
 
 One path, no parallels left (verified 2026-06-16):
 - `src/Shared/Assets/MeshAssembly.lua` — mesh + texture → textured Model (`CreateMeshPartAsync` + `TextureID`).
-- `src/Shared/Utils/AssetFetch.lua` — packaged Model loads (`InsertService`, PlaceAssets cache-first).
-- `src/Server/Services/AssetPreloadService.lua` — the store: builds everything into
-  `ReplicatedStorage.Assets.Models.{Pets,Eggs,Breakables.Crystals}`; consumers clone from there.
+- `src/Shared/Utils/AssetFetch.lua` — packaged Model loads (`InsertService`, server-only PlaceAssets
+  cache-first). Legacy client preview misses degrade to flat art instead of replicating this cache.
+- `src/Server/Services/AssetPreloadService.lua` — the store: builds the complete dormant catalog in
+  `ServerStorage.Assets.Models.{Pets,Eggs,Breakables.Crystals}`; server consumers clone from there.
+  Merge gives each owner a bounded `PlayerGui.MergeAssetWarmCache` containing only current/next egg
+  families and explicitly preloads those dependencies. Live Workspace clones have an independent
+  lifetime and remain resident until their authoritative despawn.
 
 Consumers (pets, enemies, gems/drops, eggs, crystals, portals, summons, previews) all route through these.
 

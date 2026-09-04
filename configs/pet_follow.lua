@@ -601,6 +601,13 @@ return {
     -- Movement is client-side (PetFollowController), not done here.
     update_interval = 0.1,
 
+    -- Expensive replicated position diagnostics are for an explicit live desync investigation
+    -- only. Leaving this off avoids stamping two changing attributes onto every player pet ten
+    -- times per second during ordinary play.
+    diagnostics = {
+        replicate_pet_sync = false,
+    },
+
     -- Enemy spawning (Feature 10 combat). distance = studs in front of the player a test enemy
     -- spawns (slice 1a: admin-spawned, stationary; pets engage it like a breakable).
     enemy_spawn = {

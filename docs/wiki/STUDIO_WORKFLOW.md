@@ -61,12 +61,12 @@ Recovery checklist:
 4. If source is current but behavior is stale, restart Play to clear the Luau VM/module cache.
 5. Only debug gameplay after the source and runtime agree.
 
-`ReplicatedStorage.Assets` is `$ignoreUnknownInstances`, and Rojo also maps
-`assets/place/Models.rbxm` onto `Assets.Models`. If Studio already saved its own
-`Models` folder, Explorer shows **two** folders named `Models`. Both replicate
-and `FindFirstChild` is nondeterministic. Keep one (the richer Pets/Eggs tree),
-delete the twin in Edit after capturing a runtime snapshot, and never save both
-into the place. See [Asset Pre-Baking](../ASSET_PREBAKE.md).
+Rojo maps `assets/place/Models.rbxm` to `ServerStorage.Assets.Models`; the full dormant model
+catalog must never live under replicated storage. An older Studio place may retain a legacy
+`ReplicatedStorage.Assets.Models` because `Assets` preserves unknown instances. After confirming the
+server copy is complete, delete that legacy folder in Edit before publishing. Runtime boot also
+migrates it as a safety net, but edit-time cleanup prevents clients from seeing the stale references
+at join. See [Asset Pre-Baking](../ASSET_PREBAKE.md).
 
 ### Cross-project Rojo contamination
 

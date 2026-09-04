@@ -7,7 +7,7 @@
     The map carries only invisible FloraAnchor PARTS (tagged, at true floor
     level, attrs Kind/Variant/Scale, yaw in the part CFrame) — the 280
     authored flora models were harvested into
-    ReplicatedStorage.Assets.Models.Flora (one exemplar per Variant = the
+    ServerStorage.Assets.Models.Flora (one exemplar per Variant = the
     DEFAULT skin) and then replaced by anchors (2026-07-16 migration).
 
     At boot every anchor spawns a model:
@@ -22,6 +22,7 @@
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local EnvironmentGlow = require(ReplicatedStorage.Shared.Game.EnvironmentGlow)
 local FloraSway = require(ReplicatedStorage.Shared.Game.FloraSway)
@@ -153,8 +154,7 @@ function FloraService:_spawnAt(anchor, floraFolder)
 end
 
 function FloraService:Start()
-    local models = ReplicatedStorage:FindFirstChild("Assets")
-    models = models and models:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     local floraFolder = models and models:FindFirstChild("Flora")
     if not floraFolder then
         self:_log("Warn", "Assets.Models.Flora missing — no flora spawned")

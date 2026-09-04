@@ -332,7 +332,7 @@ scripts/rebake_mission_decor.sh, whole set):
    Decal — resolve to the wrapped Image id before setting TextureID, via
    InsertService:LoadAsset(decalId) -> Decal.Texture).
 9. Update `scripts/mission_decor_model_ids.json` + `_texture_ids.json`.
-10. TRANSPLANT THE PLACE PREFABS (ReplicatedStorage.MissionProps +
+10. TRANSPLANT THE PLACE PREFABS (ServerStorage.MissionProps +
     Workspace._PropReview.MeshyDecor): registries alone change nothing the
     game renders. Swap each prefab's MeshPart for the new Model's (preserve
     Name/Size/CFrame/attributes/children/welds), set TextureID to the
@@ -384,7 +384,7 @@ THE WORKFLOW (light manual step, works fine at 20-prop batch size):
    import with textures (defaults) -> target Workspace. Each lands as
    `Meshes/<name>_10k_baked` with TextureID minted by the importer, and the
    pre-upload preview shows the processed result BEFORE minting.
-4. Agent: transplant into `ReplicatedStorage.MissionProps` prefabs (clone
+4. Agent: transplant into `ServerStorage.MissionProps` prefabs (clone
    imported MeshPart; keep prefab Name/Size/CFrame/attributes; imported
    scale is raw — copy the old Size), verify FACING in the review grid
    (front must sit on the pivot look axis; Meshy authoring is inconsistent
@@ -414,13 +414,15 @@ heaven_ivory_throne after their v3 re-uploads all shattered.
 
 ### MissionProps solidification (rbxm, Rojo-served)
 
-`ReplicatedStorage.MissionProps` is SOURCE-CONTROLLED: served by Rojo from
+`ServerStorage.MissionProps` is SOURCE-CONTROLLED: served by Rojo from
 `assets/place/MissionProps.rbxm` (same pattern as `Assets.Models`), wired in
-`default.project.json`. The place file can no longer drift — a forgotten
-Edit-window transplant can't resurrect dead asset generations.
+`default.project.json`. It remains server-only until a mission clones a selected
+prop into Workspace, so dormant prop textures do not become client residents. The
+place file can no longer drift — a forgotten Edit-window transplant can't resurrect
+dead asset generations.
 
 After any prefab change in Studio (new prop, transplant, retexture):
-right-click ReplicatedStorage.MissionProps -> Save to File... ->
+right-click ServerStorage.MissionProps in the server DataModel -> Save to File... ->
 `assets/place/MissionProps.rbxm`, commit it WITH the registry update.
 NOTE: current Studio saves the native `Tags` property; Rojo >= 7.7.0 required
 to parse it (pinned in .mise.toml — 7.6.1 and lune 0.10.4 both reject it).

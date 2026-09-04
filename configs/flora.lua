@@ -8,7 +8,7 @@
     replacement here (Shared/Game/FloraTheme precedence: layer kind/variant
     -> layer kind -> realm kind/variant -> realm kind -> keep original).
 
-    Replacement value = a model name under ReplicatedStorage.Assets.Models.Flora
+    Replacement value = a model name under ServerStorage.Assets.Models.Flora
     (prebaked via the Models.rbxm flow). An entry left out = the authored
     original stays. The PLACE keeps the authored layout forever — the swap
     is runtime-only, so restyles are pure config changes.
@@ -41,6 +41,8 @@ return {
     sway = {
         enabled = true,
         radius = 80,
+        update_hz = 24,
+        rescan_seconds = 4,
         tree_degrees = 1.3,
         plant_degrees = 2.6,
         cactus_degrees = 1.8,

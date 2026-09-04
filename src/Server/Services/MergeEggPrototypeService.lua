@@ -59,6 +59,7 @@ local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local MergeEggRealmBuilder = require(script.Parent.MergeEggRealmBuilder)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local MergeEggPrototypeService = {}
 MergeEggPrototypeService.__index = MergeEggPrototypeService
@@ -277,8 +278,7 @@ local function cloneSquadDefinitions(squad, count)
 end
 
 local function cloneEggVisual(eggId, fallbackColor, targetHeight, canQuery)
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     local eggs = models and models:FindFirstChild("Eggs")
     local template = eggs and eggs:FindFirstChild(tostring(eggId or ""))
     local model = template and template:IsA("Model") and template:Clone() or nil
@@ -4100,6 +4100,162 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
     folder:SetAttribute("MergeEggNextEggCurrency", nextCost.currency)
     self:_publishEggHealDenial(team)
     self:_syncDeploymentPad(team)
+end
+
+local function ensureFolder(parent, name)
+    local folder = parent:FindFirstChild(name)
+    if folder and folder:IsA("Folder") then
+        return folder
+    end
+    if folder then
+        folder:Destroy()
+    end
+    folder = Instance.new("Folder")
+    folder.Name = name
+    folder.Parent = parent
+    return folder
+end
+
+local function removeUndesiredChildren(folder, desired)
+    for _, child in ipairs(folder:GetChildren()) do
+        if desired[child.Name] ~= true then
+            child:Destroy()
+        end
+    end
+end
+
+-- A player's PlayerGui is owner-only replication, making it a bounded warm shelf for the exact
+-- pet families their bay can hatch now or one source next. The complete normalized catalog remains
+-- server-only. This cache owns dormant templates only: live Workspace pets are never considered for
+-- removal here and remain resident until their authoritative lifecycle ends.
+function MergeEggPrototypeService:_reconcilePlayerAssetWarmCache(record)
+    local warmCfg = ((self._config.performance or {}).asset_warmup or {})
+    if warmCfg.enabled ~= true or not self:_isRecordActive(record) then
+        return
+    end
+    local playerGui = record.player:FindFirstChildOfClass("PlayerGui")
+    local templateRoot = ModelTemplateStore.root()
+    if not (playerGui and templateRoot) then
+        return
+    end
+
+    local desiredSources = {}
+    local progression = self:_eggProgression(record)
+    local baseTier = self:_baseEggTier(record)
+    local baseSource = progression[baseTier]
+    if baseSource then
+        desiredSources[baseSource] = true
+    end
+    if warmCfg.preload_next_source == true and progression[baseTier + 1] then
+        desiredSources[progression[baseTier + 1]] = true
+    end
+    for _, team in ipairs(record.teams or {}) do
+        if team.eggId then
+            desiredSources[team.eggId] = true
+        end
+        if warmCfg.preload_next_source == true then
+            local transaction = self:_deployedEggTransaction(team, record)
+            local nextSource = transaction.resultEggId or transaction.requiredEggId
+            if nextSource then
+                desiredSources[nextSource] = true
+            end
+        end
+    end
+
+    local sourceConfig = self._petsConfig and self._petsConfig.egg_sources or {}
+    local desiredPets = {}
+    for sourceId in pairs(desiredSources) do
+        local source = sourceConfig[sourceId]
+        for petType in pairs((source and source.pet_weights) or {}) do
+            desiredPets[petType] = true
+        end
+    end
+
+    local petNames = {}
+    for petType in pairs(desiredPets) do
+        petNames[#petNames + 1] = petType
+    end
+    table.sort(petNames)
+    local maximumPetTypes = math.max(
+        1,
+        math.floor(
+            requiredConfigNumber(
+                warmCfg.maximum_pet_types,
+                "merge_egg_prototype.performance.asset_warmup.maximum_pet_types"
+            )
+        )
+    )
+    for index = maximumPetTypes + 1, #petNames do
+        desiredPets[petNames[index]] = nil
+    end
+
+    local cacheName = tostring(warmCfg.cache_folder or "MergeAssetWarmCache")
+    local cache = ensureFolder(playerGui, cacheName)
+    local models = ensureFolder(cache, "Models")
+    local warmPets = ensureFolder(models, "Pets")
+    local warmEggs = ensureFolder(models, "Eggs")
+    removeUndesiredChildren(warmPets, desiredPets)
+    removeUndesiredChildren(warmEggs, desiredSources)
+
+    local sourcePets = templateRoot:FindFirstChild("Pets")
+    local sourceEggs = templateRoot:FindFirstChild("Eggs")
+    for index, petType in ipairs(petNames) do
+        if index > maximumPetTypes then
+            break
+        end
+        if not warmPets:FindFirstChild(petType) then
+            local template = sourcePets and sourcePets:FindFirstChild(petType)
+            if template then
+                template:Clone().Parent = warmPets
+            end
+        end
+    end
+    for sourceId in pairs(desiredSources) do
+        if not warmEggs:FindFirstChild(sourceId) then
+            local template = sourceEggs and sourceEggs:FindFirstChild(sourceId)
+            if template then
+                template:Clone().Parent = warmEggs
+            end
+        end
+    end
+    cache:SetAttribute("WarmSourceCount", #warmEggs:GetChildren())
+    cache:SetAttribute("WarmPetTypeCount", #warmPets:GetChildren())
+end
+
+function MergeEggPrototypeService:_schedulePlayerAssetWarmup(record)
+    local warmCfg = ((self._config.performance or {}).asset_warmup or {})
+    if warmCfg.enabled ~= true or not self:_isRecordActive(record) or record.assetWarmupBusy then
+        return
+    end
+    local now = os.clock()
+    local nextAssetWarmupAt = tonumber(record.nextAssetWarmupAt)
+    if nextAssetWarmupAt == nil then
+        nextAssetWarmupAt = 0
+    end
+    if now < nextAssetWarmupAt then
+        return
+    end
+    record.nextAssetWarmupAt = now
+        + math.max(
+            0.25,
+            requiredConfigNumber(
+                warmCfg.reconcile_interval,
+                "merge_egg_prototype.performance.asset_warmup.reconcile_interval"
+            )
+        )
+    record.assetWarmupBusy = true
+    task.spawn(function()
+        local ok, err = pcall(function()
+            self:_reconcilePlayerAssetWarmCache(record)
+        end)
+        record.assetWarmupBusy = false
+        if not ok then
+            self:_log("Warn", "Merge asset warmup failed", {
+                player = record.player.Name,
+                error = tostring(err),
+            })
+        end
+    end)
 end
 
 function MergeEggPrototypeService:_interruptHatcherProduction(record, team, now)
@@ -9414,6 +9570,25 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     if not world then
         return
     end
+    local previousState = world:GetAttribute("PrototypeState")
+    local interval = math.max(
+        0,
+        requiredConfigNumber(
+            (self._config.performance or {}).world_state_replication_interval,
+            "merge_egg_prototype.performance.world_state_replication_interval"
+        )
+    )
+    local now = os.clock()
+    local nextReplicationAt = record and tonumber(record.nextWorldStateReplicationAt)
+    if nextReplicationAt == nil then
+        nextReplicationAt = 0
+    end
+    if record and previousState == state and now < nextReplicationAt then
+        return
+    end
+    if record then
+        record.nextWorldStateReplicationAt = now + interval
+    end
     world:SetAttribute("PrototypeState", state)
     world:SetAttribute(
         "CombatCadenceMultiplier",
@@ -10051,13 +10226,16 @@ function MergeEggPrototypeService:_setTeamState(record, team, state)
         return
     end
     state = tostring(state or "Ready")
+    local changed = team.state ~= state
     team.state = state
     if team.folder and team.folder.Parent then
         team.folder:SetAttribute("MergeEggTeamState", state)
     end
     local world = self:_worldFor(record)
     local worldState = world and world:GetAttribute("PrototypeState") or "ReadyToHatch"
-    self:_setWorldState(worldState, record)
+    if changed then
+        self:_setWorldState(worldState, record)
+    end
 end
 
 function MergeEggPrototypeService:_queueMissingPets(record, team, occupiedSlots, expected, now)
@@ -10212,6 +10390,10 @@ end
 function MergeEggPrototypeService:_syncAllTeams(record)
     for _, team in ipairs(record and record.teams or {}) do
         self:_syncTeamState(record, team)
+    end
+    if record then
+        self:_schedulePlayerAssetWarmup(record)
+        self:_setWorldState(self:_activeWaveState(record), record)
     end
 end
 
@@ -11912,6 +12094,13 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     disconnect(record.playerCombatModeChanged)
     self:_setFullModeTargetOpen(record, false)
     self:_clearEncounter(record)
+    local playerGui = record.player:FindFirstChildOfClass("PlayerGui")
+    local warmCfg = ((self._config.performance or {}).asset_warmup or {})
+    local warmCache = playerGui
+        and playerGui:FindFirstChild(tostring(warmCfg.cache_folder or "MergeAssetWarmCache"))
+    if warmCache then
+        warmCache:Destroy()
+    end
     record.player:SetAttribute("CombatAssistTarget", record.assistTarget)
     record.player:SetAttribute("CombatAssistUntil", record.assistUntil)
     record.player:SetAttribute("InMergeEggPrototype", nil)
@@ -12449,6 +12638,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     else
         self:_startTutorial(record, opts.forceTutorial == true)
     end
+    self:_schedulePlayerAssetWarmup(record)
     self:_log("Info", "Merge Egg prototype session began", {
         player = player.Name,
         runId = record.runId,
@@ -14152,7 +14342,7 @@ end
 -- Grasping Hedge roots the front of the wave (feet stuck, hands free) and slows the pile.
 -- The root is timed, never refreshed, never HeldUntil. After it expires they must leave
 -- the hedge before another grab — walking back in roots them again. Not a lifetime counter.
-function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, leadAttr, slot)
+function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, distanceKey, slot)
     if not (record and family == "grasping_hedge") then
         return
     end
@@ -14169,7 +14359,8 @@ function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, 
     for _, enemy in ipairs(record.enemies or {}) do
         local model = enemy.model
         if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
-            local lead = tonumber(model:GetAttribute(leadAttr or "MergeEggBulwarkLeadingDistance"))
+            local distances = enemy.bulwarkDistances
+            local lead = distances and tonumber(distances[distanceKey or "lane"])
             local depth = math.abs(lead or 1e9)
             local inside = lead ~= nil and depth <= effect.stripDepthStuds
             -- Exit is march-axis only (leadingDistance). They must clear the strip plus a
@@ -14454,9 +14645,9 @@ function MergeEggPrototypeService:_traceBulwarkAggro(record, enemy, now)
     local context = string.format(
         "wave=%d lead=%.1f move=%.1f pivot=%.1f alerts=%d",
         record.waveIndex,
-        tonumber(model:GetAttribute("MergeEggBulwarkLeadingDistance")) or -1,
-        tonumber(model:GetAttribute("MergeEggBulwarkMovementDistance")) or -1,
-        tonumber(model:GetAttribute("MergeEggBulwarkPivotDistance")) or -1,
+        tonumber(enemy.bulwarkDistances and enemy.bulwarkDistances.bulwark) or -1,
+        tonumber(enemy.bulwarkMovementDistance) or -1,
+        tonumber(enemy.bulwarkPivotDistance) or -1,
         tonumber(model:GetAttribute("MergeEggBulwarkAlertCount")) or 0
     )
     for _, team in ipairs(record.teams or {}) do
@@ -14565,7 +14756,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     leadingBoundsPoint(model, movementPosition, direction)
                 leadingPosition = leadingPosition or movementPosition
                 local contactPadding = math.max(0, tonumber(cfg.bulwark_contact_padding) or 1)
-                local planeDistance = {}
+                local planeDistance = enemy.bulwarkDistances or {}
+                enemy.bulwarkDistances = planeDistance
                 for _, plane in ipairs(MergeBulwarkSlots.combatPlanes()) do
                     local entry = combatPlanes[plane.id]
                     if entry and entry.line then
@@ -14575,25 +14767,21 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                             leadingPosition.Z - entry.line.Position.Z
                         ):Dot(direction)
                         planeDistance[plane.id] = distance
-                        model:SetAttribute(plane.distanceAttr, distance)
-                        if plane.writeApproachDebug == true then
-                            model:SetAttribute(
-                                "MergeEggBulwarkMovementDistance",
-                                Vector3.new(
-                                    movementPosition.X - entry.line.Position.X,
-                                    0,
-                                    movementPosition.Z - entry.line.Position.Z
-                                ):Dot(direction)
-                            )
-                            model:SetAttribute(
-                                "MergeEggBulwarkPivotDistance",
-                                Vector3.new(
-                                    pivotPosition.X - entry.line.Position.X,
-                                    0,
-                                    pivotPosition.Z - entry.line.Position.Z
-                                ):Dot(direction)
-                            )
-                            model:SetAttribute("MergeEggBulwarkBoundsExtent", boundsExtent)
+                        if
+                            plane.writeApproachDebug == true
+                            and (self._config.debug or {}).trace_bulwark_aggro == true
+                        then
+                            enemy.bulwarkMovementDistance = Vector3.new(
+                                movementPosition.X - entry.line.Position.X,
+                                0,
+                                movementPosition.Z - entry.line.Position.Z
+                            ):Dot(direction)
+                            enemy.bulwarkPivotDistance = Vector3.new(
+                                pivotPosition.X - entry.line.Position.X,
+                                0,
+                                pivotPosition.Z - entry.line.Position.Z
+                            ):Dot(direction)
+                            enemy.bulwarkBoundsExtent = boundsExtent
                         end
                     end
                 end
@@ -14606,10 +14794,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                             0,
                             leadingPosition.Z - line.Position.Z
                         ):Dot(direction)
-                        local stripAttr = MergeBulwarkSlots.stripDistanceAttr(def)
-                        if stripAttr and planeDistance[def.combatPlane] == nil then
-                            model:SetAttribute(stripAttr, distance)
-                        end
+                        planeDistance[def.id] = distance
                         local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
                         self:_tickConcertinaBleed(
                             record,
@@ -14688,14 +14873,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     for _, def in ipairs(MergeBulwarkSlots.all()) do
         local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
         self:_tickLandSharkHunt(record, towardGate, family, tier, def.id)
-        self:_tickGraspingHedge(
-            record,
-            now,
-            family,
-            tier,
-            MergeBulwarkSlots.stripDistanceAttr(def),
-            def.id
-        )
+        self:_tickGraspingHedge(record, now, family, tier, def.id, def.id)
     end
     self:_reinforceIdleTeams(record, now)
     local overrunMinimum = math.max(1, math.floor(tonumber(cfg.breach_overrun_minimum) or 4))

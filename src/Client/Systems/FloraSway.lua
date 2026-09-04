@@ -17,7 +17,6 @@ local FloraSwayMath = require(ReplicatedStorage.Shared.Game.FloraSway)
 local FloraSway = {}
 
 local TAG = "FloraSway"
-local RESCAN_SECONDS = 2
 local started = false
 local prefEnabled = true
 local userChanged = false
@@ -33,6 +32,12 @@ type Tracked = {
 
 local tracked: { [Model]: Tracked } = {}
 local config = {}
+
+local function requiredNumber(value, path): number
+    local resolved = tonumber(value)
+    assert(resolved ~= nil, path .. " must be numeric")
+    return resolved
+end
 
 local function observerPosition(): Vector3?
     local camera = Workspace.CurrentCamera
@@ -208,17 +213,26 @@ function FloraSway.start()
         end
     end)
 
-    local elapsed = RESCAN_SECONDS
+    local rescanSeconds =
+        math.max(1, requiredNumber(config.rescan_seconds, "flora.sway.rescan_seconds"))
+    local updateInterval = 1 / math.max(1, requiredNumber(config.update_hz, "flora.sway.update_hz"))
+    local elapsed = rescanSeconds
+    local motionElapsed = updateInterval
     rescan()
     RunService.RenderStepped:Connect(function(dt)
         elapsed += dt
-        if elapsed >= RESCAN_SECONDS then
+        if elapsed >= rescanSeconds then
             elapsed = 0
             rescan()
         end
         if not prefEnabled then
             return
         end
+        motionElapsed += dt
+        if motionElapsed < updateInterval then
+            return
+        end
+        motionElapsed = 0
         local here = observerPosition()
         if not here then
             return

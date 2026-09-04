@@ -21,13 +21,25 @@
         "$path": "src/Server"
       }
     },
-    "ReplicatedStorage": {
+    "ServerStorage": {
       "Assets": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
         "Models": {
           "$path": "assets/place/Models.rbxm"
         }
+      },
+      "PlaceAssets": {
+        "$path": "assets/place/PlaceAssets"
+      },
+      "MissionProps": {
+        "$path": "assets/place/MissionProps.rbxm"
+      }
+    },
+    "ReplicatedStorage": {
+      "Assets": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true
       },
       "Shared": {
         "$path": "src/Shared"
@@ -40,12 +52,6 @@
       },
       "Configs": {
         "$path": "configs"
-      },
-      "PlaceAssets": {
-        "$path": "assets/place/PlaceAssets"
-      },
-      "MissionProps": {
-        "$path": "assets/place/MissionProps.rbxm"
       }
     },
     "StarterPlayer": {

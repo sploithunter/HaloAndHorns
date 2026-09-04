@@ -1,9 +1,10 @@
 -- Spawnable Merge tower model access. Authored maps own only TowerAnchor pads; cannon visuals are
--- cloned from ReplicatedStorage.Assets.Models.MergeCannons when a tower exists.
+-- cloned server-side from ServerStorage.Assets.Models.MergeCannons when a tower exists.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MergeTierArt = require(script.Parent.MergeTierArt)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local MergeTowerModels = {}
 
@@ -20,8 +21,7 @@ local function templatesRoot(rootOverride)
     if rootOverride then
         return rootOverride
     end
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     return models and models:FindFirstChild("MergeCannons")
 end
 

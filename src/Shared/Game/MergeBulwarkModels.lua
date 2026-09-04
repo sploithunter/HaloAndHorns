@@ -1,9 +1,10 @@
 -- Spawnable Merge bulwark model access. Authored maps own only placement anchors; visuals are
--- cloned from ReplicatedStorage.Assets.Models.MergeBulwarks when a defense exists.
+-- cloned server-side from ServerStorage.Assets.Models.MergeBulwarks when a defense exists.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MergeTierArt = require(script.Parent.MergeTierArt)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local MergeBulwarkModels = {}
 
@@ -30,8 +31,7 @@ local function templatesRoot(rootOverride)
     if rootOverride then
         return rootOverride
     end
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     return models and models:FindFirstChild("MergeBulwarks")
 end
 

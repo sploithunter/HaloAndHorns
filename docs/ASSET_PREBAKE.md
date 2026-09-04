@@ -2,7 +2,7 @@
 
 ## Why
 
-At boot, `AssetPreloadService` populates `ReplicatedStorage.Assets.Models` (pets / eggs / breakables).
+At boot, `AssetPreloadService` populates `ServerStorage.Assets.Models` (pets / eggs / breakables).
 The configs reference ~168 distinct model asset ids; any id **not** cached falls through to a
 synchronous `InsertService:LoadAsset` **network fetch** — measured at **0.45–1.0s each** vs **0.0005s**
 for a local clone. With ~100 uncached, that was a **~26s boot stall** (for owner *and* non-owner alike —
@@ -12,10 +12,11 @@ The fix: ship the **finished** model folder in the repo so there is **no `LoadAs
 
 ## How it works
 
-- `assets/place/Models.rbxm` is a snapshot of `ReplicatedStorage.Assets.Models`, captured from a
+- `assets/place/Models.rbxm` is a snapshot of `ServerStorage.Assets.Models`, captured from a
   **fully-booted runtime** (where every model is loaded and processed — welded / normalized / system
-  components added). `default.project.json` Rojo-maps it to `ReplicatedStorage.Assets.Models`, so the
-  finished models exist in the place from the start.
+  components added). `default.project.json` Rojo-maps it to `ServerStorage.Assets.Models`, so the
+  finished models exist on the server from the start without retaining all texture references on
+  every client.
 - `AssetPreloadService:LoadModelIntoFolder` has a fast path: if the target model is **already present
   with geometry**, it early-returns instead of fetching + processing. So the boot model pass becomes
   ~instant presence checks.
@@ -34,13 +35,12 @@ the `AssetReport` lists loaded (not skipped) models — those are the ones missi
 ## Regenerate — 3 steps
 
 1. **Boot the game fully** (Play in Studio) and let it finish loading — wait until
-   `[EggStandPlacement] placed eggs on N/N` appears, so every model is in `Assets.Models`.
-2. In the Explorer, confirm there is **exactly one** `ReplicatedStorage.Assets.Models` folder.
-   Two siblings with the same name are a Rojo + `$ignoreUnknownInstances` collision (Studio's last
-   saved `Models` plus the mapped `assets/place/Models.rbxm`). Both replicate to clients and
-   `FindFirstChild` picks one at random, so boot looks like the snapshot "isn't working." Keep the
-   richer folder (more Pets/Eggs), delete the twin, then right-click the remaining
-   **`ReplicatedStorage.Assets.Models`** → **Save / Export → Save to File** → save as `Models.rbxm`
+   `[EggStandPlacement] placed eggs on N/N` appears, so every model is in the server catalog.
+2. In the Server Explorer, confirm there is exactly one **`ServerStorage.Assets.Models`** folder and
+   no `ReplicatedStorage.Assets.Models`. A legacy replicated folder may survive an older place save;
+   merge any newer content into the server copy, then delete the replicated folder before publish.
+   Right-click **`ServerStorage.Assets.Models`** in the running server DataModel → **Save / Export →
+   Save to File** → save as `Models.rbxm`
    (anywhere, e.g. `~/Documents`).
    - MCP `execute_luau` **cannot** write files, so this save is manual. (MCP can still *traverse* and
      *validate* — it just can't export.)
@@ -64,7 +64,7 @@ Lune 0.10.5 because current Studio exports contain properties older Lune version
 
 2026-07-14 post-mortem: `assets/place/Models.rbxm` had been committed ONCE
 (July 2, initial import) — hours BEFORE the first rigged pet landed. Every
-Rojo (re)connect re-served that file at `ReplicatedStorage.Assets.Models`,
+Rojo (re)connect re-served that file as the canonical model catalog,
 replacing every hand-dropped rigged prebake with the static snapshot: bones
 gone, AnimationController gone, pets silently fall back to static/code-gait
 ("no animation at all"). Normal Play/Stop does NOT trigger it — a Rojo
@@ -79,7 +79,7 @@ from the uploaded rig assets (run via MCP in Edit, then capture).
 
 `InsertService:LoadAsset` content does **not** serialize through an Edit-mode place save — the models
 come out **empty** (`parts=0`). The validator flags this under `ASSET_ROOTS ... EMPTY=N`; empty nested
-organizational models are informational. Always capture the **running** game's `Assets.Models`, where
+organizational models are informational. Always capture the **running server's** `Assets.Models`, where
 geometry is materialized.
 
 ## Images (thumbnails) — optional, same pattern

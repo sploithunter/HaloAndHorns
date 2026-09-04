@@ -7,7 +7,7 @@
         • realm = WorldContext.parseName(world folder).realm   (Home -> base, Heaven_1 -> heaven…)
         • egg   = EggStandResolver.eggFor(realm, stand.Name, pets.realm_area_eggs)   (name carries
                   the area: "Lava" -> lava, "Ice" -> ice)
-    then clones the loaded egg model (ReplicatedStorage.Assets.Models.Eggs[eggId]) and centers it
+    then clones the loaded egg model (ServerStorage.Assets.Models.Eggs[eggId]) and centers it
     UPRIGHT on the stand's anchor (yaw only — never inherit the stand's pitch/roll, which is what
     put the old fabricated stand's egg on its side). Purely visual placement; the placed egg is
     tagged `EggStand` + stamped `EggId` so the existing hatch/preview path picks it up.
@@ -15,6 +15,7 @@
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 local Workspace = game:GetService("Workspace")
 
 local petConfig = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("pets"))
@@ -310,8 +311,7 @@ end
 BootReadiness.await("models_ready")
 BootReadiness.begin("eggs_placed") -- boot stage start (paired with signal below)
 
-local assets = ReplicatedStorage:WaitForChild("Assets")
-local eggsFolder = assets:WaitForChild("Models"):WaitForChild("Eggs")
+local eggsFolder = ModelTemplateStore.waitRoot():WaitForChild("Eggs")
 local maps = Workspace:WaitForChild("Maps")
 
 -- Discover authored stands per world and place their resolved egg.

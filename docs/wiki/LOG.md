@@ -7938,3 +7938,24 @@ first-session cohort rates.
   fades the custom loading screen without touching movement or camera control.
 - The obsolete cyan common-area return box is retired. Both real Heaven and Hell portal rings now
   carry the unrestricted return prompt and the same transition lifecycle.
+
+## 2026-09-04 — Bound Merge texture residency and replication churn
+
+- Moved the complete prebaked 3D model catalog from `ReplicatedStorage` to `ServerStorage`, so every
+  client no longer receives hundreds of dormant pet/flora/defense texture references at join.
+  Merge now builds an owner-only warm shelf for the current and next egg sources, and a client
+  preloader fetches those dependencies in bounded batches before the hatch.
+- Warm-shelf eviction never touches live Workspace pets. A pet that survives for many waves remains
+  resident and visible until its authoritative lifecycle removes it, even after its source falls
+  behind the player's unlock frontier.
+- Disabled default pet-sync and bulwark-distance trace replication, throttled unchanged world-state
+  snapshots to 5 Hz, added an Edit-mode pass that saves authored Merge environment meshes with
+  Automatic distance LOD, and reduced nearby flora sway work to 24 Hz with a four-second discovery
+  cadence.
+
+## 2026-09-04 — Keep packaged fallbacks server-only
+
+- Moved `PlaceAssets` and `MissionProps` beside the complete model catalog in `ServerStorage`.
+  Server construction remains cache-first and instant, while clients receive only selected live
+  Workspace clones and the owning Merge player's current/next-source warm shelf. Missing legacy 3D
+  previews retain their existing flat-art/emoji fallback rather than restoring a global catalog.
