@@ -372,6 +372,16 @@ end
 -- Only offer an empty bay to players who are free to claim it.
 do
     local ok, err = pcall(function()
+        require(script.Systems.MergeAutoplayController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeAutoplayController", { error = tostring(err) })
+    end
+end
+
+-- Only offer an empty bay to players who are free to claim it.
+do
+    local ok, err = pcall(function()
         require(script.Systems.MergeBayClaimPrompt).start()
     end)
     if not ok then

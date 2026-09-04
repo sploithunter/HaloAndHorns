@@ -1434,6 +1434,18 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        MergeAutoplayToggle = {
+            name = "MergeAutoplayToggle",
+            transport = "reliable_event",
+            location = "replicated_storage",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 4,
+            handler = "MergeAutoplayService.HandleToggle",
+            schema = { kind = "tuple", arguments = { { name = "request", type = "table" } } },
+        },
         MergeEggPrototypeBoardAction = {
             name = "MergeEggPrototypeBoardAction",
             transport = "reliable_event",
