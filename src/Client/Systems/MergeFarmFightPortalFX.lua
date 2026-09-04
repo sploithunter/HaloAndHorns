@@ -160,8 +160,14 @@ local function makeSignFace(veil, face, cfg, spec, palette)
         palette.accent,
         palette.stroke
     )
+    local wordLayout = cfg.word
+    local portalLayout = spec.layout
+    if type(portalLayout) == "table" and portalLayout.word_position ~= nil then
+        wordLayout = table.clone(cfg.word)
+        wordLayout.position = portalLayout.word_position
+    end
     local word =
-        makeTextLabel(content, "Word", spec.word, cfg.word, palette.primary, palette.stroke)
+        makeTextLabel(content, "Word", spec.word, wordLayout, palette.primary, palette.stroke)
     makeTextLabel(content, "Tagline", spec.tagline, cfg.tagline, palette.secondary, palette.stroke)
     makeTextLabel(
         content,

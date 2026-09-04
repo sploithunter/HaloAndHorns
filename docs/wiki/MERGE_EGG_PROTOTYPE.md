@@ -19,8 +19,10 @@ spark motes, orbiting points, and random circumference-to-circumference procedur
 is rendered on both physical faces of the portal veil with `SurfaceGui`, so the full composition
 scales and occludes naturally with the world instead of becoming distant HUD. A narrow theme-colored
 Neon column terminates in a floating orb-and-mote halo high above each gate as its long-range
-wayfinder. The effect is proximity-gated and client-only; the existing public return-route service
-remains the travel authority.
+wayfinder. Per-portal `layout.word_position` may optically center the focal word against a gate's
+visible aperture without moving the other gate or the shared copy stack. The effect is
+proximity-gated and client-only; the existing public return-route service remains the travel
+authority.
 
 ## Phase 1 contract
 

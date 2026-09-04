@@ -7745,3 +7745,9 @@ first-session cohort rates.
 - Kept every Farm/Fight SurfaceGui line on the exact horizontal portal axis, but moved the large
   `FARM` / `FIGHT` word box from 43% to 49% aperture height so the focal word no longer reads high
   inside the circular gate at approach distance.
+
+## 2026-09-03 — Scope portal optical centering to Heaven
+
+- Corrected the shared focal-word nudge after confirming the infernal gate was already centered.
+  Restored `FIGHT` to its original 43% center and added a per-portal layout override that keeps only
+  the celestial `FARM` word at 49%, matching each gate's different visible aperture.
