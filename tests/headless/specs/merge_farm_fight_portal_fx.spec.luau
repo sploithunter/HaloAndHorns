@@ -22,6 +22,7 @@ return function()
             expect(hell.tagline).to.equal("EARN IT THE HARD WAY")
             expect(hell.layout).to.equal(nil)
             expect(heaven.ancestor_name == hell.ancestor_name).to.equal(false)
+            expect(mergeConfig.gate.return_route.expected_gate_count).to.equal(#cfg.portals)
         end)
 
         it("keeps the veil, motes, lettering, and lightning config-owned", function()

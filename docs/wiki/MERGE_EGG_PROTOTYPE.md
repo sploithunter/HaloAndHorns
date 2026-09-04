@@ -22,7 +22,25 @@ Neon column terminates in a floating orb-and-mote halo high above each gate as i
 wayfinder. Per-portal `layout.word_position` may optically center the focal word against a gate's
 visible aperture without moving the other gate or the shared copy stack. The effect is
 proximity-gated and client-only; the existing public return-route service remains the travel
-authority.
+authority. Both themed `LightningRing` markers also own the public `Return / Farm & Fight`
+interaction; the former cyan `HallOfWorldsPortal` common-area placeholder is retired and removed at
+runtime from older place versions.
+
+## Cross-place transit feedback
+
+Both the restricted Hall entry and the public Merge return door route through
+`MergeEggPrototypeService:_teleportToRole`. Before that seam asks `TeleportService` to begin, the
+server publishes a per-player role and lifecycle token. `MergePortalTransitFX` turns the state into
+a non-colliding ForceField shell, highlight, sparks, orbiting motes, and a nearby destination label
+for every observing client. The travelling player also gets a compact status card clear of the
+hotbar. A role-themed custom teleport GUI bridges Roblox's loading handoff and fades shortly after
+the destination client starts.
+
+Only one transfer may be pending per player. Synchronous request errors, `TeleportInitFailed`, and
+the configured safety timeout all clear the token and presentation; leaving the source server drops
+the pending record. The effect never changes the Humanoid, character collision, camera, or movement.
+All copy, palettes, geometry, particle tuning, loading-screen layout, request headroom, and cleanup
+timing live under `gate.transit_feedback` in `configs/merge_egg_prototype.lua`.
 
 ## Phase 1 contract
 
@@ -927,10 +945,10 @@ team and queue model:
   service is placed behind `RunService:IsStudio()`, Farm and Fight retains the sealed door but
   never creates `MergeEggPrototypeEnterPrompt`, and the dedicated place loses its gameplay/return
   bindings.
-- The dedicated place's authored common-area `Workspace.HallOfWorldsPortal` is the reciprocal
-  return door. Runtime styles and labels that existing hook, then exposes an unrestricted
-  `Return / Farm & Fight` prompt to every player. Return does not require a claimed bay, active
-  session, internal-account classification, or Kade's explicit preview grant.
+- The dedicated place's two themed `LightningRing` gates are the reciprocal return doors. Runtime
+  binds the same unrestricted `Return / Farm & Fight` prompt to Heaven and Hell; the old cyan
+  common-area placeholder is deleted. Return does not require a claimed bay, active session,
+  internal-account classification, or Kade's explicit preview grant.
 - Dedicated-place character entry waits for ProfileStore data before creating the isolated wallet
   or arming a wave. This prevents a transient `currency_setup_failed` from leaving the player in
   the map with only fallback art and no working management grid. A veteran whose settings finish

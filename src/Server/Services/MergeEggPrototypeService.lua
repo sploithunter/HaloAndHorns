@@ -102,6 +102,20 @@ local function findNamedPart(root, name)
     return firstBasePart(found)
 end
 
+local function portalSpecForMarker(marker, portalSpecs)
+    for _, spec in ipairs(portalSpecs or {}) do
+        local ancestorName = tostring(spec.ancestor_name or "")
+        local cursor = marker and marker.Parent
+        while cursor and cursor ~= Workspace do
+            if ancestorName ~= "" and cursor.Name == ancestorName then
+                return spec
+            end
+            cursor = cursor.Parent
+        end
+    end
+    return nil
+end
+
 local function configuredAuthoringBayId(realmConfig)
     local selector = type(realmConfig) == "table" and realmConfig.authoring_bay or nil
     if type(selector) ~= "table" or selector.enabled ~= true then
@@ -393,8 +407,10 @@ function MergeEggPrototypeService:Init()
     self._enteringByPlayer = setmetatable({}, { __mode = "k" })
     self._enteringRecordByPlayer = setmetatable({}, { __mode = "k" })
     self._combatTrainingReturns = setmetatable({}, { __mode = "k" })
+    self._portalTransitByPlayer = setmetatable({}, { __mode = "k" })
     self._world = nil
     self._gatePrompt = nil
+    self._returnPrompts = {}
     self._upgradeSweepGeneration = 0
     self._upgradeSweepRunning = false
     self._upgradeSweepPhase = nil
@@ -11156,29 +11172,125 @@ function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectTe
     return prompt
 end
 
-function MergeEggPrototypeService:_teleportToRole(player, role)
-    local placeId = PlaceRuntime.placeIdForRole(self._placesConfig, role)
-    if not placeId then
-        return false, "place_role_unconfigured"
+function MergeEggPrototypeService:_portalTransitConfig()
+    local config = (self._config.gate or {}).transit_feedback
+    assert(type(config) == "table", "Merge gate transit_feedback config is required")
+    assert(
+        type(config.active_attribute) == "string" and config.active_attribute ~= "",
+        "Merge gate transit active_attribute is required"
+    )
+    assert(
+        type(config.role_attribute) == "string" and config.role_attribute ~= "",
+        "Merge gate transit role_attribute is required"
+    )
+    assert(
+        type(config.token_attribute) == "string" and config.token_attribute ~= "",
+        "Merge gate transit token_attribute is required"
+    )
+    assert(
+        tonumber(config.timeout_seconds) and tonumber(config.timeout_seconds) > 0,
+        "Merge gate transit timeout_seconds must be positive"
+    )
+    assert(
+        tonumber(config.request_delay_seconds) and tonumber(config.request_delay_seconds) >= 0,
+        "Merge gate transit request_delay_seconds must be non-negative"
+    )
+    return config
+end
+
+function MergeEggPrototypeService:_clearPortalTransit(player, token)
+    local pending = player and self._portalTransitByPlayer[player] or nil
+    if not pending or (token ~= nil and pending.token ~= token) then
+        return false
     end
+    self._portalTransitByPlayer[player] = nil
+    if player.Parent then
+        local config = self:_portalTransitConfig()
+        player:SetAttribute(config.active_attribute, nil)
+        player:SetAttribute(config.role_attribute, nil)
+        player:SetAttribute(config.token_attribute, nil)
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_beginPortalTransit(player, role, placeId)
+    local config = self:_portalTransitConfig()
+    if self._portalTransitByPlayer[player] then
+        return nil, "teleport_pending"
+    end
+
+    local token = HttpService:GenerateGUID(false)
+    local now = os.clock()
+    local pending = {
+        role = role,
+        placeId = placeId,
+        token = token,
+        requestAt = now + tonumber(config.request_delay_seconds),
+        expiresAt = now + tonumber(config.timeout_seconds),
+        requested = false,
+    }
+    self._portalTransitByPlayer[player] = pending
+    if config.enabled ~= false then
+        player:SetAttribute(config.role_attribute, role)
+        player:SetAttribute(config.token_attribute, token)
+        -- Active is written last so clients never observe the effect before its theme and
+        -- lifecycle token have replicated.
+        player:SetAttribute(config.active_attribute, true)
+    end
+    return pending
+end
+
+function MergeEggPrototypeService:_performPortalTransit(player, pending)
     local options = Instance.new("TeleportOptions")
     options:SetTeleportData({
         sourcePlaceId = game.PlaceId,
-        destinationRole = tostring(role),
+        destinationRole = tostring(pending.role),
     })
     local ok, result = pcall(function()
-        return TeleportService:TeleportAsync(placeId, { player }, options)
+        return TeleportService:TeleportAsync(pending.placeId, { player }, options)
     end)
     if not ok then
+        self:_clearPortalTransit(player, pending.token)
         self:_log("Warn", "Merge place teleport failed", {
             player = player.Name,
-            destinationRole = tostring(role),
-            destinationPlaceId = placeId,
+            destinationRole = tostring(pending.role),
+            destinationPlaceId = pending.placeId,
             error = tostring(result),
         })
         return false, "teleport_failed"
     end
     return true, result
+end
+
+function MergeEggPrototypeService:_stepPortalTransits(now)
+    for player, pending in pairs(self._portalTransitByPlayer) do
+        if not player.Parent then
+            self._portalTransitByPlayer[player] = nil
+        elseif now >= pending.expiresAt then
+            if self:_clearPortalTransit(player, pending.token) then
+                self:_log("Warn", "Merge place teleport feedback timed out", {
+                    player = player.Name,
+                    destinationRole = pending.role,
+                    destinationPlaceId = pending.placeId,
+                })
+            end
+        elseif pending.requested ~= true and now >= pending.requestAt then
+            pending.requested = true
+            self:_performPortalTransit(player, pending)
+        end
+    end
+end
+
+function MergeEggPrototypeService:_teleportToRole(player, role)
+    local placeId = PlaceRuntime.placeIdForRole(self._placesConfig, role)
+    if not placeId then
+        return false, "place_role_unconfigured"
+    end
+    local pending, pendingReason = self:_beginPortalTransit(player, role, placeId)
+    if not pending then
+        return false, pendingReason
+    end
+    return true, pending
 end
 
 function MergeEggPrototypeService:_enterFromHall(player)
@@ -11209,66 +11321,57 @@ function MergeEggPrototypeService:_bindPublicReturnGate()
         return nil
     end
 
-    local gateCfg = self._config.gate or {}
-    local returnCfg = gateCfg.return_route or {}
+    local returnCfg = (self._config.gate or {}).return_route or {}
     if returnCfg.public ~= true then
         return nil
     end
-    local hookName = tostring(returnCfg.hook_name or gateCfg.hook_name or "HallOfWorldsPortal")
-    local hook = Workspace:FindFirstChild(hookName, true)
-    if not (hook and hook:IsA("BasePart")) then
-        self:_log("Warn", "Merge return-door hook unavailable", {
-            hook = hookName,
-        })
-        return nil
-    end
 
-    -- This authored hook is the common-area door, not a combat-bay control. Styling it at runtime
-    -- keeps the permanent map responsible for placement while making the route unmistakable.
-    hook:SetAttribute("MergeEggPublicReturnDoor", true)
-    hook.Material = Enum.Material.Neon
-    hook.Color = rgbTriplet(returnCfg.color, { 82, 216, 255 })
-    hook.Transparency = 0.2
-    hook.CanCollide = false
-    hook.CanTouch = false
-    hook.CanQuery = true
-
-    local billboard = hook:FindFirstChild("MergeEggReturnDoorBillboard")
-    if billboard then
-        billboard:Destroy()
-    end
-    billboard = Instance.new("BillboardGui")
-    billboard.Name = "MergeEggReturnDoorBillboard"
-    billboard.Adornee = hook
-    billboard.AlwaysOnTop = true
-    billboard.LightInfluence = 0
-    billboard.MaxDistance = 140
-    billboard.Size = UDim2.fromOffset(420, 86)
-    billboard.StudsOffsetWorldSpace = Vector3.new(0, hook.Size.Y * 0.5 + 2.5, 0)
-    billboard.Parent = hook
-
-    local label = Instance.new("TextLabel")
-    label.Name = "Label"
-    label.BackgroundTransparency = 1
-    label.Size = UDim2.fromScale(1, 1)
-    label.Font = Enum.Font.GothamBlack
-    label.Text = tostring(returnCfg.label or "RETURN TO FARM & FIGHT")
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextScaled = true
-    label.TextStrokeColor3 = Color3.fromRGB(18, 28, 48)
-    label.TextStrokeTransparency = 0
-    label.Parent = billboard
-
-    self._returnPrompt = self:_attachPrompt(
-        hook,
-        tostring(returnCfg.prompt_name or EXIT_PROMPT_NAME),
-        tostring(returnCfg.action_text or "Return"),
-        tostring(returnCfg.object_text or "Farm & Fight"),
-        function(player)
-            self:_returnToFarmAndFight(player)
+    if returnCfg.remove_legacy_hook == true then
+        local legacyHook =
+            Workspace:FindFirstChild(tostring(returnCfg.legacy_hook_name or ""), true)
+        if legacyHook then
+            legacyHook:Destroy()
         end
-    )
-    return hook
+    end
+
+    local portalCfg = self._config.farm_fight_portals or {}
+    local markerName = tostring(portalCfg.marker_name or "")
+    local prompts = {}
+    for _, candidate in ipairs(Workspace:GetDescendants()) do
+        if
+            candidate:IsA("BasePart")
+            and candidate.Name == markerName
+            and portalSpecForMarker(candidate, portalCfg.portals)
+        then
+            candidate:SetAttribute("MergeEggPublicReturnDoor", true)
+            candidate.CanCollide = false
+            candidate.CanTouch = false
+            candidate.CanQuery = false
+            local prompt = self:_attachPrompt(
+                candidate,
+                tostring(returnCfg.prompt_name or EXIT_PROMPT_NAME),
+                tostring(returnCfg.action_text or "Return"),
+                tostring(returnCfg.object_text or "Farm & Fight"),
+                function(player)
+                    self:_returnToFarmAndFight(player)
+                end
+            )
+            table.insert(prompts, prompt)
+        end
+    end
+    self._returnPrompts = prompts
+
+    local expected = tonumber(returnCfg.expected_gate_count)
+    assert(expected ~= nil and expected >= 1, "Merge return_route expected_gate_count is required")
+    expected = math.floor(expected)
+    if #prompts ~= expected then
+        self:_log("Warn", "Merge themed return-gate count mismatch", {
+            expected = expected,
+            found = #prompts,
+            marker = markerName,
+        })
+    end
+    return prompts
 end
 
 function MergeEggPrototypeService:_bindRestrictedHallGate()
@@ -17682,6 +17785,22 @@ function MergeEggPrototypeService:Start()
     if self._config.enabled == false then
         return
     end
+    TeleportService.TeleportInitFailed:Connect(
+        function(player, teleportResult, errorMessage, placeId)
+            local pending = player and self._portalTransitByPlayer[player] or nil
+            if not pending then
+                return
+            end
+            self:_clearPortalTransit(player, pending.token)
+            self:_log("Warn", "Merge place teleport initialization failed", {
+                player = player.Name,
+                destinationRole = pending.role,
+                destinationPlaceId = placeId or pending.placeId,
+                result = tostring(teleportResult),
+                error = tostring(errorMessage),
+            })
+        end
+    )
     if self._dataService and self._dataService.RegisterBeforeProfileRelease then
         self._dataService:RegisterBeforeProfileRelease(function(player)
             local record = self:_recordFor(player)
@@ -17738,6 +17857,7 @@ function MergeEggPrototypeService:Start()
         })
     end)
     RunService.Heartbeat:Connect(function()
+        self:_stepPortalTransits(os.clock())
         self:_step()
     end)
     Players.PlayerAdded:Connect(function(player)
@@ -17748,6 +17868,7 @@ function MergeEggPrototypeService:Start()
     end
     Players.PlayerRemoving:Connect(function(player)
         self._combatTrainingReturns[player] = nil
+        self._portalTransitByPlayer[player] = nil
         local enteringRecord = self._enteringRecordByPlayer[player]
         if enteringRecord then
             self:_cancelPendingEntry(enteringRecord, true)
