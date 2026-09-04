@@ -1,0 +1,64 @@
+local Awards = loadModule("src/Shared/Game/AchievementBannerAwards.lua")
+local config = loadModule("configs/achievement_banners.lua")
+
+return function()
+    describe("achievement banner awards", function()
+        it("derives configured awards from authoritative facts", function()
+            local ids = Awards.eligible(config.awards, {
+                level = 50,
+                veteran_level = 99,
+                merge_wave = 250,
+                merge_egg_tier = 21,
+            })
+            expect(table.find(ids, "level_50")).to.be.ok()
+            expect(table.find(ids, "wave_250")).to.be.ok()
+            expect(table.find(ids, "heaven_3_egg")).to.be.ok()
+            expect(table.find(ids, "veteran_100")).never.to.be.ok()
+            expect(table.find(ids, "hell_3_egg")).never.to.be.ok()
+        end)
+
+        it("grants once and keeps the award pending until a checkpoint presentation", function()
+            local state = Awards.normalize(nil)
+            local granted = Awards.grant(state, "level_50", {
+                source = "checkpoint",
+                value = 50,
+            }, 100)
+            expect(granted).to.equal(true)
+            expect(state.pending.level_50).to.equal(true)
+            expect(state.owned.level_50.earned_at).to.equal(100)
+            expect(Awards.grant(state, "level_50", {}, 200)).to.equal(false)
+            expect(state.owned.level_50.earned_at).to.equal(100)
+        end)
+
+        it("mounts newly presented awards and retains only the newest configured slots", function()
+            local state = Awards.normalize(nil)
+            local ids = {
+                "level_50",
+                "heaven_2_egg",
+                "hell_2_egg",
+                "heaven_3_egg",
+                "hell_3_egg",
+            }
+            for index, awardId in ipairs(ids) do
+                Awards.grant(state, awardId, {}, index)
+            end
+            local pending = Awards.pendingIds(state, config.awards)
+            local presented = Awards.present(state, pending, 4, 20)
+            expect(#presented).to.equal(5)
+            expect(#state.displayed).to.equal(4)
+            expect(state.displayed[1]).to.equal("heaven_2_egg")
+            expect(state.displayed[4]).to.equal("hell_3_egg")
+            expect(next(state.pending)).never.to.be.ok()
+        end)
+
+        it("repairs stale and duplicate display entries", function()
+            local state = Awards.normalize({
+                owned = { level_50 = { earned_at = 1 } },
+                pending = {},
+                displayed = { "missing", "level_50", "level_50" },
+            })
+            expect(#state.displayed).to.equal(1)
+            expect(state.displayed[1]).to.equal("level_50")
+        end)
+    end)
+end

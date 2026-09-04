@@ -2,8 +2,114 @@
 -- the client systems only interpret this contract.
 
 return {
-    version = 1,
+    version = 2,
     tag = "AchievementBanner",
+
+    -- Permanent award definitions. Services report facts; this catalog decides which facts are
+    -- banner-worthy, how the cloth is printed, and which imported silhouette is mounted.
+    awards = {
+        level_50 = {
+            trigger = { fact = "level", at_least = 50 },
+            variant = "champion_standard",
+            style = "champion",
+            title = "LEVEL",
+            value = "50",
+            footer = "REALM CHAMPION",
+            priority = 50,
+        },
+        veteran_100 = {
+            trigger = { fact = "veteran_level", at_least = 100 },
+            variant = "champion_standard",
+            style = "champion",
+            title = "VETERAN",
+            value = "100",
+            footer = "THE LONG WATCH",
+            priority = 100,
+        },
+        wave_250 = {
+            trigger = { fact = "merge_wave", at_least = 250 },
+            variant = "victory_swallowtail",
+            style = "battle",
+            title = "WAVE",
+            value = "250",
+            footer = "HELD THE LINE",
+            priority = 90,
+        },
+        heaven_2_egg = {
+            trigger = { fact = "merge_egg_tier", at_least = 13 },
+            variant = "champion_standard",
+            style = "heaven",
+            title = "HEAVEN II",
+            value = "EGG",
+            footer = "REALM FORGED",
+            priority = 60,
+        },
+        hell_2_egg = {
+            trigger = { fact = "merge_egg_tier", at_least = 17 },
+            variant = "victory_swallowtail",
+            style = "hell",
+            title = "HELL II",
+            value = "EGG",
+            footer = "REALM FORGED",
+            priority = 65,
+        },
+        heaven_3_egg = {
+            trigger = { fact = "merge_egg_tier", at_least = 21 },
+            variant = "champion_standard",
+            style = "heaven",
+            title = "HEAVEN III",
+            value = "EGG",
+            footer = "CROWN OF LIGHT",
+            priority = 75,
+        },
+        hell_3_egg = {
+            trigger = { fact = "merge_egg_tier", at_least = 25 },
+            variant = "victory_swallowtail",
+            style = "hell",
+            title = "HELL III",
+            value = "EGG",
+            footer = "CROWN OF ASH",
+            priority = 80,
+        },
+    },
+
+    display = {
+        maximum = 4,
+        folder_name = "PlayerAchievementBanners",
+        reference_name = "BayClaimPad",
+        model_scale = 1,
+        -- Local to the claim pad. Its LookVector points into the bay, so these form a gallery just
+        -- inside the entrance and face back toward the public approach.
+        slots = {
+            { x = -21, y = 11, z = -5 },
+            { x = -7, y = 11, z = -5 },
+            { x = 7, y = 11, z = -5 },
+            { x = 21, y = 11, z = -5 },
+        },
+        model_yaw_degrees = 0,
+        camera = {
+            distance = 17,
+            height = 1,
+            target_height = 0,
+        },
+    },
+
+    ceremony = {
+        enabled = true,
+        -- Ordinary wave gaps remain untouched. A checkpoint already lasts eight seconds; only a
+        -- checkpoint with pending awards requests at least this much breathing room.
+        checkpoint_minimum_seconds = 5,
+        stream_timeout_seconds = 2,
+        camera_in_seconds = 0.35,
+        hold_seconds = 0.85,
+        camera_out_seconds = 0.4,
+        safety_timeout_seconds = 2.5,
+        field_of_view = 44,
+        highlight_color = { 255, 214, 92 },
+        highlight_fill_transparency = 0.68,
+        highlight_outline_transparency = 0.05,
+        glint_size = 0.42,
+    },
 
     model = {
         cloth_name = "Cloth",
@@ -90,6 +196,30 @@ return {
                 ink = { 255, 217, 126 },
                 shadow = { 17, 1, 2 },
                 highlight = { 255, 235, 186 },
+            },
+        },
+        heaven = {
+            title = "HEAVEN",
+            footer = "REALM FORGED",
+            palette = {
+                base = { 218, 248, 255 },
+                deep = { 70, 139, 181 },
+                accent = { 245, 201, 77 },
+                ink = { 255, 255, 239 },
+                shadow = { 22, 63, 96 },
+                highlight = { 255, 255, 255 },
+            },
+        },
+        hell = {
+            title = "HELL",
+            footer = "REALM FORGED",
+            palette = {
+                base = { 105, 11, 19 },
+                deep = { 20, 1, 4 },
+                accent = { 255, 91, 20 },
+                ink = { 255, 218, 146 },
+                shadow = { 10, 0, 1 },
+                highlight = { 255, 175, 70 },
             },
         },
         founder = {
