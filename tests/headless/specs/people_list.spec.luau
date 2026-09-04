@@ -215,6 +215,34 @@ return function()
             expect(PeopleList.topOffset(cfg(), merge)).to.equal(0)
         end)
 
+        it("removes the ScreenGui safe-area origin before docking the Merge list", function()
+            local bounds = PeopleList.screenGuiLocalBounds({
+                viewportWidth = 1835,
+                viewportHeight = 869,
+                absoluteLeft = 1434,
+                absoluteTop = -44,
+                width = 397,
+                height = 78,
+                anchorX = 1,
+                anchorY = 0,
+                xScale = 1,
+                xOffset = -4,
+                yScale = 0,
+                yOffset = 14,
+            })
+            expect(bounds.left).to.equal(1434)
+            expect(bounds.top).to.equal(14)
+            expect(bounds.right).to.equal(1831)
+            expect(bounds.bottom).to.equal(92)
+
+            local merge = table.clone(desktop)
+            merge.viewportWidth = 1835
+            merge.viewportHeight = 869
+            merge.mergePlace = true
+            merge.mergeWaveBottom = bounds.bottom
+            expect(PeopleList.topOffset(cfg(), merge)).to.equal(97)
+        end)
+
         it("inherits the live Merge wave meter footprint on a phone", function()
             local dimensions = PeopleList.layout(cfg(), {
                 displayClass = "phone",

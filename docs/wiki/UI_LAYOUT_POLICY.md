@@ -29,8 +29,10 @@ Responsive relationships—not guessed screen coordinates—own placement.
   Merge place, the People list docks beneath `MergeWaveBar.WaveMeter`, inherits its rendered width,
   right edge, and chrome scale, and adds a viewport-relative gap. Its per-device values are startup
   fallbacks only. Clamp followers to the viewport when the leader's safe-area coordinate extends
-  slightly beyond an edge on a small device. Never feed that rendered edge back into a `UDim2`
-  pixel offset.
+  slightly beyond an edge on a small device. `AbsolutePosition` includes Roblox's fullscreen safe-
+  area extension (and can therefore be negative at the top); normalize the leader's rendered bounds
+  into its `ScreenGui`-local viewport coordinates before deriving the follower's scale position.
+  Never feed the raw rendered edge back into a `UDim2` pixel offset.
 
 Farm & Fight's `UpperRightHudStack` is the reference for dependent HUD surfaces. The quest and
 tutorial cards alternate at layout order 10, while the People list occupies order 20 in the same
