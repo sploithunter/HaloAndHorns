@@ -18,6 +18,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
 - [Client Performance](CLIENT_PERFORMANCE.md) — measured Merge baseline, nearby adaptive shadows,
   persisted graphics controls, and next performance targets.
+- [Merge Autoplay](MERGE_AUTOPLAY.md) — coin-only online character automation, pass gating,
+  strategy reports, and isolated Studio-only testing controls.
 - [Configuration-As-Code Audit](CONFIG_AS_CODE_AUDIT.md) — complete runtime literal/fallback
   inventory, CI ratchet, and remediation priorities.
 - [Console Support](CONSOLE_SUPPORT.md) — controller mapping, semantic input routing, modal focus,

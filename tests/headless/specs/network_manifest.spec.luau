@@ -353,7 +353,8 @@ return function()
                 "SettingsService.ResolveMergeDefenseModeNotice"
             )
             expect(signals.Combat_PresentationBatch.name).to.equal("Combat_PresentationBatch")
-            expect(#created).to.equal(146)
+            expect(signals.MergeAutoplayToggle.name).to.equal("MergeAutoplayToggle")
+            expect(#created).to.equal(147)
         end)
 
         it("omits Studio-only packets from a production registry", function()

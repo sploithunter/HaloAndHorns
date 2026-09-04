@@ -8052,3 +8052,12 @@ first-session cohort rates.
 - Follow-up: personal best records wave **entry**, per user clarification. Added the config-owned
   300/350/400/... wave banner series, alternating cloth styles and highest-presented wave-only wall
   replacement. Owned awards survive replacement; checkpoint-only ceremony remains unchanged.
+
+## 2026-09-04 — Coin-only online Merge autoplay
+
+- Verified clean main `a8c20b65` and confirmed Merge v594 was published before feature work.
+- Added the existing Offline Gaming pass mapping, server-planned walking autoplay, ordinary
+  proximity-checked coin purchases, and a separate on/off client controller. No Gems, player
+  rebirth, ascension, upgrade-destroying replacements, or offline/anti-idle behavior.
+- Added configurable strategy scheduling, bounded session reports, and server-only Studio
+  comparison/rebirth controls. See [Merge Autoplay](MERGE_AUTOPLAY.md) for the safety boundary.

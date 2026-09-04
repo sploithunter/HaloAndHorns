@@ -1043,6 +1043,9 @@ if isFeatureEnabled("map_binding") then
         ServerScriptService.Server.Services.MergeEggPrototypeService,
         mergeEggPrototypeDeps
     )
+    loader:RegisterModule("MergeAutoplayService", ServerScriptService.Server.Services.MergeAutoplayService, {
+        "Logger", "ConfigLoader", "DataService", "EconomyService", "MergeEggPrototypeService",
+    })
 end
 registerFeatureModule(
     "auto_target",
@@ -1459,6 +1462,7 @@ table.insert(requiredModules, "ZoneTrackerService")
 table.insert(requiredModules, "GameAPIService")
 appendIfEnabled(requiredModules, "map_binding", "AchievementBannerService")
 appendIfEnabled(requiredModules, "map_binding", "MergeEggPrototypeService")
+appendIfEnabled(requiredModules, "map_binding", "MergeAutoplayService")
 if RunService:IsStudio() then
     table.insert(requiredModules, "StudioSmokeTestService")
     table.insert(requiredModules, "AutomationService")
