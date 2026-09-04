@@ -7841,3 +7841,12 @@ first-session cohort rates.
 - Mount reconciliation rehydrates previously presented awards from the permanent ledger, so cloth
   displaced by the former four-banner cap returns to the expanded wall without skipping ceremony
   for awards that are still pending.
+
+## 2026-09-04 — Confirm destructive Merge workshop replacements
+
+- Cannon and bulwark workshops now require a second, explicit confirmation before installing a
+  different family over an occupied slot and resetting its tier progress. The warning names the
+  current tier/family and the Tier-1 replacement; its copy remains config-owned.
+- The confirmation carries the exact slot, installed family/tier, and target family. The server
+  recomputes that identity and rejects missing or stale confirmations before any currency charge.
+  Unlocks, empty-slot installs, and ordinary upgrades remain one-click actions.

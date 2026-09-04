@@ -46,6 +46,8 @@ local MergeBulwarkPersist = require(ReplicatedStorage.Shared.Game.MergeBulwarkPe
 local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
 local MergeBulwarkSlots = require(ReplicatedStorage.Shared.Game.MergeBulwarkSlots)
 local MergeCannonPersist = require(ReplicatedStorage.Shared.Game.MergeCannonPersist)
+local MergeReplacementConfirmation =
+    require(ReplicatedStorage.Shared.Game.MergeReplacementConfirmation)
 local MergeTierArt = require(ReplicatedStorage.Shared.Game.MergeTierArt)
 local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
 local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
@@ -6582,6 +6584,7 @@ function MergeEggPrototypeService:_bulwarkMenuState(record, slot)
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
         unlockCosts = self:_unlockCostMap(cfg, families, MergeBulwarkProgression.actionCost),
         tierCosts = self:_tierCostMap(cfg, families, MergeBulwarkProgression.actionCost),
+        replacementConfirmation = self._config.team.workshop_replacement_confirmation,
         gemWallet = self:_tutorialGemWallet(record),
         rebirthRank = rebirthRank,
         requiredRebirthRank = requiredRebirthRank,
@@ -7973,6 +7976,7 @@ function MergeEggPrototypeService:_cannonMenuState(record, slot)
         wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
         unlockCosts = self:_unlockCostMap(cfg, families, MergeTowerProgression.actionCost),
         tierCosts = self:_tierCostMap(cfg, families, MergeTowerProgression.actionCost),
+        replacementConfirmation = self._config.team.workshop_replacement_confirmation,
         gemWallet = self:_tutorialGemWallet(record),
         rebirthRank = rebirthRank,
         requiredRebirthRank = requiredRebirthRank,
@@ -16413,6 +16417,14 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
     if not nextState then
         return false, progressionReason
     end
+    if nextState.operation == "replaced" then
+        local currentFamily, currentTier = MergeBulwarkProgression.slotFamily(before, slot)
+        local expectedConfirmationKey =
+            MergeReplacementConfirmation.key(slot, currentFamily, currentTier, request.family)
+        if request.replacementConfirmationKey ~= expectedConfirmationKey then
+            return false, "bulwark_replacement_confirmation_required"
+        end
+    end
 
     local _, targetTier = MergeBulwarkProgression.slotFamily(nextState, slot)
     local price =
@@ -16522,6 +16534,14 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
     )
     if not nextState then
         return false, progressionReason
+    end
+    if nextState.operation == "replaced" then
+        local currentFamily, currentTier = MergeTowerProgression.slotFamily(before, slot)
+        local expectedConfirmationKey =
+            MergeReplacementConfirmation.key(slot, currentFamily, currentTier, request.family)
+        if request.replacementConfirmationKey ~= expectedConfirmationKey then
+            return false, "cannon_replacement_confirmation_required"
+        end
     end
 
     local _, targetTier = MergeTowerProgression.slotFamily(nextState, slot)

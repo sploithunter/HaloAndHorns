@@ -6,6 +6,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local CURRENCIES = require(ReplicatedStorage.Configs:WaitForChild("currencies"))
+local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
+local MergeReplacementConfirmation =
+    require(ReplicatedStorage.Shared.Game.MergeReplacementConfirmation)
 
 local MergeCannonMenu = {}
 
@@ -467,6 +470,8 @@ function MergeCannonMenu.new(parent, onAction)
         textLimit(line, 15)
         bullets[index] = line
     end
+    local nextTitleDefaultColor = nextTitle.TextColor3
+    local bulletDefaultColor = bullets[1].TextColor3
 
     local upgradeFrame = Instance.new("Frame")
     upgradeFrame.Name = "UpgradeFrame"
@@ -594,6 +599,9 @@ function MergeCannonMenu.new(parent, onAction)
         button.Activated:Connect(function()
             local card = cards[index]
             if card and card.family then
+                if controller.selectedId ~= card.family.id then
+                    controller.replacementConfirmKey = nil
+                end
                 controller.selectedId = card.family.id
                 controller:_paint()
             end
@@ -666,7 +674,7 @@ function MergeCannonMenu.new(parent, onAction)
         contents.coin.Visible = showPrice
         contents.coin.Image = currencyId == "gems" and GEM_ICON or WAYCOIN_ICON
         contents.amount.Visible = showPrice
-        contents.amount.Text = tostring(costAmount)
+        contents.amount.Text = MergeEggCostFormat.format(costAmount)
         contents.amount.TextColor3 = ink
     end
 
@@ -694,11 +702,26 @@ function MergeCannonMenu.new(parent, onAction)
                 slot = controller.state and controller.state.slot,
             })
         elseif controller.installActive then
+            local replacement =
+                MergeReplacementConfirmation.describe(controller.state, controller.selectedFamily)
+            if
+                replacement
+                and not MergeReplacementConfirmation.isConfirmed(
+                    controller.replacementConfirmKey,
+                    replacement
+                )
+            then
+                controller.replacementConfirmKey = replacement.key
+                controller:_paint()
+                return
+            end
+            controller.replacementConfirmKey = nil
             onAction({
                 action = "cannon",
                 cannonAction = "select",
                 family = controller.selectedFamily.id,
                 slot = controller.state and controller.state.slot,
+                replacementConfirmationKey = replacement and replacement.key or nil,
             })
         elseif controller.upgradeActive then
             onAction({
@@ -740,7 +763,7 @@ function MergeCannonMenu.new(parent, onAction)
         local tierCosts = type(state.tierCosts) == "table" and state.tierCosts or {}
         syncCards(families)
         walletCoin.Image = WAYCOIN_ICON
-        walletAmount.Text = tostring(wallet)
+        walletAmount.Text = MergeEggCostFormat.format(wallet)
 
         hint.Text = state.playtestUnlock == true
                 and "Placeable from Wave 1 • Unlock with Gems • Install/upgrade with Waycoins"
@@ -817,6 +840,22 @@ function MergeCannonMenu.new(parent, onAction)
             controller.selectedId = selected.id
             local ownedTier = math.max(0, math.floor(tonumber(owned[selected.id]) or 0))
             local current = installed and selected.id == state.family
+            local replacement = MergeReplacementConfirmation.describe(state, selected)
+            local replacementPending = MergeReplacementConfirmation.isConfirmed(
+                controller.replacementConfirmKey,
+                replacement
+            )
+            if not replacement then
+                controller.replacementConfirmKey = nil
+            end
+            local confirmationCopy = assert(
+                type(state.replacementConfirmation) == "table" and state.replacementConfirmation,
+                "Merge cannon state is missing replacement confirmation copy"
+            )
+            local confirmationLines = assert(
+                type(confirmationCopy.lines) == "table" and confirmationCopy.lines,
+                "Merge cannon replacement confirmation is missing lines"
+            )
             local atMaximum = ownedTier >= maximumTier
             local nextTier = ownedTier == 0 and 1
                 or (not current and 1)
@@ -831,7 +870,8 @@ function MergeCannonMenu.new(parent, onAction)
                     and math.max(0, math.floor(tonumber(unlockPrice.amount) or cost))
                 or cost
             walletCoin.Image = unlockCurrency == "gems" and GEM_ICON or WAYCOIN_ICON
-            walletAmount.Text = tostring(unlockCurrency == "gems" and gemWallet or wallet)
+            walletAmount.Text =
+                MergeEggCostFormat.format(unlockCurrency == "gems" and gemWallet or wallet)
             selectedName.Text = string.upper(tostring(selected.name or selected.id))
             if ownedTier == 0 then
                 ownedBadge.Text = "LOCKED"
@@ -873,10 +913,35 @@ function MergeCannonMenu.new(parent, onAction)
             showPreview(nextPreview, selected, nextTier)
             nextCaption.Text = atMaximum and "MAX" or string.format("TIER %d", nextTier)
             nextCaption.Visible = true
-            nextTitle.Text = ownedTier == 0 and "UNLOCK"
-                or (not current and "INSTALL")
-                or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
+            nextTitle.Text = if replacementPending
+                then string.format(
+                    tostring(confirmationCopy.title),
+                    replacement.currentTier,
+                    string.upper(replacement.currentName)
+                )
+                else ownedTier == 0 and "UNLOCK"
+                    or (not current and "INSTALL")
+                    or (atMaximum and "MAXIMUM" or "NEXT UPGRADE")
+            nextTitle.TextColor3 = replacementPending and title.TextColor3 or nextTitleDefaultColor
             paintNotes(selected, nextTier, atMaximum)
+            for _, bullet in ipairs(bullets) do
+                bullet.TextColor3 = replacementPending and title.TextColor3 or bulletDefaultColor
+            end
+            if replacementPending then
+                bullets[1].Text =
+                    string.format(tostring(confirmationLines[1]), replacement.currentTier)
+                bullets[2].Text = string.format(
+                    tostring(confirmationLines[2]),
+                    string.upper(replacement.targetName)
+                )
+                bullets[3].Text = string.format(
+                    tostring(confirmationLines[3]),
+                    string.upper(tostring(confirmationCopy.button))
+                )
+                for _, bullet in ipairs(bullets) do
+                    bullet.Visible = true
+                end
+            end
             local canInstall = selected.canInstall ~= false
             controller.buyActive = unlocked and ownedTier == 0 and canInstall
             controller.upgradeActive = unlocked and current and not atMaximum
@@ -889,7 +954,13 @@ function MergeCannonMenu.new(parent, onAction)
             elseif current and ownedTier > 0 then
                 paintPriced(purchase, "UPGRADE", true, cost, Color3.fromRGB(26, 18, 4))
             elseif controller.installActive then
-                paintPriced(purchase, "INSTALL", true, cost, Color3.fromRGB(26, 18, 4))
+                paintPriced(
+                    purchase,
+                    replacementPending and tostring(confirmationCopy.button) or "INSTALL",
+                    true,
+                    cost,
+                    Color3.fromRGB(26, 18, 4)
+                )
             elseif ownedTier > 0 then
                 paintPriced(purchase, "INSTALL", false, cost, Color3.fromRGB(213, 219, 227))
             else
@@ -904,12 +975,16 @@ function MergeCannonMenu.new(parent, onAction)
             end
             upgrade.Active = purchaseActive
             upgrade.AutoButtonColor = purchaseActive
-            upgrade.BackgroundColor3 = controller.upgradeActive and Color3.fromRGB(75, 175, 95)
-                or purchaseActive and Color3.fromRGB(225, 151, 22)
-                or Color3.fromRGB(68, 74, 86)
-            upgradeStroke.Color = controller.upgradeActive and Color3.fromRGB(180, 255, 195)
-                or purchaseActive and Color3.fromRGB(255, 229, 110)
-                or Color3.fromRGB(110, 118, 132)
+            upgrade.BackgroundColor3 = if replacementPending
+                then close.BackgroundColor3
+                else controller.upgradeActive and Color3.fromRGB(75, 175, 95)
+                    or purchaseActive and Color3.fromRGB(225, 151, 22)
+                    or Color3.fromRGB(68, 74, 86)
+            upgradeStroke.Color = if replacementPending
+                then title.TextColor3
+                else controller.upgradeActive and Color3.fromRGB(180, 255, 195)
+                    or purchaseActive and Color3.fromRGB(255, 229, 110)
+                    or Color3.fromRGB(110, 118, 132)
         else
             showPreview(ownedPreview, nil, 0)
             showPreview(nextPreview, nil, 0)
@@ -923,7 +998,11 @@ function MergeCannonMenu.new(parent, onAction)
             ownedEmpty.Text = "LOCKED"
             nextCaption.Visible = false
             nextTitle.Text = "NEXT UPGRADE"
+            nextTitle.TextColor3 = nextTitleDefaultColor
             paintNotes({}, 0, false)
+            for _, bullet in ipairs(bullets) do
+                bullet.TextColor3 = bulletDefaultColor
+            end
             controller.buyActive = false
             controller.upgradeActive = false
             controller.installActive = false
@@ -947,6 +1026,7 @@ function MergeCannonMenu.new(parent, onAction)
     end
 
     function controller:hide()
+        controller.replacementConfirmKey = nil
         overlay.Visible = false
     end
 
