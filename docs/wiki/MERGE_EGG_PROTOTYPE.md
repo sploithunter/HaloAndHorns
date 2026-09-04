@@ -672,9 +672,11 @@ team and queue model:
   every installed hatcher below the new tier one-for-one. Healthy deployed pets remain in place;
   newly granted positions are filled and future replacements use the promoted source.
 - Auto Merge is a permanent 49-Robux pass (`auto_merge`, Roblox game pass `1970690426`) exposed in
-  the Quartermaster catalog and on that floor control. Nonowners receive the ordinary Marketplace
-  purchase prompt; owners may switch the session-only automation on and off, and it resets off on
-  rebirth/new-session initialization. Each automatic step recomputes the same server-authored
+  the Quartermaster catalog and on that floor control. Nonowners first receive a compact, dismissible
+  in-game card that explains line-first ordering and the configured Robux price; only its explicit
+  Buy action opens the ordinary Marketplace prompt. Owners may switch the session-only automation
+  on and off, and it resets off on rebirth/new-session initialization. Each automatic step
+  recomputes the same server-authored
   Equip Best plan and feeds an empty or equal-tier frontline hatcher first. Only when the line has
   no valid move does it combine one lowest-tier board pair, then it recomputes the line before a
   second board merge. This prevents a board cascade from consuming the tier the frontline needs.

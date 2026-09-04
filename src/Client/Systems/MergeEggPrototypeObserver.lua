@@ -74,6 +74,8 @@ local TUTORIAL_ACTIVITY_MAXIMUM_QUEUE = assert(
 local MergeEggPrototypeObserver = {}
 MergeEggPrototypeObserver.MonetizationCatalog =
     require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
+MergeEggPrototypeObserver.GamePassPurchasePrompt =
+    require(script.Parent.Parent.UI.Components.GamePassPurchasePrompt)
 MergeEggPrototypeObserver.autoMergeConfig = assert(
     ((CONFIG.team or {}).merge_board or {}).auto_merge,
     "merge_egg_prototype.team.merge_board.auto_merge is required"
@@ -3316,10 +3318,17 @@ function MergeEggPrototypeObserver._createAutoCombineSurface(host)
         if MergeEggPrototypeObserver.autoMergeOwned or button:GetAttribute("PassOwned") == true then
             Signals.MergeEggPrototypeBoardAction:FireServer({ action = "toggle_auto" })
         else
-            Signals.InitiatePurchase:FireServer({
-                productId = MergeEggPrototypeObserver.autoMergePassId,
-                productType = "gamepass",
-            })
+            MergeEggPrototypeObserver.GamePassPurchasePrompt.show({
+                passId = MergeEggPrototypeObserver.autoMergePassId,
+                presentation = MergeEggPrototypeObserver.autoMergeConfig.purchase_menu,
+            }, function(purchase, entry)
+                if purchase then
+                    Signals.InitiatePurchase:FireServer({
+                        productId = entry.id,
+                        productType = entry.kind,
+                    })
+                end
+            end)
         end
     end)
     return { surface = surface, host = host, button = button, stroke = stroke }

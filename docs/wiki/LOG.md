@@ -7861,3 +7861,11 @@ first-session cohort rates.
   line again before continuing, so the board cannot cascade past an egg tier the line needs.
 - Added a pure priority seam and headless coverage for line precedence, lowest-tier board ordering,
   and the no-action case. The pass artwork source is retained under `assets/ui/game_passes/`.
+
+## 2026-09-04 — Add an Auto Merge purchase card
+
+- The locked floor control now opens a compact in-game pass card instead of jumping immediately to
+  Roblox Marketplace. It shows the pass art, benefit, line-first/board-second priority, and the
+  config-authored 49-Robux price, with explicit Buy, Cancel, and click-off exits.
+- Only Buy forwards into the existing server purchase pipeline. Ownership and the actual toggle
+  remain server-authoritative, while the card's copy, size, price source, and palette stay in config.
