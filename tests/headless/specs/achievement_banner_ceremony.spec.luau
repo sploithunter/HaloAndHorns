@@ -13,6 +13,24 @@ return function()
                 true
             )
             expect(config.display.maximum <= #config.display.slots).to.equal(true)
+            expect(config.display.slot_anchor).to.equal("top_center")
+        end)
+
+        it("fits every configured award across both mall-facing stair walls", function()
+            local awardCount = 0
+            for _ in pairs(config.awards) do
+                awardCount += 1
+            end
+            expect(config.display.maximum >= awardCount).to.equal(true)
+            expect(#config.display.slots).to.equal(8)
+            for index, slot in ipairs(config.display.slots) do
+                expect(slot.z > 0).to.equal(true)
+                if index % 2 == 1 then
+                    expect(slot.x < 0).to.equal(true)
+                else
+                    expect(slot.x > 0).to.equal(true)
+                end
+            end
         end)
 
         it("defines every award with a spawnable model and printable style", function()

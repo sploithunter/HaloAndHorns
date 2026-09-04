@@ -956,7 +956,7 @@ team and queue model:
 ## Player-bay achievement banners (2026-09-03)
 
 - `GameData.AchievementBanners` is the permanent idempotent award ledger: `owned` records what the
-  player earned, `pending` queues an unpresented cloth, and `displayed` keeps the newest four bay
+  player earned, `pending` queues an unpresented cloth, and `displayed` keeps up to eight bay
   banners. The initial catalog covers Level 50, Veteran 100, Wave 250, and the Heaven/Hell Layer 2
   and Layer 3 egg milestones. Definitions, copy, styles, model variants, placement, and ceremony
   timing all live in `configs/achievement_banners.lua`.
@@ -971,6 +971,14 @@ team and queue model:
   local. The gallery is rebuilt from persistence when a player claims a bay and cleared when that
   bay is released. Models opt in exclusively through the `AchievementBanner` tag, keeping them out
   of name-inferred flora motion.
+- A bay mount reconciles the display list from every owned award with a `presented_at` timestamp.
+  This restores older cloth that may have fallen out of the original four-slot gallery without
+  revealing awards that are still pending their checkpoint ceremony.
+- Gallery slots alternate across the two mall-facing stone walls beside each bay stair, starting
+  nearest the steps and filling outward. Slot coordinates are top-center anchors, so either cloth
+  silhouette hangs with its crossbar just below the wall cap while the bounds-aware mount preserves
+  the existing bone flutter. Heaven and Hell use the same PlayerSpawn-local contract and therefore
+  mirror naturally toward the central mall.
 
 ## Source and authoring
 

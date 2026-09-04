@@ -30,7 +30,7 @@ return function()
             expect(state.owned.level_50.earned_at).to.equal(100)
         end)
 
-        it("mounts newly presented awards and retains only the newest configured slots", function()
+        it("mounts newly presented awards and respects the requested display cap", function()
             local state = Awards.normalize(nil)
             local ids = {
                 "level_50",
@@ -49,6 +49,29 @@ return function()
             expect(state.displayed[1]).to.equal("heaven_2_egg")
             expect(state.displayed[4]).to.equal("hell_3_egg")
             expect(next(state.pending)).never.to.be.ok()
+        end)
+
+        it("restores previously presented cloth when the wall gains more slots", function()
+            local state = Awards.normalize(nil)
+            local ids = {
+                "level_50",
+                "heaven_2_egg",
+                "hell_2_egg",
+                "heaven_3_egg",
+                "hell_3_egg",
+            }
+            for index, awardId in ipairs(ids) do
+                Awards.grant(state, awardId, {}, index)
+            end
+            Awards.present(state, Awards.pendingIds(state, config.awards), 4, 20)
+            expect(#state.displayed).to.equal(4)
+
+            local displayed, changed =
+                Awards.reconcileDisplayed(state, config.awards, config.display.maximum)
+            expect(changed).to.equal(true)
+            expect(#displayed).to.equal(5)
+            expect(displayed[1]).to.equal("level_50")
+            expect(displayed[5]).to.equal("hell_3_egg")
         end)
 
         it("repairs stale and duplicate display entries", function()
