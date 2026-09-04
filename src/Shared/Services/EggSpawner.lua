@@ -41,6 +41,7 @@ end
 local petConfig = Locations.getConfig("pets")
 local eggSystemConfig = Locations.getConfig("egg_system")
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 -- Active eggs in the world
 local activeEggs = {}
@@ -48,8 +49,7 @@ local activeEggs = {}
 -- === EGG SPAWNING SYSTEM ===
 
 local function getPreloadedEggTemplate(eggType)
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     local eggs = models and models:FindFirstChild("Eggs")
     local template = eggs and eggs:FindFirstChild(eggType)
     if template and template:IsA("Model") then

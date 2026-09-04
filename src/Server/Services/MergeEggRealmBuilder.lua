@@ -7,6 +7,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local MergeEggRealmLayout = require(ReplicatedStorage.Shared.Game.MergeEggRealmLayout)
@@ -139,10 +140,11 @@ local function sanitizeAsset(root)
 end
 
 local function assetTemplate(name)
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
+    local models = ModelTemplateStore.root()
     local flora = models and models:FindFirstChild("Flora")
-    local missionProps = ReplicatedStorage:FindFirstChild("MissionProps")
+    local missionProps = ServerStorage:FindFirstChild("MissionProps")
+        or ReplicatedStorage:FindFirstChild("MissionProps") -- migration-safe fallback
     return (flora and flora:FindFirstChild(name))
         or (missionProps and missionProps:FindFirstChild(name))
 end

@@ -1,16 +1,16 @@
 --[[
-    AssetPreloadService - Preloads all game assets into ReplicatedStorage.Assets
+    AssetPreloadService - Preloads dormant 3D templates server-side and shared flat assets.
     
     This service:
     1. Extracts all asset IDs from configuration files
-    2. Loads models via InsertService and places them in ReplicatedStorage.Assets.Models.Pets
-    3. Creates organized folder structure for instant client access
+    2. Loads models via InsertService and places them in ServerStorage.Assets.Models.Pets
+    3. Creates organized server template and replicated image/sound folders
     4. Handles asset loading failures gracefully
     
     Architecture:
-    - Server loads models at startup into ReplicatedStorage.Assets.Models.Pets/
-    - Client accesses models directly: ReplicatedStorage.Assets.Models.Pets.Bear.Basic
-    - No RemoteFunction needed - simple direct access
+    - Server loads the complete model catalog into ServerStorage.Assets.Models
+    - Clients receive only live Workspace clones plus flat image/sound assets
+    - Dormant templates never become permanent client texture references
 ]]
 
 local AssetPreloadService = {}
@@ -19,6 +19,7 @@ AssetPreloadService.__index = AssetPreloadService
 local InsertService = game:GetService("InsertService")
 local AssetService = game:GetService("AssetService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
 local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
@@ -28,6 +29,7 @@ local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 -- Record one model/mesh load attempt into the consolidated boot AssetReport. `kind` is inferred
 -- from the target folder (Pets -> pet_model, etc.) so failures read as "what + where" in one log.
@@ -145,11 +147,8 @@ function AssetPreloadService:Start()
     logger:Info("✅ AssetPreloadService:Start() completed")
 end
 
--- Rojo maps Models.rbxm onto Assets.Models, but Assets also uses
--- $ignoreUnknownInstances. A Studio-saved Models folder then survives next to
--- the mapped one. FindFirstChild picks one at random; the other still
--- replicates to every client (~7k extra descendants) and the preload fast-path
--- can miss templates that only exist in the sibling.
+-- Rojo maps Models.rbxm onto ServerStorage.Assets.Models. The merge helper also supports a stale
+-- Studio-authored ReplicatedStorage.Assets.Models during migration so no captured template is lost.
 local function mergeFolderContents(keep, extra)
     for _, child in ipairs(extra:GetChildren()) do
         local existing = keep:FindFirstChild(child.Name)
@@ -215,7 +214,32 @@ function AssetPreloadService:CreateAssetFolders()
         logger:Info("✅ CreateAssetFolders: Assets folder created")
     end
 
-    local models = resolveUniqueNamedFolder(assets, "Models")
+    local templateAssets = ServerStorage:FindFirstChild("Assets")
+    if not templateAssets then
+        templateAssets = Instance.new("Folder")
+        templateAssets.Name = "Assets"
+        templateAssets.Parent = ServerStorage
+    end
+    local models = resolveUniqueNamedFolder(templateAssets, "Models")
+
+    -- A Studio place saved before the server-only catalog migration may still contain the old
+    -- replicated Models folder because ReplicatedStorage.Assets preserves unknown children. Adopt
+    -- anything absent from the server catalog, then remove the replicated reference immediately.
+    -- The edit-time place is cleaned separately; this is the runtime safety net for stale publishes.
+    local migratedLegacyModels = 0
+    for _, legacy in ipairs(assets:GetChildren()) do
+        if legacy.Name == "Models" and legacy:IsA("Folder") then
+            mergeFolderContents(models, legacy)
+            legacy:Destroy()
+            migratedLegacyModels += 1
+        end
+    end
+    if migratedLegacyModels > 0 then
+        logger:Warn("Migrated legacy replicated model catalogs to ServerStorage", {
+            catalogs = migratedLegacyModels,
+            descendants = #models:GetDescendants(),
+        })
+    end
     logger:Info("📁 CreateAssetFolders: Models folder", {
         exists = true,
         path = models:GetFullName(),
@@ -259,7 +283,8 @@ function AssetPreloadService:CreateAssetFolders()
     end
 
     logger:Info("✅ CreateAssetFolders: Asset folder structure complete", {
-        path = "ReplicatedStorage.Assets",
+        modelsPath = models:GetFullName(),
+        sharedPath = assets:GetFullName(),
     })
 end
 
@@ -544,8 +569,7 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
         return
     end
 
-    local modelsRoot = ReplicatedStorage.Assets
-        and ReplicatedStorage.Assets:FindFirstChild("Models")
+    local modelsRoot = ModelTemplateStore.root()
     if not modelsRoot then
         logger:Error("LoadAllBreakableModelsIntoAssets: Models root missing")
         return
@@ -576,7 +600,7 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
             and existing:FindFirstChildWhichIsA("BasePart", true) ~= nil
         if prebaked then
             -- PRE-BAKED FAST PATH: a valid crystal model is already present (the Rojo-synced
-            -- ReplicatedStorage.Assets.Models.Breakables.Crystals). Adopt it as-is — do NOT destroy +
+            -- ServerStorage.Assets.Models.Breakables.Crystals). Adopt it as-is — do NOT destroy +
             -- regenerate / re-fetch. Without this the boot wipes + RE-PULLS every crystal asset, and
             -- until that finishes the on-entry fill has no templates, so crystals only appear on the 30s
             -- safety-net sweep — the "30s window" walk-in delay that came back after the model pre-bake.
@@ -685,18 +709,19 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
         type = petConfig and type(petConfig) or "nil",
     })
 
-    local petsFolder = ReplicatedStorage.Assets.Models.Pets
+    local modelsRoot = ModelTemplateStore.waitRoot()
+    local petsFolder = modelsRoot:WaitForChild("Pets")
     logger:Info("🔄 LoadAllModelsIntoAssets: Pets folder found", {
         petsFolderExists = petsFolder ~= nil,
         petsFolderPath = petsFolder and petsFolder:GetFullName() or "nil",
     })
 
     -- Create eggs folder if it doesn't exist
-    local eggsFolder = ReplicatedStorage.Assets.Models:FindFirstChild("Eggs")
+    local eggsFolder = modelsRoot:FindFirstChild("Eggs")
     if not eggsFolder then
         eggsFolder = Instance.new("Folder")
         eggsFolder.Name = "Eggs"
-        eggsFolder.Parent = ReplicatedStorage.Assets.Models
+        eggsFolder.Parent = modelsRoot
     end
 
     -- Create Images folder structure if it doesn't exist
@@ -791,7 +816,7 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
 
                     if prebakeMatchesSource then
                         -- PRE-BAKED FAST PATH (mesh-combine AND asset_id pets alike): a valid model is
-                        -- already present (the Rojo-synced ReplicatedStorage.Assets.Models, captured from
+                        -- already present (the Rojo-synced ServerStorage.Assets.Models, captured from
                         -- a fully-loaded runtime). Adopt it as-is — no fetch, no mesh-combine, no
                         -- weld/normalize (it's the already-processed runtime output). MUST be the FIRST
                         -- branch: otherwise meshy pets fall into the combine branch below and rebuild
@@ -1359,12 +1384,12 @@ function AssetPreloadService:LoadModelIntoFolder(
     options
 )
     -- PRE-BAKED CACHE FAST PATH: if a model with real geometry is already present (the Rojo-synced
-    -- ReplicatedStorage.Assets.Models, captured from a fully-loaded runtime and committed as
+    -- ServerStorage.Assets.Models, captured from a fully-loaded runtime and committed as
     -- assets/place/Models.rbxm), skip the slow InsertService:LoadAsset + welding/normalizing AND the
     -- chatty per-model logging entirely. This turns the boot model pass into ~instant presence checks
     -- (a cached clone is ~1500x faster than a network fetch). Models NOT in the pre-bake — a newly
     -- added pet, a changed asset_id — fall through and load normally, so the cache self-heals.
-    -- Regenerate the pre-bake by saving ReplicatedStorage.Assets.Models from a fully-booted session.
+    -- Regenerate the pre-bake by saving ServerStorage.Assets.Models from a fully-booted session.
     local prebaked = parentFolder and parentFolder:FindFirstChild(folderName)
     if prebaked and prebaked:FindFirstChildWhichIsA("BasePart", true) then
         reportAsset(assetId, parentFolder, folderName, debugName, true)
@@ -1688,9 +1713,13 @@ function AssetPreloadService:GetCameraConfig(itemType)
     return cameraConfig
 end
 
--- Get model from ReplicatedStorage.Assets (for external access if needed)
+-- Get model from the server-only template catalog (for external access if needed)
 function AssetPreloadService:GetModelFromAssets(petType, variant)
-    local petsFolder = ReplicatedStorage.Assets.Models.Pets
+    local modelsRoot = ModelTemplateStore.root()
+    local petsFolder = modelsRoot and modelsRoot:FindFirstChild("Pets")
+    if not petsFolder then
+        return nil
+    end
     local petTypeFolder = petsFolder:FindFirstChild(petType)
 
     if petTypeFolder then
@@ -1703,7 +1732,7 @@ function AssetPreloadService:GetModelFromAssets(petType, variant)
     logger:Warn("Model not found in assets", {
         petType = petType,
         variant = variant,
-        path = "ReplicatedStorage.Assets.Models.Pets." .. petType .. "." .. variant,
+        path = "ServerStorage.Assets.Models.Pets." .. petType .. "." .. variant,
     })
 
     return nil
@@ -1711,7 +1740,11 @@ end
 
 -- Check if a model is available in assets
 function AssetPreloadService:IsModelInAssets(petType, variant)
-    local petsFolder = ReplicatedStorage.Assets.Models.Pets
+    local modelsRoot = ModelTemplateStore.root()
+    local petsFolder = modelsRoot and modelsRoot:FindFirstChild("Pets")
+    if not petsFolder then
+        return false
+    end
     local petTypeFolder = petsFolder:FindFirstChild(petType)
 
     if petTypeFolder then
@@ -1807,7 +1840,11 @@ end
 
 -- Get loading statistics
 function AssetPreloadService:GetLoadingStats()
-    local petsFolder = ReplicatedStorage.Assets.Models.Pets
+    local modelsRoot = ModelTemplateStore.root()
+    local petsFolder = modelsRoot and modelsRoot:FindFirstChild("Pets")
+    if not petsFolder then
+        return { petTypes = 0, totalVariants = 0, folderPath = "missing" }
+    end
     local petCount = 0
     local variantCount = 0
 

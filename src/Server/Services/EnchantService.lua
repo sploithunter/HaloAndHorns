@@ -1018,8 +1018,8 @@ function EnchantService:_getPetModelTemplate(petData)
         return nil
     end
 
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
+    local models = ModelTemplateStore.root()
     local pets = models and models:FindFirstChild("Pets")
     local petFolder = pets and pets:FindFirstChild(tostring(petData.id or ""))
     local variant = tostring(petData.variant or "basic")

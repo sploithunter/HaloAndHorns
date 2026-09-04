@@ -3,7 +3,7 @@
 
     Responsibilities:
     - Reads breakable config (configs/breakables.lua)
-    - Uses preloaded assets in ReplicatedStorage.Assets.Models.Breakables.Crystals
+    - Uses preloaded assets in ServerStorage.Assets.Models.Breakables.Crystals
     - Spawns crystals at world spawners up to world Max, tracks CurrentItems
     - Respawns when items are removed
 
@@ -45,6 +45,7 @@ local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 -- Hall rewards arrive as tangible objects rather than popping into existence. Keep the visual
 -- state local to each spawned model so every material/texture can fade to its authored value.
@@ -931,10 +932,8 @@ function BreakableSpawner:_spawnLoop()
     -- listener never installed and worlds only filled on the 30s safety-net (the walk-in delay).
     -- See docs/BOOT_ORCHESTRATION.md.
     BootReadiness.await("models_ready")
-    local crystalsAssets = ReplicatedStorage:WaitForChild("Assets")
-        :WaitForChild("Models")
-        :WaitForChild("Breakables")
-        :WaitForChild("Crystals")
+    local crystalsAssets =
+        ModelTemplateStore.waitRoot():WaitForChild("Breakables"):WaitForChild("Crystals")
     self._crystalsAssets = crystalsAssets
     do
         local names = {}
@@ -1643,8 +1642,7 @@ function BreakableSpawner:_trySpawnOne(
     local crystalsAssets = self._crystalsAssets
     if not crystalsAssets then
         -- As a fallback, attempt to locate now
-        local assetsRoot = ReplicatedStorage:FindFirstChild("Assets")
-        local modelsRoot = assetsRoot and assetsRoot:FindFirstChild("Models")
+        local modelsRoot = ModelTemplateStore.root()
         local breakablesRoot = modelsRoot and modelsRoot:FindFirstChild("Breakables")
         crystalsAssets = breakablesRoot and breakablesRoot:FindFirstChild("Crystals")
         if crystalsAssets then

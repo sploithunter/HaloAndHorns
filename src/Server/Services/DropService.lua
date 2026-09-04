@@ -28,6 +28,7 @@ local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
 local MagnetRadius = require(ReplicatedStorage.Shared.Game.MagnetRadius)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local DropService = {}
 DropService.__index = DropService
@@ -185,8 +186,7 @@ end
 -- here preserves the exact Hall visual and variant treatment.
 function DropService:_cloneAutoCollectorModel(player)
     local cfg = self._config.auto_collector or {}
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     local pets = models and models:FindFirstChild("Pets")
     local typeFolder = pets and pets:FindFirstChild(tostring(cfg.pet or "trail_pup"))
     local prototype = typeFolder
@@ -893,7 +893,7 @@ end
 
 -- Try to spawn an ENHANCEMENT drop (Jason's design: identity hidden until pickup).
 -- source = "breakable" | "enemy" (chance per configs/enhancements.lua drops). The model is
--- semi-generic: authored Model (drops.model_name under ReplicatedStorage.Assets.Models) when
+-- semi-generic: authored Model (drops.model_name under ServerStorage.Assets.Models) when
 -- set, else a placeholder gold neon orb with a "?" tag. Returns true when a drop spawned.
 function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     if not (player and typeof(position) == "Vector3") then
@@ -1039,8 +1039,7 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- model: authored Assets model (override) > the cogwheel mesh (per-color) > mystery orb
     local model
     if drops.model_name then
-        local assets = ReplicatedStorage:FindFirstChild("Assets")
-        local models = assets and assets:FindFirstChild("Models")
+        local models = ModelTemplateStore.root()
         local tpl = models and models:FindFirstChild(drops.model_name)
         if tpl then
             model = tpl:Clone()
@@ -1164,8 +1163,7 @@ function DropService:TrySpawnPotionDrop(player, source, position)
     -- model: authored Assets model (override) > tinted neon flask placeholder
     local model
     if drops.model_name then
-        local assets = ReplicatedStorage:FindFirstChild("Assets")
-        local models = assets and assets:FindFirstChild("Models")
+        local models = ModelTemplateStore.root()
         local tpl = models and models:FindFirstChild(drops.model_name)
         if tpl then
             model = tpl:Clone()

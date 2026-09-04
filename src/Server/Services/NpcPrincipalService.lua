@@ -34,6 +34,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local NpcPrincipalService = {}
 NpcPrincipalService.__index = NpcPrincipalService
@@ -259,11 +260,10 @@ end
 -- Clone a pet model from the same ReplicatedStorage tree PetHandler uses. Returns nil if the
 -- type/variant isn't present rather than substituting something surprising.
 function NpcPrincipalService:_clonePet(petId, variant)
-    -- ReplicatedStorage.ASSETS.Models.Pets — the same root PetHandler clones from. (An earlier
+    -- ServerStorage.Assets.Models.Pets — the same root PetHandler clones from. (An earlier
     -- guess at ReplicatedStorage.Models silently produced a zero-pet squad: the folder simply
     -- doesn't exist, and every lookup short-circuited to nil.)
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local models = assets and assets:FindFirstChild("Models")
+    local models = ModelTemplateStore.root()
     local pets = models and models:FindFirstChild("Pets")
     local typeFolder = pets and pets:FindFirstChild(petId)
     if not typeFolder then

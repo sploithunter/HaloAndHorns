@@ -13,7 +13,7 @@
         (hook attrs keep their $MISSION placeholders — the stamper rewrites)
 
     NOTE parent: at runtime the canonical store is
-    ReplicatedStorage.Assets.Models.MissionTiles (AssetPreloadService-style
+    ServerStorage.Assets.Models.MissionTiles (AssetPreloadService-style
     augmentation). In EDIT mode that subtree is Rojo-owned (Models.rbxm) —
     build into a scratch parent instead so Rojo never fights the kit.
 ]]

@@ -359,6 +359,17 @@ do
     end
 end
 
+-- Owner-only current/next egg templates arrive in PlayerGui. Explicitly fetch their mesh/texture
+-- dependencies so a first hatch is warm without replicating the complete model catalog.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeAssetWarmup).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeAssetWarmup", { error = tostring(err) })
+    end
+end
+
 -- Leaderboard consumer: drains + caches LeaderboardService's periodic LeaderboardUpdated
 -- broadcast so it doesn't pile up unhandled (queue-exhaustion leak). Caches snapshots for a
 -- future leaderboard UI to read (LeaderboardController.Get / .OnUpdate).

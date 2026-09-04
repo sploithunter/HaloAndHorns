@@ -52,8 +52,8 @@ function GiftDeliveryService:Start()
 end
 
 function GiftDeliveryService:_preloadPresentModel()
-    local assetsRoot = ReplicatedStorage:FindFirstChild("Assets")
-    local modelsRoot = assetsRoot and assetsRoot:FindFirstChild("Models")
+    local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
+    local modelsRoot = ModelTemplateStore.root()
     if not modelsRoot then
         return
     end

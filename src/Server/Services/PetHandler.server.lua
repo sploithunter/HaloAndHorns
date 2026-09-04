@@ -15,6 +15,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 local PetRuntimeBridge = require(ReplicatedStorage.Shared.Services.PetRuntimeBridge)
 local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
@@ -1429,198 +1430,184 @@ function loadEquipped(Player)
                 ")"
             )
 
-            -- Get the pet model from ReplicatedStorage.Assets.Models.Pets
-            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
+            -- Get the pet model from the server-only dormant template catalog.
+            local modelsFolder = ModelTemplateStore.root()
             local PetModel = nil
 
-            if assetsFolder then
-                local modelsFolder = assetsFolder:FindFirstChild("Models")
-                if modelsFolder then
-                    local petsFolder = modelsFolder:FindFirstChild("Pets")
-                    if petsFolder then
-                        local petTypeFolder = petsFolder:FindFirstChild(effectiveIdName)
-                        if petTypeFolder then
-                            -- Rigged pets have one animated geometry source: their basic rig. Golden
-                            -- and Rainbow are runtime reskins of that rig, not separate static deployed
-                            -- meshes. An explicit deployed_variant_model remains available for a future
-                            -- non-standard override. This is intentionally deployment-only: inventory
-                            -- thumbnails and catalog/static variant templates remain untouched.
-                            local rawPetEntry = petsConfig
-                                and petsConfig.pets
-                                and petsConfig.pets[effectiveIdName]
-                            local modelVariantName = (
-                                rawPetEntry and rawPetEntry.deployed_variant_model
-                            )
-                                or (rawPetEntry and rawPetEntry.rig_class and "basic")
-                                or effectiveVariantName
-                            local petVariantModel = petTypeFolder:FindFirstChild(modelVariantName)
-                            -- Fallback to basic variant if requested one doesn't exist on overridden type
-                            if not petVariantModel then
-                                petVariantModel = petTypeFolder:FindFirstChild("basic")
-                            end
-                            if petVariantModel then
-                                -- Log geometry straight from ReplicatedStorage before we touch it
-                                logModelGeometry("PRE_CLONE_RS", petVariantModel)
-                                -- Count existing welds
-                                do
-                                    local welds = 0
-                                    for _, d in ipairs(petVariantModel:GetDescendants()) do
-                                        if d:IsA("WeldConstraint") then
-                                            welds += 1
-                                        end
+            if modelsFolder then
+                local petsFolder = modelsFolder:FindFirstChild("Pets")
+                if petsFolder then
+                    local petTypeFolder = petsFolder:FindFirstChild(effectiveIdName)
+                    if petTypeFolder then
+                        -- Rigged pets have one animated geometry source: their basic rig. Golden
+                        -- and Rainbow are runtime reskins of that rig, not separate static deployed
+                        -- meshes. An explicit deployed_variant_model remains available for a future
+                        -- non-standard override. This is intentionally deployment-only: inventory
+                        -- thumbnails and catalog/static variant templates remain untouched.
+                        local rawPetEntry = petsConfig
+                            and petsConfig.pets
+                            and petsConfig.pets[effectiveIdName]
+                        local modelVariantName = (
+                            rawPetEntry and rawPetEntry.deployed_variant_model
+                        )
+                            or (rawPetEntry and rawPetEntry.rig_class and "basic")
+                            or effectiveVariantName
+                        local petVariantModel = petTypeFolder:FindFirstChild(modelVariantName)
+                        -- Fallback to basic variant if requested one doesn't exist on overridden type
+                        if not petVariantModel then
+                            petVariantModel = petTypeFolder:FindFirstChild("basic")
+                        end
+                        if petVariantModel then
+                            -- Log geometry straight from the canonical template store first.
+                            logModelGeometry("PRE_CLONE_STORE", petVariantModel)
+                            -- Count existing welds
+                            do
+                                local welds = 0
+                                for _, d in ipairs(petVariantModel:GetDescendants()) do
+                                    if d:IsA("WeldConstraint") then
+                                        welds += 1
                                     end
-                                    print("   • RS welds:", welds)
                                 end
-                                PetModel = petVariantModel:Clone()
-                                PetVariantVisuals.ApplyServerMetadata(
-                                    PetModel,
-                                    effectiveIdName,
-                                    effectiveVariantName
-                                )
-                                PetVariantVisuals.ApplyStaticVisuals(PetModel)
-                                local isHuge = isHugePetFolder(petFolder)
-                                local rawEntry = petsConfig
-                                    and petsConfig.pets
-                                    and petsConfig.pets[petIdName]
-                                local configuredHugeScale = rawEntry
-                                    and rawEntry.asset_transform
-                                    and rawEntry.asset_transform.huge_scale
-                                if isHuge then
-                                    applyHugePetScale(PetModel, configuredHugeScale)
-                                    -- Structural Huge targeting is centralized with every badge
-                                    -- surface. Explicit huge scope wins (Bear = aura); otherwise any
-                                    -- single-target Huge receives the standard targeted splash.
-                                    local roleId = petRolesConfig
-                                        and petRolesConfig.by_type
-                                        and petRolesConfig.by_type[petIdName]
-                                    PetModel:SetAttribute(
-                                        "AttackTargeting",
-                                        PetTargeting.mechanicalAttackScope(
-                                            rawEntry,
-                                            roleId,
-                                            petRolesConfig,
-                                            {
-                                                huge = true,
-                                                explicit = PetModel:GetAttribute("AttackTargeting"),
-                                            }
-                                        )
-                                    )
-                                    -- A species that already has area geometry before becoming Huge
-                                    -- graduates to AoE-contagion. Stamp the resolved burn on the live
-                                    -- clone so PetFollowService and the squad badge consume the same
-                                    -- attributes. Single-target species still receive only the normal
-                                    -- Huge targeted splash above.
-                                    local hugeDot = PetTargeting.hugeAttackDot(
+                                print("   • Template welds:", welds)
+                            end
+                            PetModel = petVariantModel:Clone()
+                            PetVariantVisuals.ApplyServerMetadata(
+                                PetModel,
+                                effectiveIdName,
+                                effectiveVariantName
+                            )
+                            PetVariantVisuals.ApplyStaticVisuals(PetModel)
+                            local isHuge = isHugePetFolder(petFolder)
+                            local rawEntry = petsConfig
+                                and petsConfig.pets
+                                and petsConfig.pets[petIdName]
+                            local configuredHugeScale = rawEntry
+                                and rawEntry.asset_transform
+                                and rawEntry.asset_transform.huge_scale
+                            if isHuge then
+                                applyHugePetScale(PetModel, configuredHugeScale)
+                                -- Structural Huge targeting is centralized with every badge
+                                -- surface. Explicit huge scope wins (Bear = aura); otherwise any
+                                -- single-target Huge receives the standard targeted splash.
+                                local roleId = petRolesConfig
+                                    and petRolesConfig.by_type
+                                    and petRolesConfig.by_type[petIdName]
+                                PetModel:SetAttribute(
+                                    "AttackTargeting",
+                                    PetTargeting.mechanicalAttackScope(
                                         rawEntry,
                                         roleId,
                                         petRolesConfig,
-                                        combatConfig and combatConfig.huge_aoe_contagion
+                                        {
+                                            huge = true,
+                                            explicit = PetModel:GetAttribute("AttackTargeting"),
+                                        }
                                     )
-                                    if hugeDot then
-                                        PetModel:SetAttribute(
-                                            "DotFraction",
-                                            tonumber(hugeDot.fraction) or 0
-                                        )
-                                        PetModel:SetAttribute(
-                                            "DotTick",
-                                            tonumber(hugeDot.tick) or 1
-                                        )
-                                        PetModel:SetAttribute(
-                                            "DotDuration",
-                                            tonumber(hugeDot.duration) or 0
-                                        )
-                                        local spread = hugeDot.spread or {}
-                                        PetModel:SetAttribute(
-                                            "DotSpreadRadius",
-                                            tonumber(spread.radius) or 0
-                                        )
-                                        PetModel:SetAttribute(
-                                            "DotSpreadInterval",
-                                            tonumber(spread.interval) or 0
-                                        )
-                                        PetModel:SetAttribute(
-                                            "DotSpreadMax",
-                                            math.floor(tonumber(spread.max) or 0)
-                                        )
-                                    end
-                                end
-                                if
-                                    (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0
-                                then
-                                    applyTemporaryTitanScale(PetModel, configuredHugeScale)
-                                end
-                                -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
-                                -- to drive the published clip set (configs/animations.lua) instead
-                                -- of the code gait. Raw entry read, same as huge_attack_targeting.
-                                -- Gated on the model ACTUALLY carrying a rig: variants that still
-                                -- use the static mesh (golden/rainbow) must keep the code gait.
-                                do
-                                    if
-                                        rawEntry
-                                        and rawEntry.rig_class
-                                        and PetModel:FindFirstChildWhichIsA(
-                                            "AnimationController",
-                                            true
-                                        )
-                                    then
-                                        PetModel:SetAttribute("RigClass", rawEntry.rig_class)
-                                    end
-                                end
-                                -- #179 down-lockout identity: SPECIAL pets (huges) lock by their UID
-                                -- (petFolder.Name is the stable uid); STACKED pets lock by id:variant
-                                -- COUNT. EnemyService reads these on a down + to enforce re-teaming.
-                                PetModel:SetAttribute(
-                                    "LockoutKey",
-                                    tostring(petIdName) .. ":" .. tostring(petVariantName)
                                 )
-                                if isHuge then
-                                    PetModel:SetAttribute("LockoutSpecial", true)
-                                    PetModel:SetAttribute("LockoutUid", petFolder.Name)
-                                end
-                                -- Log geometry immediately after clone, before any changes
-                                logModelGeometry("POST_CLONE_PREPARENT", PetModel)
-                                if DIAGNOSTICS_ENABLED then
-                                    printDiagnostics(
-                                        "PRE_SANITIZE",
-                                        collectModelDiagnostics(PetModel)
+                                -- A species that already has area geometry before becoming Huge
+                                -- graduates to AoE-contagion. Stamp the resolved burn on the live
+                                -- clone so PetFollowService and the squad badge consume the same
+                                -- attributes. Single-target species still receive only the normal
+                                -- Huge targeted splash above.
+                                local hugeDot = PetTargeting.hugeAttackDot(
+                                    rawEntry,
+                                    roleId,
+                                    petRolesConfig,
+                                    combatConfig and combatConfig.huge_aoe_contagion
+                                )
+                                if hugeDot then
+                                    PetModel:SetAttribute(
+                                        "DotFraction",
+                                        tonumber(hugeDot.fraction) or 0
                                     )
-                                    -- If suspect (e.g., dragon), compare to reference (bunny/basic) for a baseline
-                                    if
-                                        string.lower(effectiveIdName)
-                                        ~= string.lower(DIAG_REFERENCE_ID)
-                                    then
-                                        local refType = modelsFolder
-                                            and modelsFolder:FindFirstChild("Pets")
-                                            and modelsFolder.Pets:FindFirstChild(DIAG_REFERENCE_ID)
-                                        local refModel = refType
-                                            and refType:FindFirstChild(DIAG_REFERENCE_VARIANT)
-                                        if refModel then
-                                            printDiagnostics(
-                                                "REF_" .. DIAG_REFERENCE_ID,
-                                                collectModelDiagnostics(refModel)
-                                            )
-                                            compareDiagnostics(
-                                                collectModelDiagnostics(refModel),
-                                                collectModelDiagnostics(PetModel)
-                                            )
-                                        end
-                                    end
+                                    PetModel:SetAttribute("DotTick", tonumber(hugeDot.tick) or 1)
+                                    PetModel:SetAttribute(
+                                        "DotDuration",
+                                        tonumber(hugeDot.duration) or 0
+                                    )
+                                    local spread = hugeDot.spread or {}
+                                    PetModel:SetAttribute(
+                                        "DotSpreadRadius",
+                                        tonumber(spread.radius) or 0
+                                    )
+                                    PetModel:SetAttribute(
+                                        "DotSpreadInterval",
+                                        tonumber(spread.interval) or 0
+                                    )
+                                    PetModel:SetAttribute(
+                                        "DotSpreadMax",
+                                        math.floor(tonumber(spread.max) or 0)
+                                    )
                                 end
-                                do
-                                    local welds = 0
-                                    for _, d in ipairs(PetModel:GetDescendants()) do
-                                        if d:IsA("WeldConstraint") then
-                                            welds += 1
-                                        end
-                                    end
-                                    print("   • Clone welds:", welds)
-                                end
-                                print(
-                                    "✅ PetHandler: Successfully cloned REAL pet model",
-                                    petIdName,
-                                    petVariantName
-                                )
                             end
+                            if (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0 then
+                                applyTemporaryTitanScale(PetModel, configuredHugeScale)
+                            end
+                            -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
+                            -- to drive the published clip set (configs/animations.lua) instead
+                            -- of the code gait. Raw entry read, same as huge_attack_targeting.
+                            -- Gated on the model ACTUALLY carrying a rig: variants that still
+                            -- use the static mesh (golden/rainbow) must keep the code gait.
+                            do
+                                if
+                                    rawEntry
+                                    and rawEntry.rig_class
+                                    and PetModel:FindFirstChildWhichIsA("AnimationController", true)
+                                then
+                                    PetModel:SetAttribute("RigClass", rawEntry.rig_class)
+                                end
+                            end
+                            -- #179 down-lockout identity: SPECIAL pets (huges) lock by their UID
+                            -- (petFolder.Name is the stable uid); STACKED pets lock by id:variant
+                            -- COUNT. EnemyService reads these on a down + to enforce re-teaming.
+                            PetModel:SetAttribute(
+                                "LockoutKey",
+                                tostring(petIdName) .. ":" .. tostring(petVariantName)
+                            )
+                            if isHuge then
+                                PetModel:SetAttribute("LockoutSpecial", true)
+                                PetModel:SetAttribute("LockoutUid", petFolder.Name)
+                            end
+                            -- Log geometry immediately after clone, before any changes
+                            logModelGeometry("POST_CLONE_PREPARENT", PetModel)
+                            if DIAGNOSTICS_ENABLED then
+                                printDiagnostics("PRE_SANITIZE", collectModelDiagnostics(PetModel))
+                                -- If suspect (e.g., dragon), compare to reference (bunny/basic) for a baseline
+                                if
+                                    string.lower(effectiveIdName)
+                                    ~= string.lower(DIAG_REFERENCE_ID)
+                                then
+                                    local refType = modelsFolder
+                                        and modelsFolder:FindFirstChild("Pets")
+                                        and modelsFolder.Pets:FindFirstChild(DIAG_REFERENCE_ID)
+                                    local refModel = refType
+                                        and refType:FindFirstChild(DIAG_REFERENCE_VARIANT)
+                                    if refModel then
+                                        printDiagnostics(
+                                            "REF_" .. DIAG_REFERENCE_ID,
+                                            collectModelDiagnostics(refModel)
+                                        )
+                                        compareDiagnostics(
+                                            collectModelDiagnostics(refModel),
+                                            collectModelDiagnostics(PetModel)
+                                        )
+                                    end
+                                end
+                            end
+                            do
+                                local welds = 0
+                                for _, d in ipairs(PetModel:GetDescendants()) do
+                                    if d:IsA("WeldConstraint") then
+                                        welds += 1
+                                    end
+                                end
+                                print("   • Clone welds:", welds)
+                            end
+                            print(
+                                "✅ PetHandler: Successfully cloned REAL pet model",
+                                petIdName,
+                                petVariantName
+                            )
                         end
                     end
                 end
@@ -1633,7 +1620,7 @@ function loadEquipped(Player)
                         .. tostring(petIdName)
                         .. " variant "
                         .. tostring(petVariantName)
-                        .. " at path ReplicatedStorage.Assets.Models.Pets."
+                        .. " at path ServerStorage.Assets.Models.Pets."
                         .. tostring(petIdName)
                         .. "."
                         .. tostring(petVariantName)

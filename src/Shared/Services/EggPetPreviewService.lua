@@ -29,6 +29,7 @@ local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility)
 local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
 local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 local petConfig = Locations.getConfig("pets")
 local eggSystemConfig = Locations.getConfig("egg_system")
 local powerIconsOk, POWER_ICONS = pcall(function()
@@ -920,42 +921,29 @@ function EggPetPreviewService:CreatePetContent(petFrame, petInfo, previewConfig,
     self:CreatePetIdentityBadges(petFrame, petInfo)
 end
 
--- Load 3D pet model into ViewportFrame with configurable zoom (using ReplicatedStorage.Assets)
+-- Load a 3D pet model into a ViewportFrame, preferring the owner's bounded warm shelf.
 function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType, variant, petInfo)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
     task.spawn(function()
         local success, result = pcall(function()
-            logger:debug("Loading 3D model from ReplicatedStorage.Assets", {
+            logger:debug("Loading 3D model from warm assets", {
                 assetId = assetId,
                 petType = petType,
                 variant = variant,
             })
 
-            -- Try to get model from ReplicatedStorage.Assets.Models.Pets first
             local modelClone = nil
-            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-
-            if assetsFolder then
-                local modelsFolder = assetsFolder:FindFirstChild("Models")
-                if modelsFolder then
-                    local petsFolder = modelsFolder:FindFirstChild("Pets")
-                    if petsFolder then
-                        local petTypeFolder = petsFolder:FindFirstChild(petType)
-                        if petTypeFolder then
-                            local petModel = petTypeFolder:FindFirstChild(variant)
-                            if petModel then
-                                modelClone = petModel:Clone()
-                                logger:debug("Got model from ReplicatedStorage.Assets", {
-                                    petType = petType,
-                                    variant = variant,
-                                    modelName = modelClone.Name,
-                                    path = petModel:GetFullName(),
-                                })
-                            end
-                        end
-                    end
-                end
+            local modelsFolder = ModelTemplateStore.root()
+            local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
+            local petTypeFolder = petsFolder and petsFolder:FindFirstChild(petType)
+            local petModel = petTypeFolder and petTypeFolder:FindFirstChild(variant)
+            if petModel then
+                modelClone = petModel:Clone()
+                logger:debug("Got model from warm assets", {
+                    petType = petType,
+                    variant = variant,
+                    modelName = modelClone.Name,
+                    path = petModel:GetFullName(),
+                })
             end
 
             -- Fallback to runtime loading if not in assets

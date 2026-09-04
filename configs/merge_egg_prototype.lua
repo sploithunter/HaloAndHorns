@@ -1917,6 +1917,15 @@ return {
         -- The Merge HUD does not need a 60-70 Hz copy of the complete world state. State-name
         -- transitions still publish immediately; repeated snapshots are capped to this cadence.
         world_state_replication_interval = 0.2,
+        asset_warmup = {
+            enabled = true,
+            cache_folder = "MergeAssetWarmCache",
+            reconcile_interval = 1,
+            preload_next_source = true,
+            maximum_pet_types = 40,
+            preload_batch_size = 24,
+            preload_debounce_seconds = 0.12,
+        },
     },
 
     -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. With

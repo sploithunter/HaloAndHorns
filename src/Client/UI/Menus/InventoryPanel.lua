@@ -108,6 +108,7 @@ local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local TutorialSquad = require(ReplicatedStorage.Shared.Game.TutorialSquad)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local VirtualGridWindow = require(ReplicatedStorage.Shared.UI.VirtualGridWindow)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
@@ -4977,33 +4978,19 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
                 return
             end
 
-            -- Try to load from ReplicatedStorage.Assets first (like egg system)
+            -- Prefer the bounded owner warm shelf when this family is near the unlock frontier.
             local modelClone = nil
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-
-            if assetsFolder then
-                local modelsFolder = assetsFolder:FindFirstChild("Models")
-                if modelsFolder then
-                    local petsFolder = modelsFolder:FindFirstChild("Pets")
-                    if petsFolder then
-                        local petTypeFolder = petsFolder:FindFirstChild(item.petType)
-                        if petTypeFolder then
-                            local petModel = petTypeFolder:FindFirstChild(item.variant)
-                            if petModel then
-                                modelClone = petModel:Clone()
-                                self.logger:debug(
-                                    "Loaded pet model from ReplicatedStorage.Assets",
-                                    {
-                                        petType = item.petType,
-                                        variant = item.variant,
-                                        path = petModel:GetFullName(),
-                                    }
-                                )
-                            end
-                        end
-                    end
-                end
+            local modelsFolder = ModelTemplateStore.root()
+            local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
+            local petTypeFolder = petsFolder and petsFolder:FindFirstChild(item.petType)
+            local petModel = petTypeFolder and petTypeFolder:FindFirstChild(item.variant)
+            if petModel then
+                modelClone = petModel:Clone()
+                self.logger:debug("Loaded pet model from warm assets", {
+                    petType = item.petType,
+                    variant = item.variant,
+                    path = petModel:GetFullName(),
+                })
             end
 
             -- Fallback to InsertService loading
@@ -8293,8 +8280,7 @@ function InventoryPanel:_showGiftOpenConfirmation(item)
     camera.Parent = viewport
     viewport.CurrentCamera = camera
 
-    local modelRoot = ReplicatedStorage:FindFirstChild("Assets")
-    modelRoot = modelRoot and modelRoot:FindFirstChild("Models")
+    local modelRoot = ModelTemplateStore.root()
     modelRoot = modelRoot and modelRoot:FindFirstChild("Gifts")
     local sourceModel = modelRoot
         and modelRoot:FindFirstChild(

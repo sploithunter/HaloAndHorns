@@ -27,6 +27,7 @@ local InsertService = game:GetService("InsertService")
 local Lighting = game:GetService("Lighting")
 
 local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
@@ -234,26 +235,21 @@ function AssetImageGenerator:LoadPetModel(assetId)
         return nil
     end
 
-    -- Try loading from ReplicatedStorage.Assets first (if preloaded)
-    local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-    if assetsFolder then
-        local modelsFolder = assetsFolder:FindFirstChild("Models")
-        if modelsFolder then
-            local petsFolder = modelsFolder:FindFirstChild("Pets")
-            if petsFolder then
-                -- Find the model in the preloaded assets
-                for _, petTypeFolder in pairs(petsFolder:GetChildren()) do
-                    for _, model in pairs(petTypeFolder:GetChildren()) do
-                        if model:IsA("Model") then
-                            -- Check if this model matches our asset ID
-                            -- This is a simplified check - in real implementation you'd need
-                            -- a more robust way to match preloaded models to asset IDs
-                            local clone = model:Clone()
-                            clone.Parent = self.generateWorkspace
-                            self.logger:debug("Loaded model from assets", { assetId = assetId })
-                            return clone
-                        end
-                    end
+    -- Prefer the bounded owner warm shelf when this pet family is near the unlock frontier.
+    local modelsFolder = ModelTemplateStore.root()
+    local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
+    if petsFolder then
+        -- Find the model in the preloaded assets
+        for _, petTypeFolder in pairs(petsFolder:GetChildren()) do
+            for _, model in pairs(petTypeFolder:GetChildren()) do
+                if model:IsA("Model") then
+                    -- Check if this model matches our asset ID
+                    -- This is a simplified check - in real implementation you'd need
+                    -- a more robust way to match preloaded models to asset IDs
+                    local clone = model:Clone()
+                    clone.Parent = self.generateWorkspace
+                    self.logger:debug("Loaded model from warm assets", { assetId = assetId })
+                    return clone
                 end
             end
         end

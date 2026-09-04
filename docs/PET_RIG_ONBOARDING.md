@@ -36,7 +36,7 @@ texture against `assets/exports/pets/<pet_id>_basic/` (that is what
 6. **scripts/studio/rebuild_rigged_prebakes.luau** — add
    `<pet_id> = { rig = <asset>, height = <static bbox Y> }`. Measure the
    static prebake first:
-   `ReplicatedStorage.Assets.Models.Pets.<pet_id>.basic:GetBoundingBox()`.
+   `ServerStorage.Assets.Models.Pets.<pet_id>.basic:GetBoundingBox()`.
 7. **Install the prebake** (Studio EDIT mode, via MCP or command bar): run
    the rebuild script — or just its loop body for the one pet. It inserts
    the rig asset, ensures AnimationController+Animator, normalizes pivot →
@@ -46,7 +46,7 @@ texture against `assets/exports/pets/<pet_id>_basic/` (that is what
    stamped; the walk track fires while it moves. A standing QUADRUPED
    playing nothing is correct — that class has no idle clip yet.
 9. **CAPTURE, SAME SESSION**: Play until fully booted → right-click
-   `ReplicatedStorage.Assets.Models` in the RUNNING game → Save to File →
+   `ServerStorage.Assets.Models` in the RUNNING server DataModel → Save to File →
    `assets/place/Models.rbxm` → commit. Skipping this re-arms the Rojo
    time bomb: the next Rojo reconnect serves the stale file and silently
    strips every rig not in it (docs/ASSET_PREBAKE.md).

@@ -29,6 +29,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
@@ -48,6 +49,7 @@ local MissionStamper = require(ServerScriptService.Server.World.MissionStamper)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds"))
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local PROMPT_NAME = "MissionDoorPrompt"
 -- streaming-safe warp caps (see _safeWarp)
@@ -63,6 +65,11 @@ local KITS = {
 
 local MissionInstanceService = {}
 MissionInstanceService.__index = MissionInstanceService
+
+local function missionPropStore()
+    return ServerStorage:FindFirstChild("MissionProps")
+        or ReplicatedStorage:FindFirstChild("MissionProps") -- migration-safe fallback
+end
 
 function MissionInstanceService.new()
     local self = setmetatable({}, MissionInstanceService)
@@ -166,7 +173,7 @@ function MissionInstanceService:Start()
     -- whatever the MissionProps rbxm shipped (see CANDLE_FLAME_POINTS).
     task.spawn(function()
         local ok, err = pcall(function()
-            ReplicatedStorage:WaitForChild("MissionProps", 30)
+            ServerStorage:WaitForChild("MissionProps", 30)
             self:_normalizeCandleStand()
         end)
         if not ok then
@@ -376,8 +383,8 @@ function MissionInstanceService:_kit(kitId)
     local folder = self._kitFolders[kitId]
     if not folder or not folder.Parent then
         -- runtime store augmentation (AssetPreloadService pattern): the kit
-        -- templates live under ReplicatedStorage.Assets.Models.MissionTiles
-        local models = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Models")
+        -- templates live under ServerStorage.Assets.Models.MissionTiles
+        local models = ModelTemplateStore.waitRoot()
         local store = models:FindFirstChild("MissionTiles")
         if not store then
             store = Instance.new("Folder")
@@ -2450,7 +2457,7 @@ local function prefabFor(kind, pick)
     if not names then
         return nil
     end
-    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local store = missionPropStore()
     local prefab = store and store:FindFirstChild(names[1 + pick % #names])
     return prefab and prefab:Clone()
 end
@@ -2797,8 +2804,7 @@ function MissionInstanceService:_ensureMissionCrateVisual()
     -- adoption of the crystal placeholder) leave crates crystal-skinned for
     -- the whole session. Now every crate spawn re-checks the actual store
     -- state and re-swaps when anything clobbered it.
-    local store = ReplicatedStorage:FindFirstChild("Assets")
-    store = store and store:FindFirstChild("Models")
+    local store = ModelTemplateStore.root()
     store = store and store:FindFirstChild("Breakables")
     store = store and store:FindFirstChild("Crystals")
     if not store then
@@ -2808,7 +2814,7 @@ function MissionInstanceService:_ensureMissionCrateVisual()
     if existing and existing:GetAttribute("CrateVisual") then
         return -- the real crate is in place
     end
-    local props = ReplicatedStorage:FindFirstChild("MissionProps")
+    local props = missionPropStore()
     local crate = props and props:FindFirstChild("CrateWood")
     if not crate then
         self:_log("Warn", "MissionCrate visual swap deferred (CrateWood not replicated yet)", {
@@ -2884,7 +2890,7 @@ local CANDLE_LIGHT_COLOR = Color3.new(1, 0.901961, 0.666667)
 -- prunes unknown TorchFlame_C* extras, and guarantees the C1 point light.
 -- WARNs whenever it corrects anything — silent drift is how we got here.
 function MissionInstanceService:_normalizeCandleStand()
-    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local store = missionPropStore()
     local stand = store and store:FindFirstChild("CandleStand")
     if not (stand and stand:IsA("Model")) then
         return
@@ -2979,7 +2985,7 @@ function MissionInstanceService:_applyDressing(
     -- Pair-coherent + deterministic (hash of tile name + pair index); the
     -- primitive torches remain only as the no-prefab fallback.
     do
-        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local store = missionPropStore()
         local function fixtureFor(hash)
             if not store then
                 return nil
@@ -3032,7 +3038,7 @@ function MissionInstanceService:_applyDressing(
     -- the backing slab to the marble palette, and park one of the nice
     -- bookcases centered in the alcove. Hell keeps its boards — they belong.
     if poolTheme == "heaven" then
-        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local store = missionPropStore()
         local shelves = { "heaven_gilded_bookcase", "heaven_archive" }
         for _, tileModel in ipairs(container:GetChildren()) do
             if tileModel:IsA("Model") and tileModel.Name:match("^cap_") then
@@ -3109,7 +3115,7 @@ function MissionInstanceService:_applyDressing(
     end
 
     -- clutter props: harvested Synty prefabs when the place carries them
-    -- (ReplicatedStorage.MissionProps — free Roblox-published dungeon packs),
+    -- (ServerStorage.MissionProps — free Roblox-published dungeon packs),
     -- primitive builders otherwise so fresh checkouts/tests never break
     local folder = Instance.new("Folder")
     folder.Name = "Dressing"
@@ -3206,8 +3212,7 @@ function MissionInstanceService:_applyDressing(
             -- Never present the SmallBlueCrystal placeholder as a crate.
             -- If CrateWood has not swapped in, fall through to wood prefab
             -- / primitive so Trials and Range cannot spawn sideways crystals.
-            local crystals = ReplicatedStorage:FindFirstChild("Assets")
-            crystals = crystals and crystals:FindFirstChild("Models")
+            local crystals = ModelTemplateStore.root()
             crystals = crystals and crystals:FindFirstChild("Breakables")
             crystals = crystals and crystals:FindFirstChild("Crystals")
             local missionCrate = crystals and crystals:FindFirstChild("MissionCrate")
@@ -3305,7 +3310,7 @@ function MissionInstanceService:_applyDressing(
         earth = { "WallBanner", "WallShield" },
     }
     do
-        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local store = missionPropStore()
         local names = WALL_DECOR_PREFABS[poolTheme or "earth"]
         local slotPos2 = slotOrigin.Position
         if store and names and wallDecor then
@@ -3385,7 +3390,7 @@ function MissionInstanceService:_applyDressing(
         earth = {},
     }
     do
-        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local store = missionPropStore()
         local names = FEATURE_PREFABS[poolTheme or "earth"]
         local slotPos3 = slotOrigin.Position
         if store and names and #names > 0 and features then
@@ -3429,7 +3434,7 @@ end
 local function buildChest(cf)
     -- Synty chest prefab when harvested into the place (real treasure-chest
     -- mesh, Jason ask); primitive fallback below keeps fresh checkouts alive
-    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local store = missionPropStore()
     local prefab = store
         and (store:FindFirstChild("TreasureChestOrnate") or store:FindFirstChild("TreasureChest"))
     if prefab then
