@@ -1030,7 +1030,7 @@ function MergeBulwarkMenu.new(parent, onAction)
         overlay.Visible = false
     end
 
-    function controller:show(state)
+    function controller:show(state, resetToInstalled)
         state = type(state) == "table" and state or {}
         controller.state = state
         local families = type(state.families) == "table" and state.families or {}
@@ -1041,7 +1041,10 @@ function MergeBulwarkMenu.new(parent, onAction)
                 break
             end
         end
-        if not stillThere then
+        -- A fresh engineer interaction belongs to that physical line, not the family viewed on
+        -- the previous line. Action-result repaints omit this flag so unlocking a different family
+        -- does not immediately snap the player away from it before they can install it.
+        if resetToInstalled == true or not stillThere then
             controller.selectedId = state.installed == true and state.family
                 or (families[1] and families[1].id)
         end

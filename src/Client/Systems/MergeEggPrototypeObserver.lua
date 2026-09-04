@@ -4318,12 +4318,12 @@ function MergeEggPrototypeObserver.start()
         local action = tostring(result.action or "")
         if action == "open_bulwark_menu" and result.ok == true then
             cannonMenu:hide()
-            bulwarkMenu:show(result.value)
+            bulwarkMenu:show(result.value, true)
             return
         end
         if action == "open_cannon_menu" and result.ok == true then
             bulwarkMenu:hide()
-            cannonMenu:show(result.value)
+            cannonMenu:show(result.value, true)
             return
         end
         local success = result.ok == true

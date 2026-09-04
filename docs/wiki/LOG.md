@@ -7919,3 +7919,10 @@ first-session cohort rates.
 - Hatcher runtime keys now include owner UserId and position, independently of presentation copy.
   Merge cleanup supplies its retained owner/folder/model identity, and the principal service refuses
   a teardown if any of those references no longer identify the live registration.
+
+## 2026-09-04 — Open Merge workshops on the installed family
+
+- Fresh Artillery Commander and Bulwark Engineer interactions now select the family installed on
+  that physical pad or line instead of retaining the last family viewed at another station.
+- Server-action repaints deliberately preserve the current selection, so unlocking a different
+  family does not snap the menu away before the player can install it.
