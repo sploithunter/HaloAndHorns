@@ -257,6 +257,17 @@ do
     end
 end
 
+-- Cross-place gates acknowledge immediately with a client-rendered shield, sparks, and compact
+-- destination card. A matching teleport GUI bridges the loading handoff and fades on arrival.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergePortalTransitFX).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergePortalTransitFX", { error = tostring(err) })
+    end
+end
+
 -- Team follow (docs/TEAMING.md): CoH-style /follow of a TEAMMATE — walk-follow with a
 -- manual-input break; realm-portal hops ride team.follow_warp. Toggled from SquadHud
 -- (follow chip on the mate card / F with the teammate selected).

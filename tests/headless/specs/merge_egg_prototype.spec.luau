@@ -403,7 +403,9 @@ return function()
 
         it("keeps the dedicated-place return door public and independent of a session", function()
             local returnRoute = config.gate.return_route
-            expect(returnRoute.hook_name).to.equal("HallOfWorldsPortal")
+            expect(returnRoute.legacy_hook_name).to.equal("HallOfWorldsPortal")
+            expect(returnRoute.remove_legacy_hook).to.equal(true)
+            expect(returnRoute.expected_gate_count).to.equal(2)
             expect(returnRoute.destination_role).to.equal("main")
             expect(returnRoute.public).to.equal(true)
             expect(returnRoute.object_text).to.equal("Farm & Fight")
@@ -420,7 +422,11 @@ return function()
             local returnBody = service:sub(returnAt, bindAt - 1)
             expect(returnBody:find("self:_recordFor", 1, true)).to.equal(nil)
             expect(returnBody:find("self:_teleportToRole(player", 1, true)).to.be.ok()
-            expect(service:find('hook:SetAttribute("MergeEggPublicReturnDoor", true)', 1, true)).to.be.ok()
+            expect(
+                service:find('candidate:SetAttribute("MergeEggPublicReturnDoor", true)', 1, true)
+            ).to.be.ok()
+            expect(service:find("portalSpecForMarker(candidate, portalCfg.portals)", 1, true)).to.be.ok()
+            expect(service:find("legacyHook:Destroy()", 1, true)).to.be.ok()
             expect(service:find("self:_bindPublicReturnGate()", 1, true)).to.be.ok()
         end)
 

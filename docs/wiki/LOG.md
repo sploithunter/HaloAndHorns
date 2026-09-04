@@ -7926,3 +7926,15 @@ first-session cohort rates.
   that physical pad or line instead of retaining the last family viewed at another station.
 - Server-action repaints deliberately preserve the current selection, so unlocking a different
   family does not snap the menu away before the player can install it.
+
+## 2026-09-04 — Acknowledge cross-place gate travel immediately
+
+- Farm/Fight-to-Merge and Merge-to-Farm/Fight transfers now publish one pending transit lifecycle
+  before calling Roblox teleport. Every observer sees a non-colliding ForceField shell, character
+  highlight, sparks, orbiting motes, and destination label; the traveller gets a compact status card
+  clear of gameplay controls and a matching custom loading screen through the place handoff.
+- Repeat activation is rejected while a transfer is pending. Synchronous errors,
+  `TeleportInitFailed`, and a bounded timeout all remove the effect safely, while successful arrival
+  fades the custom loading screen without touching movement or camera control.
+- The obsolete cyan common-area return box is retired. Both real Heaven and Hell portal rings now
+  carry the unrestricted return prompt and the same transition lifecycle.
