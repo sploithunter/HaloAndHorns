@@ -1,5 +1,5 @@
--- Hides the unreleased Merge-place prompt from public players.
--- The server repeats the same ID check and remains authoritative if a client is modified.
+-- Applies the configured public/preview access policy to the Merge-place prompt.
+-- The server repeats the same check for travel and direct joins.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

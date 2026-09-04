@@ -944,11 +944,12 @@ team and queue model:
   and model before deleting a principal, so stale session cleanup cannot remove a replacement.
   This replaces the former singleton `_active`/`_world` assumption and is the runtime seam for
   simultaneous occupied bays.
-- While the place remains unreleased, the main/Farm and Fight door keeps its sealed `COMING SOON`
-  presentation and exposes the Merge teleport prompt only to the canonical internal-account IDs
-  plus Kade (`536245038`). The client hides the prompt for everyone else, the server validates every
-  use, and an unauthorized direct join to the Merge PlaceId is returned to main (or kicked if that
-  teleport fails). Studio uses the same ID policy and the same configured PlaceId route. Because
+- Public release (2026-09-04): `merge_egg_prototype.gate.access.public = true` opens the main/Farm
+  and Fight prompt and direct Merge-place entry to all players. The entrance now reads `MERGE` /
+  `Enter · Merge`; ZoneService honors that title regardless of binding order. Preview grants remain
+  dormant fallback policy if public access is explicitly disabled; internal-account classification
+  and leaderboard exclusions are unchanged. The old in-place Hall route remains sealed: players
+  use the configured cross-place teleport instead of walking into retired content. Because
   Studio cannot complete a normal cross-place teleport, using the door in a local playtest fails
   visibly instead of silently entering the obsolete embedded prototype.
 - `MergeEggPrototypeService` is a required `map_binding` runtime module in published servers as

@@ -11578,9 +11578,9 @@ function MergeEggPrototypeService:_bindRestrictedHallGate()
         return nil
     end
 
-    -- ZoneService owns the frosted Coming Soon barrier. Leave that presentation and collision
-    -- intact; approved preview accounts activate the prompt from the Farm and Fight side and
-    -- teleport across places instead of physically crossing this wall.
+    -- ZoneService still seals the retired in-place Hall route. This hook is now a cross-place
+    -- Merge doorway: its configured public/preview policy governs who can use the prompt, while
+    -- collision prevents walking into the retired Hall instead of completing the teleport.
     local travelPrompt = hook:FindFirstChild("ZoneTravelPrompt", true)
     if travelPrompt and travelPrompt:IsA("ProximityPrompt") then
         travelPrompt:Destroy()

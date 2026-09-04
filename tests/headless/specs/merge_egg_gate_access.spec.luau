@@ -3,7 +3,7 @@ local internalAccounts = loadModule("configs/internal_accounts.lua")
 local mergeConfig = loadModule("configs/merge_egg_prototype.lua")
 
 return function()
-    describe("Merge Egg preview gate access", function()
+    describe("Merge Egg public gate access", function()
         local access = mergeConfig.gate.access
 
         it("allows every canonical internal account", function()
@@ -19,9 +19,18 @@ return function()
             expect(#internalAccounts.accounts).to.equal(28)
         end)
 
-        it("fails closed for public players", function()
-            expect(MergeEggGateAccess.allows(access, internalAccounts, 1)).to.equal(false)
+        it("opens to ordinary players without internal-account or collaborator grants", function()
+            expect(access.public).to.equal(true)
+            expect(MergeEggGateAccess.allows(access, {}, 1)).to.equal(true)
+            expect(MergeEggGateAccess.allows(access, {}, 9876543210)).to.equal(true)
             expect(MergeEggGateAccess.allows(access, internalAccounts, nil)).to.equal(false)
+        end)
+        it("retains fail-closed preview policy when explicitly configured non-public", function()
+            local preview =
+                { public = false, internal_accounts = true, additional_user_ids = { 536245038 } }
+            expect(MergeEggGateAccess.allows(preview, internalAccounts, 1)).to.equal(false)
+            expect(MergeEggGateAccess.allows(preview, internalAccounts, 536245038)).to.equal(true)
+            expect(MergeEggGateAccess.allows({}, {}, 1)).to.equal(false)
         end)
     end)
 end

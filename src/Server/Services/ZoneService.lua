@@ -87,6 +87,7 @@ function ZoneService:Init()
     self._areasConfig = self._configLoader:LoadConfig("areas")
     self._spawnSpreadConfig = self._areasConfig.player_spawn_spread or {}
     self._hallConfig = self._configLoader:LoadConfig("hall_of_worlds")
+    self._mergeGateConfig = (self._configLoader:LoadConfig("merge_egg_prototype") or {}).gate or {}
     self._hallEntryEnabled = not (self._hallConfig and self._hallConfig.entry_enabled == false)
     self._combatTutorialConfig = self._configLoader:LoadConfig("combat_tutorial")
     self._hallRouteAreaSet = {}
@@ -1286,7 +1287,14 @@ function ZoneService:_sealDisabledHallEntryHook(hook)
     if title then
         for _, descendant in ipairs(title:GetDescendants()) do
             if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-                descendant.Text = "COMING SOON"
+                -- This sealed in-place Hall route also hosts the cross-place Merge doorway.
+                -- Do not repaint its public-release title if ZoneService binds after Merge.
+                local gate = self._mergeGateConfig or {}
+                if hook.Name == gate.hook_name and (gate.access or {}).public == true then
+                    descendant.Text = gate.title
+                else
+                    descendant.Text = "COMING SOON"
+                end
             end
         end
     end
