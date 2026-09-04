@@ -7,9 +7,9 @@
 ]]
 return {
     version = "0.3.0",
-    commit = "979a1820",
+    commit = "b4d08d56",
     branch = "main",
-    commit_date = "2026-09-04 09:44 AM MDT", -- when the running code was committed
-    built_at = "2026-09-04 09:46 AM MDT", -- when this build was stamped (publish time)
+    commit_date = "2026-09-04 10:29 AM MDT", -- when the running code was committed
+    built_at = "2026-09-04 10:31 AM MDT", -- when this build was stamped (publish time)
     dirty = false, -- uncommitted changes present at stamp time
 }
