@@ -158,7 +158,14 @@ end
 -- Feed one enemy defeat through the ordinary combat-XP curve without paying ordinary combat loot.
 -- Merge Defense uses this only when a durable player pet is the recorded final damaging source;
 -- autonomous hatchers, Simple-mode reserves, powers, and nearby participants never call it.
-function CombatService:AwardExperience(player, enemyId, enemyLevel, enemyTier, resolvedDef)
+function CombatService:AwardExperience(
+    player,
+    enemyId,
+    enemyLevel,
+    enemyTier,
+    resolvedDef,
+    awardOptions
+)
     if not player then
         return 0
     end
@@ -201,10 +208,20 @@ function CombatService:AwardExperience(player, enemyId, enemyLevel, enemyTier, r
     end
     local diminish = LevelDiffYield.xp(playerLvl, diminishTarget, self._xpLevelScale)
     xp = math.floor(xp * diminish)
+    -- Isolated encounters may have difficulty axes that do not change the enemy's stamped level.
+    -- Merge Defense uses this seam for its post-rebirth HP-to-allied-DPS ratio; ordinary combat
+    -- omits the option and remains exactly 1x. Preserve a one-XP tick for any positive scaled kill.
+    local activityMultiplier =
+        math.max(0, tonumber(type(awardOptions) == "table" and awardOptions.xpMultiplier) or 1)
+    if activityMultiplier ~= 1 then
+        xp = if xp > 0 and activityMultiplier > 0
+            then math.max(1, math.floor(xp * activityMultiplier))
+            else 0
+    end
     if self._combatConfig and self._combatConfig.combat_trace then
         print(
             string.format(
-                "[CombatXP] %s tier=%s effLevel=%d yieldLvl=%d base=%d playerLvl=%s realmOff=%s diminish=%.2f -> %d XP",
+                "[CombatXP] %s tier=%s effLevel=%d yieldLvl=%d base=%d playerLvl=%s realmOff=%s diminish=%.2f activity=%.3f -> %d XP",
                 tostring(enemyId),
                 tostring(tier),
                 effLevel,
@@ -213,6 +230,7 @@ function CombatService:AwardExperience(player, enemyId, enemyLevel, enemyTier, r
                 tostring(playerLvl),
                 tostring(realmLevelOffset),
                 diminish,
+                activityMultiplier,
                 xp
             )
         )
@@ -228,7 +246,7 @@ end
 
 -- Credit a defeated enemy's deterministic drops to the player (Feature 10:
 -- "loot includes biome currency + Shadow Tokens in Hell").
-function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolvedDef)
+function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolvedDef, awardOptions)
     -- Pet-INVADER enemies (petinv_*, synthesized at spawn from the opposing realm's pets) have NO
     -- entry in the static enemies config — and the REALMS are populated almost entirely by them. Their
     -- Level AND elite Tier are stamped on the model and passed in here, so a def-less invader is still
@@ -305,7 +323,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolve
             loot[currency] = (loot[currency] or 0) + coins
         end
     end
-    local xp = self:AwardExperience(player, enemyId, enemyLevel, tier, def)
+    local xp = self:AwardExperience(player, enemyId, enemyLevel, tier, def, awardOptions)
     return { ok = true, loot = loot, xp = xp }
 end
 

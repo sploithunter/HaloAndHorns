@@ -812,9 +812,13 @@ presentation only and must never become a durable player Huge, index entry, or r
 
 Treat approximately Wave 140 as a balance horizon, not an endpoint. Merge-only rebirth grants an
 additive +100% of base allied Merge damage per rank without discounting eggs or multiplying drops.
-The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exists until its price
-and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
-deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
+Every proposed rank prices from its matching Merge egg value at 400×: Rank 2 costs 100,000 and Rank
+3 costs 200,000 Waycoins. Rebirth resets the active wave/checkpoint, board, deployed eggs, and Merge
+wallet, but never pets, player level, world unlocks, or Gem upgrades. After a paid rebirth, Full-mode
+player-pet kill XP follows relative challenge: enemy layer/endless HP divided by the persistent
+Merge Damage × Fire Rate advantage, clamped to 5–100%. This keeps reset-wave kills nonzero without
+letting easy clears pay as peer fights; the 1,000-wave safety sweep must show enemy difficulty
+overtaking all 50 ranks (current worst case: Rank 50 plus max Damage/Fire Rate at Wave 421).
 
 ## Rage Cannon Is A One-Time Berserk Circle (2026-09-01)
 

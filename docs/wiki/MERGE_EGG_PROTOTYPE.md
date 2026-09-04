@@ -419,9 +419,9 @@ team and queue model:
   alter affordability checks.
 - Merge-only rebirth is the combat and economy escape valve when enemies overtake the current
   defense ceiling. Every player starts at Rank 1 for free and the progression cap is Rank 50. A
-  proposed Rank N indexes Merge egg tier N and costs `that tier's authored egg creation value × 200`.
-  Rank 2 therefore indexes Ice at 250 Waycoins and costs 50,000; Rank 10 indexes Black Ice at
-  64,000 and costs 12,800,000. The rank quote never reads the player's live Spawn Level or hatcher
+  proposed Rank N indexes Merge egg tier N and costs `that tier's authored egg creation value × 400`.
+  Rank 2 therefore indexes Ice at 250 Waycoins and costs 100,000; Rank 10 indexes Black Ice at
+  64,000 and costs 25,600,000. The rank quote never reads the player's live Spawn Level or hatcher
   capacity, so upgrading either during a run cannot make rebirth cheaper or more expensive. The
   first two paid transitions produce
   2x/3x pet power, cannon power,
@@ -447,6 +447,18 @@ team and queue model:
   3 adds Lava, and later ranks continue the configured progression through the Rank-50 cap.
   Management upgrade ranks and cumulative Gem spend now live in
   the Merge-defense profile record rather than only the session.
+- Merge Full-mode combat XP has a second, Merge-only challenge ratio after a paid rebirth. Ordinary
+  combat still starts from enemy level/rank and the global level-difference yield. Merge then
+  multiplies that result by `enemy layer/cycle HP multiplier ÷ persistent allied DPS multiplier`,
+  where allied DPS includes the additive Rebirth + Damage pool and Fire Rate. The value is config-
+  clamped from 5% to 100%, so trivial reset waves still tick the bar and full XP automatically
+  returns when enemy HP catches up. Only durable player-pet final hits remain eligible; the offline
+  simulator uses the authored 50% player-pet kill share for expected totals.
+- `scripts/simulate_merge_xp.luau` advances the real authored/endless wave generator for 1,000 waves
+  without Studio. It reports opening XP yield, expected and maximum XP, first full-yield wave, next
+  rank price, and an intentionally optimistic no-spend/all-pickups affordability bound. The safety
+  sweep proved every Rank 1–50 curve is overtaken within 1,000 waves: Rank 50 catches at Wave 201
+  without management DPS, or Wave 421 with Damage and Fire Rate both maxed.
 - A ninth management-board card shows the next exact price and total damage. Rebirth requires a
   second confirmation click because it clears the current run. Future anti-spam progression gates
   use `rebirth.requirements.minimum_deployed_egg_tier_by_rank`; the list is deliberately empty

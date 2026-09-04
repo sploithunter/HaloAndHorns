@@ -6,7 +6,7 @@ return function()
             enabled = true,
             currency = "hall_coins",
             max_rank = 50,
-            indexed_egg_value_multiplier = 200,
+            indexed_egg_value_multiplier = 400,
             damage_stacking = "additive",
             per_rebirth_factors = {
                 stacking = "additive",
@@ -34,13 +34,13 @@ return function()
             expect(Rebirth.rankForCount(0)).to.equal(1)
             expect(Rebirth.rankForCount(1)).to.equal(2)
             expect(Rebirth.rankForCount(2)).to.equal(3)
-            expect(first.amount).to.equal(50000)
+            expect(first.amount).to.equal(100000)
             expect(first.rank).to.equal(2)
             expect(first.indexedEggTier).to.equal(2)
             expect(first.indexedEggValue).to.equal(250)
-            expect(first.eggValueMultiplier).to.equal(200)
+            expect(first.eggValueMultiplier).to.equal(400)
             expect(first.currency).to.equal("hall_coins")
-            expect(second.amount).to.equal(100000)
+            expect(second.amount).to.equal(200000)
             expect(second.rank).to.equal(3)
         end)
 
@@ -49,7 +49,7 @@ return function()
             expect(price.rank).to.equal(10)
             expect(price.indexedEggTier).to.equal(10)
             expect(price.indexedEggValue).to.equal(64000)
-            expect(price.amount).to.equal(12800000)
+            expect(price.amount).to.equal(25600000)
         end)
 
         it("stops after the configured maximum rank", function()
