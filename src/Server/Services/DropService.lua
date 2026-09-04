@@ -24,6 +24,7 @@ local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
+local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
 local MagnetRadius = require(ReplicatedStorage.Shared.Game.MagnetRadius)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
@@ -985,7 +986,12 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     for i = 2, count do
         local off = Vector3.new(math.cos(i * 2.1) * 2.5, 0, math.sin(i * 2.1) * 2.5)
         local extraOpts = (type(opts) == "table" and (opts.enemy_level or opts.tier))
-                and { enemy_level = opts.enemy_level, tier = opts.tier }
+                and {
+                    enemy_level = opts.enemy_level,
+                    tier = opts.tier,
+                    enemy_element = opts.enemy_element,
+                    enemy_origin_locked = opts.enemy_origin_locked,
+                }
             or nil
         task.defer(function()
             self:TrySpawnEnhancementDrop(player, "treasure", position + off, extraOpts)
@@ -1012,11 +1018,22 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     if source == "treasure" then
         quality = quality or drops.treasure_quality
     end
+    -- ENEMY ORIGIN: the defeated combatant, not the player's current zone, owns
+    -- the drop's primary element. The ordinary Natural/Single/Dual odds remain
+    -- unchanged. Originless/unsupported combatants fall back to Natural instead
+    -- of borrowing an unrelated zone origin. Premium recursive drops carry the
+    -- same lock and element through extraOpts above.
+    local enemyOriginLocked = source == "enemy"
+        or (type(opts) == "table" and opts.enemy_origin_locked == true)
+    local enemyOrigin = enemyOriginLocked
+            and Enhancements.originForElement(enhCfg, type(opts) == "table" and opts.enemy_element)
+        or nil
     local record = enh:RollDrop(nil, player:GetAttribute("CurrentArea"), {
-        natural = not hasOrigin,
+        natural = not hasOrigin or (enemyOriginLocked and enemyOrigin == nil),
         playerLevel = rollLevel,
         natural_chance = quality and quality.natural_chance,
         single_chance = quality and quality.single_chance,
+        primary_origin = enemyOrigin,
     })
 
     -- model: authored Assets model (override) > the cogwheel mesh (per-color) > mystery orb

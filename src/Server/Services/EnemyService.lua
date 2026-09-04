@@ -1610,9 +1610,16 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
 
     pcall(function()
         -- Rank premium: bosses roll better (enemy_rank_mult).
+        local defeatedDef = type(rewardDef) == "table" and rewardDef or entry.def
+        local enemyElement = type(defeatedDef) == "table" and defeatedDef.element or nil
+        if type(enemyElement) ~= "string" or enemyElement == "" then
+            enemyElement = model:GetAttribute("Element")
+        end
         drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
             tier = model:GetAttribute("EnemyTier"),
             enemy_level = model:GetAttribute("Level"),
+            enemy_element = enemyElement,
+            enemy_origin_locked = true,
         })
     end)
     -- Potion drop (same odds as enhancements; independent roll).

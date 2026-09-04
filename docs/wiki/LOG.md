@@ -1,5 +1,16 @@
 # Log
 
+## 2026-09-04 — Enhancement drops inherit the defeated combatant's origin
+
+- Routed the defeated enemy definition's configured element through `EnemyService` and
+  `DropService` into the enhancement roll. Rimelight Hare and other synthesized pet enemies now use
+  their canonical pet origin, so an Ice kill yields Natural, Cryomancer single, or
+  Cryomancer-first dual results under the existing drop/quality probabilities.
+- Added config-owned elements to every rewarding static enemy, preserved current-area origins for
+  breakable/treasure drops, and made originless or unsupported combatants fall back to Natural.
+- Added pure origin mapping/roll coverage plus catalog and runtime wiring contracts; the headless
+  suite passes 2,574/2,574.
+
 ## 2026-09-01 — Trained durable pets earn Farm & Fight drops in Merge Defense
 
 - Kept Merge enemies on `rewardPolicy = "none"` and retained their isolated physical Waycoin/Gem

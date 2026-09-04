@@ -941,3 +941,15 @@ Persist only reconstructable checkpoint state at completed ten-wave boundaries. 
 wallet, board inventory, base generator, deployed egg tiers, and objective count immediately;
 reroll ephemeral NPC rosters at full health on resume. Rebirth/Admin Reset clear this checkpoint,
 while Gem upgrades and Rebirth rank remain durable.
+
+## Enemy Enhancement Origin Belongs to the Defeated Combatant (2026-09-04)
+
+Enemy enhancement rolls keep the configured drop chance, rank multiplier, Natural chance, and
+Single/Dual quality rules. Only the origin authority changes: the defeated combatant's configured
+element maps through `configs/enhancements.lua` `drops.area_origins` and becomes the first/disc
+origin of every non-Natural result. Pet-model enemies inherit their element from the canonical pet
+definition; static enemies declare it in `configs/enemies.lua`.
+
+An enemy whose element is absent or unsupported produces a Natural enhancement instead of borrowing
+the player's current area. Pre-origin players retain the same forced-Natural protection. Drops not
+caused by an enemy defeat (breakables and treasure) continue to use the current area's origin.

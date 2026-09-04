@@ -16,6 +16,32 @@ function Enhancements.isValidType(cfg, enhType)
     return typeDef(cfg, enhType) ~= nil
 end
 
+function Enhancements.isKnownOrigin(cfg, origin)
+    if type(origin) ~= "string" or origin == "" then
+        return false
+    end
+    for _, candidate in ipairs((cfg and cfg.origins) or {}) do
+        if candidate == origin then
+            return true
+        end
+    end
+    return false
+end
+
+-- Resolve a combatant/zone element (ice, lava, grass, desert) to the enhancement
+-- archetype it brands. The mapping remains config-owned; unsupported elements such
+-- as creator/hall deliberately return nil so callers can choose a Natural fallback.
+function Enhancements.originForElement(cfg, element)
+    if type(element) ~= "string" or element == "" then
+        return nil
+    end
+    local mapped = (((cfg or {}).drops or {}).area_origins or {})[element]
+    if Enhancements.isKnownOrigin(cfg, mapped) then
+        return mapped
+    end
+    return nil
+end
+
 function Enhancements.isSingle(record)
     return type(record) == "table" and type(record.origins) == "table" and #record.origins == 1
 end
@@ -239,6 +265,43 @@ function Enhancements.badgeSpec(cfg, record)
         ringOrigin = record.origins[2] or record.origins[1],
         single = Enhancements.isSingle(record),
     }
+end
+
+-- Roll the origin portion of a non-Natural drop. When primaryOrigin is known,
+-- it always occupies the disc: a boosted single keeps it alone; otherwise the
+-- random ring either matches it (single) or supplies the second origin (dual).
+-- With no primary this preserves the legacy uniform-origin roll used by drops
+-- that are not tied to a combatant or mapped area.
+function Enhancements.rollDropOrigins(cfg, rng, primaryOrigin, singleChance)
+    local origins = (cfg and cfg.origins) or {}
+    if #origins == 0 then
+        return {}
+    end
+    if not Enhancements.isKnownOrigin(cfg, primaryOrigin) then
+        primaryOrigin = nil
+    end
+
+    if primaryOrigin then
+        if tonumber(singleChance) and rng:NextNumber() < tonumber(singleChance) then
+            return { primaryOrigin }
+        end
+        local ring = origins[rng:NextInteger(1, #origins)]
+        if ring == primaryOrigin then
+            return { primaryOrigin }
+        end
+        return { primaryOrigin, ring }
+    end
+
+    local first = origins[rng:NextInteger(1, #origins)]
+    local defaultSingleChance = tonumber(((cfg or {}).drops or {}).single_chance or 0.35)
+    if #origins == 1 or rng:NextNumber() < (tonumber(singleChance) or defaultSingleChance) then
+        return { first }
+    end
+    local second = first
+    while second == first do
+        second = origins[rng:NextInteger(1, #origins)]
+    end
+    return { first, second }
 end
 
 -- Roll a drop LEVEL for an area: uniform in the area's band, +/- jitter, floor 1.

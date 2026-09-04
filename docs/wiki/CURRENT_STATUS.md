@@ -671,6 +671,12 @@ sides, a capital-baddie encounter ladder, and the powers roster fully implemente
   beatable, AV = the wipe kit × 3 duration. Admin bar spawn buttons: ☠ BOSS / 𖤐 PACK / 👑 AV /
   💀 WAR (full composition: boss + 2 LTs + healer-behind-boss + whelp screen) riding
   `combat.spawnEnemy` (Studio-or-IsAdmin).
+- **Enemy enhancement origins follow the defeated combatant**: enemy reward definitions carry their
+  configured element into `DropService`; Natural/Single/Dual and rank-quality odds are unchanged,
+  but every non-Natural enemy drop uses that element's enhancement origin as its first/disc origin.
+  Pet-model enemies inherit `pets[petId].origin` (for example Rimelight Hare → ice → Cryomancer),
+  static enemies declare `element` in `configs/enemies.lua`, and unsupported/originless combatants
+  fall back to Natural. Breakable and treasure drops retain the current-area origin behavior.
 - **Powers audit closed**: `target="single"` is REAL (resolves the squad's engaged target — it used
   to hit the whole combat set at the widest default radius); `_applyEffect` warns on unknown
   families (how fear + Armor Field once shipped dead); Armor Field re-kinded to defense_buff;
