@@ -9,6 +9,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
+local CollectionService = game:GetService("CollectionService")
 
 local MergeEggRealmLayout = require(ReplicatedStorage.Shared.Game.MergeEggRealmLayout)
 
@@ -505,6 +506,7 @@ function MergeEggRealmBuilder:_registerBay(model, bay)
     }
     self._bays[bay.id] = record
     for _, fixture in ipairs(claimFixtures) do
+        CollectionService:AddTag(fixture.prompt, CLAIM_PROMPT)
         fixture.prompt.Enabled = true
         fixture.prompt.ActionText = "Claim Bay"
         fixture.prompt.ObjectText = bay.displayName

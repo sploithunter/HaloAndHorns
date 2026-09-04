@@ -921,6 +921,11 @@ team and queue model:
   cleanup, and player leave. The client resolves all world-space Merge UI through the player's bay
   id plus the required `HatcherSpawn` gameplay hook instead of assuming the first Model stamped with
   that id; decorative spawn gates deliberately share the id and are not valid runtime roots.
+  Claim prompts are tagged `MergeEggBayClaimPrompt` during runtime adoption. The client applies
+  a per-viewer eligibility mask: claimed/active players and temporary-mode participants do not see
+  empty-bay claims. `MergeEggBayId` spans setup through pet cleanup, so offers return only after
+  release. Other eligible players still see the same empty bay. This does not enable mid-session
+  bay switching; server `_canBegin` and `Claim` remain the ownership authority.
 - The complete ten-bay footprint is one `MergeEggPrototype` CurrentArea, so walking down the hall or
   visiting another bay does not accidentally end the mode. Enemy movement and physical drops still
   use the selected bay's authored `ArenaBounds`; no combat actor can leak into a neighboring lane.
