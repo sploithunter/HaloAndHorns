@@ -1,7 +1,8 @@
 -- Compact presentation for Merge Defense costs.
 --
--- Costs remain ordinary numeric Waycoin/Gem amounts. Only the board label is abbreviated, and only
--- at billion scale or above so the familiar early-game prices remain exact and comma-separated.
+-- Costs remain ordinary numeric Waycoin/Gem amounts. Only their labels are abbreviated. Million
+-- scale is where an exact digit run stops being useful in the compact boards and management menus;
+-- familiar early-game prices remain exact and comma-separated.
 
 local MergeEggCostFormat = {}
 
@@ -9,6 +10,7 @@ local SUFFIXES = {
     { threshold = 1e15, suffix = "Q" },
     { threshold = 1e12, suffix = "T" },
     { threshold = 1e9, suffix = "B" },
+    { threshold = 1e6, suffix = "M" },
 }
 
 local function wholeNumber(value)

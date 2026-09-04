@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local CURRENCIES = require(ReplicatedStorage.Configs:WaitForChild("currencies"))
+local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 
 local MergeBulwarkMenu = {}
 
@@ -666,7 +667,7 @@ function MergeBulwarkMenu.new(parent, onAction)
         contents.coin.Visible = showPrice
         contents.coin.Image = currencyId == "gems" and GEM_ICON or WAYCOIN_ICON
         contents.amount.Visible = showPrice
-        contents.amount.Text = tostring(costAmount)
+        contents.amount.Text = MergeEggCostFormat.format(costAmount)
         contents.amount.TextColor3 = ink
     end
 
@@ -740,7 +741,7 @@ function MergeBulwarkMenu.new(parent, onAction)
         local tierCosts = type(state.tierCosts) == "table" and state.tierCosts or {}
         syncCards(families)
         walletCoin.Image = WAYCOIN_ICON
-        walletAmount.Text = tostring(wallet)
+        walletAmount.Text = MergeEggCostFormat.format(wallet)
 
         hint.Text = state.playtestUnlock == true
                 and "Placeable from Wave 1 • Unlock with Gems • Install/upgrade with Waycoins"
@@ -831,7 +832,8 @@ function MergeBulwarkMenu.new(parent, onAction)
                     and math.max(0, math.floor(tonumber(unlockPrice.amount) or cost))
                 or cost
             walletCoin.Image = unlockCurrency == "gems" and GEM_ICON or WAYCOIN_ICON
-            walletAmount.Text = tostring(unlockCurrency == "gems" and gemWallet or wallet)
+            walletAmount.Text =
+                MergeEggCostFormat.format(unlockCurrency == "gems" and gemWallet or wallet)
             selectedName.Text = string.upper(tostring(selected.name or selected.id))
             if ownedTier == 0 then
                 ownedBadge.Text = "LOCKED"
