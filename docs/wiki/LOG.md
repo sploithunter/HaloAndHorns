@@ -7822,3 +7822,10 @@ first-session cohort rates.
 - Doubled the rebirth price factor from 200× to 400× of the indexed egg value. Rank 2 now costs
   100,000 Waycoins and Rank 3 costs 200,000; the zero-spend/all-pickups first-rebirth bound moves
   from Wave 15 to Wave 19 before real egg, generator, cannon, or bulwark spending.
+
+## 2026-09-04 — Scale permanent Merge active-slot prices
+
+- Replaced the cheap Active Slots doubling curve with explicit config-owned prices for physical
+  slots 5–9: 250, 1,000, 5,000, 25,000, and 100,000 Gems. The generic management quote path now
+  consumes an authored per-level ladder when present and preserves the existing exponential curve
+  for percentage upgrades.

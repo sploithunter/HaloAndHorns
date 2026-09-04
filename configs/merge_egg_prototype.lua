@@ -499,8 +499,10 @@ return {
             },
             active_slots = {
                 display_name = "Active Slots",
-                base_cost = 250,
-                cost_growth = 2,
+                -- Purchases unlock physical slots 5 through 9 in order. Keep this as an explicit
+                -- authored ladder: capacity is a scarce permanent advantage, and the final slot
+                -- should be a 100,000-Gem long-term goal rather than another cheap doubling.
+                costs_by_level = { 250, 1000, 5000, 25000, 100000 },
                 step = 1,
                 max_level = 5,
             },

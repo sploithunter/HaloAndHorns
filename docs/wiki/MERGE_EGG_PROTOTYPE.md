@@ -654,7 +654,8 @@ team and queue model:
   curve for every live and replacement player pet. Focus Regen multiplies the shared pool's base
   regeneration rate while leaving its maximum unchanged; the resource itself remains transient.
   Damage's accumulated percentage adds to Rebirth's percentage on that same base rather than
-  multiplying the two systems.
+  multiplying the two systems. Active Slots use an explicit permanent-capacity ladder rather than
+  the percentage-upgrade curve: slots 5–9 cost 250, 1,000, 5,000, 25,000, and 100,000 Gems.
   Each card is a colored rounded frame around a dark inset panel. Its purchase price sits in a
   separate overlapping pill: purple with the authored amethyst icon for Gem costs, gold with the
   Waycoin icon for Waycoin costs, and a red action pill for Rebirth. Both wall panels and the floor
