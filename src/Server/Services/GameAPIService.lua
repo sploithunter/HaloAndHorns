@@ -32,6 +32,7 @@ local CommandBus = require(ReplicatedStorage.Shared.API.CommandBus)
 local Validators = require(ReplicatedStorage.Shared.API.Validators)
 local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
 local PowerFormula = require(ReplicatedStorage.Shared.Game.PowerFormula)
+local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 
 local GameAPIService = {}
 GameAPIService.__index = GameAPIService
@@ -714,6 +715,7 @@ function GameAPIService:_registerCommands()
                 tutorialLanguage = prefs and prefs.tutorialLanguage or "auto",
                 hideTogglesInBattle = not prefs or prefs.hideTogglesInBattle ~= false,
                 propEffects = not prefs or prefs.propEffects ~= false,
+                shadowMode = prefs and prefs.shadowMode or nil,
             }
         end,
     })
@@ -747,6 +749,11 @@ function GameAPIService:_registerCommands()
                 },
                 hideTogglesInBattle = { type = "boolean", optional = true },
                 propEffects = { type = "boolean", optional = true },
+                shadowMode = {
+                    type = "string",
+                    optional = true,
+                    oneOf = ConfigLoader:LoadConfig("client_graphics").shadows.modes,
+                },
             })
         end,
         handler = function(context, args)
@@ -791,6 +798,9 @@ function GameAPIService:_registerCommands()
             end
             if type(args.propEffects) == "boolean" then
                 data.Settings.ClientPrefs.propEffects = args.propEffects
+            end
+            if type(args.shadowMode) == "string" then
+                data.Settings.ClientPrefs.shadowMode = args.shadowMode
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }

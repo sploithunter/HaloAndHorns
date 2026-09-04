@@ -29,6 +29,7 @@ local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnoun
 local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
 local HideTogglesInBattle = require(script.Parent.Parent.Parent.Systems.HideTogglesInBattle)
 local FloraSway = require(script.Parent.Parent.Parent.Systems.FloraSway)
+local ShadowController = require(script.Parent.Parent.Parent.Systems.ShadowController)
 local SquadDisplayState = require(script.Parent.Parent.Parent.Systems.SquadDisplayState)
 local QuestDisplayState = require(script.Parent.Parent.Parent.Systems.QuestDisplayState)
 local TutorialLanguageState = require(script.Parent.Parent.Parent.Systems.TutorialLanguageState)
@@ -699,6 +700,16 @@ function SettingsPanel:_createGraphicsSettings()
     )
 
     self.settings.graphics.propEffects = FloraSway.isEnabled()
+    local shadowConfig = ConfigLoader:LoadConfig("client_graphics").shadows
+    self:_createDropdownSetting(
+        shadowConfig.label,
+        ShadowController.getPreference(),
+        shadowConfig.options,
+        8,
+        function(value)
+            ShadowController.setPreference(value)
+        end
+    )
     self:_createToggleSetting(
         "Prop Effects",
         self.settings.graphics.propEffects,

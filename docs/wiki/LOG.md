@@ -7959,3 +7959,17 @@ first-session cohort rates.
   Server construction remains cache-first and instant, while clients receive only selected live
   Workspace clones and the owning Merge player's current/next-source warm shelf. Missing legacy 3D
   previews retain their existing flat-art/emoji fallback rather than restoring a global catalog.
+
+## 2026-09-04 — Measure Merge and add nearby adaptive shadows
+
+- Recorded a 30-second, one-player Studio baseline after #431: ~43.5 FPS average, 38.2ms
+  95th-percentile frame interval, 10.3ms render CPU, 13.3ms render GPU, and 532.9MB texture tag.
+  No cold-client texture-memory improvement is claimed; Studio's category counters need care.
+- Added config-owned nearby casting and a persisted Settings > Shadows Auto / On / Off choice.
+  Auto responds to sustained low FPS with cooldown/recovery hysteresis; background windows and
+  startup stalls do not drive the decision. Distant visuals and surviving pets remain intact.
+- Live-verified the Settings control, profile save/reload, distance hysteresis, nearby light
+  shadows, and preservation of authored non-casters. Full CI passes 2,591 headless tests.
+- Next targets are combat visual-event batching (~296 deliveries/sec across the three combat
+  result/swing packets in one sample), UI/transparent draw batching, and bay-aware visual work.
+  See [Client Performance](CLIENT_PERFORMANCE.md) for measurements and limitations.

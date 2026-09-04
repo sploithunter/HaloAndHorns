@@ -16,6 +16,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
   code:** IDs, art, and tuning live in `configs/` only. Never hardcode
   model/asset numbers in `src/`.
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
+- [Client Performance](CLIENT_PERFORMANCE.md) — measured Merge baseline, nearby adaptive shadows,
+  persisted graphics controls, and next performance targets.
 - [Configuration-As-Code Audit](CONFIG_AS_CODE_AUDIT.md) — complete runtime literal/fallback
   inventory, CI ratchet, and remediation priorities.
 - [Console Support](CONSOLE_SUPPORT.md) — controller mapping, semantic input routing, modal focus,
