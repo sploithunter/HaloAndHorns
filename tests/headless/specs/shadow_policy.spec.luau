@@ -3,6 +3,19 @@ local config = loadModule("configs/client_graphics.lua").shadows
 
 return function()
     describe("nearby shadow policy", function()
+        it("caps isolated stalls without discarding repeated severe slow frames", function()
+            expect(Policy.frameSeconds(5, config)).to.equal(config.max_sample_frame_seconds)
+            expect(Policy.frameSeconds(1 / 60, config)).to.near(1 / 60)
+            expect(Policy.frameSeconds(0, config)).to.equal(0)
+            local state = Policy.new(config)
+            state.hold = 0
+            local capped = Policy.frameSeconds(1, config)
+            for _ = 1, config.slow_seconds do
+                Policy.sample(state, 1 / capped, 1, config)
+            end
+            expect(state.enabled).to.equal(false)
+        end)
+
         it("defaults missing or invalid preferences to Auto", function()
             expect(Policy.normalize(nil, config)).to.equal("auto")
             expect(Policy.normalize("invalid", config)).to.equal("auto")

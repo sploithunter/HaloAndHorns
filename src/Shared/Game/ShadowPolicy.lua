@@ -21,6 +21,12 @@ function ShadowPolicy.resetObservation(state, config)
     state.hold = math.max(state.hold, config.warmup_seconds)
 end
 
+function ShadowPolicy.frameSeconds(dt, config)
+    -- A lone loading stall contributes at most one capped frame. Repeated long
+    -- frames still count as sustained poor performance instead of resetting forever.
+    return math.clamp(dt, 0, config.max_sample_frame_seconds)
+end
+
 function ShadowPolicy.sample(state, fps, seconds, config)
     if state.hold > 0 then
         state.hold = math.max(0, state.hold - seconds)

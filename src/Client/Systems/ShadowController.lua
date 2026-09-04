@@ -186,12 +186,11 @@ function ShadowController.start()
         if mode ~= "auto" or not focused or menuOpen or not loaded then
             return
         end
-        -- Ignore one-off loading/alt-tab stalls, not ordinary sustained slow frames.
-        if dt <= 0 or dt > config.max_sample_frame_seconds then
-            resetObservation()
+        local observedSeconds = Policy.frameSeconds(dt, config)
+        if observedSeconds <= 0 then
             return
         end
-        sampleSeconds += dt
+        sampleSeconds += observedSeconds
         sampleFrames += 1
         if sampleSeconds >= config.sample_seconds then
             Policy.sample(state, sampleFrames / sampleSeconds, sampleSeconds, config)

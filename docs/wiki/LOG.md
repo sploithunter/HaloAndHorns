@@ -7973,3 +7973,5 @@ first-session cohort rates.
 - Next targets are combat visual-event batching (~296 deliveries/sec across the three combat
   result/swing packets in one sample), UI/transparent draw batching, and bay-aware visual work.
   See [Client Performance](CLIENT_PERFORMANCE.md) for measurements and limitations.
+- Final severe-slowdown guard caps isolated long frames but still counts repeated long frames;
+  it cannot keep resetting Auto indefinitely at very low FPS. CI now passes 2,592 tests.
