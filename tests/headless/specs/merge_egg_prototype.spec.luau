@@ -1213,12 +1213,21 @@ return function()
             expect(config.management_upgrades.definitions.coin_value.step).to.equal(0.05)
             expect(config.management_upgrades.definitions.damage.step).to.equal(0.05)
             expect(config.management_upgrades.definitions.fire_rate.step).to.equal(0.05)
+            local activeSlots = config.management_upgrades.definitions.active_slots
+            expect(activeSlots.base_cost).to.equal(nil)
+            expect(activeSlots.cost_growth).to.equal(nil)
+            expect(activeSlots.max_level).to.equal(5)
+            expect(table.concat(activeSlots.costs_by_level, ",")).to.equal(
+                "250,1000,5000,25000,100000"
+            )
             expect(config.management_upgrades.definitions.egg_health.step).to.equal(0.05)
             expect(config.management_upgrades.definitions.pet_endurance.step).to.equal(0.05)
             expect(config.management_upgrades.definitions.focus_regen.step).to.equal(0.05)
             expect(config.management_upgrades.definitions.player_focus).to.equal(nil)
 
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            expect(service:find("definition.costs_by_level", 1, true)).to.be.ok()
+            expect(service:find("authoredCosts[level + 1]", 1, true)).to.be.ok()
             local dataService = readFile("src/Server/Services/DataService.lua")
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             local authoring = readFile("scripts/studio/build_merge_egg_prototype_world.luau")

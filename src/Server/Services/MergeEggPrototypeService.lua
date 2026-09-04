@@ -1971,14 +1971,22 @@ function MergeEggPrototypeService:_managementUpgradeCost(record, upgradeId)
     local upgrades = type(self._config.management_upgrades) == "table"
             and self._config.management_upgrades
         or {}
-    local amount = math.max(
-        0,
-        math.floor(
-            (tonumber(definition.base_cost) or 0)
-                    * math.max(1, tonumber(definition.cost_growth) or 1) ^ level
-                + 0.5
+    local authoredCosts = type(definition.costs_by_level) == "table" and definition.costs_by_level
+        or nil
+    local authoredAmount = authoredCosts and tonumber(authoredCosts[level + 1])
+    local amount
+    if authoredAmount ~= nil then
+        amount = math.max(0, math.floor(authoredAmount + 0.5))
+    else
+        amount = math.max(
+            0,
+            math.floor(
+                (tonumber(definition.base_cost) or 0)
+                        * math.max(1, tonumber(definition.cost_growth) or 1) ^ level
+                    + 0.5
+            )
         )
-    )
+    end
     return {
         currency = tostring(definition.currency or upgrades.currency or "gems"),
         amount = amount,
