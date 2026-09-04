@@ -774,8 +774,12 @@ team and queue model:
   Wind. Kade's rocketboards remain exclusive to his vendor. Combat Training checkpoints and
   releases the Merge session before opening the existing mission, then reconstructs the saved
   playstate when the mission ends. Once Combat Training is complete, it is removed from the
-  Quartermaster menu rather than offered as a replay; player-pet kill XP remains gated on that
-  completion.
+  Quartermaster menu rather than offered as a replay; the broader loot/event/kill-credit payout
+  remains gated on that completion while effective Full-mode pet final hits already earn XP.
+  Stationary hatcher principals are post-parent collision-guarded and assigned to a dedicated
+  player-pass-through physics group, so Humanoid's R15 limb defaults cannot make them physical
+  walls. Repeated frame-step or rebirth reconciliation reserves each asynchronous Bulwark Engineer
+  slot and removes stale same-slot copies before they can stack.
   The first Quartermaster interaction completes the first-visit drip. Full
   completion is stored in `GameData.MergeDefense.tutorial_completed` when
   that Talk finishes. His world-space introduction appears only for that first conversation and is
@@ -1302,6 +1306,10 @@ clean.
   is gone. Talk the Artillery Commander behind that pad instead: the
   workshop is the same pick-then-act panel as the bulwark menu, but the
   list is the six cannon roles and that commander only writes his pad.
+  Commander creation is an idempotent per-slot reconciliation: repeated entry, tutorial, frame-step,
+  installation, or rebirth passes retain one posted commander and remove stale duplicates. The
+  asynchronous avatar build reserves its slot before yielding and rechecks immediately before the
+  model is published.
   Unlock is one-time and global (access to Tier 1). Every family has
   a config-owned Gem unlock and four Waycoin target-tier prices. The workshop
   shows LOCKED until that flag is set. Currently Owned and Next

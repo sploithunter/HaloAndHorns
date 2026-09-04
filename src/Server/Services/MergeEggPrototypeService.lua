@@ -7444,47 +7444,87 @@ function MergeEggPrototypeService:_ensureBayQuartermaster(record)
     self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "quartermaster"))
 end
 
-function MergeEggPrototypeService:_findBulwarkEngineer(folder, slot)
+function MergeEggPrototypeService:_reconcileBulwarkEngineer(folder, slot)
     if not folder then
         return nil
     end
     slot = MergeBulwarkProgression.normalizeSlot(slot)
-    local named = folder:FindFirstChild(self:_engineerModelName(slot))
-    if named then
-        return named
-    end
+    local expectedName = self:_engineerModelName(slot)
+    local matches = {}
     for _, child in ipairs(folder:GetChildren()) do
         if
             (
-                child.Name == BULWARK_ENGINEER_NAME
+                child.Name == expectedName
+                or child.Name == BULWARK_ENGINEER_NAME
                 or child:GetAttribute("MergeBulwarkEngineer") == true
             ) and child:GetAttribute("MergeBulwarkSlot") == slot
         then
-            return child
+            matches[#matches + 1] = child
         end
     end
-    return nil
+    local live = matches[1]
+    for _, child in ipairs(matches) do
+        if child.Name == expectedName then
+            live = child
+            break
+        end
+    end
+    local removed = 0
+    for _, child in ipairs(matches) do
+        if child ~= live then
+            child:Destroy()
+            removed += 1
+        end
+    end
+    if removed > 0 then
+        self:_log("Warn", "Merge Egg duplicate bulwark engineers reconciled", {
+            slot = slot,
+            removed = removed,
+        })
+    end
+    return live
+end
+
+function MergeEggPrototypeService:_findBulwarkEngineer(folder, slot)
+    return self:_reconcileBulwarkEngineer(folder, slot)
 end
 
 function MergeEggPrototypeService:_ensureBulwarkEngineer(record, folder)
     if not (record and folder) then
         return
     end
+    local spawning = record.bulwarkEngineerSpawning
+    if type(spawning) ~= "table" then
+        spawning = {}
+        record.bulwarkEngineerSpawning = spawning
+    end
     for _, post in ipairs(self:_engineerPosts()) do
-        if not self:_bulwarkSlotUnlocked(record, post.slot) then
-            self:_clearBulwarkEngineer(folder, post.slot)
-            self:_clearSlotMenuHosts(folder, post.slot)
+        local slot = MergeBulwarkProgression.normalizeSlot(post.slot)
+        if not self:_bulwarkSlotUnlocked(record, slot) then
+            self:_clearBulwarkEngineer(folder, slot)
+            self:_clearSlotMenuHosts(folder, slot)
             continue
         end
-        self:_clearSlotMenuHosts(folder, post.slot)
-        local live = self:_findBulwarkEngineer(folder, post.slot)
-        if not live then
+        self:_clearSlotMenuHosts(folder, slot)
+        local live = self:_reconcileBulwarkEngineer(folder, slot)
+        if not live and spawning[slot] ~= true then
             local captured = post
+            spawning[slot] = true
             task.spawn(function()
-                self:_spawnBulwarkEngineer(record, folder, captured)
+                local ok, err = xpcall(function()
+                    self:_spawnBulwarkEngineer(record, folder, captured)
+                end, debug.traceback)
+                spawning[slot] = nil
+                if not ok then
+                    self:_log("Warn", "Merge Egg bulwark engineer spawn crashed", {
+                        player = record.player and record.player.Name,
+                        slot = slot,
+                        error = tostring(err),
+                    })
+                end
             end)
-        else
-            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "bulwark", post.slot))
+        elseif live then
+            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "bulwark", slot))
         end
     end
 end
@@ -7562,6 +7602,10 @@ function MergeEggPrototypeService:_spawnBulwarkEngineer(record, folder, post)
         end)
     end
     self:_setVendorPosted(model, false)
+    if self:_reconcileBulwarkEngineer(folder, slot) then
+        model:Destroy()
+        return
+    end
     model.Parent = folder
     self:_setEngineerPassthrough(model)
     self:_clearSlotMenuHosts(folder, slot)
@@ -7591,26 +7635,49 @@ function MergeEggPrototypeService:_commanderModelName(slot)
     return ARTILLERY_COMMANDER_NAME .. "_" .. MergeTowerProgression.normalizeSlot(slot)
 end
 
-function MergeEggPrototypeService:_findArtilleryCommander(folder, slot)
+function MergeEggPrototypeService:_reconcileArtilleryCommander(folder, slot)
     if not folder then
         return nil
     end
     slot = MergeTowerProgression.normalizeSlot(slot)
-    local named = folder:FindFirstChild(self:_commanderModelName(slot))
-    if named then
-        return named
-    end
+    local expectedName = self:_commanderModelName(slot)
+    local matches = {}
     for _, child in ipairs(folder:GetChildren()) do
         if
             (
-                child.Name == ARTILLERY_COMMANDER_NAME
+                child.Name == expectedName
+                or child.Name == ARTILLERY_COMMANDER_NAME
                 or child:GetAttribute("MergeArtilleryCommander") == true
             ) and child:GetAttribute("MergeTowerSlot") == slot
         then
-            return child
+            matches[#matches + 1] = child
         end
     end
-    return nil
+    local live = matches[1]
+    for _, child in ipairs(matches) do
+        if child.Name == expectedName then
+            live = child
+            break
+        end
+    end
+    local removed = 0
+    for _, child in ipairs(matches) do
+        if child ~= live then
+            child:Destroy()
+            removed += 1
+        end
+    end
+    if removed > 0 then
+        self:_log("Warn", "Merge Egg duplicate artillery commanders reconciled", {
+            slot = slot,
+            removed = removed,
+        })
+    end
+    return live
+end
+
+function MergeEggPrototypeService:_findArtilleryCommander(folder, slot)
+    return self:_reconcileArtilleryCommander(folder, slot)
 end
 
 function MergeEggPrototypeService:_cannonForSlot(folder, slot)
@@ -7687,19 +7754,36 @@ function MergeEggPrototypeService:_ensureArtilleryCommanders(record, folder)
     if commander.enabled ~= true then
         return
     end
+    local spawning = record.artilleryCommanderSpawning
+    if type(spawning) ~= "table" then
+        spawning = {}
+        record.artilleryCommanderSpawning = spawning
+    end
     for _, def in ipairs(MergeTowerSlots.all()) do
-        local cannon = self:_cannonForSlot(folder, def.id)
-        local pad = self:_padForSlot(record.world, def.id)
+        local slot = def.id
+        local cannon = self:_cannonForSlot(folder, slot)
+        local pad = self:_padForSlot(record.world, slot)
         local anchor = cannon or pad
-        local live = self:_findArtilleryCommander(folder, def.id)
-        if not self:_towerSlotUnlocked(record, def.id) then
+        local live = self:_reconcileArtilleryCommander(folder, slot)
+        if not self:_towerSlotUnlocked(record, slot) then
             if live then
                 live:Destroy()
             end
-        elseif anchor and not live then
-            local captured = { slot = def.id, cannon = cannon, pad = pad }
+        elseif anchor and not live and spawning[slot] ~= true then
+            local captured = { slot = slot, cannon = cannon, pad = pad }
+            spawning[slot] = true
             task.spawn(function()
-                self:_spawnArtilleryCommander(record, folder, captured)
+                local ok, err = xpcall(function()
+                    self:_spawnArtilleryCommander(record, folder, captured)
+                end, debug.traceback)
+                spawning[slot] = nil
+                if not ok then
+                    self:_log("Warn", "Merge Egg artillery commander spawn crashed", {
+                        player = record.player and record.player.Name,
+                        slot = slot,
+                        error = tostring(err),
+                    })
+                end
             end)
         elseif live then
             if anchor then
@@ -7708,7 +7792,7 @@ function MergeEggPrototypeService:_ensureArtilleryCommanders(record, folder)
                     self:_groundEngineerOnFloor(live, stand)
                 end
             end
-            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "artillery", def.id))
+            self:_setVendorPosted(live, self:_tutorialVendorsReady(record, "artillery", slot))
         end
     end
 end
@@ -7793,6 +7877,13 @@ function MergeEggPrototypeService:_spawnArtilleryCommander(record, folder, post)
         end)
     end
     self:_setVendorPosted(model, false)
+    -- Avatar description/model creation yields. Another ensure pass (or a previous record finishing
+    -- late) may have installed this slot's commander while we were suspended, so perform one final
+    -- non-yielding reconciliation immediately before publishing the new model.
+    if self:_reconcileArtilleryCommander(folder, slot) then
+        model:Destroy()
+        return
+    end
     model.Parent = folder
     self:_setEngineerPassthrough(model)
     local promptHost = root or firstBasePart(model)
@@ -11745,6 +11836,8 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         enemyByTargetId = {},
         units = {},
         towerShots = {},
+        artilleryCommanderSpawning = {},
+        bulwarkEngineerSpawning = {},
         towersReady = false,
         bulwarksReady = false,
         teams = {},
