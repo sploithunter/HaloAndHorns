@@ -2,7 +2,7 @@
 -- the client systems only interpret this contract.
 
 return {
-    version = 2,
+    version = 3,
     tag = "AchievementBanner",
 
     -- Permanent award definitions. Services report facts; this catalog decides which facts are
@@ -74,17 +74,24 @@ return {
     },
 
     display = {
-        maximum = 4,
+        maximum = 8,
         folder_name = "PlayerAchievementBanners",
         reference_name = "PlayerSpawn",
         model_scale = 1,
-        -- Local to the mirrored player spawn, whose LookVector points down the lane. These form a
-        -- gallery just inside the entrance and face back toward the public approach.
+        -- Local to the mirrored player spawn, whose LookVector points down the lane. The points
+        -- mark the top center of each cloth: four hang across each mall-facing stair wall, with the
+        -- first pair nearest the stairs and later awards filling outward. The wall surface is 13.2
+        -- studs back from PlayerSpawn and its cap is 2 studs above the spawn marker.
+        slot_anchor = "top_center",
         slots = {
-            { x = -21, y = 11, z = -5 },
-            { x = -7, y = 11, z = -5 },
-            { x = 7, y = 11, z = -5 },
-            { x = 21, y = 11, z = -5 },
+            { x = -16, y = 1.4, z = 13.2 },
+            { x = 16, y = 1.4, z = 13.2 },
+            { x = -27, y = 1.4, z = 13.2 },
+            { x = 27, y = 1.4, z = 13.2 },
+            { x = -38, y = 1.4, z = 13.2 },
+            { x = 38, y = 1.4, z = 13.2 },
+            { x = -49, y = 1.4, z = 13.2 },
+            { x = 49, y = 1.4, z = 13.2 },
         },
         model_yaw_degrees = 0,
         camera = {

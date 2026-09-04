@@ -7829,3 +7829,15 @@ first-session cohort rates.
   slots 5–9: 250, 1,000, 5,000, 25,000, and 100,000 Gems. The generic management quote path now
   consumes an authored per-level ladder when present and preserves the existing exponential curve
   for percentage upgrades.
+
+## 2026-09-04 — Hang achievement banners on the central-mall walls
+
+- Moved the replicated achievement gallery off the upper arena floor and onto the two stone wall
+  faces flanking each bay stair. Eight alternating slots fill outward from the stairs, face the
+  central mall in both Heaven and Hell, and leave the existing wall torch clear.
+- Banner slots now identify the desired top center rather than the model pivot. The server offsets
+  each imported silhouette by its scaled bounding height, keeping both cloth shapes immediately
+  below the wall cap without changing their tagged bone-flutter animation.
+- Mount reconciliation rehydrates previously presented awards from the permanent ledger, so cloth
+  displaced by the former four-banner cap returns to the expanded wall without skipping ceremony
+  for awards that are still pending.

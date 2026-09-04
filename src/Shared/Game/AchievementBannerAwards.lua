@@ -116,4 +116,66 @@ function AchievementBannerAwards.present(state, awardIds, maximum, presentedAt)
     return presented
 end
 
+function AchievementBannerAwards.reconcileDisplayed(state, catalog, maximum)
+    state = AchievementBannerAwards.normalize(state)
+    catalog = type(catalog) == "table" and catalog or {}
+    maximum = math.max(1, positiveWhole(maximum, 4))
+
+    local prior = state.displayed
+    local displayed = {}
+    local seen = {}
+    for _, awardId in ipairs(prior) do
+        if catalog[awardId] ~= nil and not seen[awardId] then
+            seen[awardId] = true
+            displayed[#displayed + 1] = awardId
+        end
+    end
+    for awardId, record in pairs(state.owned) do
+        if
+            catalog[awardId] ~= nil
+            and type(record) == "table"
+            and positiveWhole(record.presented_at) > 0
+            and not seen[awardId]
+        then
+            seen[awardId] = true
+            displayed[#displayed + 1] = awardId
+        end
+    end
+    table.sort(displayed, function(a, b)
+        local left = state.owned[a] or {}
+        local right = state.owned[b] or {}
+        local leftPresented = positiveWhole(left.presented_at)
+        local rightPresented = positiveWhole(right.presented_at)
+        if leftPresented ~= rightPresented then
+            return leftPresented < rightPresented
+        end
+        local leftEarned = positiveWhole(left.earned_at)
+        local rightEarned = positiveWhole(right.earned_at)
+        if leftEarned ~= rightEarned then
+            return leftEarned < rightEarned
+        end
+        local leftPriority = tonumber(catalog[a] and catalog[a].priority) or 0
+        local rightPriority = tonumber(catalog[b] and catalog[b].priority) or 0
+        if leftPriority ~= rightPriority then
+            return leftPriority < rightPriority
+        end
+        return a < b
+    end)
+    while #displayed > maximum do
+        table.remove(displayed, 1)
+    end
+
+    local changed = #displayed ~= #prior
+    if not changed then
+        for index, awardId in ipairs(displayed) do
+            if prior[index] ~= awardId then
+                changed = true
+                break
+            end
+        end
+    end
+    state.displayed = displayed
+    return displayed, changed
+end
+
 return AchievementBannerAwards

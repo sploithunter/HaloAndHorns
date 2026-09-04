@@ -237,6 +237,13 @@ function AchievementBannerService:_mountOne(folder, reference, slot, player, awa
         configuredNumber(slot.z, "display.slots[].z")
     )
     local position = reference.CFrame:PointToWorldSpace(localPosition)
+    local slotAnchor = tostring(self._config.display.slot_anchor or "center")
+    if slotAnchor == "top_center" then
+        local _, boundsSize = model:GetBoundingBox()
+        position -= reference.CFrame.UpVector * (boundsSize.Y * 0.5)
+    else
+        assert(slotAnchor == "center", "achievement_banners has invalid display.slot_anchor")
+    end
     local camera = self._config.display.camera
     local cameraPosition = position
         - reference.CFrame.LookVector * math.max(
@@ -308,7 +315,15 @@ function AchievementBannerService:MountBay(player, bay)
     end
     local display = self._config.display or {}
     local slots = type(display.slots) == "table" and display.slots or {}
-    if #state.displayed == 0 or #slots == 0 then
+    local displayed, displayChanged = AchievementBannerAwards.reconcileDisplayed(
+        state,
+        self._config.awards,
+        positiveWhole(configuredNumber(display.maximum, "display.maximum"))
+    )
+    if displayChanged then
+        self:_requestSave(player, "achievement_banner_display_reconciled")
+    end
+    if #displayed == 0 or #slots == 0 then
         self:ClearBay(bay)
         return {}, nil
     end
@@ -318,7 +333,7 @@ function AchievementBannerService:MountBay(player, bay)
     folder:SetAttribute("AchievementOwnerUserId", player.UserId)
     local mounted = {}
     local mountedCount = 0
-    for index, awardId in ipairs(state.displayed) do
+    for index, awardId in ipairs(displayed) do
         local slot = slots[index]
         if slot then
             local host = self:_mountOne(folder, reference, slot, player, awardId)
