@@ -7807,3 +7807,18 @@ first-session cohort rates.
   Because Humanoid physics can restore limb `CanCollide` internally without a dependable property
   notification, those principals also use a dedicated physics group that cannot collide with
   players in `Default` or with itself.
+
+## 2026-09-04 — Scale post-rebirth Merge XP to actual challenge
+
+- Full-mode player-pet final hits no longer receive peer-fight XP for trivial reset waves merely
+  because Merge enemies share the player's level. After a paid rebirth, XP is scaled by enemy
+  layer/endless HP divided by persistent allied Merge Damage × Fire Rate, with a config-owned
+  5%–100% clamp. First-run XP and every non-Merge combat award remain unchanged.
+- Added a no-Studio 1,000-wave simulator over the shipping configs and real endless generator. Its
+  expected totals assume player pets secure half of all final hits; it also reports the theoretical
+  all-player-pet maximum, first full-XP wave, and optimistic no-spend rebirth affordability.
+- The safety sweep found no infinite power runaway. Rank 50 is overtaken at Wave 201 without
+  management DPS and Wave 421 with max Damage/Fire Rate, both well inside the 1,000-wave horizon.
+- Doubled the rebirth price factor from 200× to 400× of the indexed egg value. Rank 2 now costs
+  100,000 Waycoins and Rank 3 costs 200,000; the zero-spend/all-pickups first-rebirth bound moves
+  from Wave 15 to Wave 19 before real egg, generator, cannon, or bulwark spending.

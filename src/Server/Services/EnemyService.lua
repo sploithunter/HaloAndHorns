@@ -1573,7 +1573,7 @@ end
 -- enemies call this for every credited contributor/nearby teammate. Merge Defense may call it only
 -- for the trained owner of the durable player pet that dealt the final damaging hit; the encounter's
 -- NPC Waycoin/Gem callback remains separate and is therefore never duplicated here.
-function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef)
+function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef, awardOptions)
     if not (player and player.Parent and entry and model and combat) then
         return
     end
@@ -1584,7 +1584,8 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
             entry.enemyId,
             model:GetAttribute("Level"),
             model:GetAttribute("EnemyTier"),
-            rewardDef or entry.def
+            rewardDef or entry.def,
+            awardOptions
         )
     end)
     fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
@@ -1735,15 +1736,19 @@ function EnemyService:_onDefeated(targetId)
             and killer:GetAttribute("MergeEggPlayerCombatMode") == "full"
         then
             local rewardDef = entry.combatRewardDef or entry.def
+            local awardOptions = {
+                xpMultiplier = model:GetAttribute("MergeEggCombatXpMultiplier"),
+            }
             if killer:GetAttribute("CombatTutorialDone") == true then
-                self:_awardCombatDefeat(killer, entry, model, combat, rewardDef)
+                self:_awardCombatDefeat(killer, entry, model, combat, rewardDef, awardOptions)
             else
                 combat:AwardExperience(
                     killer,
                     entry.enemyId,
                     model:GetAttribute("Level"),
                     model:GetAttribute("EnemyTier"),
-                    rewardDef
+                    rewardDef,
+                    awardOptions
                 )
             end
         end

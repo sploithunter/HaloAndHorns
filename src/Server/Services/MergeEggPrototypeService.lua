@@ -40,6 +40,7 @@ local MergeEggPlaystate = require(ReplicatedStorage.Shared.Game.MergeEggPlaystat
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
+local MergeEggXpYield = require(ReplicatedStorage.Shared.Game.MergeEggXpYield)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeBulwarkPersist = require(ReplicatedStorage.Shared.Game.MergeBulwarkPersist)
 local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
@@ -2354,6 +2355,31 @@ function MergeEggPrototypeService:_stageRewardMultiplier(context, waveIndex)
     local waveScaling = (self:_waveFor(context, resolvedWaveIndex) or {}).enemy or {}
     return math.max(0, tonumber((layer.enemy or {}).reward_multiplier) or 1)
         * math.max(0, tonumber(waveScaling.reward_multiplier) or 1)
+end
+
+function MergeEggPrototypeService:_combatXpYield(record, waveIndex)
+    local resolvedWaveIndex = math.max(
+        1,
+        math.floor(
+            tonumber(waveIndex) or type(record) == "table" and tonumber(record.waveIndex) or 1
+        )
+    )
+    local _, stage = self:_progressionStage(record)
+    local wave = self:_waveFor(record, resolvedWaveIndex)
+    local enemyHpMultiplier =
+        MergeEggXpYield.enemyHpMultiplier(stage.combat_layers, resolvedWaveIndex, wave)
+    local rebirthDamage =
+        MergeEggRebirth.damageMultiplier(self._config.rebirth, record and record.rebirthCount)
+    local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
+    local alliedDamage =
+        MergeEggDamageScope.additiveUpgradeMultiplier(managementDamage, rebirthDamage)
+    local alliedCadence = self:_managementUpgradeMultiplier(record, "fire_rate")
+    return MergeEggXpYield.resolve((self._config.rewards or {}).combat_xp_yield, {
+        rebirthCount = record and record.rebirthCount,
+        enemyHpMultiplier = enemyHpMultiplier,
+        alliedDamageMultiplier = alliedDamage,
+        alliedCadenceMultiplier = alliedCadence,
+    })
 end
 
 function MergeEggPrototypeService:_buildHatchSource(record, eggId)
@@ -9494,6 +9520,17 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     )
     world:SetAttribute("ActiveEnemies", record and record.aliveEnemies or 0)
     world:SetAttribute("CurrentWave", record and record.waveIndex or 0)
+    local combatXpYield = self:_combatXpYield(record, record and record.waveIndex or 1)
+    world:SetAttribute("MergeDefenseCombatXpMultiplier", combatXpYield.multiplier)
+    world:SetAttribute(
+        "MergeDefenseCombatXpEnemyDifficultyMultiplier",
+        combatXpYield.enemyDifficultyMultiplier
+    )
+    world:SetAttribute(
+        "MergeDefenseCombatXpAlliedOffenseMultiplier",
+        combatXpYield.alliedOffenseMultiplier
+    )
+    world:SetAttribute("MergeDefenseCombatXpRelativeDifficulty", combatXpYield.relativeDifficulty)
     local stageId, stage = self:_progressionStage(record)
     local stageIndex, stageCount = self:_progressionStageIndex(record)
     world:SetAttribute("ProgressionStageId", stageId)
@@ -12756,6 +12793,16 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
     model:SetAttribute("MergeEggAttackerEgg", spec.attackerEggId)
     model:SetAttribute("MergeEggEnemyPetId", spec.enemyPetId)
     model:SetAttribute("MergeEggBaseCombatLevel", self:_prototypeBaseLevel(record))
+    local combatXpYield = self:_combatXpYield(record, record.waveIndex)
+    model:SetAttribute("MergeEggCombatXpMultiplier", combatXpYield.multiplier)
+    model:SetAttribute(
+        "MergeEggCombatXpEnemyDifficultyMultiplier",
+        combatXpYield.enemyDifficultyMultiplier
+    )
+    model:SetAttribute(
+        "MergeEggCombatXpAlliedOffenseMultiplier",
+        combatXpYield.alliedOffenseMultiplier
+    )
     local rewardCfg = self._config.rewards or {}
     local rewardMultiplier = self:_stageRewardMultiplier(record)
     local rewardKind = tostring(spec.rewardKind or "trash")

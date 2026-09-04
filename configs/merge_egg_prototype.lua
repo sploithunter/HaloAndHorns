@@ -1679,6 +1679,20 @@ return {
         tank_amount = 120,
         lieutenant_amount = 180,
         boss_amount = 2400,
+        -- Ordinary combat XP already diminishes when an enemy's level trails the player. Merge
+        -- keeps both sides at one base level, then independently grows enemy HP and durable allied
+        -- DPS. After a paid rebirth, scale XP by that relative time-to-kill so a trivial Wave-1
+        -- reset is not a leveling engine. Full XP returns naturally once layer/cycle HP catches up.
+        -- The floor keeps even an extreme-rank opening kill worth a visible amount of XP.
+        combat_xp_yield = {
+            enabled = true,
+            after_rebirth_only = true,
+            include_allied_cadence = true,
+            minimum_multiplier = 0.05,
+            maximum_multiplier = 1,
+            full_yield_difficulty_ratio = 1,
+            simulation_player_pet_kill_share = 0.5,
+        },
         gem_drop = {
             currency = "gems",
             amount = 1,
@@ -2317,21 +2331,22 @@ return {
     -- Merge-only prestige. Rank 1 is the free starting state and Rank 50 is the progression cap.
     -- Proposed Rank N indexes Merge egg tier N and costs that tier's authored creation value times
     -- one constant. The quote therefore follows the egg ladder but never changes when the player
-    -- buys Spawn Level or hatcher capacity during a live run. A multiplier of 200 preserves the
-    -- first transition: Rank 2 indexes Ice at 250 Waycoins and costs 50,000. A future pass may add
+    -- buys Spawn Level or hatcher capacity during a live run. A multiplier of 400 makes the
+    -- first transition: Rank 2 indexes Ice at 250 Waycoins and costs 100,000. A future pass may add
     -- minimum deployed-egg tiers per rank through the empty requirements list below. Rebirth keeps
     -- permanent player progression and Gem upgrades, resets the active Merge run and wallet, and
     -- scales pets, defenses, and enemy currency payouts without compounding. A factor of 2 means
     -- 2x at Rank 2 and 3x at Rank 3; a factor of 1 is an explicit no-change policy. Cannon and
     -- bulwark radii begin at 1x because increasing spatial coverage at every rebirth would get out
     -- of hand quickly. Rebirth pet power and the Gem damage-upgrade percentage share one additive
-    -- pool (for example +100% and +45% = 2.45x total), scoped strictly to Merge Defense.
+    -- pool (for example +100% and +45% = 2.45x total), scoped strictly to Merge Defense. The
+    -- 400x price factor is the post-simulation correction for rebirths arriving before pressure.
     rebirth = {
         enabled = true,
         scope = "merge_defense_only",
         currency = "hall_coins",
         max_rank = 50,
-        indexed_egg_value_multiplier = 200,
+        indexed_egg_value_multiplier = 400,
         -- Rebirth starts from a durable wallet credit, not collectible world drops. A player who
         -- logs out immediately after confirming can therefore always buy back onto the board.
         starting_wallet_amount = 600,
