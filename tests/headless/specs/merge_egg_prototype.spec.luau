@@ -1897,6 +1897,18 @@ return function()
             expect(waycoin).to.be.ok()
             expect(waycoin.name).to.equal("Waycoins")
             expect(waycoin.icon).to.equal("rbxassetid://124447234465235")
+            -- Wave 222 / Spawn Level 19 exposed the stale 999,999,999 cap: the next
+            -- nine-hatcher floor quote is 1,179,648,000 and must remain affordable.
+            local tierTwentyEggValue = pricing.doublingTierCost(250, 2, 20, 2)
+            local observedTierTwentyQuote = pricing.generatorUpgradeCost(tierTwentyEggValue, 9, 2)
+            expect(observedTierTwentyQuote).to.equal(1179648000)
+            expect(waycoin.maxAmount > observedTierTwentyQuote).to.equal(true)
+
+            -- The ceiling covers the entire authored 56-tier catalog, not only the first
+            -- upgrade that happened to cross one billion during this playtest.
+            local finalEggValue = pricing.doublingTierCost(250, 2, 56, 2)
+            local finalNineHatcherQuote = pricing.generatorUpgradeCost(finalEggValue, 9, 2)
+            expect(waycoin.maxAmount > finalNineHatcherQuote).to.equal(true)
 
             local gems
             for _, currency in ipairs(currencies) do

@@ -407,9 +407,10 @@ team and queue model:
   has four, Layer 2 has five, and Layer 3 plus prototype-Huge tiers have six. Ground roster panels
   reserve six logical card slots from the beginning, so capacity changes do not reflow neighboring
   stations.
-- Early creation/upgrade costs retain their familiar doubling through tier 8, then use a slower
-  config-owned growth rate so 56 tiers remain numerically representable. Wave 140 is the current
-  first-run progression horizon to balance, not a hard ending.
+- Creation and generator-upgrade costs double across the full 56-tier catalog. The Waycoin
+  currency ceiling is 100 quintillion: above the catalog's largest nine-hatcher generator quote
+  (about 81.1 quintillion), rather than the obsolete pre-Merge one-billion ceiling. Wave 140 is the
+  current first-run progression horizon to balance, not a hard ending.
 - Cost presentation does not choose the eventual large-number economy. The Merge management board
   keeps exact comma-separated labels below one billion, then abbreviates billion/trillion/quadrillion
   as `B`, `T`, and `Q`. This is display-only; it does not halve costs, convert Waycoins into bars, or

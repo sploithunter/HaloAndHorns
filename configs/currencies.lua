@@ -41,7 +41,10 @@ return {
         id = "hall_coins",
         name = "Waycoins",
         description = "Gold currency earned along the Hall of Worlds route",
-        maxAmount = 999999999,
+        -- The 56-tier Merge generator's largest authored nine-hatcher upgrade is about
+        -- 81.1 quintillion Waycoins. Keep the server-authoritative ceiling above the full
+        -- progression instead of retaining the original pre-Merge one-billion limit.
+        maxAmount = 100000000000000000000,
         -- Exactly one first-egg hatch. The tutorial starts in the Hall before any
         -- breakables are available, so a fresh profile must be able to hatch here.
         defaultAmount = 100,

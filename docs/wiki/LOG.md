@@ -7730,3 +7730,12 @@ first-session cohort rates.
   space; the list now normalizes the live wave bounds before deriving its dock scale.
 - Added a regression fixture from the observed 1835×869 Studio viewport: wave top `-44` normalizes
   to local top `14`, bottom `92`, and the People list begins at `97` after its configured gap.
+
+## 2026-09-03 — Remove the obsolete one-billion Merge Waycoin ceiling
+
+- Live Wave 222 at Spawn Level 19 quoted `1,179,648,000` for the next nine-hatcher generator
+  upgrade while `DataService` still clamped `hall_coins` to `999,999,999`; the HUD rounded that
+  real server cap to `1000M`.
+- Raised only the Merge/Hall Waycoin ceiling to 100 quintillion, above the full 56-tier catalog's
+  largest nine-hatcher generator quote (about 81.1 quintillion), and added regression coverage for
+  both the observed tier-20 blocker and the final authored tier.
