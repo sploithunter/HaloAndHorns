@@ -38,6 +38,19 @@ end
 
 local PeopleList = {}
 
+function PeopleList.mergeStatus(config, state)
+    state = state or {}
+    if state.inMergePlace ~= true and state.area ~= "MergeEggPrototype" then
+        return nil
+    end
+    local copy = config.merge_status
+    local wave = tonumber(state.mergeHighestWave)
+    return {
+        title = wave and string.format(copy.format, math.max(0, math.floor(wave))) or copy.loading,
+        body = copy.description,
+    }
+end
+
 local function flagOn(flags, id, attribute)
     if type(flags) ~= "table" then
         return false
@@ -185,6 +198,10 @@ end
 
 function PeopleList.inspect(ranksConfig, peopleConfig, combatRankId, statusText, playerState)
     playerState = playerState or {}
+    local merge = PeopleList.mergeStatus(peopleConfig, playerState)
+    if merge then
+        return merge
+    end
     local inspect = peopleConfig and peopleConfig.inspect or {}
     local text = tostring(statusText or playerState.chosenTitle or "")
     if PeopleList.isLeaderboardStatus(playerState, text) then
@@ -301,6 +318,10 @@ end
 
 function PeopleList.hoverStatus(config, ranksConfig, playerState)
     playerState = playerState or {}
+    local merge = PeopleList.mergeStatus(config, playerState)
+    if merge then
+        return merge.title .. " — " .. merge.body
+    end
     if PeopleList.isLeaderboardStatus(playerState, playerState.chosenTitle) then
         local line = PeopleList.leaderboardSource(playerState)
         if line then
@@ -516,6 +537,10 @@ function PeopleList.row(config, ranksConfig, playerState)
     local status = title
     if PeopleList.isLeaderboardStatus(playerState, title) then
         status = PeopleList.leaderboardShort(playerState) or title
+    end
+    local merge = PeopleList.mergeStatus(config, playerState)
+    if merge then
+        status = merge.title
     end
     return {
         name = PeopleList.displayName(config, playerState.flags, playerState.displayName),

@@ -4,6 +4,17 @@
 return {
     version = 3,
     tag = "AchievementBanner",
+    wave_series = {
+        first = 300,
+        interval = 50,
+        id_prefix = "wave_",
+        variant = "victory_swallowtail",
+        title = "WAVE",
+        footer = "UNBROKEN DEFENSE",
+        priority = 110,
+        styles = { "champion", "heaven", "battle", "hell" },
+        display_group = "merge_wave",
+    },
 
     -- Permanent award definitions. Services report facts; this catalog decides which facts are
     -- banner-worthy, how the cloth is printed, and which imported silhouette is mounted.
@@ -27,6 +38,7 @@ return {
             priority = 100,
         },
         wave_100 = {
+            display_group = "merge_wave",
             trigger = { fact = "merge_wave", at_least = 100 },
             variant = "victory_swallowtail",
             style = "battle",
@@ -36,6 +48,7 @@ return {
             priority = 85,
         },
         wave_250 = {
+            display_group = "merge_wave",
             trigger = { fact = "merge_wave", at_least = 250 },
             variant = "victory_swallowtail",
             style = "battle",

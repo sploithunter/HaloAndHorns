@@ -8,6 +8,7 @@ local MergeEggPlayerCombat = {}
 
 local MergeEggCheckpoint = require(script.Parent.MergeEggCheckpoint)
 local MergeEggPlaystate = require(script.Parent.MergeEggPlaystate)
+local MergeWaveRecord = require(script.Parent.MergeWaveRecord)
 local MergeBulwarkProgression = require(script.Parent.MergeBulwarkProgression)
 local MergeTowerProgression = require(script.Parent.MergeTowerProgression)
 
@@ -95,6 +96,7 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         unlock_choice_resolved = raw.unlock_choice_resolved == true,
         -- Merge-only prestige belongs beside onboarding so settings normalization cannot erase it.
         rebirths = math.max(0, math.floor(tonumber(raw.rebirths) or 0)),
+        highest_wave = MergeWaveRecord.best(raw),
         management_upgrades = managementUpgrades,
         management_gems_spent = math.max(0, math.floor(tonumber(raw.management_gems_spent) or 0)),
         bulwark_family = persisted.bulwark_family,

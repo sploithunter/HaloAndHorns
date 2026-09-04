@@ -41,6 +41,7 @@ local MergeEggPlaystate = require(ReplicatedStorage.Shared.Game.MergeEggPlaystat
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
+local MergeWaveRecord = require(ReplicatedStorage.Shared.Game.MergeWaveRecord)
 local MergeEggXpYield = require(ReplicatedStorage.Shared.Game.MergeEggXpYield)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeBulwarkPersist = require(ReplicatedStorage.Shared.Game.MergeBulwarkPersist)
@@ -384,6 +385,7 @@ function MergeEggPrototypeService:Init()
     self._worldBindingService = self._modules and self._modules.WorldBindingService
     self._zoneService = self._modules and self._modules.ZoneService
     self._achievementBannerService = self._modules and self._modules.AchievementBannerService
+    self._waveAwardCatalog = require(ReplicatedStorage.Configs.achievement_banners).awards
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._placesConfig = (self._configLoader and self._configLoader:LoadConfig("places"))
@@ -462,7 +464,22 @@ function MergeEggPrototypeService:_mergeDefenseProgress(player)
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local progress = MergeEggPlayerCombat.normalizeOnboarding(data.GameData.MergeDefense)
     data.GameData.MergeDefense = progress
+    progress.highest_wave = MergeWaveRecord.best(
+        progress, data.GameData.AchievementBanners, self._waveAwardCatalog
+    )
+    player:SetAttribute("MergeHighestWave", progress.highest_wave)
     return progress
+end
+
+function MergeEggPrototypeService:_recordHighestWave(record)
+    local progress = self:_mergeDefenseProgress(record.player)
+    if not progress then
+        return
+    end
+    progress.highest_wave = MergeWaveRecord.best(progress, nil, nil, record.waveIndex)
+    record.player:SetAttribute("MergeHighestWave", progress.highest_wave)
+    -- The loaded profile participates in the normal autosave/checkpoint/release saves. Do not
+    -- force a DataStore write every wave or reset this lifetime field when clearing a run.
 end
 
 function MergeEggPrototypeService:_personalHatchRules()
@@ -13591,6 +13608,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     end
 
     record.waveIndex = waveIndex
+    self:_recordHighestWave(record)
     record.nextWaveOverride = nil
     -- AreaMusicController treats a changed cue as a request to rotate combat music without
     -- dropping combat state. Including the run id guarantees Wave 1 changes on every new session.
@@ -17939,6 +17957,7 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
                 })
                 return
             end
+            self:_mergeDefenseProgress(player)
             local began, reason = self:_begin(player)
             if not began and reason ~= "already_inside" then
                 self:_log("Warn", "Dedicated Merge place could not start player session", {

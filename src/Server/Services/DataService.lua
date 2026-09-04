@@ -177,6 +177,7 @@ local function generateProfileTemplate(configLoader)
                 full_intro_acknowledged = false,
                 unlock_choice_resolved = false,
                 rebirths = 0,
+                highest_wave = 0,
                 management_upgrades = {},
                 management_gems_spent = 0,
                 tutorial_completed = false,

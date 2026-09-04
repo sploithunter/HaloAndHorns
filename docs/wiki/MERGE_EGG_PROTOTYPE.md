@@ -5,6 +5,25 @@ Wave-10 checkpoints and 56 egg tiers await live balance verification
 
 ## Farm & Fight return portals
 
+### Player-list personal best
+
+In Merge, the People list Status column, hover, and player card show `Wave N`: the player's
+highest **reached** wave across runs/rebirths, not the active wave or worn progression title.
+`GameData.MergeDefense.highest_wave` persists the monotonic record; the server publishes
+`MergeHighestWave` on each Player, so every client reads the correct player's best.
+Starting a higher wave updates the loaded profile and uses normal autosave/checkpoint/release saving,
+without adding a per-wave forced DataStore write. Onboarding normalization retains the field.
+Old profiles recover a proven minimum from checkpoint/playstate waves and owned `merge_wave`
+banner award values; exact older peaks that were never saved cannot be reconstructed. New players
+show Wave 0, while loading shows a dash. Outside Merge, worn titles and other status rules remain.
+
+`achievement_banners.wave_series` adds an ongoing banner every 50 waves from Wave 300. The service
+materializes the current earned milestone and owned definitions lazily, so there is no finite
+catalog ceiling or preallocated endless list. Cloth cycles through configured color styles.
+Wave banners share a display group: the highest presented one replaces lower wave cloth before
+the wall cap is applied, without deleting earned awards or evicting level/egg banners. New earned
+cloth still waits for the next checkpoint ceremony; rejoining reconstructs previously owned IDs.
+
 The dedicated Merge place owns two Studio-authored return gates at the Heaven and Hell approaches.
 Each gate contains one cylinder named `LightningRing`; that part is an invisible, non-collidable
 layout marker rather than presentation geometry. `MergeFarmFightPortalFX` derives the live opening

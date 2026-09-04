@@ -48,6 +48,41 @@ function AchievementBannerAwards.eligible(catalog, facts)
     return eligible
 end
 
+-- Materialize just the next earned milestone and previously owned IDs, not an unbounded list.
+-- Definitions are additive so another player's bay mount cannot lose a definition while yielding.
+function AchievementBannerAwards.expandWaveCatalog(config, wave, owned)
+    local series = config.wave_series
+    if not series then
+        return
+    end
+    local function define(value)
+        local n = tonumber(value)
+        if not n or n ~= n or n == math.huge or n < series.first then
+            return
+        end
+        local index = math.floor((n - series.first) / series.interval)
+        local milestone = series.first + index * series.interval
+        local id = series.id_prefix .. tostring(milestone)
+        config.awards[id] = config.awards[id]
+            or {
+                trigger = { fact = "merge_wave", at_least = milestone },
+                variant = series.variant,
+                style = series.styles[(index % #series.styles) + 1],
+                title = series.title,
+                value = tostring(milestone),
+                footer = series.footer,
+                priority = series.priority + index,
+                display_group = series.display_group,
+            }
+    end
+    define(wave)
+    for id in pairs(type(owned) == "table" and owned or {}) do
+        if type(id) == "string" and string.sub(id, 1, #series.id_prefix) == series.id_prefix then
+            define(string.sub(id, #series.id_prefix + 1))
+        end
+    end
+end
+
 function AchievementBannerAwards.grant(state, awardId, metadata, earnedAt)
     state = AchievementBannerAwards.normalize(state)
     if not validId(awardId) or state.owned[awardId] ~= nil then
@@ -91,7 +126,7 @@ function AchievementBannerAwards.pendingIds(state, catalog)
     return ids
 end
 
-function AchievementBannerAwards.present(state, awardIds, maximum, presentedAt)
+function AchievementBannerAwards.present(state, awardIds, maximum, presentedAt, catalog)
     state = AchievementBannerAwards.normalize(state)
     maximum = math.max(1, positiveWhole(maximum, 4))
     local displayed = state.displayed
@@ -109,6 +144,12 @@ function AchievementBannerAwards.present(state, awardIds, maximum, presentedAt)
             state.owned[awardId].presented_at = positiveWhole(presentedAt, os.time())
             presented[#presented + 1] = awardId
         end
+    end
+    if catalog then
+        -- Compact series before enforcing the wall cap, so a wave upgrade cannot evict a
+        -- level/egg banner merely because the obsolete wave cloth briefly occupied a slot.
+        AchievementBannerAwards.reconcileDisplayed(state, catalog, maximum)
+        return presented
     end
     while #displayed > maximum do
         table.remove(displayed, 1)
@@ -141,6 +182,27 @@ function AchievementBannerAwards.reconcileDisplayed(state, catalog, maximum)
             displayed[#displayed + 1] = awardId
         end
     end
+    -- A milestone series owns one wall slot. Retire only its lower displayed cloth, never the
+    -- permanent owned ledger or other achievement families. Pending upgrades wait for ceremony.
+    local winners = {}
+    for _, id in ipairs(displayed) do
+        local definition = catalog[id]
+        local group = definition and definition.display_group
+        if group then
+            local priorId = winners[group]
+            if not priorId or definition.trigger.at_least > catalog[priorId].trigger.at_least then
+                winners[group] = id
+            end
+        end
+    end
+    local filtered = {}
+    for _, id in ipairs(displayed) do
+        local group = catalog[id] and catalog[id].display_group
+        if not group or winners[group] == id then
+            filtered[#filtered + 1] = id
+        end
+    end
+    displayed = filtered
     table.sort(displayed, function(a, b)
         local left = state.owned[a] or {}
         local right = state.owned[b] or {}
