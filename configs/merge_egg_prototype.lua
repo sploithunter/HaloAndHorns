@@ -1909,8 +1909,14 @@ return {
     },
 
     debug = {
-        trace_bulwark_aggro = true,
+        trace_bulwark_aggro = false,
         bulwark_trace_seconds = 2,
+    },
+
+    performance = {
+        -- The Merge HUD does not need a 60-70 Hz copy of the complete world state. State-name
+        -- transitions still publish immediately; repeated snapshots are capped to this cadence.
+        world_state_replication_interval = 0.2,
     },
 
     -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. With

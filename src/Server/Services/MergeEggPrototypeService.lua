@@ -9414,6 +9414,22 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     if not world then
         return
     end
+    local previousState = world:GetAttribute("PrototypeState")
+    local interval = math.max(
+        0,
+        tonumber((self._config.performance or {}).world_state_replication_interval) or 0.2
+    )
+    local now = os.clock()
+    if
+        record
+        and previousState == state
+        and now < (tonumber(record.nextWorldStateReplicationAt) or 0)
+    then
+        return
+    end
+    if record then
+        record.nextWorldStateReplicationAt = now + interval
+    end
     world:SetAttribute("PrototypeState", state)
     world:SetAttribute(
         "CombatCadenceMultiplier",
@@ -10051,13 +10067,16 @@ function MergeEggPrototypeService:_setTeamState(record, team, state)
         return
     end
     state = tostring(state or "Ready")
+    local changed = team.state ~= state
     team.state = state
     if team.folder and team.folder.Parent then
         team.folder:SetAttribute("MergeEggTeamState", state)
     end
     local world = self:_worldFor(record)
     local worldState = world and world:GetAttribute("PrototypeState") or "ReadyToHatch"
-    self:_setWorldState(worldState, record)
+    if changed then
+        self:_setWorldState(worldState, record)
+    end
 end
 
 function MergeEggPrototypeService:_queueMissingPets(record, team, occupiedSlots, expected, now)
@@ -10212,6 +10231,9 @@ end
 function MergeEggPrototypeService:_syncAllTeams(record)
     for _, team in ipairs(record and record.teams or {}) do
         self:_syncTeamState(record, team)
+    end
+    if record then
+        self:_setWorldState(self:_activeWaveState(record), record)
     end
 end
 
@@ -14152,7 +14174,7 @@ end
 -- Grasping Hedge roots the front of the wave (feet stuck, hands free) and slows the pile.
 -- The root is timed, never refreshed, never HeldUntil. After it expires they must leave
 -- the hedge before another grab — walking back in roots them again. Not a lifetime counter.
-function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, leadAttr, slot)
+function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, distanceKey, slot)
     if not (record and family == "grasping_hedge") then
         return
     end
@@ -14169,7 +14191,8 @@ function MergeEggPrototypeService:_tickGraspingHedge(record, now, family, tier, 
     for _, enemy in ipairs(record.enemies or {}) do
         local model = enemy.model
         if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
-            local lead = tonumber(model:GetAttribute(leadAttr or "MergeEggBulwarkLeadingDistance"))
+            local distances = enemy.bulwarkDistances
+            local lead = distances and tonumber(distances[distanceKey or "lane"])
             local depth = math.abs(lead or 1e9)
             local inside = lead ~= nil and depth <= effect.stripDepthStuds
             -- Exit is march-axis only (leadingDistance). They must clear the strip plus a
@@ -14454,9 +14477,9 @@ function MergeEggPrototypeService:_traceBulwarkAggro(record, enemy, now)
     local context = string.format(
         "wave=%d lead=%.1f move=%.1f pivot=%.1f alerts=%d",
         record.waveIndex,
-        tonumber(model:GetAttribute("MergeEggBulwarkLeadingDistance")) or -1,
-        tonumber(model:GetAttribute("MergeEggBulwarkMovementDistance")) or -1,
-        tonumber(model:GetAttribute("MergeEggBulwarkPivotDistance")) or -1,
+        tonumber(enemy.bulwarkDistances and enemy.bulwarkDistances.bulwark) or -1,
+        tonumber(enemy.bulwarkMovementDistance) or -1,
+        tonumber(enemy.bulwarkPivotDistance) or -1,
         tonumber(model:GetAttribute("MergeEggBulwarkAlertCount")) or 0
     )
     for _, team in ipairs(record.teams or {}) do
@@ -14565,7 +14588,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     leadingBoundsPoint(model, movementPosition, direction)
                 leadingPosition = leadingPosition or movementPosition
                 local contactPadding = math.max(0, tonumber(cfg.bulwark_contact_padding) or 1)
-                local planeDistance = {}
+                local planeDistance = enemy.bulwarkDistances or {}
+                enemy.bulwarkDistances = planeDistance
                 for _, plane in ipairs(MergeBulwarkSlots.combatPlanes()) do
                     local entry = combatPlanes[plane.id]
                     if entry and entry.line then
@@ -14575,25 +14599,21 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                             leadingPosition.Z - entry.line.Position.Z
                         ):Dot(direction)
                         planeDistance[plane.id] = distance
-                        model:SetAttribute(plane.distanceAttr, distance)
-                        if plane.writeApproachDebug == true then
-                            model:SetAttribute(
-                                "MergeEggBulwarkMovementDistance",
-                                Vector3.new(
-                                    movementPosition.X - entry.line.Position.X,
-                                    0,
-                                    movementPosition.Z - entry.line.Position.Z
-                                ):Dot(direction)
-                            )
-                            model:SetAttribute(
-                                "MergeEggBulwarkPivotDistance",
-                                Vector3.new(
-                                    pivotPosition.X - entry.line.Position.X,
-                                    0,
-                                    pivotPosition.Z - entry.line.Position.Z
-                                ):Dot(direction)
-                            )
-                            model:SetAttribute("MergeEggBulwarkBoundsExtent", boundsExtent)
+                        if
+                            plane.writeApproachDebug == true
+                            and (self._config.debug or {}).trace_bulwark_aggro == true
+                        then
+                            enemy.bulwarkMovementDistance = Vector3.new(
+                                movementPosition.X - entry.line.Position.X,
+                                0,
+                                movementPosition.Z - entry.line.Position.Z
+                            ):Dot(direction)
+                            enemy.bulwarkPivotDistance = Vector3.new(
+                                pivotPosition.X - entry.line.Position.X,
+                                0,
+                                pivotPosition.Z - entry.line.Position.Z
+                            ):Dot(direction)
+                            enemy.bulwarkBoundsExtent = boundsExtent
                         end
                     end
                 end
@@ -14606,10 +14626,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                             0,
                             leadingPosition.Z - line.Position.Z
                         ):Dot(direction)
-                        local stripAttr = MergeBulwarkSlots.stripDistanceAttr(def)
-                        if stripAttr and planeDistance[def.combatPlane] == nil then
-                            model:SetAttribute(stripAttr, distance)
-                        end
+                        planeDistance[def.id] = distance
                         local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
                         self:_tickConcertinaBleed(
                             record,
@@ -14688,14 +14705,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     for _, def in ipairs(MergeBulwarkSlots.all()) do
         local family, tier = self:_bulwarkSlotFamily(record, bulwarkState, def.id)
         self:_tickLandSharkHunt(record, towardGate, family, tier, def.id)
-        self:_tickGraspingHedge(
-            record,
-            now,
-            family,
-            tier,
-            MergeBulwarkSlots.stripDistanceAttr(def),
-            def.id
-        )
+        self:_tickGraspingHedge(record, now, family, tier, def.id, def.id)
     end
     self:_reinforceIdleTeams(record, now)
     local overrunMinimum = math.max(1, math.floor(tonumber(cfg.breach_overrun_minimum) or 4))

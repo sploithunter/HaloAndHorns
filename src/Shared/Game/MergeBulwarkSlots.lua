@@ -21,7 +21,6 @@ local COMBAT_PLANES = {
         id = "bulwark",
         lineConfigKey = "bulwark_line",
         lineDefault = "BulwarkLine",
-        distanceAttr = "MergeEggBulwarkLeadingDistance",
         opensCombat = true,
         countsAsPastBulwark = true,
         writeApproachDebug = true,
@@ -30,7 +29,6 @@ local COMBAT_PLANES = {
         id = "breach",
         lineConfigKey = "breach_line",
         lineDefault = "BreachLine",
-        distanceAttr = "MergeEggBreachLineDistance",
         opensCombat = false,
         countsAsPastBulwark = false,
         countsBreach = true,
@@ -100,7 +98,6 @@ local SLOTS = {
         -- Halfway between the two combat planes. Placement hook only.
         lineConfigKey = "mid_bulwark_line",
         lineDefault = "MidBulwarkLine",
-        distanceAttr = "MergeEggMidBulwarkDistance",
         combatPlane = nil,
         required = false,
     },
@@ -123,7 +120,6 @@ local SLOTS = {
         -- Same spacing out past BulwarkLine toward the gate. Placement hook only.
         lineConfigKey = "front_bulwark_line",
         lineDefault = "FrontBulwarkLine",
-        distanceAttr = "MergeEggFrontBulwarkDistance",
         combatPlane = nil,
         required = false,
     },
@@ -229,18 +225,6 @@ function MergeBulwarkSlots.stripLineName(slot, worldConfig)
         end
     end
     return worldConfig[def.lineConfigKey] or def.lineDefault
-end
-
-function MergeBulwarkSlots.stripDistanceAttr(slot)
-    local def = type(slot) == "table" and slot or MergeBulwarkSlots.get(slot)
-    if not def then
-        return nil
-    end
-    if def.combatPlane then
-        local plane = PLANE_BY_ID[def.combatPlane]
-        return plane and plane.distanceAttr or nil
-    end
-    return def.distanceAttr
 end
 
 function MergeBulwarkSlots.allowedSlotsForFamily(family)

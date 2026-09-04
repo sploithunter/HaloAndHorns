@@ -19,6 +19,12 @@ local CONFIG = {
 
 return function()
     describe("shipped attack choreography", function()
+        it("keeps replicated pet-sync diagnostics opt-in", function()
+            expect(shippedConfig.diagnostics.replicate_pet_sync).to.equal(false)
+            local service = readFile("src/Server/Services/PetFollowService.lua")
+            expect(service:find("replicate_pet_sync == true", 1, true)).to.be.ok()
+        end)
+
         it("plants melee pets so real-hit motion is not hidden by continuous orbit", function()
             expect(shippedConfig.attack.role_styles.melee).to.equal("static_ring")
         end)

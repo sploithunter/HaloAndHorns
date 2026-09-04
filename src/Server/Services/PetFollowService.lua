@@ -371,9 +371,11 @@ function PetFollowService:Start()
         pcall(function()
             self:_tick()
         end)
-        pcall(function()
-            self:_stampPetSyncDiag()
-        end)
+        if (self._config.diagnostics or {}).replicate_pet_sync == true then
+            pcall(function()
+                self:_stampPetSyncDiag()
+            end)
+        end
     end)
 end
 
