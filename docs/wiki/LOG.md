@@ -7791,3 +7791,19 @@ first-session cohort rates.
 - A durable player pet's final hit now earns exactly one combat-XP award whenever its owner is in
   effective Full mode. Combat Training continues to gate currency, items, events, and global kill
   credit; NPC hatchers, Simple-mode reserves, powers, and participation credit remain excluded.
+
+## 2026-09-04 — Make artillery commander initialization idempotent
+
+- Live rebirth inspection found five commander models in one bay—two left and three right—because
+  the per-frame tower ensure queued more asynchronous avatar builds while the first build was
+  yielding. Installed cannons merely repositioned one copy and exposed the overlap.
+- Commander spawning now reserves each slot before yielding, clears the reservation on completion,
+  performs an atomic pre-publish recheck, and reconciles any existing same-slot duplicates down to
+  one model during every tower ensure pass.
+- The same live audit found 64/66 stacked egg/lane Bulwark Engineers and all five stationary hatcher
+  principals with collidable R15 limbs. Bulwark Engineer slots now use the same reservation and
+  reconciliation contract, while config-owned non-collidable principals install their persistent
+  collision guard only after entering Workspace, after Roblox applies parenting-time limb defaults.
+  Because Humanoid physics can restore limb `CanCollide` internally without a dependable property
+  notification, those principals also use a dedicated physics group that cannot collide with
+  players in `Default` or with itself.

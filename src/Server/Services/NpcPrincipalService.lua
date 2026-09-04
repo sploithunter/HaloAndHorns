@@ -24,6 +24,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local PhysicsService = game:GetService("PhysicsService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -37,13 +38,29 @@ local CombatApplication = require(script.Parent.Parent.CombatApplication)
 local NpcPrincipalService = {}
 NpcPrincipalService.__index = NpcPrincipalService
 
+local NON_COLLIDABLE_CHARACTER_GROUP = "NpcPrincipalPassthrough"
+
+local function ensureNonCollidableCharacterGroup()
+    pcall(function()
+        PhysicsService:RegisterCollisionGroup(NON_COLLIDABLE_CHARACTER_GROUP)
+    end)
+    PhysicsService:CollisionGroupSetCollidable(NON_COLLIDABLE_CHARACTER_GROUP, "Default", false)
+    PhysicsService:CollisionGroupSetCollidable(
+        NON_COLLIDABLE_CHARACTER_GROUP,
+        NON_COLLIDABLE_CHARACTER_GROUP,
+        false
+    )
+end
+
 local function makeCharacterNonCollidable(model)
+    ensureNonCollidableCharacterGroup()
     local guardedParts = setmetatable({}, { __mode = "k" })
 
     local function apply(instance)
         if instance:IsA("BasePart") then
             -- Keep CanQuery/CanTouch unchanged: authored interaction and targeting still need to
             -- see the NPC; this only removes the physical wall presented to player characters.
+            instance.CollisionGroup = NON_COLLIDABLE_CHARACTER_GROUP
             instance.CanCollide = false
             if guardedParts[instance] then
                 return
@@ -59,6 +76,11 @@ local function makeCharacterNonCollidable(model)
                     instance.CanCollide = false
                 end
             end)
+            instance:GetPropertyChangedSignal("CollisionGroup"):Connect(function()
+                if instance.CollisionGroup ~= NON_COLLIDABLE_CHARACTER_GROUP then
+                    instance.CollisionGroup = NON_COLLIDABLE_CHARACTER_GROUP
+                end
+            end)
         end
     end
 
@@ -71,6 +93,7 @@ local function makeCharacterNonCollidable(model)
 end
 
 function NpcPrincipalService:Init()
+    ensureNonCollidableCharacterGroup()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
@@ -168,9 +191,6 @@ function NpcPrincipalService:_buildCharacter(def, cf)
     model:SetAttribute("Level", tonumber(def.level) or 50)
     model:SetAttribute("EffectiveLevel", tonumber(def.level) or 50)
     model:SetAttribute("DisplayName", def.display_name or def.name)
-    if def.character_non_collidable == true then
-        makeCharacterNonCollidable(model)
-    end
     return model
 end
 
@@ -588,6 +608,12 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         model:SetAttribute("NpcStationary", true)
     end
     model.Parent = Workspace
+    if def.character_non_collidable == true then
+        -- Humanoid rigs can apply their default limb collision while they enter Workspace. Install
+        -- and prime the guard only after publication so that parenting-time physics cannot leave a
+        -- stationary principal collidable until some later state change happens to retrigger it.
+        makeCharacterNonCollidable(model)
+    end
 
     local folder, spawned = self:_spawnSquad(def, cf, opts)
     if not folder then

@@ -2522,6 +2522,39 @@ return function()
             expect(
                 service:find("function MergeEggPrototypeService:_spawnArtilleryCommander", 1, true)
             ).to.be.ok()
+            expect(
+                service:find(
+                    "function MergeEggPrototypeService:_reconcileArtilleryCommander",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("artilleryCommanderSpawning = {}", 1, true)).to.be.ok()
+            local commanderEnsure = service:find(
+                "function MergeEggPrototypeService:_ensureArtilleryCommanders",
+                1,
+                true
+            )
+            local commanderReservation =
+                service:find("spawning[slot] = true", commanderEnsure, true)
+            local commanderSpawn = commanderReservation
+                and service:find("task.spawn(function()", commanderReservation, true)
+            local commanderBuild = service:find(
+                "function MergeEggPrototypeService:_spawnArtilleryCommander",
+                commanderSpawn,
+                true
+            )
+            expect(commanderReservation).to.be.ok()
+            expect(commanderSpawn).to.be.ok()
+            expect(commanderReservation < commanderSpawn).to.equal(true)
+            expect(service:find("spawning[slot] = nil", commanderSpawn, true)).to.be.ok()
+            expect(
+                service:find(
+                    "self:_reconcileArtilleryCommander(folder, slot)",
+                    commanderBuild,
+                    true
+                )
+            ).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_openCannonMenu", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:PurchaseCannonAction", 1, true)).to.be.ok()
             expect(service:find('action == "cannon"', 1, true)).to.be.ok()
@@ -2669,6 +2702,27 @@ return function()
             expect(service:find('namePrefix .. "Right"', 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_ensureBulwarkEngineer", 1, true)
+            ).to.be.ok()
+            expect(
+                service:find("function MergeEggPrototypeService:_reconcileBulwarkEngineer", 1, true)
+            ).to.be.ok()
+            expect(service:find("bulwarkEngineerSpawning = {}", 1, true)).to.be.ok()
+            local engineerEnsure =
+                service:find("function MergeEggPrototypeService:_ensureBulwarkEngineer", 1, true)
+            local engineerReservation = service:find("spawning[slot] = true", engineerEnsure, true)
+            local engineerSpawn = engineerReservation
+                and service:find("task.spawn(function()", engineerReservation, true)
+            local engineerBuild = service:find(
+                "function MergeEggPrototypeService:_spawnBulwarkEngineer",
+                engineerSpawn,
+                true
+            )
+            expect(engineerReservation).to.be.ok()
+            expect(engineerSpawn).to.be.ok()
+            expect(engineerReservation < engineerSpawn).to.equal(true)
+            expect(service:find("spawning[slot] = nil", engineerSpawn, true)).to.be.ok()
+            expect(
+                service:find("self:_reconcileBulwarkEngineer(folder, slot)", engineerBuild, true)
             ).to.be.ok()
             expect(
                 service:find(
