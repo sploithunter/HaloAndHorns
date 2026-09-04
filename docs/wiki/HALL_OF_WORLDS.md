@@ -21,14 +21,13 @@ a routing rollback, not a player-data rollback.
   of saved `LastArea`. Schema v18 removes `Hall_1`–`Hall_4` only from `UnlockedAreas`, ensures
   `Spawn`, and changes only `GameData.LastArea`; pets, eggs, enhancements, currencies, powers,
   rewards, and the dormant Hall ledger are untouched.
-- `hall_of_worlds.entry_enabled = false` still rejects Hall travel/guest visits. Production keeps
-  the Home Hall arch frosted and sealed; `combat_tutorial.entry.enabled = false`, so it is not the
-  combat-training mission door. The same `HallOfWorldsPortal` now displays only `COMING SOON` and
-  provides a restricted preview route to the dedicated [Merge place](MERGE_EGG_PROTOTYPE.md). In
-  production, the prompt is visible only to IDs in `configs/internal_accounts.lua` plus Kade
-  (`536245038`); the server repeats the allowlist check before teleporting. Studio retains a bypass
-  for authoring. The Merge place's common-area return door is unrestricted and sends any user back
-  to the main Farm and Fight place. World Travel follows ordinary Homeworld unlock rules.
+- `hall_of_worlds.entry_enabled = false` still rejects retired Hall travel/guest visits. The Home
+  arch's collision remains sealed; `combat_tutorial.entry.enabled = false`, so it is not the
+  combat-training mission door. As of 2026-09-04, the same `HallOfWorldsPortal` displays `MERGE`
+  and publicly teleports to the dedicated [Merge place](MERGE_EGG_PROTOTYPE.md).
+  `merge_egg_prototype.gate.access.public` governs both the visible prompt and direct-place joins;
+  it no longer requires an internal-account/preview grant. Both themed Merge return gates send
+  any player back to Farm & Fight. World Travel still follows ordinary Homeworld unlock rules.
 - Tutorial v5 restores the v3 Homeworld order: Earth egg, Home mining, squad, Resonance
   bind/cast/enhancement, then the Earth-cave fight, Berserk Brew, and Rally. The isolated
   combat tutorial will replace that combat tail. Versioned semantic migration keeps an

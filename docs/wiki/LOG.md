@@ -8028,3 +8028,13 @@ first-session cohort rates.
 - No global prompt disable for a busy viewer: an unclaimed player can still claim the same empty
   bay. Added pure eligibility tests and a two-viewer Studio fixture including late server Enabled
   updates. No pet movement, ownership transfer, or save behavior changed.
+
+### 2026-09-04 — Open Merge to all players
+
+- Enabled config-owned public gate access for Farm & Fight → Merge and direct Merge-place joins.
+  The reciprocal Heaven/Hell return gates were already public and remain unchanged.
+- Replaced the Coming Soon entrance title/prompt with MERGE / Enter · Merge. ZoneService uses the
+  same configured title so binding order cannot restore a closed-release label. The retired
+  in-place Hall path remains sealed; no unrelated area unlocks or account classifications changed.
+- Added ordinary-account public/preview policy coverage and a Studio fixture checking both route
+  requests and both gate-binding orders without issuing a real teleport or touching player data.

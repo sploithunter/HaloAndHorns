@@ -288,12 +288,13 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter",
-        object_text = "Coming Soon",
-        title = "COMING SOON",
+        object_text = "Merge",
+        title = "MERGE",
         access = {
-            -- Preview access is ID-only in every environment. Reuse the canonical
-            -- internal-account registry used by leaderboards/retention, then add collaborators
-            -- without changing their global internal-account classification.
+            -- Public release: the same policy opens the source prompt and direct-place joins.
+            -- Keep preview grants available for an explicit future rollback, without changing
+            -- anyone's global internal-account classification.
+            public = true,
             internal_accounts = true,
             additional_user_ids = {
                 536245038, -- KadeDevLux
