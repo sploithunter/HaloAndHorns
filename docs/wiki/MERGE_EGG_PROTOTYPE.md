@@ -645,7 +645,7 @@ team and queue model:
 - The former side-wall auto-combine sign now hosts two adjacent, equal-height panels. The left action
   panel gives Rebirth and Buy Egg one large row each. The right panel is a 2×4 grid containing Coin
   Value, Damage, Fire Rate, Active Slots, Egg HP, Spawn Level, Pet Endurance, and Focus Regen.
-  Auto-Combine moved to a floor control immediately outside Equip Best; both plates derive their
+  Auto Merge moved to a floor control immediately outside Equip Best; both plates derive their
   spacing from the authored board transform, so mirrored bays keep the same relationship.
   Coin Value, Damage, Fire Rate, Active Slots, Egg HP, Pet Endurance, and Focus Regen are durable
   Gem upgrades. Spawn Level and Buy Egg remain Waycoin progression. Each percentage card advertises
@@ -671,8 +671,16 @@ team and queue model:
   cap. Its tier is a global minimum: purchasing an advance promotes every unplaced board egg and
   every installed hatcher below the new tier one-for-one. Healthy deployed pets remain in place;
   newly granted positions are filled and future replacements use the promoted source.
-- Auto-Combine immediately resolves every available pair and repeats that cascade after each new
-  base egg. Desktop keeps direct drag-and-drop. Touch devices use a sequential two-tap contract:
+- Auto Merge is a permanent 49-Robux pass (`auto_merge`, Roblox game pass `1970690426`) exposed in
+  the Quartermaster catalog and on that floor control. Nonowners receive the ordinary Marketplace
+  purchase prompt; owners may switch the session-only automation on and off, and it resets off on
+  rebirth/new-session initialization. Each automatic step recomputes the same server-authored
+  Equip Best plan and feeds an empty or equal-tier frontline hatcher first. Only when the line has
+  no valid move does it combine one lowest-tier board pair, then it recomputes the line before a
+  second board merge. This prevents a board cascade from consuming the tier the frontline needs.
+  Entitlement, labels, and purchase copy remain config-owned; the server rechecks the effective
+  `merge_auto_merge` feature before every automatic run.
+  Desktop keeps direct drag-and-drop. Touch devices use a sequential two-tap contract:
   the first tap selects a board egg and highlights compatible board/deployment destinations; the
   second tap merges with an equal board egg, deploys into an empty hatcher, or advances an
   equal-tier deployed egg. A second tap on the same source, a tier mismatch, or any other invalid
@@ -772,7 +780,7 @@ team and queue model:
   Quartermaster tutorial arrival. Waycoin collection never toasts. Routine
   creation, merging, deployment, installation, and management purchases do not toast, and Gem
   pickups never toast. Distinct milestones can queue without turning normal play into an activity
-  feed. Auto-Combine returns every new egg-tier and pet-capacity discovery from its cascade through
+  feed. Auto Merge returns every new egg-tier and pet-capacity discovery from its cascade through
   the same queue, so automatic merges cannot silently consume a first-time milestone. Cannon and
   Bulwark unlock feedback is presentation-only and remains below its open workshop; the freshly
   enabled Install action stays visible and clickable while the milestone is active. Rejected-action
@@ -782,10 +790,10 @@ team and queue model:
   hidden transparency as the reveal value. The legacy `Browse Potions` tent prompt stays suppressed;
   the Quartermaster's responsive Services menu is the only Merge interaction and reuses the ordinary
   potion catalog/transaction service. Its Game Passes choice reuses the ordinary Pet Shop's
-  Marketplace price, ownership, and purchase pipeline with the config-authored Merge subset: VIP,
-  Auto Collector, Speed Boost, Golden Touch, Rainbow Radiance, Huge Hunter, Extra Pet, and Second
-  Wind. Kade's rocketboards remain exclusive to his vendor. Combat Training checkpoints and
-  releases the Merge session before opening the existing mission, then reconstructs the saved
+  Marketplace price, ownership, and purchase pipeline with the config-authored Merge subset: Auto
+  Merge, VIP, Auto Collector, Speed Boost, Golden Touch, Rainbow Radiance, Huge Hunter, Extra Pet,
+  and Second Wind. Kade's rocketboards remain exclusive to his vendor. Combat Training checkpoints
+  and releases the Merge session before opening the existing mission, then reconstructs the saved
   playstate when the mission ends. Once Combat Training is complete, it is removed from the
   Quartermaster menu rather than offered as a replay; the broader loot/event/kill-credit payout
   remains gated on that completion while effective Full-mode pet final hits already earn XP.
