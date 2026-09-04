@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "creator_group_id": 15872767,
+  "models": {
+    "champion_standard": {
+      "asset_id": 94694565769136,
+      "source": "generated/champion_standard/champion_standard.fbx"
+    },
+    "victory_swallowtail": {
+      "asset_id": 111373855038896,
+      "source": "generated/victory_swallowtail/victory_swallowtail.fbx"
+    }
+  }
+}

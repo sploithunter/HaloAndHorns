@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/blender/build_achievement_banners.py",
+  "variants": [
+    {
+      "schema_version": 1,
+      "variant": "champion_standard",
+      "shape": "shield",
+      "dimensions_blender_units": {
+        "width": 7.04,
+        "depth": 0.92,
+        "height": 8.36
+      },
+      "contract": {
+        "cloth_mesh": "Cloth",
+        "mount_mesh": "Mount",
+        "armature": "AchievementBannerRig",
+        "root_bone": "BannerRoot",
+        "deform_bones": [
+          "ClothUpper",
+          "ClothMidUpper",
+          "ClothMiddle",
+          "ClothMidLower",
+          "ClothTip"
+        ],
+        "texture_uv": "UVMap",
+        "front_axis": "-Y"
+      },
+      "mesh": {
+        "vertices": 425,
+        "quads": 384,
+        "uv_layers": [
+          "UVMap"
+        ],
+        "weighted_vertices": 425,
+        "bone_names": [
+          "BannerRoot",
+          "ClothUpper",
+          "ClothMidUpper",
+          "ClothMiddle",
+          "ClothMidLower",
+          "ClothTip"
+        ]
+      },
+      "files": {
+        "blend": "champion_standard.blend",
+        "fbx": "champion_standard.fbx",
+        "preview_albedo": "champion_standard_preview_albedo.png",
+        "previews": [
+          "champion_standard_front.png",
+          "champion_standard_angle.png"
+        ]
+      },
+      "fbx_bytes": 290540
+    },
+    {
+      "schema_version": 1,
+      "variant": "victory_swallowtail",
+      "shape": "swallowtail",
+      "dimensions_blender_units": {
+        "width": 7.04,
+        "depth": 0.92,
+        "height": 8.36
+      },
+      "contract": {
+        "cloth_mesh": "Cloth",
+        "mount_mesh": "Mount",
+        "armature": "AchievementBannerRig",
+        "root_bone": "BannerRoot",
+        "deform_bones": [
+          "ClothUpper",
+          "ClothMidUpper",
+          "ClothMiddle",
+          "ClothMidLower",
+          "ClothTip"
+        ],
+        "texture_uv": "UVMap",
+        "front_axis": "-Y"
+      },
+      "mesh": {
+        "vertices": 425,
+        "quads": 384,
+        "uv_layers": [
+          "UVMap"
+        ],
+        "weighted_vertices": 425,
+        "bone_names": [
+          "BannerRoot",
+          "ClothUpper",
+          "ClothMidUpper",
+          "ClothMiddle",
+          "ClothMidLower",
+          "ClothTip"
+        ]
+      },
+      "files": {
+        "blend": "victory_swallowtail.blend",
+        "fbx": "victory_swallowtail.fbx",
+        "preview_albedo": "victory_swallowtail_preview_albedo.png",
+        "previews": [
+          "victory_swallowtail_front.png",
+          "victory_swallowtail_angle.png"
+        ]
+      },
+      "fbx_bytes": 273228
+    }
+  ]
+}

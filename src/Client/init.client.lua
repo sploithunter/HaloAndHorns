@@ -213,6 +213,17 @@ do
     end
 end
 
+-- Player-bay achievement banners opt in through one explicit tag. Their copy is rasterized into
+-- the cloth texture, then the authored bone chain receives a small nearby-only flutter.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.AchievementBannerController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start AchievementBannerController", { error = tostring(err) })
+    end
+end
+
 -- Hall play-area boundary: the original generated-map marquee, recovered as an explicit Hall-only
 -- effect so generic SpawnZone markers in Crystal World never receive dotted outlines.
 do
