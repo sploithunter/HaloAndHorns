@@ -203,6 +203,16 @@ do
     end
 end
 
+-- Each player renders nearby shadows; Auto can shed them under sustained load.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.ShadowController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start ShadowController", { error = tostring(err) })
+    end
+end
+
 -- Nearby flora rustles on the client only. Rocks stay still; distant plants sleep.
 do
     local ok, err = pcall(function()

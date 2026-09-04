@@ -37,6 +37,7 @@ local SCHEMAS = {
     buffs = schema({ axes = "table", default_cap = "number" }),
     build_info = schema({ version = "string", commit = "string", branch = "string" }),
     combat = schema({ auto_target = "string", group_scaling = "table" }),
+    client_graphics = schema({ shadows = "table" }),
     combat_deaths = schema({ hold_seconds = "number", styles = "table" }),
     combat_ranks = schema({ version = "number", ranks = "table" }),
     combat_fx = schema({ origin = "table", reskins = "table", attached = "table" }),
