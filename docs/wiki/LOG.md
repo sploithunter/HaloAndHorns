@@ -7869,3 +7869,12 @@ first-session cohort rates.
   config-authored 49-Robux price, with explicit Buy, Cancel, and click-off exits.
 - Only Buy forwards into the existing server purchase pipeline. Ownership and the actual toggle
   remain server-authoritative, while the card's copy, size, price source, and palette stay in config.
+
+## 2026-09-04 — Add the missing Wave 100 banner
+
+- Live inspection after the Wave-100 checkpoint showed that its camera beat had presented a pending
+  Level 50 award; the catalog had no Wave 100 definition, so the wall could not mount one. The four
+  replicated models and zero pending awards confirmed this was a missing milestone, not a lost model.
+- Added a separate `WAVE 100 · CENTURY HELD` battle banner. It tiles into the next wall slot without
+  replacing Level 50, remains distinct from Veteran 100, and leaves Wave 250 as the higher honor.
+  Existing players already beyond Wave 100 receive it at their next tenth-wave checkpoint.

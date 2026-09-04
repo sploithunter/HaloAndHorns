@@ -26,6 +26,15 @@ return {
             footer = "THE LONG WATCH",
             priority = 100,
         },
+        wave_100 = {
+            trigger = { fact = "merge_wave", at_least = 100 },
+            variant = "victory_swallowtail",
+            style = "battle",
+            title = "WAVE",
+            value = "100",
+            footer = "CENTURY HELD",
+            priority = 85,
+        },
         wave_250 = {
             trigger = { fact = "merge_wave", at_least = 250 },
             variant = "victory_swallowtail",

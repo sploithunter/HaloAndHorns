@@ -11,10 +11,28 @@ return function()
                 merge_egg_tier = 21,
             })
             expect(table.find(ids, "level_50")).to.be.ok()
+            expect(table.find(ids, "wave_100")).to.be.ok()
             expect(table.find(ids, "wave_250")).to.be.ok()
             expect(table.find(ids, "heaven_3_egg")).to.be.ok()
             expect(table.find(ids, "veteran_100")).never.to.be.ok()
             expect(table.find(ids, "hell_3_egg")).never.to.be.ok()
+        end)
+
+        it("awards the first Merge century at Wave 100 without replacing Level 50", function()
+            local before = Awards.eligible(config.awards, {
+                level = 50,
+                merge_wave = 99,
+            })
+            expect(table.find(before, "level_50")).to.be.ok()
+            expect(table.find(before, "wave_100")).never.to.be.ok()
+
+            local atCentury = Awards.eligible(config.awards, {
+                level = 50,
+                merge_wave = 100,
+            })
+            expect(table.find(atCentury, "level_50")).to.be.ok()
+            expect(table.find(atCentury, "wave_100")).to.be.ok()
+            expect(table.find(atCentury, "wave_250")).never.to.be.ok()
         end)
 
         it("grants once and keeps the award pending until a checkpoint presentation", function()
