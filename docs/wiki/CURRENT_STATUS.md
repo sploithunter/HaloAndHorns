@@ -243,9 +243,10 @@ cover the wave meter.
 
 ## Flora rustle (2026-08-31)
 
-Nearby plants, trees, cacti, and banners tilt a few degrees on the client.
-Rocks stay still. Anything farther than 80 studs from the camera sleeps.
-Settings → Prop Effects turns it off; it defaults on.
+Nearby plants, trees, cacti, and explicitly typed fabric banners tilt a few degrees on the client.
+Rocks and structural wall decor stay still; authored non-flora kinds override name inference.
+Anything farther than 80 studs from the camera sleeps. Settings → Prop Effects turns it off; it
+defaults on.
 
 ## Merge tower E fires a cannonball (2026-08-30)
 

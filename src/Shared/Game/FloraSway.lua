@@ -50,7 +50,6 @@ local SKIP_TOKENS = {
 local SOFT_TOKENS = {
     "anemone",
     "baobab",
-    "banner",
     "bloom",
     "bramble",
     "brush",
@@ -59,7 +58,6 @@ local SOFT_TOKENS = {
     "canopy",
     "cherry",
     "fern",
-    "flag",
     "flower",
     "grass",
     "hibiscus",
@@ -95,18 +93,34 @@ local function lowerName(value: any): string
 end
 
 local function containsToken(haystack: string, token: string): boolean
-    return string.find(haystack, token, 1, true) ~= nil
+    local startAt = 1
+    while true do
+        local first, last = string.find(haystack, token, startAt, true)
+        if not first or not last then
+            return false
+        end
+        local before = first == 1
+            or string.match(string.sub(haystack, first - 1, first - 1), "%w") == nil
+        local after = last == #haystack
+            or string.match(string.sub(haystack, last + 1, last + 1), "%w") == nil
+        if before and after then
+            return true
+        end
+        startAt = first + 1
+    end
 end
 
 function FloraSway.kindOf(name: any, kind: any): string?
     local explicit = lowerName(kind)
-    if HARD_KINDS[explicit] or SOFT_KINDS[explicit] then
-        return explicit
+    if explicit ~= "" then
+        if HARD_KINDS[explicit] or SOFT_KINDS[explicit] then
+            return explicit
+        end
+        -- Authored kinds are authoritative. A wall decoration named Banner is
+        -- still wall decor, not flora, and must never be pivoted by this client.
+        return nil
     end
     local haystack = lowerName(name)
-    if containsToken(haystack, "banner") or containsToken(haystack, "flag") then
-        return "banner"
-    end
     if containsToken(haystack, "cactus") then
         return "cactus"
     end

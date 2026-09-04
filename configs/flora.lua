@@ -35,8 +35,9 @@ return {
     -- part in Studio to change one.
     random_yaw_kinds = { rock = true, cactus = true, plant = true },
 
-    -- Client-only rustle for nearby soft flora. Rocks stay still. The client
-    -- skips anything farther than `radius` studs from the camera.
+    -- Client-only rustle for nearby soft flora. Rocks and structural wall decor
+    -- stay still. Fabric banners must opt in with Kind="banner"; a model name
+    -- alone never makes an authored wall fixture move.
     sway = {
         enabled = true,
         radius = 80,
