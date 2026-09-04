@@ -39,8 +39,11 @@ Occasional low-FPS/server-frame warnings remain; batching does not remove render
 `ReplicatedStorage.Tests.studio.CombatPresentationSmoke.run()` uses isolated engine-Instance
 fixtures to check owner/helper/near/far spectator routing, including a helper retaining its home
 run while attacking another bay. It does not alter live pets/profiles. Pure CI covers 2,600 tests.
-This fixture check is not a full multi-client load test. Fresh-current-main verification follows
-PR merge; only the feature-branch Play has been exercised at this point.
+This fixture check is not a full multi-client load test. Fresh-current-main verification also
+passed after PR #433 merged (recorded in its verification comment). A subsequent audit corrected
+the audience resolver to recognize enemies' actual `MergeRunId` alongside allied actors'
+`MergeEggRunId`; fixtures now use that real enemy attribute and check a second enemy in the same
+fight, so helper participation cannot accidentally be scoped to only the enemy initially hit.
 
 ## Nearby adaptive shadows (2026-09-04)
 

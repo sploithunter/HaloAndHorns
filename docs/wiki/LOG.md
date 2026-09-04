@@ -7992,3 +7992,14 @@ first-session cohort rates.
   A separate client check rendered all 1,910 combat-result billboards received in ten seconds.
   Isolated Studio audience fixtures passed owner/helper/near/far checks; real multiplayer load
   remains unmeasured. Occasional rendering/server-frame warnings remain; no FPS gain is claimed.
+
+### 2026-09-04 — Dedicated Merge bay entry cancellation
+
+- Reproduced the production `session_ended` lead against all ten authored HatcherSpawn positions:
+  four Hell bays resolved to Home Lava and Heaven 3 to Meadow through legacy area bounds.
+- ZoneTracker now honors dedicated Merge place identity before physical Home detection, including
+  pending joins/respawns. Mission overrides and Farm & Fight physical tracking remain intact.
+- Incomplete entry cannot persist a partial board/checkpoint or step combat; yielding restore
+  exits when its owning session is canceled. Added headless contracts and isolated Studio smoke.
+- Corrected combat-audience run lookup for actual enemy `MergeRunId`, with cross-enemy helper
+  coverage. This is separate from the location-based cancellation, not a change to egg ownership.

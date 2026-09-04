@@ -924,6 +924,12 @@ team and queue model:
 - The complete ten-bay footprint is one `MergeEggPrototype` CurrentArea, so walking down the hall or
   visiting another bay does not accidentally end the mode. Enemy movement and physical drops still
   use the selected bay's authored `ArenaBounds`; no combat actor can leak into a neighboring lane.
+  **2026-09-04 correction:** the generic ZoneTracker bounds still overlapped Home: four Hell
+  HatcherSpawns resolved to Lava and Heaven 3 resolved to Meadow. That attribute change canceled
+  entry with `session_ended`, independent of player count. ZoneTracker now resolves dedicated
+  Merge from `places.roles.merge.initial_area` before character, raycast, or bounds detection;
+  mission overrides retain priority. Farm & Fight remains position-based. The Studio entry smoke
+  reads all ten authored spawns using three isolated player fixtures, without touching profiles.
 - The dedicated `Halo and Horns: Merge` place is configured as place id `84544653387905` in the
   same universe as main. Session ownership is per player (`_activeByPlayer` plus per-entry records),
   and every record owns its claimed bay/world reference. Heartbeat stepping iterates those records;
@@ -986,6 +992,9 @@ team and queue model:
   immediately. DataService runs the synchronous snapshot hook from `ReleaseProfile`, covering both
   PlayerRemoving and server shutdown before ProfileStore's final release save. Rebirth and Admin
   Reset clear both durable records; ordinary exit/logout does not.
+  Entry records now remain `entryInitializing` until arming and durable reconstruction complete.
+  Both save entry points and combat stepping skip incomplete records; cancellation during a
+  yielding team restore cannot snapshot a partial board over the last durable possessions.
 
 ## Player-bay achievement banners (2026-09-03)
 

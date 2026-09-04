@@ -30,7 +30,8 @@ function CombatPresentationAudience:_identity(instance)
     local owner, run
     local node = typeof(instance) == "Instance" and instance or nil
     while node and node ~= workspace do
-        run = run or node:GetAttribute("MergeEggRunId")
+        -- Allied actors carry MergeEggRunId; spawned enemies carry MergeRunId.
+        run = run or node:GetAttribute("MergeEggRunId") or node:GetAttribute("MergeRunId")
         owner = owner or tonumber(node:GetAttribute("MergeEggOwnerUserId"))
         local player
         if node:IsA("Model") then
