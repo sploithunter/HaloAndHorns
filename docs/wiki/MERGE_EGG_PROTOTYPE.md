@@ -1373,6 +1373,12 @@ clean.
   50,000,000 Tier-4 ceiling.
 - The server, both workshop quotes, and headless price tests read the same `unlock_costs` and
   `tier_costs` rows. Missing family or tier prices fail loudly; there is no flat action-cost fallback.
+- Installing a different family over an occupied cannon pad or bulwark line resets that physical
+  slot to Tier 1. The workshop therefore turns the first Install click into a config-authored loss
+  warning and requires a second Confirm Replace click. Its confirmation identity includes the slot,
+  installed family, installed tier, and target family; the server recomputes and requires that exact
+  identity before charging or replacing. Unlocks, empty-slot installs, and same-family upgrades stay
+  single-click actions.
 
 ## Bulwark defense art set
 

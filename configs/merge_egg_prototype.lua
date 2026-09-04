@@ -879,6 +879,15 @@ return {
     team = {
         return_ready_distance = 20,
         starts_with_egg = false,
+        workshop_replacement_confirmation = {
+            title = "REPLACE TIER %d %s?",
+            lines = {
+                "THIS SLOT'S TIER %d PROGRESS WILL BE LOST",
+                "%s WILL START AGAIN AT TIER 1",
+                "CLICK %s TO CONTINUE",
+            },
+            button = "CONFIRM REPLACE",
+        },
         -- Capacity belongs to the config-authored world/egg track. Home fields three pets per
         -- hatcher, then each realm layer adds one position.
         positions_by_egg_tier = { 3, 3, 3, 3 },
