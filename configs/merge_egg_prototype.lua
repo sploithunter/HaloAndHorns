@@ -195,7 +195,10 @@ return {
                 stroke_transparency = 0.28,
             },
             word = {
-                position = { 0.05, 0.26 },
+                -- The copy block is balanced as a whole, but FARM/FIGHT is its focal point.
+                -- Center that word optically in the circular aperture instead of leaving its
+                -- label box at 43% height, which made the composition read high at approach.
+                position = { 0.05, 0.32 },
                 size = { 0.9, 0.34 },
                 font = "GothamBlack",
                 text_size_min = 54,

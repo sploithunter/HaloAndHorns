@@ -7739,3 +7739,9 @@ first-session cohort rates.
 - Raised only the Merge/Hall Waycoin ceiling to 100 quintillion, above the full 56-tier catalog's
   largest nine-hatcher generator quote (about 81.1 quintillion), and added regression coverage for
   both the observed tier-20 blocker and the final authored tier.
+
+## 2026-09-03 — Optically center Merge portal focal lettering
+
+- Kept every Farm/Fight SurfaceGui line on the exact horizontal portal axis, but moved the large
+  `FARM` / `FIGHT` word box from 43% to 49% aperture height so the focal word no longer reads high
+  inside the circular gate at approach distance.

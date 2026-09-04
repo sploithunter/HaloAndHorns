@@ -33,6 +33,10 @@ return function()
             expect(cfg.lightning.bolt.sound_name).to.equal("_silent")
             expect(cfg.signage.canvas_size[1]).to.equal(360)
             expect(cfg.signage.always_on_top).to.equal(false)
+            local wordCenterX = cfg.signage.word.position[1] + cfg.signage.word.size[1] / 2
+            local wordCenterY = cfg.signage.word.position[2] + cfg.signage.word.size[2] / 2
+            expect(wordCenterX).to.equal(0.5)
+            expect(wordCenterY).to.equal(0.49)
             expect(cfg.beacon.height_above_center > 20).to.equal(true)
             expect(cfg.beacon.orbit_count >= 8).to.equal(true)
             expect(#cfg.portals[1].palette.lightning).to.equal(3)
