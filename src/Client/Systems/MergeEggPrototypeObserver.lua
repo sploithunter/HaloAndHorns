@@ -2879,6 +2879,10 @@ local function updateEggHealthBillboard(controls, teamId, folder)
     local eggMaxHealth =
         math.max(1, tonumber(folder:GetAttribute("MergeEggInstalledMaxHealth")) or 1)
     local fraction = math.clamp(eggHealth / eggMaxHealth, 0, 1)
+    -- A full row of healthy objectives obscures the battlefield without communicating danger.
+    -- Keep the control alive so the first replicated damage update can reveal it immediately,
+    -- then hide it again if an objective is restored to full health.
+    control.billboard.Enabled = eggHealth < eggMaxHealth
     control.billboard.StudsOffsetWorldSpace = Vector3.new(
         0,
         objective:GetExtentsSize().Y * 0.5
