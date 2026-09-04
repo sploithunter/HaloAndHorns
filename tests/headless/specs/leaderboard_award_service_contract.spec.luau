@@ -64,7 +64,16 @@ return function()
             expect(board:find('"RoundClock"', 1, true)).to.be.ok()
             expect(board:find('"%02d:%02d:%02d"', 1, true)).to.be.ok()
             expect(board:find("ChallengeRun.fixedWindowEnd", 1, true)).to.be.ok()
-            expect(board:find("countdown.Font = Enum.Font.GothamBlack", 1, true)).to.be.ok()
+            expect(
+                board:find(
+                    "countdown.Font = Enum.Font[self._config.surface.countdown_font]",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(loadModule("configs/leaderboards.lua").surface.countdown_font).to.equal(
+                "GothamBlack"
+            )
             expect(board:find('"RESET IN', 1, true)).never.to.be.ok()
         end)
 

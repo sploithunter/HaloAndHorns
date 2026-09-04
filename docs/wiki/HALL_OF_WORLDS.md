@@ -7,6 +7,12 @@ tiles during play.
 
 ## Release status: disabled, geometry retained (2026-08-22)
 
+Repository reconciliation (2026-09-04) recovered the previously stashed Source Sans board fix:
+`leaderboards.surface` owns the 1400×960 canvas and title/body fonts, shared by runtime and the
+historical placement script. Newer Homeworld relocation and round-countdown behavior are retained.
+The old Hall-promoting [store-description draft](raw/2026-08-21-store-description-draft.md) is
+archived, not current release copy.
+
 The Hall route is disabled while its production map/streaming enclosure is repaired. The map stays
 authored under `Workspace.Maps.FuturePath`, and Hall progression ledgers remain in profiles; this is
 a routing rollback, not a player-data rollback.

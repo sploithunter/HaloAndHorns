@@ -136,6 +136,15 @@ return {
         hide_internal_accounts = true,
     },
 
+    -- Source Sans preserves thin letter strokes on the authored world-space boards.
+    surface = {
+        canvas = { 1400, 960 },
+        title_font = "SourceSansBold",
+        body_font = "SourceSans",
+        -- Keep the newer round-clock emphasis while recovering the older text fix.
+        countdown_font = "GothamBlack",
+    },
+
     -- Optional extra hide list for public ranks and awards. Scores still publish. IDs live in
     -- configs/internal_accounts.lua (not Colorado* names). Optional extras
     -- can be appended here.

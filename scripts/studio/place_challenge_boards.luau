@@ -3,6 +3,7 @@
 
 local CollectionService = game:GetService("CollectionService")
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
+local surface = require(game:GetService("ReplicatedStorage").Configs.leaderboards).surface
 
 -- The release rollback moved the complete authored fixtures into Homeworld. Never recreate the
 -- retired Hall copies if this historical one-time placement script is run again.
@@ -48,7 +49,7 @@ local function makeSurface(screen, title, body)
     gui.Name = "LeaderboardSurface"
     gui.Face = Enum.NormalId.Front
     gui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-    gui.CanvasSize = Vector2.new(900, 620)
+    gui.CanvasSize = Vector2.new(surface.canvas[1], surface.canvas[2])
     gui.LightInfluence = 0
     gui.Brightness = 2
     gui.AlwaysOnTop = false
@@ -66,7 +67,7 @@ local function makeSurface(screen, title, body)
     header.BackgroundTransparency = 1
     header.Position = UDim2.fromOffset(20, 18)
     header.Size = UDim2.new(1, -40, 0, 48)
-    header.Font = Enum.Font.GothamBold
+    header.Font = Enum.Font[surface.title_font]
     header.Text = title
     header.TextColor3 = Color3.fromRGB(244, 246, 255)
     header.TextScaled = true
@@ -77,7 +78,7 @@ local function makeSurface(screen, title, body)
     text.BackgroundTransparency = 1
     text.Position = UDim2.fromOffset(24, 78)
     text.Size = UDim2.new(1, -48, 1, -100)
-    text.Font = Enum.Font.Gotham
+    text.Font = Enum.Font[surface.body_font]
     text.Text = body
     text.TextColor3 = Color3.fromRGB(208, 215, 232)
     text.TextWrapped = true

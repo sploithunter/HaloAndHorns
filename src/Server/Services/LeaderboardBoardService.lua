@@ -29,13 +29,13 @@ local function formatNumber(value)
     return sign .. formatted
 end
 
-local function label(parent, name, position, size, text, textSize, alignment)
+function LeaderboardBoardService:_label(parent, name, position, size, text, textSize, alignment)
     local item = Instance.new("TextLabel")
     item.Name = name
     item.BackgroundTransparency = 1
     item.Position = position
     item.Size = size
-    item.Font = Enum.Font.GothamBold
+    item.Font = Enum.Font[self._config.surface.title_font]
     item.Text = text
     item.TextColor3 = Color3.fromRGB(244, 246, 255)
     item.TextSize = textSize
@@ -152,7 +152,7 @@ function LeaderboardBoardService:_bind(host)
     header.Parent = root
 
     local isChallenge = definition.score and definition.score.kind == "challenge_window"
-    label(
+    self:_label(
         header,
         "Title",
         UDim2.fromOffset(32, 10),
@@ -160,7 +160,7 @@ function LeaderboardBoardService:_bind(host)
         definition.display_name,
         42
     )
-    local subtitle = label(
+    local subtitle = self:_label(
         header,
         "Subtitle",
         UDim2.fromOffset(34, 60),
@@ -168,10 +168,10 @@ function LeaderboardBoardService:_bind(host)
         definition.subtitle or "Global leaders",
         21
     )
-    subtitle.Font = Enum.Font.Gotham
+    subtitle.Font = Enum.Font[self._config.surface.body_font]
     subtitle.TextColor3 = Color3.fromRGB(208, 215, 232)
     if isChallenge then
-        local countdown = label(
+        local countdown = self:_label(
             header,
             "RoundClock",
             UDim2.new(1, -278, 0, 12),
@@ -180,7 +180,7 @@ function LeaderboardBoardService:_bind(host)
             42,
             Enum.TextXAlignment.Right
         )
-        countdown.Font = Enum.Font.GothamBlack
+        countdown.Font = Enum.Font[self._config.surface.countdown_font]
         countdown.TextColor3 =
             color(definition.style and definition.style.accent, Color3.fromRGB(255, 205, 70))
     end
@@ -202,11 +202,25 @@ function LeaderboardBoardService:_bind(host)
             else Color3.fromRGB(26, 29, 40)
         row.BorderSizePixel = 0
         row.Parent = rows
-        label(row, "Rank", UDim2.fromOffset(14, 0), UDim2.fromOffset(64, 40), tostring(index), 23)
-        local playerName =
-            label(row, "PlayerName", UDim2.fromOffset(78, 0), UDim2.new(1, -300, 1, 0), "—", 22)
+        self:_label(
+            row,
+            "Rank",
+            UDim2.fromOffset(14, 0),
+            UDim2.fromOffset(64, 40),
+            tostring(index),
+            23
+        )
+        local playerName = self:_label(
+            row,
+            "PlayerName",
+            UDim2.fromOffset(78, 0),
+            UDim2.new(1, -300, 1, 0),
+            "—",
+            22
+        )
+        playerName.Font = Enum.Font[self._config.surface.body_font]
         playerName.TextTruncate = Enum.TextTruncate.AtEnd
-        label(
+        local value = self:_label(
             row,
             "Value",
             UDim2.new(1, -220, 0, 0),
@@ -215,9 +229,10 @@ function LeaderboardBoardService:_bind(host)
             22,
             Enum.TextXAlignment.Right
         )
+        value.Font = Enum.Font[self._config.surface.body_font]
     end
 
-    local footer = label(
+    local footer = self:_label(
         root,
         "Footer",
         UDim2.new(0, 0, 1, -39),
@@ -226,7 +241,7 @@ function LeaderboardBoardService:_bind(host)
         17,
         Enum.TextXAlignment.Center
     )
-    footer.Font = Enum.Font.Gotham
+    footer.Font = Enum.Font[self._config.surface.body_font]
     footer.TextColor3 = Color3.fromRGB(154, 164, 187)
 
     self._bindings[host] = {
@@ -285,7 +300,8 @@ function LeaderboardBoardService:_makeBoardGui(screen, host)
     gui.Name = "LeaderboardSurface"
     gui.Face = self:_surfaceFace(screen, host)
     gui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-    gui.CanvasSize = Vector2.new(900, 620)
+    local canvas = self._config.surface.canvas
+    gui.CanvasSize = Vector2.new(canvas[1], canvas[2])
     gui.LightInfluence = 0
     gui.Brightness = 2
     gui.AlwaysOnTop = false
@@ -312,7 +328,7 @@ function LeaderboardBoardService:_bindGuide(host)
     end
     local gui = self:_makeBoardGui(screen, host)
     local root = insetRoot(gui)
-    label(
+    self:_label(
         root,
         "Title",
         UDim2.fromOffset(32, 28),
@@ -322,8 +338,8 @@ function LeaderboardBoardService:_bindGuide(host)
     )
     local body = table.concat(guide.lines or {}, "\n\n")
     local lines =
-        label(root, "Body", UDim2.fromOffset(36, 110), UDim2.new(1, -72, 1, -160), body, 26)
-    lines.Font = Enum.Font.Gotham
+        self:_label(root, "Body", UDim2.fromOffset(36, 110), UDim2.new(1, -72, 1, -160), body, 26)
+    lines.Font = Enum.Font[self._config.surface.body_font]
     lines.TextWrapped = true
     lines.TextYAlignment = Enum.TextYAlignment.Top
     lines.TextColor3 = Color3.fromRGB(208, 215, 232)
