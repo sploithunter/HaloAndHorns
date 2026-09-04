@@ -7782,3 +7782,12 @@ first-session cohort rates.
   camera/highlight/glint shot during the existing checkpoint intermission; ordinary wave gaps and
   combat never seize the camera, and the server never waits for the client before starting the next
   wave.
+
+## 2026-09-04 — Pay combat XP to Level-10 Full-mode Merge pets
+
+- Live diagnosis on a Level 28 player confirmed the configured Level-10 route correctly selected
+  effective Full mode, but the final-hit reward path still required `CombatTutorialDone` and
+  silently discarded every XP award.
+- A durable player pet's final hit now earns exactly one combat-XP award whenever its owner is in
+  effective Full mode. Combat Training continues to gate currency, items, events, and global kill
+  credit; NPC hatchers, Simple-mode reserves, powers, and participation credit remain excluded.
