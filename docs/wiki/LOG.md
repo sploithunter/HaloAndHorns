@@ -7887,3 +7887,13 @@ first-session cohort rates.
   table-driven headless contract.
 - Cross-checked the realm egg awards against the live 56-tier Merge progression. Tiers 13, 17, 21,
   and 25 are exactly the first Heaven 2, Hell 2, Heaven 3, and Hell 3 eggs respectively.
+
+## 2026-09-04 — Fit post-rebirth XP to the Rank-10/Wave-30 checkpoint
+
+- A fully engaged live checkpoint at Level 40, Rebirth Rank 10, and Wave 30 showed the remaining
+  linear challenge payout was still about five times too generous. The baseline enemy/allied ratio
+  there is 0.45; cubing sub-peer ratios changes its payout from 45% to 9.1%, almost exactly one
+  fifth, while preserving the existing 5% visible floor.
+- The ratio-1 crossing is unchanged, so every rebirth rank still returns to full XP at the same
+  difficulty wave. The offline simulator now accepts `--checkpoint-wave` and reports that exact
+  multiplier alongside the 1,000-wave safety sweep.

@@ -62,13 +62,16 @@ function MergeEggXpYield.resolve(config, context)
     local minimum = math.clamp(positive(config.minimum_multiplier, 0.05), 0, 1)
     local maximum = math.max(minimum, positive(config.maximum_multiplier, 1))
     local fullYieldDifficulty = positive(config.full_yield_difficulty_ratio, 1)
+    local difficultyExponent = positive(config.relative_difficulty_exponent, 1)
     local relativeDifficulty = enemyDifficultyMultiplier / alliedOffenseMultiplier
-    local multiplier = math.clamp(relativeDifficulty / fullYieldDifficulty, minimum, maximum)
+    local scaledDifficulty = relativeDifficulty / fullYieldDifficulty
+    local multiplier = math.clamp(scaledDifficulty ^ difficultyExponent, minimum, maximum)
     return {
         multiplier = multiplier,
         enemyDifficultyMultiplier = enemyDifficultyMultiplier,
         alliedOffenseMultiplier = alliedOffenseMultiplier,
         relativeDifficulty = relativeDifficulty,
+        difficultyExponent = difficultyExponent,
     }
 end
 
