@@ -705,10 +705,27 @@ function NpcPrincipalService:IsActive(name)
     return rec ~= nil and rec.model ~= nil and rec.model.Parent ~= nil
 end
 
-function NpcPrincipalService:Despawn(name, reason)
+function NpcPrincipalService:Despawn(name, reason, expected)
     local rec = self._active[name]
     if not rec then
         return false
+    end
+    -- A caller can retain a stale principal name after another runtime has claimed the same key.
+    -- Never let that stale cleanup destroy the replacement. This is especially important for
+    -- authored, per-player principals whose teardown may race a new session for the same owner.
+    if type(expected) == "table" then
+        local ownerMatches = expected.owner == nil or rec.owner == expected.owner
+        local folderMatches = expected.folder == nil or rec.folder == expected.folder
+        local modelMatches = expected.model == nil or rec.model == expected.model
+        if not (ownerMatches and folderMatches and modelMatches) then
+            self:_log("Warn", "NPC principal despawn refused for stale ownership", {
+                npc = name,
+                reason = tostring(reason or "requested"),
+                expectedOwner = expected.owner and expected.owner.Name or nil,
+                actualOwner = rec.owner and rec.owner.Name or nil,
+            })
+            return false
+        end
     end
     self:_dissolveAlliance(rec)
     -- Retract the team stamp — only if it is still OURS (a real party formed since would

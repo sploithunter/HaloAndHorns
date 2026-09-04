@@ -154,6 +154,14 @@ local function stationXOffset(config, teamConfig, fallbackSlot)
     return (slot - (total + 1) * 0.5) * spacing, slot
 end
 
+local function hatcherPrincipalRuntimeName(player, teamId)
+    return string.format(
+        "merge_egg_hatcher_%s_%d",
+        tostring(player and player.UserId or 0),
+        math.max(1, math.floor(tonumber(teamId) or 1))
+    )
+end
+
 local function randomPointOnPart(random, part, insetX, insetZ)
     local halfX = math.max(0, part.Size.X * 0.5 - math.max(0, insetX or 0))
     local halfZ = math.max(0, part.Size.Z * 0.5 - math.max(0, insetZ or 0))
@@ -11759,7 +11767,11 @@ function MergeEggPrototypeService:_clearEncounter(record)
     for _, team in ipairs(record.teams or {}) do
         self:_removeHatcherEggObjective(team)
         if team.principalName then
-            self._npcPrincipalService:Despawn(team.principalName, "merge_egg_reset")
+            self._npcPrincipalService:Despawn(team.principalName, "merge_egg_reset", {
+                owner = record.player,
+                folder = team.folder,
+                model = team.principalModel,
+            })
         end
     end
     record.teams = {}
@@ -14733,9 +14745,13 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
             self:_clearEncounter(record)
             return false, "duplicate_team_id"
         end
+        local principalName = hatcherPrincipalRuntimeName(player, id)
         local definition = table.clone(principal)
         definition.level = self:_prototypeBaseLevel(record)
-        definition.name = tostring(teamCfg.principal_name or ("Merge Hatcher Team " .. id))
+        -- NpcPrincipalService keys the live registry, character, and PlayerPets folder by
+        -- definition.name. The configured captain name is presentation; the live key must be
+        -- player-scoped or a second bay replaces the first player's same-numbered hatcher.
+        definition.name = principalName
         definition.display_name =
             tostring(teamCfg.principal_display_name or ("Hatcher Captain " .. id))
         definition.squad = {}
@@ -14746,11 +14762,8 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
         local offset = teamCfg.spawn_offset or {}
         local stationX, positionSlot = stationXOffset(self._config, teamCfg, index)
         local spawnCFrame = spawn.CFrame * CFrame.new(stationX, 0, tonumber(offset.z) or 0)
-        local principalOk, info = self._npcPrincipalService:SpawnStationary(
-            player,
-            "merge_egg_hatcher_" .. tostring(player.UserId) .. "_" .. id,
-            spawnCFrame,
-            {
+        local principalOk, info =
+            self._npcPrincipalService:SpawnStationary(player, principalName, spawnCFrame, {
                 definition = definition,
                 folderAttributes = {
                     MergeEggPrototypeTeam = true,
@@ -14786,15 +14799,18 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
                     EphemeralDownPolicy = "destroy",
                     MergeDefenseRebirthPetDefenseMultiplier = self:_petDefenseMultiplier(record),
                 },
-            }
-        )
+            })
         if not principalOk or type(info) ~= "table" then
             self:_clearEncounter(record)
             return false, tostring(info or "principal_spawn_failed")
         end
         self:_placeCaptainAtStation(info.model, record.world, spawn, positionSlot)
         if not self:_isRecordActive(record) then
-            self._npcPrincipalService:Despawn(info.name, "merge_egg_session_ended")
+            self._npcPrincipalService:Despawn(info.name, "merge_egg_session_ended", {
+                owner = player,
+                folder = info.folder,
+                model = info.model,
+            })
             return false, "session_ended"
         end
         local team = {
@@ -15014,7 +15030,11 @@ function MergeEggPrototypeService:_clearProgressionStageActors(record)
     end
     for _, team in ipairs(record.teams or {}) do
         if team.principalName then
-            self._npcPrincipalService:Despawn(team.principalName, "merge_egg_stage_transition")
+            self._npcPrincipalService:Despawn(team.principalName, "merge_egg_stage_transition", {
+                owner = record.player,
+                folder = team.folder,
+                model = team.principalModel,
+            })
         end
     end
     record.enemies = {}
@@ -17405,8 +17425,9 @@ function MergeEggPrototypeService:_forceClearBay(world, player)
         local maximumTeams = math.max(1, math.floor(tonumber(layout.total_positions) or 9))
         for id = 1, maximumTeams do
             self._npcPrincipalService:Despawn(
-                "merge_egg_hatcher_" .. tostring(player.UserId) .. "_" .. id,
-                "merge_egg_beginning_reset"
+                hatcherPrincipalRuntimeName(player, id),
+                "merge_egg_beginning_reset",
+                { owner = player }
             )
         end
     end

@@ -948,6 +948,9 @@ return function()
             expect(service:find("huge = result.huge == true", 1, true)).to.be.ok()
             expect(server:find('"PetFollowService",\n        "EggService",', 1, true)).to.be.ok()
             expect(service:find("for index, teamCfg in ipairs(teamConfigs)", 1, true)).to.be.ok()
+            local runtimeName =
+                service:find("local function hatcherPrincipalRuntimeName(player, teamId)", 1, true)
+            expect(runtimeName).to.be.ok()
             expect(service:find("MergeEggPrototypeTeam = true", 1, true)).to.be.ok()
             expect(service:find("local function stationXOffset", 1, true)).to.be.ok()
             expect(service:find("MergeEggPositionSlot = positionSlot", 1, true)).to.be.ok()
@@ -969,6 +972,12 @@ return function()
                 true
             )
             local hatchBody = service:sub(hatchAt, nearestDropAt - 1)
+            expect(hatchBody:find("local principalName = hatcherPrincipalRuntimeName", 1, true)).to.be.ok()
+            expect(hatchBody:find("definition.name = principalName", 1, true)).to.be.ok()
+            expect(hatchBody:find("definition.name = tostring(teamCfg.principal_name", 1, true)).to.equal(
+                nil
+            )
+            expect(hatchBody:find("SpawnStationary(player, principalName, spawnCFrame", 1, true)).to.be.ok()
             expect(hatchBody:find('self:_setWorldState("AwaitingFirstEgg"', 1, true)).to.be.ok()
             expect(hatchBody:find("self:_spawnNextWave(record)", 1, true)).to.equal(nil)
         end)

@@ -7908,3 +7908,14 @@ first-session cohort rates.
 - The ratio-1 crossing is unchanged, so every rebirth rank still returns to full XP at the same
   difficulty wave. The offline simulator now accepts `--checkpoint-wave` and reports that exact
   multiplier alongside the 1,000-wave safety sweep.
+
+## 2026-09-04 — Isolate simultaneous Merge hatcher sessions
+
+- Published two-player testing exposed that Merge passed a player-unique stationary-principal ID
+  but replaced it with the config display identity (`Merge Hatcher Team 1`, etc.) before spawning.
+  `NpcPrincipalService` keys its global registry and `Workspace.PlayerPets` folders by that final
+  name, so each arriving player's hatchers destroyed the prior player's same-numbered folders and
+  their egg objectives; the departing player's stale cleanup then despawned the replacement set.
+- Hatcher runtime keys now include owner UserId and position, independently of presentation copy.
+  Merge cleanup supplies its retained owner/folder/model identity, and the principal service refuses
+  a teardown if any of those references no longer identify the live registration.
