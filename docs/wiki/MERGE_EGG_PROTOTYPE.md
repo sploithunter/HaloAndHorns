@@ -450,10 +450,12 @@ team and queue model:
 - Merge Full-mode combat XP has a second, Merge-only challenge ratio after a paid rebirth. Ordinary
   combat still starts from enemy level/rank and the global level-difference yield. Merge then
   multiplies that result by `enemy layer/cycle HP multiplier ÷ persistent allied DPS multiplier`,
-  where allied DPS includes the additive Rebirth + Damage pool and Fire Rate. The value is config-
-  clamped from 5% to 100%, so trivial reset waves still tick the bar and full XP automatically
-  returns when enemy HP catches up. Only durable player-pet final hits remain eligible; the offline
-  simulator uses the authored 50% player-pet kill share for expected totals.
+  where allied DPS includes the additive Rebirth + Damage pool and Fire Rate. Sub-peer ratios are
+  cubed before the config-owned 5%–100% clamp. This fits the live Rebirth Rank 10 / Wave 30
+  checkpoint: its baseline 0.45 ratio pays 9.1% instead of 45%, about one fifth of the former XP.
+  Cubing does not move the ratio-1 crossing, so full XP automatically returns at the same wave when
+  enemy HP catches up. Only durable player-pet final hits remain eligible; the offline simulator
+  uses the authored 50% player-pet kill share for expected totals.
 - `scripts/simulate_merge_xp.luau` advances the real authored/endless wave generator for 1,000 waves
   without Studio. It reports opening XP yield, expected and maximum XP, first full-yield wave, next
   rank price, and an intentionally optimistic no-spend/all-pickups affordability bound. The safety

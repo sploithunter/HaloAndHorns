@@ -47,20 +47,25 @@ return function()
             expect(resolve(0, 1000, 20, 20).multiplier).to.equal(1)
         end)
 
-        it(
-            "halves the first paid-rebirth opening and restores full XP when HP catches up",
-            function()
-                expect(resolve(1, 1).multiplier).to.equal(0.5)
-                expect(resolve(1, 10).multiplier).to.equal(0.5)
-                expect(resolve(1, 11).multiplier).to.equal(1)
-            end
-        )
+        it("cubes easy post-rebirth fights and restores full XP when HP catches up", function()
+            expect(resolve(1, 1).multiplier).to.equal(0.125)
+            expect(resolve(1, 10).multiplier).to.equal(0.125)
+            expect(resolve(1, 11).multiplier).to.equal(1)
+        end)
+
+        it("fits the live Rank 10 Wave 30 checkpoint at one fifth of its former XP", function()
+            local result = resolve(9, 30)
+            expect(result.relativeDifficulty).to.equal(0.45)
+            expect(result.difficultyExponent).to.equal(3)
+            expect(result.multiplier).to.be.near(0.091125)
+            expect(result.multiplier / result.relativeDifficulty).to.be.near(0.2025)
+        end)
 
         it("includes persistent Damage and Fire Rate in relative time-to-kill", function()
             local result = resolve(1, 1, 9, 9)
             expect(result.enemyDifficultyMultiplier).to.equal(1)
             expect(result.alliedOffenseMultiplier).to.be.near(3.5525)
-            expect(result.multiplier).to.be.near(1 / 3.5525)
+            expect(result.multiplier).to.equal(yieldConfig.minimum_multiplier)
         end)
 
         it("keeps extreme-rank opening kills visible without making them full value", function()

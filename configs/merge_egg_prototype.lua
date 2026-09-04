@@ -1736,6 +1736,10 @@ return {
             minimum_multiplier = 0.05,
             maximum_multiplier = 1,
             full_yield_difficulty_ratio = 1,
+            -- Cubing the sub-peer difficulty ratio fits the live Rank-10/Wave-30 checkpoint:
+            -- 0.45 relative difficulty becomes 0.091 XP yield, about one fifth of the former
+            -- linear payout. Ratios at or above one still reach full XP at the same wave.
+            relative_difficulty_exponent = 3,
             simulation_player_pet_kill_share = 0.5,
         },
         gem_drop = {

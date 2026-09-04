@@ -13,6 +13,7 @@
     Examples:
       mise exec -- lune run scripts/simulate_merge_xp.luau
       mise exec -- lune run scripts/simulate_merge_xp.luau --rank 10 --level 28 --waves 1000
+      mise exec -- lune run scripts/simulate_merge_xp.luau --rank 10 --level 40 --checkpoint-wave 30
       mise exec -- lune run scripts/simulate_merge_xp.luau --all-ranks --damage-level 20 --fire-rate-level 20
 ]]
 
@@ -145,6 +146,7 @@ local options = {
     damageLevel = 0,
     fireRateLevel = 0,
     coinLevel = 0,
+    checkpointWave = nil,
     killShare = tonumber(config.rewards.combat_xp_yield.simulation_player_pet_kill_share) or 0.5,
 }
 
@@ -178,6 +180,9 @@ do
             index += 2
         elseif arg == "--coin-level" then
             options.coinLevel = math.max(0, math.floor(numericOption(index, arg)))
+            index += 2
+        elseif arg == "--checkpoint-wave" then
+            options.checkpointWave = math.max(1, math.floor(numericOption(index, arg)))
             index += 2
         elseif arg == "--kill-share" then
             options.killShare = math.clamp(numericOption(index, arg), 0, 1)
@@ -310,6 +315,10 @@ local function simulateRank(rank, damageLevel, fireRateLevel, coinLevel)
             result.openingMultiplier = xpContext.multiplier
             result.openingOffense = xpContext.alliedOffenseMultiplier
         end
+        if waveIndex == options.checkpointWave then
+            result.checkpointMultiplier = xpContext.multiplier
+            result.checkpointRelativeDifficulty = xpContext.relativeDifficulty
+        end
         local waveRewardMultiplier = rewardMultiplier(waveIndex, wave)
         forEachUnit(wave, function(archetypeId, count)
             local xp = combatXp(archetypeId, xpContext.multiplier) * count
@@ -396,6 +405,16 @@ for _, rank in ranks do
             row.nextAffordableWave and ("Wave " .. row.nextAffordableWave) or "> horizon"
         )
     )
+    if options.checkpointWave then
+        print(
+            string.format(
+                "     checkpoint Wave %d: %.1f%% XP at %.3f relative difficulty",
+                options.checkpointWave,
+                (row.checkpointMultiplier or 0) * 100,
+                row.checkpointRelativeDifficulty or 0
+            )
+        )
+    end
 end
 
 local damageMax = config.management_upgrades.definitions.damage.max_level
