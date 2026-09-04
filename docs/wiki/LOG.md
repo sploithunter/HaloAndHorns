@@ -8038,3 +8038,13 @@ first-session cohort rates.
   in-place Hall path remains sealed; no unrelated area unlocks or account classifications changed.
 - Added ordinary-account public/preview policy coverage and a Studio fixture checking both route
   requests and both gate-binding orders without issuing a real teleport or touching player data.
+
+### 2026-09-04 — Merge player-list highest-wave status
+
+- Merge player rows, hover, and profile cards now show each player's highest completed wave instead
+  of their worn title. Farm & Fight titles, ranks, and name badges are unchanged.
+- Added a monotonic durable MergeDefense highest_completed_wave field and replicated per-player
+  MergeHighestCompletedWave attribute. Existing checkpoints and wave-banner awards provide a
+  conservative migration floor; rebirth and checkpoint rewinds retain the record.
+- Added headless presentation/migration tests and an isolated two-player Studio fixture covering
+  publication, record increases, rebirth preservation, and player isolation.

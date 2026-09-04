@@ -12,6 +12,11 @@ return {
     version = 1,
     enabled = true,
     disable_core_player_list = true,
+    merge_status = {
+        format = "Wave %d",
+        loading = "Wave —",
+        description = "Highest completed Merge wave. Personal best across runs and rebirths.",
+    },
 
     -- Every visible list dimension is a share of the live viewport. Do not replace these with
     -- offsets: the People list must retain the same proportions on phones, tablets, and desktop.
