@@ -1391,6 +1391,9 @@ clean.
   50,000,000 Tier-4 ceiling.
 - The server, both workshop quotes, and headless price tests read the same `unlock_costs` and
   `tier_costs` rows. Missing family or tier prices fail loudly; there is no flat action-cost fallback.
+- A fresh Artillery Commander or Bulwark Engineer interaction selects the family installed on that
+  physical pad/line. Repaints from actions inside an already-open workshop retain the working
+  selection, allowing a newly unlocked family to remain selected for its follow-up install.
 - Installing a different family over an occupied cannon pad or bulwark line resets that physical
   slot to Tier 1. The workshop therefore turns the first Install click into a config-authored loss
   warning and requires a second Confirm Replace click. Its confirmation identity includes the slot,
