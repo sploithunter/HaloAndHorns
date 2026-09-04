@@ -341,6 +341,7 @@ return function()
             expect(signals.MergeEggPrototypeBoardResult.name).to.equal(
                 "MergeEggPrototypeBoardResult"
             )
+            expect(signals.AchievementBannerCeremony.name).to.equal("AchievementBannerCeremony")
             expect(signals.MergeEggPrototypePlayerHatch.name).to.equal(
                 "MergeEggPrototypePlayerHatch"
             )
@@ -351,7 +352,7 @@ return function()
             expect(networkConfig.packets.MergeEggPrototypeModeNoticeResponse.handler).to.equal(
                 "SettingsService.ResolveMergeDefenseModeNotice"
             )
-            expect(#created).to.equal(144)
+            expect(#created).to.equal(145)
         end)
 
         it("omits Studio-only packets from a production registry", function()

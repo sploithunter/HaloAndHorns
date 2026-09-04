@@ -1438,6 +1438,20 @@ return {
                 arguments = { { name = "result", type = "table" } },
             },
         },
+        AchievementBannerCeremony = {
+            name = "AchievementBannerCeremony",
+            transport = "reliable_event",
+            location = "replicated_storage",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "achievement_banner.ceremony",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "presentation", type = "table" } },
+            },
+        },
         MergeEggPrototypePlayerHatch = {
             name = "MergeEggPrototypePlayerHatch",
             transport = "reliable_event",

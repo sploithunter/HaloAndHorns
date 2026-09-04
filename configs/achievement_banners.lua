@@ -76,10 +76,10 @@ return {
     display = {
         maximum = 4,
         folder_name = "PlayerAchievementBanners",
-        reference_name = "BayClaimPad",
+        reference_name = "PlayerSpawn",
         model_scale = 1,
-        -- Local to the claim pad. Its LookVector points into the bay, so these form a gallery just
-        -- inside the entrance and face back toward the public approach.
+        -- Local to the mirrored player spawn, whose LookVector points down the lane. These form a
+        -- gallery just inside the entrance and face back toward the public approach.
         slots = {
             { x = -21, y = 11, z = -5 },
             { x = -7, y = 11, z = -5 },
@@ -88,6 +88,7 @@ return {
         },
         model_yaw_degrees = 0,
         camera = {
+            value_name = "AchievementCameraCFrame",
             distance = 17,
             height = 1,
             target_height = 0,
@@ -108,7 +109,17 @@ return {
         highlight_color = { 255, 214, 92 },
         highlight_fill_transparency = 0.68,
         highlight_outline_transparency = 0.05,
+        glint_texture = "rbxasset://textures/particles/sparkles_main.dds",
         glint_size = 0.42,
+        glint_count = 32,
+        glint_lifetime_seconds = 0.75,
+        glint_speed = 4,
+        glint_spread_degrees = 180,
+        light_brightness = 2.4,
+        light_range = 18,
+        depth_far_intensity = 0.12,
+        depth_near_intensity = 0.08,
+        depth_in_focus_radius = 12,
     },
 
     model = {
