@@ -20,6 +20,10 @@ The Merge instruction bar persists beyond Wave 10 while Basic is required, then 
 Basic is complete or existing full-pet eligibility already applies. It never advertises Advanced
 1/2 over unlocked controls.
 
+The custom Players list collapses once when `InCombatTutorial` becomes true (all three courses),
+clearing the pet HUD. Players may expand it manually during training. Exit restores the previous
+outside-training expanded/collapsed state; entering while the controller starts is also handled.
+
 Persist `CombatTutorialAdvanced1`, `CombatTutorialAdvanced2`, `CombatCoursesVersion`, and a
 `<progressKey>RewardGranted` receipt per course. `CombatTutorial` remains Basic's compatibility
 receipt. A fixed `completionLevelTarget` and independent level receipt prevent repeated +1 awards

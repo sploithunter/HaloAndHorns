@@ -255,8 +255,19 @@ return {
     button = {
         name = "HoverboardButton",
         text = "Board",
-        tutorial_text = "CLICK HERE\nBoard",
         icon = "rbxassetid://87061483301808",
+    },
+    tutorial_cue = {
+        text = "◀ CLICK HERE",
+        position = { 1.08, 0.3 },
+        size = { 1.7, 0.6 },
+        bounce_height = 0.16,
+        bounce_seconds = 0.55,
+        background = { 16, 18, 28 },
+        color = { 255, 215, 70 },
+        background_transparency = 0.08,
+        corner_scale = 0.2,
+        z_index = 31,
     },
     shop = {
         enabled = true,

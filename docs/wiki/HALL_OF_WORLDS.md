@@ -389,8 +389,11 @@ These remain design contracts, not active Plaza gameplay:
 
 2026-09-05: Merge also unlocks the standard board at highest Wave 6, independently of Basic
 training or Level 2 (`hoverboard.unlock.merge_wave`). The persistent flank button stays outside
-the tutorial-covered power slots and advertises CLICK HERE before the first mount while Basic is
-unfinished. Combat no longer suppresses mounting or dismounts a rider. Mission, death, teleport,
+the tutorial-covered power slots. The button always says Board; a separate right-side bouncing
+CLICK HERE cue introduces it in Merge. A successful server-accepted mount persists
+`GameData.Hoverboard.first_use_complete` and publishes `HoverboardFirstUseComplete`, dismissing
+the cue across dismounts, respawns and rejoins. A full beginning reset clears the receipt.
+Combat no longer suppresses mounting or dismounts a rider. Mission, death, teleport,
 and precision-interaction suppression remain unchanged. The ordinary Hall unlock below still works.
 
 The Hall awards a standard hoverboard when the player completes the tutorial and earns Level

@@ -40,6 +40,7 @@ local cardTween
 local characterSpin
 local tooltip
 local expanded = true
+local expandedBeforeTraining
 local rowGuis = {}
 local watches = {}
 
@@ -1425,6 +1426,19 @@ function PeopleListController.start()
     bindToggle()
 
     local localPlayer = Players.LocalPlayer
+    local function syncTrainingExpansion()
+        expanded, expandedBeforeTraining = PeopleList.trainingExpansion(
+            expanded,
+            expandedBeforeTraining,
+            localPlayer:GetAttribute("InCombatTutorial") == true,
+            config.toggle and config.toggle.collapse_in_combat_training == true
+        )
+        hideTooltip()
+        hidePopover()
+        applyExpanded()
+    end
+    localPlayer:GetAttributeChangedSignal("InCombatTutorial"):Connect(syncTrainingExpansion)
+    syncTrainingExpansion()
     for _, name in ipairs({
         "LargeMenuOpen",
         "TutorialCornerOwned",

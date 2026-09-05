@@ -27,6 +27,30 @@ return function()
             )
         end)
 
+        it("keeps Board copy stable and remembers the first successful use", function()
+            expect(hoverboard.button.text).to.equal("Board")
+            expect(hoverboard.button.tutorial_text).to.equal(nil)
+            expect(HoverboardLogic.needsMergeIntroduction(true, 6, false, false, hoverboard.unlock)).to.equal(
+                true
+            )
+            expect(HoverboardLogic.needsMergeIntroduction(true, 6, true, false, hoverboard.unlock)).to.equal(
+                false
+            )
+            expect(HoverboardLogic.needsMergeIntroduction(true, 6, false, true, hoverboard.unlock)).to.equal(
+                false
+            )
+            expect(
+                HoverboardLogic.needsMergeIntroduction(false, 5, false, false, hoverboard.unlock)
+            ).to.equal(false)
+            local save = HoverboardLogic.normalizeSave({ first_use_complete = true }, "black_gold")
+            expect(HoverboardLogic.normalizeSave(save, "black_gold").first_use_complete).to.equal(
+                true
+            )
+            expect(
+                HoverboardLogic.normalizeSave(HoverboardLogic.emptySave(), "black_gold").first_use_complete
+            ).to.equal(false)
+        end)
+
         it("scales cruise from the Board slider without dropping below walk", function()
             local knobs = hoverboard.speed
             expect(knobs.min_scale).to.equal(0.2)

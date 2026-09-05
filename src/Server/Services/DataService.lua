@@ -2707,7 +2707,12 @@ function DataService:_onProfileLoaded(player, profile)
         self._logger:Debug("Player character found, setting properties")
         local humanoid = player.Character:FindFirstChild("Humanoid")
         if humanoid then
-            humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed
+            humanoid.WalkSpeed = require(ReplicatedStorage.Shared.Game.PlaceRuntime).walkSpeedFor(
+                game.PlaceId,
+                self._configLoader:LoadConfig("places"),
+                gameConfig,
+                player:GetAttribute("Eff_Speed")
+            )
             humanoid.JumpPower = gameConfig.WorldSettings.JumpPower
             self._logger:Debug("Character properties set")
         else

@@ -1117,6 +1117,11 @@ function HoverboardController.start()
         host.MouseLeave:Connect(cancelPress)
     end
 
+    local boardCue, boardCueTween
+    local isMergePlace = require(ReplicatedStorage.Shared.Game.PlaceRuntime).isMerge(
+        game.PlaceId,
+        require(ReplicatedStorage.Configs.places)
+    )
     local function paintButton()
         if not button then
             return
@@ -1124,12 +1129,51 @@ function HoverboardController.start()
         button.Visible = player:GetAttribute("HoverboardEligible") == true
         local label = button:FindFirstChild("Label", true)
         if label and label:IsA("TextLabel") then
-            label.Text = if player:GetAttribute("CombatTutorialDone") ~= true
-                    and player:GetAttribute("HoverboardMounted") ~= true
-                    and (tonumber(player:GetAttribute("MergeHighestWave")) or 0)
-                        >= config.unlock.merge_wave
-                then buttonCfg.tutorial_text
-                else buttonCfg.text
+            label.Text = buttonCfg.text
+        end
+        local showCue = isMergePlace
+            and HoverboardLogic.needsMergeIntroduction(
+                button.Visible,
+                player:GetAttribute("MergeHighestWave"),
+                player:GetAttribute("HoverboardFirstUseComplete"),
+                player:GetAttribute("HoverboardMounted"),
+                config.unlock
+            )
+        if showCue and not boardCue then
+            local cue = config.tutorial_cue
+            boardCue = Instance.new("TextLabel")
+            boardCue.Name = "HoverboardTutorialClickHere"
+            boardCue.AnchorPoint = Vector2.new(0, 0.5)
+            boardCue.Position = UDim2.fromScale(cue.position[1], cue.position[2])
+            boardCue.Size = UDim2.fromScale(cue.size[1], cue.size[2])
+            boardCue.BackgroundColor3 = Color3.fromRGB(table.unpack(cue.background))
+            boardCue.BackgroundTransparency = cue.background_transparency
+            boardCue.TextColor3 = Color3.fromRGB(table.unpack(cue.color))
+            boardCue.BorderSizePixel = 0
+            boardCue.Font = Enum.Font.GothamBlack
+            boardCue.Text = cue.text
+            boardCue.TextScaled = true
+            boardCue.ZIndex = cue.z_index
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(cue.corner_scale, 0)
+            corner.Parent = boardCue
+            boardCue.Parent = button
+            boardCueTween = game:GetService("TweenService"):Create(
+                boardCue,
+                TweenInfo.new(
+                    cue.bounce_seconds,
+                    Enum.EasingStyle.Sine,
+                    Enum.EasingDirection.InOut,
+                    -1,
+                    true
+                ),
+                { Position = UDim2.fromScale(cue.position[1], cue.position[2] - cue.bounce_height) }
+            )
+            boardCueTween:Play()
+        elseif not showCue and boardCue then
+            boardCueTween:Cancel()
+            boardCue:Destroy()
+            boardCue, boardCueTween = nil, nil
         end
     end
 
@@ -1461,6 +1505,8 @@ function HoverboardController.start()
     player:GetAttributeChangedSignal("HoverboardYaw"):Connect(restampFromAttr)
 
     player:GetAttributeChangedSignal("HoverboardEligible"):Connect(paintButton)
+    player:GetAttributeChangedSignal("HoverboardFirstUseComplete"):Connect(paintButton)
+    player:GetAttributeChangedSignal("MergeHighestWave"):Connect(paintButton)
     player:GetAttributeChangedSignal("CombatTutorialDone"):Connect(paintButton)
     player:GetAttributeChangedSignal("HoverboardMounted"):Connect(paintButton)
     player:GetAttributeChangedSignal("AdminOverlaysOn"):Connect(function()

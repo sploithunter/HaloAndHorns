@@ -180,7 +180,15 @@ function HoverboardLogic.normalizeSave(save, defaultSkin)
         owned = owned,
         equipped = equipped,
         speed_scale = speedScale,
+        first_use_complete = save.first_use_complete == true,
     }
+end
+
+function HoverboardLogic.needsMergeIntroduction(eligible, highestWave, completed, mounted, unlock)
+    return eligible == true
+        and completed ~= true
+        and mounted ~= true
+        and (tonumber(highestWave) or 0) >= unlock.merge_wave
 end
 
 function HoverboardLogic.isOwned(owned, skinId)
