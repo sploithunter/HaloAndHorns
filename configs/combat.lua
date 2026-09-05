@@ -407,6 +407,7 @@ return {
         -- (L6) + the heaven/hell choice, so the taste of combat comes before picking a direction.
         -- 0/1 disables the gate (everyone fights).
         min_engage_level = 5,
+        training_completion_unlocks_engagement = true,
         -- FIRST FIGHT nerf (Jason: "there's no possible way a bunny can beat
         -- this thing" — a stock trash mob wiped the starter squad): the
         -- onramp cave's solo creature spawns with its def scaled by these.

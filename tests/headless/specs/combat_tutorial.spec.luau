@@ -25,6 +25,21 @@ end
 
 return function()
     describe("combat tutorial config", function()
+        it("restores the squad before publishing tutorial exit readiness", function()
+            local source = readFile("src/Server/Services/CombatTutorialService.lua")
+            local first =
+                assert(source:find("function CombatTutorialService:_leave(player)", 1, true))
+            local last =
+                assert(source:find("function CombatTutorialService:_loanedLoadout", first, true))
+            local leave = source:sub(first, last - 1)
+            local restore = assert(leave:find("self:_restoreLoanedSquad(player)", 1, true))
+            local ready =
+                assert(leave:find('player:SetAttribute("InCombatTutorial", nil)', 1, true))
+            expect(restore < ready).to.equal(true)
+            expect(leave:find("session.leaving = true", 1, true)).to.be.ok()
+            local combat = loadModule("configs/combat.lua")
+            expect(combat.engagement.training_completion_unlocks_engagement).to.equal(true)
+        end)
         it("authors the first-slice lessons and a completion reward", function()
             local expected = {
                 "ready",

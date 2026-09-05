@@ -24,7 +24,7 @@ return {
         max = 2,
     },
 
-    collect_radius = 11, -- base auto-collect distance (studs) from the owner's character
+    collect_radius = 20, -- base auto-collect distance; available before either tutorial is complete
     magnet_pull_radius = 6, -- once within this, a drop flies to the player (visual "vacuum")
     magnet_pull_speed = 60, -- studs/s a drop travels while being pulled in
 

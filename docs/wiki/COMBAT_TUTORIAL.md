@@ -2,6 +2,15 @@
 
 Last checked: 2026-09-02
 
+2026-09-04 handoff correction: `InCombatTutorial` stays true until the loaned squad is removed,
+the original squad is restored/recovered, and tutorial loops are stopped. Leave is reentrant-safe.
+Merge listens for both mission-close and tutorial-restored readiness; it no longer resumes after
+an arbitrary timeout while restoration is unfinished. The live `CombatTutorialDone` receipt also
+releases the peaceful level-5 combat onramp (config-owned), including graduates still at Level 2.
+Base pickup reach is 20 studs in `configs/drops.lua`, available before completing any tutorial.
+Regression: `scripts/studio/test_combat_tutorial_handoff.luau` executes the production methods with
+isolated doubles in Edit; it never changes player saves or the authored map.
+
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
 bound, cast, and enhanced, `first_fight` points the FIGHT trail at the
 Earth cave. **Later** on that card opens the Okay banner and parks Combat

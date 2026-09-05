@@ -17972,19 +17972,15 @@ end
 
 function MergeEggPrototypeService:_resumeAfterCombatTraining(player, reason)
     local pending = player and self._combatTrainingReturns[player]
-    if not pending then
+    if
+        not pending
+        or player:GetAttribute("InMission") ~= nil
+        or player:GetAttribute("InCombatTutorial") == true
+    then
         return
     end
     self._combatTrainingReturns[player] = nil
     task.spawn(function()
-        local deadline = os.clock() + 10
-        while
-            player.Parent
-            and (player:GetAttribute("InMission") ~= nil or player:GetAttribute("InCombatTutorial") == true)
-            and os.clock() < deadline
-        do
-            RunService.Heartbeat:Wait()
-        end
         if not player.Parent or self:_recordFor(player) then
             return
         end
@@ -18024,13 +18020,19 @@ function MergeEggPrototypeService:_resumeAfterCombatTraining(player, reason)
 end
 
 function MergeEggPrototypeService:_watchCombatTrainingReturn(player)
-    player:GetAttributeChangedSignal("InMission"):Connect(function()
-        if player:GetAttribute("InMission") == nil and self._combatTrainingReturns[player] then
+    local function resumeWhenReady()
+        if
+            player:GetAttribute("InMission") == nil
+            and player:GetAttribute("InCombatTutorial") ~= true
+            and self._combatTrainingReturns[player]
+        then
             task.defer(function()
                 self:_resumeAfterCombatTraining(player, "mission_closed")
             end)
         end
-    end)
+    end
+    player:GetAttributeChangedSignal("InMission"):Connect(resumeWhenReady)
+    player:GetAttributeChangedSignal("InCombatTutorial"):Connect(resumeWhenReady)
 end
 
 function MergeEggPrototypeService:_bindMergePlaceJoin()

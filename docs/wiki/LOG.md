@@ -8085,3 +8085,12 @@ first-session cohort rates.
   Five purchased eggs plus a deployment now release Wave 1; manual combination is no longer a gate.
 - Kept legacy tutorial step IDs and the existing deployment action; no inventory grants, board
   automation, or changes to later workshop tutorials. Added regression checks for copy and gating.
+
+## 2026-09-04 — Combat Training squad handoff and starter magnet
+
+- Keep tutorial ownership until real-squad restoration finishes; guard reentrant exits and have
+  Merge resume from both readiness signals instead of a timeout that can race restoration.
+- Completed Combat Training releases the level onramp immediately through the live completion
+  receipt. Players without training retain the existing peaceful early-level gate.
+- Raised the config-owned base pickup magnet from 11 to 20 studs, without a completion/pass gate.
+- Added isolated Studio handoff/engagement checks and headless regression coverage.
