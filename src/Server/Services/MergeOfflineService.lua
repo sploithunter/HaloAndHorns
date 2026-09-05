@@ -43,6 +43,34 @@ function Service:_status(key, value)
     end
 end
 
+function Service:_publishRoster(worker, username)
+    local entry = Instance.new("Folder")
+    entry.Name = tostring(worker.actor.UserId)
+    entry:SetAttribute("UserId", worker.actor.UserId)
+    entry:SetAttribute("Username", username)
+    entry:SetAttribute("DisplayName", username)
+    entry:SetAttribute("OfflineWorker", true)
+    -- Public presentation only: never replicate the actor's profile, wallet, or worker lease.
+    worker.rosterConnections = {}
+    for _, attribute in ipairs({
+        "ClaimedLevel",
+        "AscensionUnlocked",
+        "VetLevel",
+        "MergeHighestWave",
+        "CurrentArea",
+    }) do
+        entry:SetAttribute(attribute, worker.actor:GetAttribute(attribute))
+        table.insert(
+            worker.rosterConnections,
+            worker.actor:GetAttributeChangedSignal(attribute):Connect(function()
+                entry:SetAttribute(attribute, worker.actor:GetAttribute(attribute))
+            end)
+        )
+    end
+    worker.rosterEntry = entry
+    entry.Parent = self._publicRoster
+end
+
 function Service:_presenceUpdate(id, transform)
     local ok, value = pcall(function()
         return self._presence:UpdateAsync(tostring(id), transform, self._config.lease_seconds)
@@ -339,6 +367,9 @@ function Service:_startWorker(id, bayId, profile, token, lease, fixtureAvatar)
         self:_stop(id, "startup_failed")
         return false
     end
+    if self._workers[id] == worker and not worker.stopping then
+        self:_publishRoster(worker, username)
+    end
     self:_status("LastStartedUserId", id)
     return true
 end
@@ -349,6 +380,13 @@ function Service:_stop(id, reason)
         return
     end
     worker.stopping = true
+    for _, connection in ipairs(worker.rosterConnections or {}) do
+        connection:Disconnect()
+    end
+    if worker.rosterEntry then
+        worker.rosterEntry:Destroy()
+        worker.rosterEntry = nil
+    end
     -- Join/claim may arrive while a normal gameplay operation yields for model creation or
     -- pathfinding. Do not release its profile or bay until that operation has unwound.
     while worker.busy and worker.thread ~= coroutine.running() do
@@ -461,6 +499,10 @@ end
 
 function Service:Start()
     local cfg = self._config
+    local rosterConfig = self._modules.ConfigLoader:LoadConfig("people_list").offline
+    self._publicRoster = Instance.new("Folder")
+    self._publicRoster.Name = rosterConfig.roster_folder
+    self._publicRoster.Parent = ReplicatedStorage
     self._folder = Instance.new("Folder")
     self._folder.Name = cfg.namespace
     self._folder.Parent = ServerStorage

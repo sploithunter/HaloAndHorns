@@ -16,6 +16,38 @@ end
 
 return function()
     describe("PeopleList watched roster", function()
+        it("keeps offline workers below every online player regardless of names", function()
+            local me = { UserId = 1, DisplayName = "Me" }
+            local online = { UserId = 2, DisplayName = "Zebra" }
+            local offline = { UserId = 3, DisplayName = "Alpha", OfflineWorker = true }
+            local second = { UserId = 4, DisplayName = "Beta", OfflineWorker = true }
+            local roster = PeopleList.orderedRoster(
+                { [me] = {}, [online] = {}, [offline] = {}, [second] = {} },
+                me
+            )
+            expect(roster[1]).to.equal(me)
+            expect(roster[2]).to.equal(online)
+            expect(roster[3]).to.equal(offline)
+            expect(roster[4]).to.equal(second)
+        end)
+        it("suppresses a stale offline duplicate as soon as that account logs in", function()
+            local online = { UserId = 2, DisplayName = "Online" }
+            local offline = { UserId = 2, DisplayName = "Offline", OfflineWorker = true }
+            local watched = { [online] = {}, [offline] = {} }
+            local roster = PeopleList.orderedRoster(watched, online)
+            expect(#roster).to.equal(1)
+            expect(roster[1]).to.equal(online)
+            watched[offline] = nil
+            expect(#PeopleList.orderedRoster(watched, online)).to.equal(1)
+        end)
+        it("uses just the configured emoji on offline names with no text suffix", function()
+            local config = cfg()
+            local name = PeopleList.displayName(config, { offline = true, owner = true }, "AltName")
+            expect(name).to.equal(config.offline.glyph .. " AltName")
+            expect(PeopleList.prefix(config, { offline = true }).hover).to.equal(
+                config.offline.hover
+            )
+        end)
         it("excludes departures immediately even while the engine list is stale", function()
             local me = { UserId = 1, DisplayName = "You" }
             local other = { UserId = 2, DisplayName = "Friend" }

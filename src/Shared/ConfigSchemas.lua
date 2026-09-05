@@ -170,6 +170,7 @@ local SCHEMAS = {
     people_list = schema({
         version = "number",
         enabled = "boolean",
+        offline = "table",
         prefixes = "table",
         look = "table",
     }),

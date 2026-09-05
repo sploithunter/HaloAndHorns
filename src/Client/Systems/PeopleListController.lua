@@ -512,6 +512,10 @@ local function fillCard(player)
 end
 
 local function openCard(player)
+    -- Offline rows are informational, not live Players for avatar/friend/block actions.
+    if PeopleList.isOffline(player) then
+        return
+    end
     if not card then
         return
     end
@@ -964,6 +968,66 @@ local function unwatchPlayer(player)
     if rowGuis[player] then
         rowGuis[player]:Destroy()
         rowGuis[player] = nil
+    end
+end
+
+local function watchOfflineRoster()
+    local entries = {}
+    local function remove(entry)
+        local tracked = entries[entry]
+        if not tracked then
+            return
+        end
+        tracked.connection:Disconnect()
+        if tracked.player then
+            unwatchPlayer(tracked.player)
+        end
+        entries[entry] = nil
+        hideTooltip()
+        refreshRows()
+    end
+    local function add(entry)
+        if not entry:IsA("Folder") or entries[entry] then
+            return
+        end
+        local tracked = {}
+        entries[entry] = tracked
+        local function sync()
+            local id = entry:GetAttribute("UserId")
+            local name = entry:GetAttribute("Username")
+            local displayName = entry:GetAttribute("DisplayName")
+            if type(id) ~= "number" or type(name) ~= "string" or type(displayName) ~= "string" then
+                return
+            end
+            if not tracked.player then
+                tracked.player = { OfflineWorker = true }
+                function tracked.player:GetAttribute(attribute)
+                    return entry:GetAttribute(attribute)
+                end
+                watches[tracked.player] = {}
+            end
+            tracked.player.UserId = id
+            tracked.player.Name = name
+            tracked.player.DisplayName = displayName
+            refreshRows()
+        end
+        tracked.connection = entry.AttributeChanged:Connect(sync)
+        sync()
+    end
+    local function bind(folder)
+        if folder.Name ~= config.offline.roster_folder or not folder:IsA("Folder") then
+            return
+        end
+        folder.ChildAdded:Connect(add)
+        folder.ChildRemoved:Connect(remove)
+        for _, entry in ipairs(folder:GetChildren()) do
+            add(entry)
+        end
+    end
+    ReplicatedStorage.ChildAdded:Connect(bind)
+    local folder = ReplicatedStorage:FindFirstChild(config.offline.roster_folder)
+    if folder then
+        bind(folder)
     end
 end
 
@@ -1461,6 +1525,7 @@ function PeopleListController.start()
     for _, player in ipairs(Players:GetPlayers()) do
         watchPlayer(player)
     end
+    watchOfflineRoster()
     refreshRows()
 
     task.spawn(function()
