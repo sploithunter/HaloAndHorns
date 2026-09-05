@@ -13439,11 +13439,21 @@ function MergeEggPrototypeService:_resolveWaveEnemy(
             or nil
         rosterMode = "opposition_egg"
     else
+        local playerLevel = record and record.player and record.player:GetAttribute("Level")
         enemyId = MergeEggEnemyRoster.homeEnemyId(
             rosters,
             archetypeKey,
-            self:_enemyRosterRoll(record)
-        ) or tostring(archetype.id or "")
+            self:_enemyRosterRoll(record),
+            playerLevel
+        )
+        -- A missing/empty pool must not bypass the same gate via the authored boss fallback.
+        if not enemyId then
+            local fallback = tostring(archetype.id or "")
+            if not MergeEggEnemyRoster.homeEnemyEligible(rosters, fallback, playerLevel) then
+                return nil, "home_enemy_roster_empty"
+            end
+            enemyId = fallback
+        end
         local source = (self._enemiesConfig.enemies or {})[enemyId]
         enemyDef = applyStaticRankPresentation(source, presentation)
         rosterMode = "home_mixed"

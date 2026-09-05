@@ -36,13 +36,24 @@ function MergeEggEnemyRoster.opposingEgg(rosters, defenderEggId)
     return type(eggId) == "string" and eggId ~= "" and eggId or nil
 end
 
-function MergeEggEnemyRoster.homeEnemyId(rosters, archetype, roll)
+function MergeEggEnemyRoster.homeEnemyEligible(rosters, enemyId, playerLevel)
+    local home = type(rosters) == "table" and rosters.home or nil
+    local minimums = type(home) == "table" and home.minimum_player_levels or nil
+    local minimum = type(minimums) == "table" and tonumber(minimums[enemyId]) or nil
+    return minimum == nil or (tonumber(playerLevel) or 0) >= minimum
+end
+
+function MergeEggEnemyRoster.homeEnemyId(rosters, archetype, roll, playerLevel)
     local home = type(rosters) == "table" and rosters.home or nil
     local byArchetype = type(home) == "table" and home.by_archetype or nil
-    return pick(
-        type(byArchetype) == "table" and byArchetype[tostring(archetype or "")] or nil,
-        roll
-    )
+    local pool = type(byArchetype) == "table" and byArchetype[tostring(archetype or "")] or nil
+    local eligible = {}
+    for _, enemyId in ipairs(type(pool) == "table" and pool or {}) do
+        if MergeEggEnemyRoster.homeEnemyEligible(rosters, enemyId, playerLevel) then
+            eligible[#eligible + 1] = enemyId
+        end
+    end
+    return pick(eligible, roll)
 end
 
 function MergeEggEnemyRoster.eggPetCandidates(petsConfig, rolesConfig, rosters, eggId, archetype)
