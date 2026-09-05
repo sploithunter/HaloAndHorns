@@ -80,7 +80,7 @@ function ModelTemplateStore.pet(id, variant)
         if existing then
             return existing
         end
-        task.wait()
+        RunService.Heartbeat:Wait()
     until os.clock() >= deadline
     return nil
 end

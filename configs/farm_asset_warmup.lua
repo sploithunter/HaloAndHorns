@@ -8,6 +8,7 @@ return {
     recent_owned_models = 16,
     nearby_pet_radius = 150,
     retention_seconds = 30,
+    maximum_retained_unused_entries = 48,
     requested_retention_seconds = 60,
     maximum_requested_models = 16,
     request_interval_seconds = 0.25,
@@ -15,4 +16,6 @@ return {
     reconcile_interval = 2,
     preload_batch_size = 12,
     preload_debounce_seconds = 0.15,
+    preload_max_attempts = 3,
+    preload_retry_seconds = 3,
 }

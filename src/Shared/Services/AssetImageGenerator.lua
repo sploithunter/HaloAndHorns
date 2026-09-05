@@ -114,7 +114,7 @@ function AssetImageGenerator:GeneratePetImage(petType, variant)
     self:SetupGenerationWorkspace()
 
     -- Load the 3D model
-    local model = self:LoadPetModel(petData.asset_id)
+    local model = self:LoadPetModel(petData.asset_id, petType, variant)
     if not model then
         self.logger:error("Failed to load pet model", {
             petType = petType,
@@ -229,30 +229,16 @@ function AssetImageGenerator:GetCameraConfig(petType)
     return cameraConfig
 end
 
-function AssetImageGenerator:LoadPetModel(assetId)
-    if not assetId or assetId == "rbxassetid://0" then
-        self.logger:warn("Invalid asset ID")
-        return nil
-    end
-
+function AssetImageGenerator:LoadPetModel(assetId, petType, variant)
     -- Prefer the bounded owner warm shelf when this pet family is near the unlock frontier.
-    local modelsFolder = ModelTemplateStore.root()
-    local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
-    if petsFolder then
-        -- Find the model in the preloaded assets
-        for _, petTypeFolder in pairs(petsFolder:GetChildren()) do
-            for _, model in pairs(petTypeFolder:GetChildren()) do
-                if model:IsA("Model") then
-                    -- Check if this model matches our asset ID
-                    -- This is a simplified check - in real implementation you'd need
-                    -- a more robust way to match preloaded models to asset IDs
-                    local clone = model:Clone()
-                    clone.Parent = self.generateWorkspace
-                    self.logger:debug("Loaded model from warm assets", { assetId = assetId })
-                    return clone
-                end
-            end
-        end
+    local model = ModelTemplateStore.pet(petType, variant)
+    if model then
+        local clone = model:Clone()
+        clone.Parent = self.generateWorkspace
+        return clone
+    end
+    if RunService:IsClient() or not assetId or assetId == "rbxassetid://0" then
+        return nil
     end
 
     -- Fallback to InsertService loading
@@ -436,7 +422,7 @@ function AssetImageGenerator:TestCameraAngle(petType, variant, distance, angleY,
     self:SetupGenerationWorkspace()
 
     -- Load model
-    local model = self:LoadPetModel(petData.asset_id)
+    local model = self:LoadPetModel(petData.asset_id, petType, variant)
     if not model then
         self.logger:error("Failed to load model")
         self:CleanupGenerationWorkspace()

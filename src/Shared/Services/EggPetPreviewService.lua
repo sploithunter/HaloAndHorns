@@ -812,7 +812,7 @@ function EggPetPreviewService:CreatePetContent(petFrame, petInfo, previewConfig,
             end
         elseif displayMethod == "viewports" then
             -- 3D ViewportFrame creation (restored from working implementation)
-            if petInfo.petData.asset_id and petInfo.petData.asset_id ~= "rbxassetid://0" then
+            if petInfo.petData then
                 -- Scale-based ViewportFrame (fixes the core scaling issue)
                 local viewport = Instance.new("ViewportFrame")
                 viewport.Name = "PetViewport"
@@ -943,8 +943,8 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
                 })
             end
 
-            -- Fallback to runtime loading if not in assets
-            if not modelClone then
+            -- Client misses use the server's validated preview request, never runtime insertion.
+            if not modelClone and RunService:IsServer() then
                 local InsertService = game:GetService("InsertService")
                 local cleanId = assetId:match("%d+")
 
@@ -977,6 +977,12 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
                 loadedAsset:Destroy() -- Clean up the original asset
             end
 
+            if not modelClone or not viewport.Parent then
+                if modelClone then
+                    modelClone:Destroy()
+                end
+                return
+            end
             if petVisualsOk and PetVariantVisuals then
                 PetVariantVisuals.ApplyServerMetadata(modelClone, petType, variant)
                 PetVariantVisuals.ApplyStaticVisuals(modelClone)

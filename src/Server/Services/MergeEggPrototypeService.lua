@@ -18076,43 +18076,71 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
     if not self:_isDedicatedMergePlace() then
         return
     end
+    local workers = {}
+    local joinConfig = self._config.place_join
     local function onCharacter(player)
+        local character = player.Character
+        if not character or workers[player] == character then
+            return
+        end
+        workers[player] = character
         task.spawn(function()
-            local character = player.Character
-            if not (player.Parent and character) then
-                return
-            end
-            if not character:WaitForChild("HumanoidRootPart", 10) then
-                self:_analyticsFailure(player, "character_unavailable")
-                self:_log("Warn", "Merge place character had no root part", {
-                    player = player.Name,
-                })
-                return
-            end
-            local dataDeadline = os.clock() + 30
+            local startedAt, nextAttempt, warned = os.clock(), 0, false
             while
                 player.Parent
-                and self._dataService
-                and not self._dataService:IsDataLoaded(player)
-                and os.clock() < dataDeadline
+                and player.Character == character
+                and workers[player] == character
             do
+                -- This is initial assignment, not a standing order to reclaim a bay after leaving.
+                if
+                    self._activeByPlayer[player]
+                    or player:GetAttribute("InMission") ~= nil
+                    or player:GetAttribute("InCombatTutorial") == true
+                then
+                    break
+                end
+                if not self._dataService or not self._dataService:IsDataLoaded(player) then
+                    player:SetAttribute("MergeJoinStatus", "data")
+                    if not warned and os.clock() - startedAt >= joinConfig.slow_warning_seconds then
+                        warned = true
+                        self:_analyticsFailure(player, "profile_timeout")
+                        self:_log(
+                            "Warn",
+                            "Merge profile delayed; automatic bay assignment remains pending",
+                            { player = player.Name }
+                        )
+                    end
+                elseif not character:FindFirstChild("HumanoidRootPart") then
+                    player:SetAttribute("MergeJoinStatus", "character")
+                elseif os.clock() >= nextAttempt then
+                    nextAttempt = os.clock() + joinConfig.retry_seconds
+                    player:SetAttribute("MergeJoinStatus", "bay")
+                    local called, began, reason = pcall(function()
+                        self:_mergeDefenseProgress(player)
+                        return self:_begin(player)
+                    end)
+                    if called and (began or reason == "already_inside") then
+                        break
+                    end
+                    if reason == "realm_full" then
+                        player:SetAttribute("MergeJoinStatus", "full")
+                    end
+                    if not warned then
+                        warned = true
+                        self:_log(
+                            "Warn",
+                            "Merge automatic bay assignment waiting to retry",
+                            { player = player.Name, reason = called and reason or tostring(began) }
+                        )
+                    end
+                end
                 RunService.Heartbeat:Wait()
             end
-            if self._dataService and not self._dataService:IsDataLoaded(player) then
-                self:_analyticsFailure(player, "profile_timeout")
-                self:_log("Warn", "Merge place profile was not ready before session entry", {
-                    player = player.Name,
-                })
-                return
-            end
-            self:_mergeDefenseProgress(player)
-            local began, reason = self:_begin(player)
-            if not began and reason ~= "already_inside" then
-                self:_log("Warn", "Dedicated Merge place could not start player session", {
-                    player = player.Name,
-                    placeId = game.PlaceId,
-                    reason = reason,
-                })
+            if workers[player] == character then
+                workers[player] = nil
+                if player.Parent then
+                    player:SetAttribute("MergeJoinStatus", nil)
+                end
             end
         end)
     end
@@ -18141,6 +18169,9 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
         end
     end
     Players.PlayerAdded:Connect(onPlayer)
+    Players.PlayerRemoving:Connect(function(player)
+        workers[player] = nil
+    end)
     for _, player in ipairs(Players:GetPlayers()) do
         onPlayer(player)
     end

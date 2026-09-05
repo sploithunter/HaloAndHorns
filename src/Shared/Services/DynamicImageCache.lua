@@ -389,7 +389,7 @@ function DynamicImageCache:GenerateImage(petType, variant)
     local cameraConfig = self:GetCameraConfig(petType)
 
     -- Load the 3D model
-    local model = self:LoadPetModel(petData.asset_id)
+    local model = self:LoadPetModel(petData.asset_id, petType, variant)
     if not model then
         error("Failed to load pet model: " .. petData.asset_id)
     end
@@ -480,25 +480,16 @@ function DynamicImageCache:GetCameraConfig(petType)
     return cameraConfig
 end
 
-function DynamicImageCache:LoadPetModel(assetId)
-    if not assetId or assetId == "rbxassetid://0" then
-        return nil
-    end
-
+function DynamicImageCache:LoadPetModel(assetId, petType, variant)
     -- Prefer the bounded owner warm shelf when this pet family is near the unlock frontier.
-    local modelsFolder = ModelTemplateStore.root()
-    local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
-    if petsFolder then
-        -- Find the model in the preloaded assets
-        for _, petTypeFolder in pairs(petsFolder:GetChildren()) do
-            for _, model in pairs(petTypeFolder:GetChildren()) do
-                if model:IsA("Model") then
-                    local clone = model:Clone()
-                    clone.Parent = self.workspaceFolder
-                    return clone
-                end
-            end
-        end
+    local model = ModelTemplateStore.pet(petType, variant)
+    if model then
+        local clone = model:Clone()
+        clone.Parent = self.workspaceFolder
+        return clone
+    end
+    if RunService:IsClient() or not assetId or assetId == "rbxassetid://0" then
+        return nil
     end
 
     -- Fallback to InsertService loading

@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Plan = require(ReplicatedStorage.Shared.Game.FarmAssetPlan)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
@@ -58,7 +59,7 @@ function Service:_input(player, record, now)
         eggs = {},
     }
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if root then
+    if root and player:GetAttribute("InPrologue") ~= true then
         for _, egg in ipairs(EggWorldQuery.GetEggs()) do
             if egg.anchor and egg.anchor:IsDescendantOf(workspace) then
                 input.eggs[#input.eggs + 1] =
@@ -166,6 +167,22 @@ function Service:_reconcile(player)
             record.retained[key] = nil
         end
     end
+    -- Rapid travel must not accumulate a tour of the whole catalog during the grace period.
+    -- Only unused cache entries are capped; active/selected templates and live actors are safe.
+    local unused = {}
+    for key, entry in pairs(record.retained) do
+        if not wanted[key] then
+            unused[#unused + 1] = { key = key, entry = entry }
+        end
+    end
+    table.sort(unused, function(a, b)
+        return a.entry.untilTime < b.entry.untilTime
+    end)
+    for index = 1, #unused - self._config.maximum_retained_unused_entries do
+        local old = unused[index]
+        old.entry.instance:Destroy()
+        record.retained[old.key] = nil
+    end
     for _, family in ipairs(pets:GetChildren()) do
         if #family:GetChildren() == 0 then
             family:Destroy()
@@ -224,8 +241,10 @@ function Service:Start()
     Players.PlayerRemoving:Connect(function(player)
         self._records[player] = nil
     end)
-    task.spawn(function()
-        while true do
+    local nextReconcile = 0
+    self._heartbeat = RunService.Heartbeat:Connect(function()
+        if os.clock() >= nextReconcile then
+            nextReconcile = os.clock() + self._config.reconcile_interval
             for _, player in ipairs(Players:GetPlayers()) do
                 local ok, err = pcall(function()
                     self:_reconcile(player)
@@ -234,7 +253,6 @@ function Service:Start()
                     self._logger:Warn("Farm asset warmup failed", { error = tostring(err) })
                 end
             end
-            task.wait(self._config.reconcile_interval)
         end
     end)
 end

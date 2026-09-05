@@ -1,5 +1,15 @@
 # Merge an Egg Prototype
 
+## Delayed-profile bay assignment (2026-09-05)
+
+Dedicated-place auto-join no longer abandons a player when profile loading exceeds 30 seconds.
+One worker per current character waits for profile/root readiness and retries transient entry or
+full-realm failures. It cancels obsolete respawn workers, exits for missions or a committed session,
+and is not a standing order to reclaim after a deliberate departure. `MergeJoinStatus` reports
+data/character/bay/full waiting with config-owned copy, so the loading screen's reveal timeout
+does not strand a newcomer without instructions. Studio isolated regression exercises a 45-second
+profile delay, temporary full realm, respawn replacement, and no later automatic reclaim.
+
 Status: Phase 6 endless defense running in the dedicated Studio-authored Merge place; durable
 Wave-10 checkpoints and 56 egg tiers await live balance verification
 

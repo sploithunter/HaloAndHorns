@@ -4966,7 +4966,7 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
         local success, result = pcall(function()
             -- Get pet data from config
             local petData = petConfig.getPet(item.petType, item.variant)
-            if not petData or not petData.asset_id then
+            if not petData then
                 self.logger:warn("No pet data or asset ID found", {
                     petType = item.petType,
                     variant = item.variant,
@@ -4986,8 +4986,8 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
                 })
             end
 
-            -- Fallback to InsertService loading
-            if not modelClone then
+            -- Runtime asset insertion is server-only; client previews use the bounded shelf.
+            if not modelClone and RunService:IsServer() then
                 local assetId = petData.asset_id
                 if assetId and assetId ~= "rbxassetid://0" then
                     local assetNumber = tonumber(assetId:match("%d+"))

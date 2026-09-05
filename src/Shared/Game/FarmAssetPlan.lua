@@ -1,6 +1,47 @@
 -- Pure selection policy. Owned/live actors are never destroyed by cache eviction.
 local FarmAssetPlan = {}
 
+function FarmAssetPlan.validate(config)
+    if
+        type(config) ~= "table"
+        or type(config.enabled) ~= "boolean"
+        or type(config.cache_folder) ~= "string"
+        or config.cache_folder == ""
+    then
+        return false, "farm_asset_warmup requires enabled and cache_folder"
+    end
+    if type(config.boot_egg_sources) ~= "table" or #config.boot_egg_sources == 0 then
+        return false, "farm_asset_warmup requires boot_egg_sources"
+    end
+    for _, key in ipairs({
+        "nearby_egg_count",
+        "maximum_predictive_pet_types",
+        "recent_owned_models",
+        "nearby_pet_radius",
+        "retention_seconds",
+        "maximum_retained_unused_entries",
+        "requested_retention_seconds",
+        "maximum_requested_models",
+        "request_interval_seconds",
+        "template_wait_seconds",
+        "reconcile_interval",
+        "preload_batch_size",
+        "preload_debounce_seconds",
+        "preload_max_attempts",
+        "preload_retry_seconds",
+    }) do
+        if
+            type(config[key]) ~= "number"
+            or config[key] <= 0
+            or config[key] ~= config[key]
+            or config[key] == math.huge
+        then
+            return false, "farm_asset_warmup." .. key .. " must be finite and positive"
+        end
+    end
+    return true
+end
+
 function FarmAssetPlan.build(config, petsConfig, input)
     local desired, eggs = {}, {}
     local function add(id, variant)
