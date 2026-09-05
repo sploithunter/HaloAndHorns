@@ -715,21 +715,7 @@ local function ensureRow(player)
 end
 
 local function orderedPlayers()
-    local localPlayer = Players.LocalPlayer
-    local others = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then
-            table.insert(others, player)
-        end
-    end
-    table.sort(others, function(a, b)
-        return string.lower(a.DisplayName) < string.lower(b.DisplayName)
-    end)
-    local list = { localPlayer }
-    for _, player in ipairs(others) do
-        table.insert(list, player)
-    end
-    return list
+    return PeopleList.orderedRoster(watches, Players.LocalPlayer)
 end
 
 local function refreshRows()
@@ -737,7 +723,8 @@ local function refreshRows()
         return
     end
     local seen = {}
-    for index, player in ipairs(orderedPlayers()) do
+    local roster = orderedPlayers()
+    for index, player in ipairs(roster) do
         local row = ensureRow(player)
         row.LayoutOrder = index
         row.Visible = true
@@ -749,7 +736,7 @@ local function refreshRows()
             rowGuis[player] = nil
         end
     end
-    local count = #Players:GetPlayers()
+    local count = #roster
     if rowsFrame then
         local dimensions = PeopleList.layout(config, dockState())
         local rowH = dimensions.rowHeight

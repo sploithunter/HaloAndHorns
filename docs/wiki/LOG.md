@@ -8174,3 +8174,14 @@ first-session cohort rates.
 - Full CI: 2,659 headless tests passed. Isolated Studio: 30 cloned-tent hide/show cycles plus
   configured Quartermaster route and rejected-distance/pending-teleport cases passed.
   Publication is explicitly left to the user for both places; no production publish or reset.
+
+### 2026-09-05 — Remove departing Players from the People list deterministically
+
+- Reproduced `PlayerRemoving` recreating its just-destroyed row from a stale `GetPlayers()`
+  snapshot. The recreated row had no attribute watchers; later repaint could show blank rank and
+  `Wave —`. Roster membership and row counts now come from the controller's active subscriptions.
+- Isolated Studio regression executes production watch/unwatch/refresh functions through 100
+  leave/rejoin cycles, preserving a stable peer's stats and the returning peer's wave updates.
+  Substituting the original ordering function fails with `Departed player row resurrected`.
+  CI: 2,662 tests passed. This proves the departure bug; no production snapshot established
+  whether every reported blank row belonged to a departed player. No fabricated stat fallbacks.
