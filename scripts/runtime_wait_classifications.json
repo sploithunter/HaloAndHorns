@@ -179,7 +179,6 @@
   "src/Server/Services/DataService.lua": {
    "deadline": 1,
    "debounce": 1,
-   "periodic": 1,
    "retry_backoff": 1,
    "watchdog": 1
   },
