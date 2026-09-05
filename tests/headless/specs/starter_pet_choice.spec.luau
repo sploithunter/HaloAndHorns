@@ -70,6 +70,29 @@ return function()
     end)
 
     describe("place ownership", function()
+        it("prewarms only starter previews before publishing model readiness", function()
+            local source = readFile("src/Server/Services/AssetPreloadService.lua")
+            local warm = assert(source:find("self:_warmStarterPetPreviews()", 1, true))
+            local ready = assert(source:find('BootReadiness.signal("models_ready")', 1, true))
+            expect(warm < ready).to.equal(true)
+            expect(cfg.preview.folder).to.equal("StarterPetPreviews")
+            expect(cfg.preview.wait_timeout_seconds > 0).to.equal(true)
+        end)
+
+        it(
+            "starts fetching before UI readiness and never waits for the removed global catalog",
+            function()
+                local source = readFile("src/Client/Systems/StarterPetController.lua")
+                local start = assert(source:find("function StarterPetController.start()", 1, true))
+                local warm = assert(source:find("prewarmStarterChoices()", start, true))
+                local ready =
+                    assert(source:find('player:GetAttribute("ClientUIReady")', start, true))
+                expect(warm < ready).to.equal(true)
+                expect(source:find('WaitForChild("Models"', 1, true)).to.equal(nil)
+                expect(source:find("STARTER.preview.folder", 1, true)).to.be.ok()
+            end
+        )
+
         it("keeps the starter chooser in Farm and Fight rather than the Merge place", function()
             local service = readFile("src/Server/Services/StarterPetService.lua")
 

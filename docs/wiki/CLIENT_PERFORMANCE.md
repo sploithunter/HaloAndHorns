@@ -1,5 +1,20 @@
 # Client Performance
 
+## Starter-picker boot exception (2026-09-05)
+
+Farm & Fight boot publishes only the four `configs/starter_pets.lua.choices` basic models in
+`ReplicatedStorage.Assets.StarterPetPreviews`, before `models_ready`. Merge publishes none.
+The starter controller independently prefetches each model and flat thumbnail during startup,
+before waiting for UI readiness. Its viewport fallback reads this bounded shelf, not the removed
+`ReplicatedStorage.Assets.Models.Pets` catalog. This fixes the post-cutscene paw placeholders
+without restoring full-catalog replication or changing starter grants. The small shelf remains
+available for later joins; normal live pets retain their existing lifetime rules.
+
+`scripts/studio/test_starter_pet_previews.luau` uses actual starter templates and production
+publisher/picker functions in isolated Edit fixtures: four models, eight preloads, all four
+fallback cameras/models replacing paws, repeat-build cleanup, and Merge exclusion. It does not
+claim cold-client network timing or a complete new-account cutscene playthrough.
+
 ## Combat presentation batching and audiences (2026-09-04)
 
 `configs/network.lua.combat_presentation` combines `Combat_Result`, `Combat_PetHit`, and

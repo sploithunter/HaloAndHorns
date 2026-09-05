@@ -332,7 +332,7 @@ return function()
             local client = readFile("src/Client/Systems/StarterPetController.lua")
             expect(client:find('viewport.Name = "PetModelFallback"', 1, true)).to.be.ok()
             expect(client:find("PetThumbnailFetchPolicy.action(status.Name)", 1, true)).to.be.ok()
-            expect(client:find('family:WaitForChild("basic", 20)', 1, true)).to.be.ok()
+            expect(client:find("local sourceModel = waitForPreview(tostring(choice.id))", 1, true)).to.be.ok()
             expect(client:find("ViewportModelPlacement.centerPreservingOrientation", 1, true)).to.be.ok()
         end)
 
