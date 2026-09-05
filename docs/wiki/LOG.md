@@ -8206,3 +8206,17 @@ first-session cohort rates.
 - Replaced the one-shot 30-second Merge profile deadline with character-scoped automatic entry
   retries and persistent waiting guidance. A 45-second delayed-profile regression now succeeds.
 - Save throttling is being investigated separately in issue #453; no profile reset or publish.
+
+### 2026-09-05 — Coalesce profile saves without overlapping timeout retries
+
+- Removed DataService's duplicate periodic-save timer; ProfileStore retains its own 60-second
+  auto-save/recovery and final release save. Routine mutations now coalesce for 60 seconds, while
+  critical requests remain prompt, all driven by `profile_persistence` config.
+- Confirmation deadlines leave the pending writer/listener intact, rather than assuming the
+  underlying request was cancelled. Optional persisted request tokens reject older snapshots;
+  revision tracking preserves mutations made while a save is in flight. A failed confirmation
+  barrier still fails closed. Release cleans up listeners, not profile data.
+- Isolated production-function regression passed: 100 pending mutations produce one writer and
+  one timeout warning; late confirmation, dirty preservation, stale snapshots, exact critical
+  barriers, failed-start handling and inactive profiles are covered. The initial reported
+  DataStore-level throttle was not reproduced in the asset Play check; no backend cause claimed.

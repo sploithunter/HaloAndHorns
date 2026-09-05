@@ -39,7 +39,6 @@ local persistenceConfig = require(ReplicatedStorage.Configs.profile_persistence)
 local PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS = persistenceConfig.auto_save_seconds
 local DEFAULT_SAVE_DEBOUNCE_SECONDS = persistenceConfig.ordinary_debounce_seconds
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = persistenceConfig.critical_debounce_seconds
-local PERIODIC_SAVE_SECONDS = persistenceConfig.periodic_save_seconds
 local SAVE_CONFIRM_TIMEOUT_SECONDS = persistenceConfig.confirmation_timeout_seconds
 local CURRENT_SCHEMA_VERSION = 18
 local RETIRED_HALL_AREAS = {
@@ -771,7 +770,6 @@ function DataService:Init()
     self.CurrencySignalConnections = {}
     self.SaveRequests = {}
     self.PersistenceWarningsIssued = {}
-    self.AutoSaveLoopRunning = false
     self.BeforeProfileReleaseHandlers = {}
     self.BeforeProfileReleaseHandled = {}
 
@@ -795,7 +793,7 @@ function DataService:Init()
     self._logger:Info("DataService initialized", {
         profileStore = PROFILE_STORE_NAME,
         profileStoreAutoSaveSeconds = PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS,
-        periodicSaveSeconds = PERIODIC_SAVE_SECONDS,
+        ordinarySaveDebounceSeconds = DEFAULT_SAVE_DEBOUNCE_SECONDS,
     })
 end
 
@@ -823,7 +821,8 @@ function DataService:_runBeforeProfileReleaseHandlers(player)
 end
 
 function DataService:Start()
-    self:_startAutoSaveLoop()
+    -- ProfileStore already owns periodic saves and shutdown recovery. A second timer here
+    -- duplicated those writes; gameplay mutations use the coalescing RequestSave path below.
 
     for _, player in ipairs(Players:GetPlayers()) do
         if not self.Profiles[player] then
@@ -884,28 +883,6 @@ function DataService:_getSaveState(player)
         }
 
     return self.SaveRequests[player]
-end
-
-function DataService:_startAutoSaveLoop()
-    if self.AutoSaveLoopRunning then
-        return
-    end
-
-    self.AutoSaveLoopRunning = true
-
-    task.spawn(function()
-        while self.AutoSaveLoopRunning do
-            task.wait(PERIODIC_SAVE_SECONDS)
-
-            for player, profile in pairs(self.Profiles) do
-                if profile and profile:IsActive() then
-                    self:RequestSave(player, "periodic_autosave", {
-                        debounceSeconds = 0,
-                    })
-                end
-            end
-        end
-    end)
 end
 
 function DataService:RequestSave(player, reason, options)

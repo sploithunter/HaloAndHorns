@@ -688,7 +688,6 @@ function ConfigLoader:ValidateConfig(configName, config)
             "auto_save_seconds",
             "ordinary_debounce_seconds",
             "critical_debounce_seconds",
-            "periodic_save_seconds",
             "confirmation_timeout_seconds",
         }) do
             local value = config[key]
