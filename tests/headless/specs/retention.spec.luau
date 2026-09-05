@@ -45,7 +45,7 @@ return function()
         it("measures room-by-room cave drop-off on Combat Training", function()
             local seen = {}
             local byStepId = {}
-            expect(retention.combat_training.enabled).to.equal(true)
+            expect(retention.combat_training.enabled).to.equal(false)
             expect(retention.combat_training.name).to.equal("Combat Training")
             expect(retention.combat_training.steps[1].id).to.equal("combat_started")
             for index, step in ipairs(retention.combat_training.steps) do

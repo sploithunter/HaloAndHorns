@@ -8115,3 +8115,17 @@ first-session cohort rates.
 - Same-session correction after player feedback: removed the proposed extra rebirth XP reduction.
   All existing XP payouts stay unchanged; early-wave relief affects enemy stats only. The XP
   simulator retains the payout baseline, not the reduced opening HP as a difficulty estimate.
+
+## 2026-09-05 — Basic and optional Advanced combat courses
+
+- Basic ends after Heal; its permanent competency receipt unlocks pets/powers. Advanced 1 and 2
+  are optional selectable tracks with independent saves and replay without relocking Basic.
+- Each new completion grants one earned level, capped at 50; Advanced 1 awards an existing Double
+  XP token and Advanced 2 a Double Coins token. Fixed target/receipts and verified token delivery
+  make retries idempotent. Added the previously missing RewardService boot dependency.
+- Persistent Basic reminder stays over the Merge instruction bar until unlocked; advanced prompts
+  never cover unlocked pet controls. Swift Tonic's first sip is +85% player/pet movement.
+- Three named course funnels replace the old long Combat Training track. Retired native Activation
+  and Merge Autoplay emission to keep the full universe at ten funnels; custom milestones remain.
+- Added headless and isolated Studio production-method coverage for migration, course boundaries,
+  concurrency, cap-50 rewards, retry/reentrancy, replay, and squad-restore preservation.

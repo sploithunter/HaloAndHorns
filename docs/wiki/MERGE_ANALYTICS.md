@@ -3,14 +3,20 @@
 Updated 2026-09-04. `configs/merge_analytics.lua` owns the versioned native Roblox event contract.
 `MergeAnalyticsService` runs only in the dedicated Merge place and observes authoritative server
 outcomes. It does not write profiles, grant rewards, change gameplay, or add client remotes.
-Existing Homeworld Onboarding, Activation, and Combat Training remain unchanged.
+2026-09-05: Combat Training is now three named Basic/Advanced course funnels (see
+[Combat Tutorial](COMBAT_TUTORIAL.md)). Legacy Activation and Combat Training native emission is
+disabled, and **Merge Autoplay v1** is disabled (custom autoplay milestones remain). There are now
+six active Merge funnels + Homeworld Onboarding + three course funnels = ten. The older seven-funnel
+table below is retained as the versioned contract; its Autoplay row is inactive.
 
 ## Creator Hub readout
 
 Open the experience in Creator Hub → Analytics → Funnels. After publishing and real eligible
 traffic, look for the seven **Merge … v1** funnels below. Do not rename/reorder their steps in
-place: publish a new version if meanings change. Existing three plus these seven use the ten-tab
+place: publish a new version if meanings change. The current allocation above uses the ten-funnel
 budget. Roblox ingestion/dashboard delay applies; Studio tests cannot populate these charts.
+Limits reset daily; old servers emitting retired names can temporarily consume capacity until they
+drain. See Roblox's [event tracking limitations](https://create.roblox.com/docs/production/analytics/event-types#event-tracking-limitations).
 
 | Funnel | Denominator / grain | Steps and interpretation |
 | --- | --- | --- |

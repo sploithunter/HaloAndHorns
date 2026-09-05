@@ -11,6 +11,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local COURSES = require(ReplicatedStorage.Configs.combat_courses)
 
 local CombatTutorialRedoPrompt = {}
 local started = false
@@ -94,6 +95,7 @@ function CombatTutorialRedoPrompt.start()
     end
     local noBtn = makeButton("No", "Not now", 0.28, Color3.fromRGB(90, 90, 100))
     local yesBtn = makeButton("Yes", "Redo", 0.72, Color3.fromRGB(46, 140, 80))
+    local courseButtons = {}
 
     local function close()
         gui.Enabled = false
@@ -101,12 +103,51 @@ function CombatTutorialRedoPrompt.start()
 
     local function answer(accepted)
         close()
-        Signals.CombatTutorialRedoAnswer:FireServer(accepted == true)
+        Signals.CombatTutorialRedoAnswer:FireServer(accepted)
     end
 
     Signals.CombatTutorialRedoOffer.OnClientEvent:Connect(function(payload)
         if type(payload) ~= "table" then
             return
+        end
+        for _, button in ipairs(courseButtons) do
+            button:Destroy()
+        end
+        table.clear(courseButtons)
+        local isCourses = payload.kind == "courses" and type(payload.choices) == "table"
+        yesBtn.Visible = not isCourses
+        frame.Size = isCourses
+                and UDim2.fromScale(COURSES.menu.layout.width, COURSES.menu.layout.height)
+            or UDim2.fromOffset(380, 176)
+        if isCourses then
+            for index, choice in ipairs(payload.choices) do
+                local button = yesBtn:Clone()
+                button.Name = tostring(choice.id)
+                button.Text = tostring(choice.label)
+                button.Visible = true
+                button.Active = choice.enabled == true
+                button.AutoButtonColor = choice.enabled == true
+                button.BackgroundTransparency = choice.enabled and 0 or 0.65
+                button.AnchorPoint = Vector2.new(0.5, 0)
+                local layout = COURSES.menu.layout
+                button.Position = UDim2.fromScale(
+                    0.5,
+                    layout.row_top + (index - 1) * (layout.row_height + layout.row_gap)
+                )
+                button.Size = UDim2.fromScale(0.92, layout.row_height)
+                button.TextScaled = true
+                local textSize = Instance.new("UITextSizeConstraint")
+                textSize.MinTextSize = layout.min_text
+                textSize.MaxTextSize = layout.max_text
+                textSize.Parent = button
+                button.Parent = frame
+                button.Activated:Connect(function()
+                    if choice.enabled == true then
+                        answer(choice.id)
+                    end
+                end)
+                table.insert(courseButtons, button)
+            end
         end
         title.Text = tostring(payload.title or "Combat Training")
         body.Text = tostring(payload.body or "You've already finished this. Redo the training?")

@@ -19,6 +19,7 @@ local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local InternalAccounts = require(ReplicatedStorage.Shared.Game.InternalAccounts)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local RetentionLogic = require(ReplicatedStorage.Shared.Game.RetentionLogic)
+local CombatCourses = require(ReplicatedStorage.Shared.Game.CombatCourses)
 
 local RetentionService = {}
 RetentionService.__index = RetentionService
@@ -84,7 +85,11 @@ function RetentionService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
-    self._config = self._configLoader:LoadConfig("retention")
+    self._config = table.clone(self._configLoader:LoadConfig("retention"))
+    self._config.course_funnels = CombatCourses.funnels(
+        self._configLoader:LoadConfig("combat_tutorial"),
+        self._configLoader:LoadConfig("combat_courses")
+    )
     self._tutorialConfig = self._configLoader:LoadConfig("tutorial")
     self._buildInfo = self._configLoader:LoadConfig("build_info")
     self._internalAccounts = self._configLoader:LoadConfig("internal_accounts")
@@ -759,12 +764,13 @@ function RetentionService:_flushActivation(player, state)
 end
 
 function RetentionService:_flushCombatTraining(player, state)
+    local coursesChanged = self:_flushCombatCourses(player, state)
     local cfg = self._config.combat_training or {}
     if RunService:IsStudio() or cfg.enabled == false then
-        return false
+        return coursesChanged
     end
     local sessionId = "combat:" .. tostring(player.UserId)
-    local changed = false
+    local changed = coursesChanged
     for _, step in ipairs(RetentionLogic.pendingCombatTrainingSteps(self._config, state)) do
         local ok = pcall(function()
             AnalyticsService:LogFunnelStepEvent(
@@ -781,6 +787,42 @@ function RetentionService:_flushCombatTraining(player, state)
         end
         state.CombatFunnelStep = step.index
         changed = true
+    end
+    return changed
+end
+
+function RetentionService:_flushCombatCourses(player, state)
+    if
+        RunService:IsStudio()
+        or RetentionLogic.isInternalPlayer(
+            player.UserId,
+            player.Name,
+            self._excludedUserIds,
+            self._excludedNamePrefixes
+        )
+    then
+        return false
+    end
+    state.CombatCourseFunnelSteps = state.CombatCourseFunnelSteps or {}
+    local changed = false
+    for _, funnel in ipairs(self._config.course_funnels or {}) do
+        for _, step in ipairs(RetentionLogic.pendingCourseSteps(funnel, state)) do
+            local ok = pcall(function()
+                AnalyticsService:LogFunnelStepEvent(
+                    player,
+                    funnel.name,
+                    "course:" .. funnel.key .. ":" .. tostring(player.UserId),
+                    step.index,
+                    step.name,
+                    customFields("combat_course", step.id)
+                )
+            end)
+            if not ok then
+                break
+            end
+            state.CombatCourseFunnelSteps[funnel.key] = step.index
+            changed = true
+        end
     end
     return changed
 end

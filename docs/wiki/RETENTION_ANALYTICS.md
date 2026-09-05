@@ -2,6 +2,16 @@
 
 Status: implemented 2026-07-18.
 
+2026-09-05 course split: RetentionService derives three named funnels from `combat_courses` plus
+the canonical lesson catalog: **Basic Combat Training v1** (15 steps including entry),
+**Advanced 1 v1** (10), and **Advanced 2 v1** (11). Each starts at that course's entry, uses
+course-scoped milestone IDs and explicit step names, and flushes only the attained contiguous
+prefix. Persisted cursors are `Analytics.Retention.CombatCourseFunnelSteps[courseId]`.
+The former **Combat Training** and **Activation** native funnels are disabled; their historical
+rows/raw milestone records remain. The paragraphs below describe the older dashboard arrangement.
+Studio and internal accounts do not emit the new native course funnels. Publish and eligible live
+traffic are still required to verify Creator Hub ingestion; local checks cannot prove delivery.
+
 `RetentionService` is the server-side observer for activation telemetry. Gameplay systems continue
 to publish semantic events through `FireGameEvent`; the retention service maps those events through
 `configs/retention.lua` and archives the complete server-observed event stream.

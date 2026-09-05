@@ -726,6 +726,11 @@ return {
     -- one equal-tier combination has happened, either on the board or at a deployed hatcher. Auto
     -- Collector owners may skip only the walking portion.
     tutorial = {
+        basic_combat_reminder = {
+            progress = "BASIC COMBAT TRAINING",
+            title = "COMPLETE BASIC COMBAT TRAINING TO UNLOCK PETS",
+            body = "Talk to the Quartermaster to start or resume. Finish the Heal lesson to unlock your pets and powers.",
+        },
         enabled = true,
         step_pause_seconds = 1.25,
         resume_wave_delay_seconds = 3,
@@ -968,7 +973,8 @@ return {
             potions_body = "Buy supplies for your own pets.",
             training_label = "COMBAT TRAINING",
             training_resume_label = "RESUME COMBAT TRAINING",
-            training_body = "Keep pets from rebirth-unlocked eggs while learning powers, healing, and team tactics.",
+            training_body = "Basic unlocks pets. Advanced 1 and 2 are optional: earn a level and a boost token for each.",
+            training_complete_label = "OPTIONAL ADVANCED TRAINING / REPLAY",
             close_label = "NOT NOW",
         },
     },

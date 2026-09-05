@@ -243,6 +243,14 @@ local SCHEMAS = {
     }),
     tutorial = schema({ veteran_skip = "table", steps = "table", completion = "table" }),
     combat_tutorial = schema({ version = "number", steps = "table", entry = "table" }),
+    combat_courses = schema({
+        version = "number",
+        level_cap = "number",
+        courses = "table",
+        menu = "table",
+        analytics = "table",
+        finish_pillar = "table",
+    }),
     merge_egg_prototype = schema({
         version = "number",
         enabled = "boolean",

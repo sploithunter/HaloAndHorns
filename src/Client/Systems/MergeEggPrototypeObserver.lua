@@ -403,8 +403,14 @@ end
 local function setTutorialHotbarCovered(world, observing)
     local currentWave = world and world:GetAttribute("CurrentWave") or 0
     local tutorialRequired = world and world:GetAttribute("MergeEggTutorialRequired") == true
-    local covered =
-        MergeTutorialHud.coversHotbar(observing, currentWave, TUTORIAL_FINAL_WAVE, tutorialRequired)
+    local covered = MergeTutorialHud.coversHotbar(
+        observing,
+        currentWave,
+        TUTORIAL_FINAL_WAVE,
+        tutorialRequired,
+        localPlayer:GetAttribute("CombatTutorialDone") ~= true
+            and localPlayer:GetAttribute("MergeEggPlayerCombatMode") ~= "full"
+    )
     if localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) ~= covered then
         localPlayer:SetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE, covered)
     end
@@ -972,6 +978,16 @@ end
 
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
     local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
+    if
+        localPlayer:GetAttribute("CombatTutorialDone") == true
+        or localPlayer:GetAttribute("MergeEggPlayerCombatMode") == "full"
+    then
+        card.frame.Visible = false
+        clearTutorialEggFocus()
+        clearTutorialClickChevron()
+        clearTutorialPath()
+        return
+    end
     local active = observing and world and world:GetAttribute("MergeEggTutorialActive") == true
     local step = active and tostring(world:GetAttribute("MergeEggTutorialStep") or "") or ""
     local spec = type(tutorial.steps) == "table" and tutorial.steps[step] or nil
@@ -994,6 +1010,9 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                     world and world:GetAttribute("CurrentWave")
                 )
             or nil
+        if not combatSpec and observing and world then
+            combatSpec = tutorial.basic_combat_reminder
+        end
         if type(combatSpec) == "table" then
             card.frame.Visible = true
             card.progress.Text = tostring(combatSpec.progress or "MERGE DEFENSE TUTORIAL")

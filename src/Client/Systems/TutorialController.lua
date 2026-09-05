@@ -1294,7 +1294,11 @@ local function renderActiveState(state)
     if (state.need or 1) > 1 then
         progress ..= ("   ·   %d / %d"):format(state.count or 0, state.need)
     end
-    stepLabel.Text = progress
+    stepLabel.Text = state.courseTitle
+            and (state.courseTitle .. "  ·  " .. tostring(state.index) .. " / " .. tostring(
+                state.total
+            ))
+        or progress
     titleLabel.Text = TutorialLocalization.text(
         localeId,
         state.title_key or (baseKey .. ".title"),
@@ -1303,14 +1307,20 @@ local function renderActiveState(state)
 
     local bodyKey = state.body_key or (baseKey .. ".body")
     local body = state.body or step.body or ""
-    if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" and step.body_gamepad then
+    if
+        Players.LocalPlayer:GetAttribute("InputMode") == "gamepad"
+        and (state.body_gamepad or step.body_gamepad)
+    then
         bodyKey = baseKey .. ".body_gamepad"
-        body = step.body_gamepad
+        body = state.body_gamepad or step.body_gamepad
     end
     bodyLabel.Text = TutorialLocalization.text(localeId, bodyKey, body)
 end
 
 local function activeCompletionConfig()
+    if currentState and type(currentState.completion) == "table" then
+        return currentState.completion
+    end
     if Players.LocalPlayer:GetAttribute("InCombatTutorial") == true then
         return (COMBAT_TUTORIAL_CFG and COMBAT_TUTORIAL_CFG.completion) or {}
     end

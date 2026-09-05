@@ -1,6 +1,18 @@
 local MergeTutorialHud = {}
 
-function MergeTutorialHud.coversHotbar(observing, currentWave, finalTutorialWave, tutorialRequired)
+function MergeTutorialHud.coversHotbar(
+    observing,
+    currentWave,
+    finalTutorialWave,
+    tutorialRequired,
+    basicRequired
+)
+    if observing == true and basicRequired == true then
+        return true
+    end
+    if basicRequired == false then
+        return false
+    end
     if observing ~= true or tutorialRequired ~= true then
         return false
     end

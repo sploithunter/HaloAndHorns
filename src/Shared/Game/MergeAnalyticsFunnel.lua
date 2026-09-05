@@ -12,7 +12,7 @@ function Funnel.new(config, cohort)
         autoActions = 0,
     }
     for key, definition in pairs(config.funnels) do
-        if not definition.fresh_only or cohort == "fresh" then
+        if definition.enabled ~= false and (not definition.fresh_only or cohort == "fresh") then
             state.funnels[key] = { observed = {}, reached = 0 }
         end
     end

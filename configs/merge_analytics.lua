@@ -66,6 +66,7 @@ return {
             },
         },
         autoplay = {
+            enabled = false, -- Keep custom milestones; reserve native funnel capacity for courses.
             name = "Merge Autoplay v1",
             steps = {
                 { "autoplay_owned", "Autoplay entitlement available" },

@@ -654,6 +654,7 @@ loader:RegisterModule(
         "Logger",
         "ConfigLoader",
         "DataService",
+        "RewardService",
         "PotionService",
         "EnhancementService",
         "EnemyService",
@@ -1039,17 +1040,29 @@ if isFeatureEnabled("map_binding") then
     if RunService:IsStudio() then
         table.insert(mergeEggPrototypeDeps, "AutomationService")
     end
-    loader:RegisterModule("MergeAnalyticsService", ServerScriptService.Server.Services.MergeAnalyticsService, {
-        "ConfigLoader",
-    })
+    loader:RegisterModule(
+        "MergeAnalyticsService",
+        ServerScriptService.Server.Services.MergeAnalyticsService,
+        {
+            "ConfigLoader",
+        }
+    )
     loader:RegisterModule(
         "MergeEggPrototypeService",
         ServerScriptService.Server.Services.MergeEggPrototypeService,
         mergeEggPrototypeDeps
     )
-    loader:RegisterModule("MergeAutoplayService", ServerScriptService.Server.Services.MergeAutoplayService, {
-        "Logger", "ConfigLoader", "DataService", "EconomyService", "MergeEggPrototypeService",
-    })
+    loader:RegisterModule(
+        "MergeAutoplayService",
+        ServerScriptService.Server.Services.MergeAutoplayService,
+        {
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "EconomyService",
+            "MergeEggPrototypeService",
+        }
+    )
 end
 registerFeatureModule(
     "auto_target",
