@@ -15,6 +15,54 @@ local function ranks()
 end
 
 return function()
+    describe("PeopleList watched roster", function()
+        it("excludes departures immediately even while the engine list is stale", function()
+            local me = { UserId = 1, DisplayName = "You" }
+            local other = { UserId = 2, DisplayName = "Friend" }
+            local enginePlayers = { me, other }
+            local watched = { [me] = {}, [other] = {} }
+            expect(#PeopleList.orderedRoster(watched, me)).to.equal(2)
+            watched[other] = nil
+            expect(#enginePlayers).to.equal(2)
+            local roster = PeopleList.orderedRoster(watched, me)
+            expect(#roster).to.equal(1)
+            expect(roster[1]).to.equal(me)
+        end)
+
+        it(
+            "retains live peers across repeated leave/rejoin cycles without old instances",
+            function()
+                local me = { UserId = 1, DisplayName = "You" }
+                local stable = { UserId = 2, DisplayName = "Stable" }
+                local watched = { [me] = {}, [stable] = {} }
+                for _ = 1, 100 do
+                    local old = { UserId = 3, DisplayName = "Returning" }
+                    watched[old] = {}
+                    expect(#PeopleList.orderedRoster(watched, me)).to.equal(3)
+                    watched[old] = nil
+                    local replacement = { UserId = 3, DisplayName = "Returning" }
+                    watched[replacement] = {}
+                    local roster = PeopleList.orderedRoster(watched, me)
+                    expect(#roster).to.equal(3)
+                    expect(roster[1]).to.equal(me)
+                    expect(roster[2]).to.equal(replacement)
+                    expect(roster[3]).to.equal(stable)
+                    watched[replacement] = nil
+                end
+            end
+        )
+
+        it("sorts equal display names deterministically and tolerates an empty roster", function()
+            local a = { UserId = 3, DisplayName = "SAME" }
+            local b = { UserId = 2, DisplayName = "same" }
+            local me = { UserId = 1, DisplayName = "You" }
+            local roster = PeopleList.orderedRoster({ [a] = {}, [b] = {} }, me)
+            expect(roster[1]).to.equal(b)
+            expect(roster[2]).to.equal(a)
+            expect(#PeopleList.orderedRoster({}, me)).to.equal(0)
+        end)
+    end)
+
     describe("Combat Training list default", function()
         it("collapses once, allows expansion, and restores the previous setting", function()
             local expanded, previous = PeopleList.trainingExpansion(true, nil, true, true)

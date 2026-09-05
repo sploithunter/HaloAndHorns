@@ -38,6 +38,32 @@ end
 
 local PeopleList = {}
 
+-- The watched roster is authoritative, not a GetPlayers snapshot inside PlayerRemoving:
+-- Roblox can still include the departing Player until that callback returns.
+function PeopleList.orderedRoster(watchedPlayers, localPlayer)
+    local others = {}
+    for player in pairs(watchedPlayers) do
+        if player ~= localPlayer then
+            table.insert(others, player)
+        end
+    end
+    table.sort(others, function(a, b)
+        local aName, bName = string.lower(a.DisplayName), string.lower(b.DisplayName)
+        if aName == bName then
+            return a.UserId < b.UserId
+        end
+        return aName < bName
+    end)
+    local list = {}
+    if watchedPlayers[localPlayer] then
+        table.insert(list, localPlayer)
+    end
+    for _, player in ipairs(others) do
+        table.insert(list, player)
+    end
+    return list
+end
+
 function PeopleList.mergeStatus(config, state)
     state = state or {}
     if state.inMergePlace ~= true and state.area ~= "MergeEggPrototype" then

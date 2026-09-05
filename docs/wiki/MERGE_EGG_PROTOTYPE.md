@@ -43,6 +43,11 @@ authored changes when manually publishing; do not replace the place with a scrip
 
 In Merge, the People list Status column, hover, and player card show `Wave N`: the player's
 highest **reached** wave across runs/rebirths, not the active wave or worn progression title.
+The client row roster comes from its active per-Player attribute subscriptions. Do not rebuild it
+from `Players:GetPlayers()` inside `PlayerRemoving`: that snapshot can still include the departing
+Player, recreating an unwatched ghost row which later reads blank rank / `Wave —`. Unwatch first,
+then rebuild from remaining subscriptions; layout row counts use the same roster. A returning
+account gets a new Player instance and fresh subscriptions, not the departed row's cached data.
 `GameData.MergeDefense.highest_wave` persists the monotonic record; the server publishes
 `MergeHighestWave` on each Player, so every client reads the correct player's best.
 Starting a higher wave updates the loaded profile and uses normal autosave/checkpoint/release saving,
