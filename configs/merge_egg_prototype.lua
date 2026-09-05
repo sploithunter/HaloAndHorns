@@ -2018,6 +2018,10 @@ return {
         rosters = {
             home = {
                 faction = "home",
+                -- Earned player level, not wave number, enemy rank, or temporary combat scaling.
+                minimum_player_levels = {
+                    infernal_boss = 30,
+                },
                 by_archetype = {
                     whelp = { "lava_imp", "rabid_dog", "vicious_cat", "murder_crow" },
                     brute = { "ember_brute", "raging_bear" },

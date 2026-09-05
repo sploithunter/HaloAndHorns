@@ -1541,6 +1541,21 @@ return function()
             expect(enemyRoster.homeEnemyId(rosters, "whelp", 0)).to.equal("lava_imp")
             expect(enemyRoster.homeEnemyId(rosters, "whelp", 0.999)).to.equal("murder_crow")
 
+            expect(rosters.home.minimum_player_levels.infernal_boss).to.equal(30)
+            for level = 1, 29 do
+                for roll = 0, 100 do
+                    local id = enemyRoster.homeEnemyId(rosters, "boss", roll / 100, level)
+                    expect(id ~= nil and id ~= "infernal_boss").to.equal(true)
+                end
+            end
+            expect(enemyRoster.homeEnemyEligible(rosters, "infernal_boss", nil)).to.equal(false)
+            expect(enemyRoster.homeEnemyEligible(rosters, "infernal_boss", 29)).to.equal(false)
+            expect(enemyRoster.homeEnemyEligible(rosters, "infernal_boss", 30)).to.equal(true)
+            expect(enemyRoster.homeEnemyId(rosters, "boss", 0.999, 30)).to.equal("infernal_boss")
+            expect(enemyRoster.homeEnemyId(rosters, "boss", 0.999, 50)).to.equal("infernal_boss")
+            expect(enemyRoster.homeEnemyId(rosters, "boss", 0, 30)).to.equal("lava_imp")
+            expect(enemyRoster.homeEnemyId(rosters, "boss", 0.999, nil)).to.equal("raging_bear")
+
             local hellRoll =
                 enemyRoster.eggPetCandidates(pets, petRoles, rosters, "infernal_egg", "whelp")
             expect(#hellRoll).to.equal(5)

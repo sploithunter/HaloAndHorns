@@ -8094,3 +8094,10 @@ first-session cohort rates.
   receipt. Players without training retain the existing peaceful early-level gate.
 - Raised the config-owned base pickup magnet from 11 to 20 studs, without a completion/pass gate.
 - Added isolated Studio handoff/engagement checks and headless regression coverage.
+
+## 2026-09-04 — Boss Magma Wyrm level-30 spawn gate
+
+- Added a config-owned earned-player-level minimum for `infernal_boss` in Merge's Home roster.
+  Below 30 it is excluded before random selection; at 30+ it retains its ordinary pool chance.
+- The archetype fallback obeys the same gate. Other boss species, wave counts, and realm egg
+  rosters are unchanged. Regression sweeps cover levels 1–29 and the exact level-30 boundary.

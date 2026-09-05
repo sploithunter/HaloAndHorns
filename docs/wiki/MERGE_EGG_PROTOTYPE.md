@@ -283,6 +283,10 @@ team and queue model:
   pressure, but egg purchasing is never gated by that boundary.
   With random and upgradable egg teams, the useful measurement is the distribution of failure waves
   and the roster/variant/source-tier/queue conditions that produced them.
+- Home-roster Boss Magma Wyrm (`infernal_boss`) is excluded until the bay owner's live earned
+  `Level` reaches 30, then rejoins the normal random pool. This is not wave 30 and temporary
+  EffectiveLevel/sidekick boosts do not unlock it. Filtering precedes the random roll, preserving
+  boss-slot counts with other eligible enemies; the archetype fallback cannot bypass the gate.
 - Enemy identity now follows the installed egg on the hatcher receiving each front rather than the
   wave number. Home egg tiers draw a varied mix from the existing Earth/Lava enemies (Whelps,
   Rabid Dogs, Vicious Cats, Crows, Brutes, Bears, and their support counterparts). Bloom, Aurora,
