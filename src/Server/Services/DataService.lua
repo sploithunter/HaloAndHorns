@@ -35,11 +35,12 @@ local DataService = {}
 DataService.__index = DataService
 
 local PROFILE_STORE_NAME = "PlayerData_v2_mixedPets"
-local PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS = 60
-local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
-local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
-local PERIODIC_SAVE_SECONDS = 60
-local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
+local persistenceConfig = require(ReplicatedStorage.Configs.profile_persistence)
+local PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS = persistenceConfig.auto_save_seconds
+local DEFAULT_SAVE_DEBOUNCE_SECONDS = persistenceConfig.ordinary_debounce_seconds
+local CRITICAL_SAVE_DEBOUNCE_SECONDS = persistenceConfig.critical_debounce_seconds
+local PERIODIC_SAVE_SECONDS = persistenceConfig.periodic_save_seconds
+local SAVE_CONFIRM_TIMEOUT_SECONDS = persistenceConfig.confirmation_timeout_seconds
 local CURRENT_SCHEMA_VERSION = 18
 local RETIRED_HALL_AREAS = {
     Hall_1 = true,
@@ -75,6 +76,9 @@ local function generateProfileTemplate(configLoader)
         -- One-time first-companion selection. Empty means the new-player eligibility rules may
         -- offer a choice; a completed choice stores pet id/version/uid and is never re-granted.
         StarterPet = {},
+
+        -- Save acknowledgement marker, not gameplay progress. Optional on older profiles.
+        Persistence = {},
 
         -- Currencies (generated from configuration)
         Currencies = {},
@@ -867,6 +871,8 @@ function DataService:_getSaveState(player)
     self.SaveRequests[player] = self.SaveRequests[player]
         or {
             dirty = false,
+            dirtyRevision = 0,
+            pendingCritical = false,
             scheduled = false,
             inFlight = false,
             pendingAfterInFlight = false,
@@ -912,6 +918,8 @@ function DataService:RequestSave(player, reason, options)
 
     local saveState = self:_getSaveState(player)
     saveState.dirty = true
+    saveState.dirtyRevision += 1
+    saveState.pendingCritical = saveState.pendingCritical or options.critical == true
     saveState.lastReason = reason or "unspecified"
     saveState.lastRequestedAt = tick()
 
@@ -1024,19 +1032,40 @@ function DataService:_saveProfileNow(player, reason)
     saveState.saveRequestId += 1
 
     local requestId = saveState.saveRequestId
+    local revision = saveState.dirtyRevision
+    local token = HttpService:GenerateGUID(false)
+    profile.Data.Persistence = profile.Data.Persistence or {}
+    profile.Data.Persistence.lastRequestToken = token
+    saveState.pendingCritical = false
     local connected = true
     local afterSaveConnection
 
-    afterSaveConnection = profile.OnAfterSave:Connect(function()
-        if not connected then
+    afterSaveConnection = profile.OnAfterSave:Connect(function(savedData)
+        if
+            not connected
+            or self.SaveRequests[player] ~= saveState
+            or self.Profiles[player] ~= profile
+        then
+            return
+        end
+        -- An older in-flight auto-save can finish after this request begins. It is not proof
+        -- of this request's mutations: only the returned persisted snapshot with our token is.
+        if
+            not (
+                savedData
+                and savedData.Persistence
+                and savedData.Persistence.lastRequestToken == token
+            )
+        then
             return
         end
 
         connected = false
         afterSaveConnection:Disconnect()
+        saveState.afterSaveConnection = nil
 
         saveState.inFlight = false
-        saveState.dirty = false
+        saveState.dirty = saveState.dirtyRevision > revision
         saveState.lastConfirmedAt = tick()
         saveState.lastConfirmedRequestId =
             math.max(tonumber(saveState.lastConfirmedRequestId) or 0, requestId)
@@ -1049,14 +1078,18 @@ function DataService:_saveProfileNow(player, reason)
         })
 
         if
-            saveState.pendingAfterInFlight
+            (saveState.pendingAfterInFlight or saveState.dirty)
             and self.Profiles[player] == profile
             and profile:IsActive()
         then
             saveState.pendingAfterInFlight = false
-            self:_saveProfileNow(player, saveState.lastReason or "pending_save")
+            self:RequestSave(player, saveState.lastReason or "pending_save", {
+                critical = saveState.pendingCritical,
+                debounceSeconds = saveState.pendingCritical and 0 or DEFAULT_SAVE_DEBOUNCE_SECONDS,
+            })
         end
     end)
+    saveState.afterSaveConnection = afterSaveConnection
 
     self._logger:Debug("Profile save requested", {
         context = "DataService",
@@ -1072,6 +1105,7 @@ function DataService:_saveProfileNow(player, reason)
     if not saveCallSuccess then
         connected = false
         afterSaveConnection:Disconnect()
+        saveState.afterSaveConnection = nil
         saveState.inFlight = false
 
         self._logger:Error("Profile save request failed to start", {
@@ -1094,26 +1128,16 @@ function DataService:_saveProfileNow(player, reason)
             return
         end
 
-        connected = false
-        afterSaveConnection:Disconnect()
-        saveState.inFlight = false
-
-        self._logger:Warn("Profile save did not confirm before timeout", {
+        -- A deadline is not cancellation of the queued DataStore operation. Keep the single
+        -- writer and acknowledgement listener alive. ProfileStore's own periodic auto-save
+        -- remains responsible for recovery after failed requests; don't stack new manual jobs.
+        self._logger:Warn("Profile save is still unconfirmed; retaining pending save", {
             context = "DataService",
             player = player.Name,
             reason = reason,
             waitedSeconds = SAVE_CONFIRM_TIMEOUT_SECONDS,
             dataStoreState = dataStoreState,
         })
-
-        if
-            saveState.pendingAfterInFlight
-            and self.Profiles[player] == profile
-            and profile:IsActive()
-        then
-            saveState.pendingAfterInFlight = false
-            self:_saveProfileNow(player, saveState.lastReason or "pending_save_after_timeout")
-        end
     end)
 
     return true
@@ -1358,6 +1382,10 @@ function DataService:ReleaseProfile(player)
     -- Cleanup
     self.Profiles[player] = nil
     self.LoadPromises[player] = nil
+    local saveState = self.SaveRequests[player]
+    if saveState and saveState.afterSaveConnection then
+        saveState.afterSaveConnection:Disconnect()
+    end
     self.SaveRequests[player] = nil
     self.PersistenceWarningsIssued[player] = nil
     self.BeforeProfileReleaseHandled[player] = nil
