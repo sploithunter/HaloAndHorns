@@ -13,6 +13,7 @@ return {
             },
         },
         merge = {
+            walk_speed = 24,
             place_ids = {
                 84544653387905,
             },

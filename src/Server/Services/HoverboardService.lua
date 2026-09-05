@@ -198,6 +198,7 @@ function HoverboardService:ResetForBeginning(player)
     player:SetAttribute("HoverboardEligible", false)
     player:SetAttribute("HoverboardWalkSpeed", nil)
     player:SetAttribute("HoverboardSpeedScale", nil)
+    player:SetAttribute("HoverboardFirstUseComplete", false)
     local inv = player:FindFirstChild("Inventory")
     local folder = inv and inv:FindFirstChild("hoverboards")
     if folder then
@@ -361,6 +362,7 @@ function HoverboardService:_refresh(player)
     local eligible = self:_isEligible(player)
     player:SetAttribute("HoverboardEligible", eligible == true)
     local save = self:_save(player)
+    player:SetAttribute("HoverboardFirstUseComplete", save.first_use_complete == true)
     player:SetAttribute(
         "HoverboardSpeedScale",
         HoverboardLogic.clampSpeedScale(save.speed_scale, self._config.speed)
@@ -391,6 +393,16 @@ function HoverboardService:_setMounted(player, mounted)
         return
     end
     player:SetAttribute("HoverboardMounted", nextMounted)
+    if nextMounted then
+        local save = self:_save(player)
+        if save.first_use_complete ~= true then
+            save.first_use_complete = true
+            player:SetAttribute("HoverboardFirstUseComplete", true)
+            if self._dataService and self._dataService.RequestSave then
+                self._dataService:RequestSave(player, "hoverboard_first_use")
+            end
+        end
+    end
     self:_applySpeed(player)
 end
 
@@ -400,9 +412,12 @@ function HoverboardService:_applySpeed(player)
     if not humanoid then
         return
     end
-    local gameConfig = self._configLoader and self._configLoader:LoadConfig("game")
-    local base = (gameConfig and gameConfig.WorldSettings and gameConfig.WorldSettings.WalkSpeed)
-        or 16
+    local gameConfig = self._configLoader:LoadConfig("game")
+    local base = require(ReplicatedStorage.Shared.Game.PlaceRuntime).walkSpeedFor(
+        game.PlaceId,
+        self._configLoader:LoadConfig("places"),
+        gameConfig
+    )
     local mult = tonumber(player:GetAttribute("Eff_Speed")) or 1
     if player:GetAttribute("HoverboardMounted") == true then
         local save = self:GetSave(player)

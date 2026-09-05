@@ -5,6 +5,12 @@ Wave-10 checkpoints and 56 egg tiers await live balance verification
 
 ## New-player opening relief (2026-09-05)
 
+Merge base player walking speed is 24 studs/second (50% above Farm & Fight's unchanged 16),
+configured by `places.roles.merge.walk_speed`. `PlaceRuntime.walkSpeedFor` is shared by client
+spawn/buff application, server profile-load movement, and board mount/dismount speed. Existing
+`Eff_Speed` multiplies that base; hoverboard cruise is unchanged. This applies from first spawn,
+not only after claiming a bay or finishing training. Pet/enemy movement tuning is unchanged.
+
 `early_wave_difficulty` applies a wave-owned multiplier to final enemy HP/damage, after the
 normal archetype/rank, layer, and endless scaling. Wave 1 uses 0.25 HP / 0.20 damage; Wave 10
 0.30 / 0.25; Wave 20 0.40 / 0.35; Wave 30 0.50 / 0.45. Linear interpolation tapers to 1 / 1

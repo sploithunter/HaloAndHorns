@@ -88,6 +88,11 @@ end
 
 -- Load client configuration
 local gameConfig = ConfigLoader:LoadConfig("game")
+local baseWalkSpeed = require(ReplicatedStorage.Shared.Game.PlaceRuntime).walkSpeedFor(
+    game.PlaceId,
+    ConfigLoader:LoadConfig("places"),
+    gameConfig
+)
 Logger:Info("Client initialized", {
     gameMode = gameConfig.GameMode,
     player = localPlayer.Name,
@@ -1253,7 +1258,7 @@ local function applyWalkSpeed()
             end
         end
         local mult = tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1
-        humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed * mult
+        humanoid.WalkSpeed = baseWalkSpeed * mult
     end
 end
 
@@ -1270,8 +1275,7 @@ local function onCharacterAdded(character)
 
     -- Apply game configuration to character (WalkSpeed includes any live
     -- move-speed buff via the server-published Eff_Speed multiplier)
-    humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed
-        * (tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1)
+    humanoid.WalkSpeed = baseWalkSpeed * (tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1)
     humanoid.JumpPower = gameConfig.WorldSettings.JumpPower
 
     -- Set up character-specific systems

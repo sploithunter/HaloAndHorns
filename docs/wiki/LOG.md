@@ -8141,3 +8141,13 @@ first-session cohort rates.
   Combat no longer dismounts; mission/death/precision gates remain intact.
 - Isolated Studio fixtures execute real award methods for NPC and personal kills, concurrent helper
   shares, idle/downed exclusions and other-bay isolation. Existing course/handoff fixtures pass too.
+
+### 2026-09-05 — faster default Merge walking
+
+- Raised Merge base walking from 16 to 24 studs/second via place-role config. Shared resolution
+  keeps client respawn/buff application, server profile load and hoverboard dismount consistent.
+  Farm & Fight, pet/enemy speed and board cruise are unchanged; existing player bonuses still apply.
+- Corrected Board introduction: stable Board label, separate bouncing right-side CLICK HERE cue,
+  and a durable first-successful-mount receipt so guidance cannot reappear on every dismount.
+- Combat Training defaults the Players list to collapsed, permits manual expansion, and restores
+  the pre-training state on exit so the course pet HUD is not covered by the default list.

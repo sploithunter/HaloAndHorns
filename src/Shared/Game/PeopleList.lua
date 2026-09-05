@@ -609,4 +609,18 @@ function PeopleList.profile(config, ranksConfig, playerState)
     }
 end
 
+-- Collapse once on entry, allow a manual peek, and restore the prior outside-training choice.
+function PeopleList.trainingExpansion(expanded, previous, inTraining, enabled)
+    if inTraining and enabled then
+        if previous == nil then
+            return false, expanded
+        end
+        return expanded, previous
+    end
+    if previous ~= nil then
+        return previous, nil
+    end
+    return expanded, nil
+end
+
 return PeopleList

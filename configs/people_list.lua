@@ -91,6 +91,7 @@ return {
     },
 
     toggle = {
+        collapse_in_combat_training = true,
         key = "Tab",
         start_expanded = true,
     },

@@ -47,4 +47,15 @@ function PlaceRuntime.placeIdForRole(config, role)
     return normalizedPlaceId(placeId)
 end
 
+-- Base movement belongs to the published place; temporary bonuses remain separate.
+function PlaceRuntime.walkSpeedFor(placeId, places, gameConfig, multiplier)
+    local definition = PlaceRuntime.definitionFor(placeId, places)
+    local override = definition and tonumber(definition.walk_speed)
+    local base = assert(tonumber(gameConfig.WorldSettings.WalkSpeed), "Base WalkSpeed missing")
+    if override and override > 0 then
+        base = override
+    end
+    return type(multiplier) == "number" and base * math.max(0, multiplier) or base
+end
+
 return PlaceRuntime
