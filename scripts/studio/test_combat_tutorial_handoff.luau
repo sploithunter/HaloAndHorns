@@ -162,4 +162,89 @@ attrs.Level, attrs.EffectiveLevel = 5, 5
 assert(enemy:_engagesCombat(player) == true, "Existing level gate changed")
 local drops = assert(loadstring(configs.drops.Source))()
 assert(drops.collect_radius == 20, "Base magnet is not twenty studs")
-return "PASS: restore-before-resume, reentrant leave, exactly-once return, live graduate targeting, peaceful onramp, 20-stud magnet"
+
+-- Real completion grant + real progression top-up, with only persistence/side effects doubled.
+-- In particular, already-rewarded graduates with the missing dependency must catch up on retry.
+local curve = require(game.ReplicatedStorage.Shared.Game.LevelCurve)
+local xpConfig = assert(loadstring(configs.player_progression.Source))().xp
+local xp, saved = 0, 0
+local progression = { _xpConfig = xpConfig }
+progression._dataService = {
+    SetStat = function(_, _, key, value)
+        assert(key == "Experience")
+        xp = value
+    end,
+}
+function progression:GetExperience()
+    return xp
+end
+function progression:GetProgress()
+    return {}
+end
+function progression:GetEarnedLevel()
+    return curve.levelForXp(xp, xpConfig)
+end
+function progression:_publish() end
+function progression:_advanceAuto() end
+progression.EnsureEarnedLevel = method(
+    services.PlayerProgressionService,
+    "PlayerProgressionService",
+    "EnsureEarnedLevel",
+    "local LevelCurve = ...",
+    curve
+)
+local completion = {
+    _config = assert(loadstring(configs.combat_tutorial.Source))(),
+    _dataService = {
+        RequestSave = function()
+            saved += 1
+        end,
+    },
+}
+completion._applyCompletionLevelGrant =
+    method(services.CombatTutorialService, "CombatTutorialService", "_applyCompletionLevelGrant")
+local data = { CombatTutorial = { done = true }, CombatTutorialRewardGranted = true }
+completion:_applyCompletionLevelGrant(player, data)
+assert(xp == 0 and not data.CombatTutorial.completionLevelGranted)
+completion._playerProgressionService = progression
+completion:_applyCompletionLevelGrant(player, data)
+assert(progression:GetEarnedLevel() == 2 and saved == 1)
+assert(data.CombatTutorial.completionLevelGranted == true)
+local grantedXp = xp
+completion:_applyCompletionLevelGrant(player, data)
+assert(xp == grantedXp and saved == 1, "Repeated completion duplicated grant")
+progression:EnsureEarnedLevel(player, 5)
+local veteranXp = xp
+completion:_applyCompletionLevelGrant(player, { CombatTutorial = { done = true } })
+assert(xp == veteranXp and progression:GetEarnedLevel() == 5, "Graduate was downgraded")
+
+-- Execute the actual enemy-stat application, not only the interpolation helper.
+local generator =
+    assert(loadstring(game.ReplicatedStorage.Shared.Game.MergeEggWaveGenerator.Source))()
+local prototype = assert(loadstring("local script = ...\n" .. configs.merge_egg_prototype.Source))(
+    configs.merge_egg_prototype
+)
+local stage = { _config = prototype }
+function stage:_combatLayerForWave()
+    return "fixture", { enemy = { hp_multiplier = 2, damage_multiplier = 3 } }
+end
+function stage:_waveFor()
+    return { enemy = { hp_multiplier = 1.5, damage_multiplier = 2 } }
+end
+stage._stageEnemyConfig = method(
+    services.MergeEggPrototypeService,
+    "MergeEggPrototypeService",
+    "_stageEnemyConfig",
+    "local MergeEggWaveGenerator = ...",
+    generator
+)
+local source = { hp = 320, damage = 4, armor = 2 }
+for _, wave in ipairs({ 1, 10, 20, 30, 31, 45, 60, 1000 }) do
+    local hp, damage = generator.earlyDifficulty(prototype.early_wave_difficulty, wave)
+    local result = stage:_stageEnemyConfig({}, source, wave)
+    assert(result.hp == math.floor(960 * hp))
+    assert(math.abs(result.damage - 24 * damage) < 0.000001)
+    assert(result.armor == 2)
+end
+assert(source.hp == 320 and source.damage == 4, "Canonical archetype mutated")
+return "PASS: handoff/targeting/magnet; completion level-2 retry, exact XP, idempotence, no downgrade; actual early-wave stat application and late-wave restoration"

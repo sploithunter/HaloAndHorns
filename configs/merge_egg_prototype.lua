@@ -2263,6 +2263,19 @@ return {
     -- endless ten-wave cycle. Later cycles preserve the configured body count while replacing
     -- minions with lieutenants/bosses and applying additive HP, damage, and payout growth. The
     -- high numeric ceiling is only a session-safety guard; the player-facing meter shows infinity.
+    -- Applied after layer/rank/endless scaling, without changing rewards or body counts.
+    -- Fixed to wave number so earning a level never suddenly strengthens the current fight.
+    -- Keep waves 1–30 forgiving, then fade back to the existing curve through wave 60.
+    early_wave_difficulty = {
+        enabled = true,
+        checkpoints = {
+            { wave = 1, hp_multiplier = 0.25, damage_multiplier = 0.20 },
+            { wave = 10, hp_multiplier = 0.30, damage_multiplier = 0.25 },
+            { wave = 20, hp_multiplier = 0.40, damage_multiplier = 0.35 },
+            { wave = 30, hp_multiplier = 0.50, damage_multiplier = 0.45 },
+            { wave = 60, hp_multiplier = 1, damage_multiplier = 1 },
+        },
+    },
     endless_waves = {
         enabled = true,
         start_wave = 21,

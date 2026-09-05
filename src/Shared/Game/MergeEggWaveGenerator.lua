@@ -8,6 +8,28 @@
 
 local MergeEggWaveGenerator = {}
 
+-- Piecewise-linear opening relief; neutral when absent/disabled. The final checkpoint
+-- returns to the established endless curve instead of introducing a wave-31 cliff.
+function MergeEggWaveGenerator.earlyDifficulty(config, waveIndex)
+    local points = type(config) == "table" and config.checkpoints or nil
+    if not (config and config.enabled == true and type(points) == "table" and #points > 0) then
+        return 1, 1
+    end
+    local index = math.max(1, tonumber(waveIndex) or 1)
+    local previous = points[1]
+    for _, point in ipairs(points) do
+        if index <= point.wave then
+            local span = point.wave - previous.wave
+            local alpha = span > 0 and math.clamp((index - previous.wave) / span, 0, 1) or 0
+            return previous.hp_multiplier + (point.hp_multiplier - previous.hp_multiplier) * alpha,
+                previous.damage_multiplier
+                    + (point.damage_multiplier - previous.damage_multiplier) * alpha
+        end
+        previous = point
+    end
+    return previous.hp_multiplier, previous.damage_multiplier
+end
+
 local function copy(value)
     if type(value) ~= "table" then
         return value

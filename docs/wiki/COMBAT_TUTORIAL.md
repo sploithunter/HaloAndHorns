@@ -2,6 +2,12 @@
 
 Last checked: 2026-09-02
 
+2026-09-05 grant correction: the boot registration now includes the feature-gated
+`PlayerProgressionService` dependency. ModuleLoader injects only declared dependencies; having
+progression loaded elsewhere did not populate Combat Training's `_modules`, so its Level-2 grant
+was perpetually deferred. Existing completed saves with no grant receipt retry via `_ensureProgress`
+on join/state refresh. This tops up earned XP, not the manually claimed Ascension/power choice.
+
 2026-09-04 handoff correction: `InCombatTutorial` stays true until the loaned squad is removed,
 the original squad is restored/recovered, and tutorial loops are stopped. Leave is reentrant-safe.
 Merge listens for both mission-close and tutorial-restored readiness; it no longer resumes after

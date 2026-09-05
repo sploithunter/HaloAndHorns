@@ -14,6 +14,67 @@ local function archetypeCount(wave, archetype)
 end
 
 return function()
+    describe("Merge early-wave difficulty", function()
+        it("does not add an XP penalty to the easier opening", function()
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local first =
+                assert(service:find("function MergeEggPrototypeService:_combatXpYield(", 1, true))
+            local last = assert(service:find("\nfunction ", first + 1, true))
+            local method = service:sub(first, last - 1)
+            expect(method:find("earlyDifficulty", 1, true)).to.equal(nil)
+            expect(method:find("early_wave_difficulty", 1, true)).to.equal(nil)
+        end)
+        it("uses the authored health/damage relief at each checkpoint", function()
+            for _, point in ipairs(prototype.early_wave_difficulty.checkpoints) do
+                local hp, damage =
+                    WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, point.wave)
+                expect(hp).to.near(point.hp_multiplier)
+                expect(damage).to.near(point.damage_multiplier)
+            end
+            local hp, damage = WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, 1)
+            expect(hp).to.equal(0.25)
+            expect(damage).to.equal(0.20)
+            hp, damage = WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, 30)
+            expect(hp).to.equal(0.50)
+            expect(damage).to.equal(0.45)
+        end)
+
+        it("tapers continuously through wave 60 and leaves the later curve intact", function()
+            local previousHp, previousDamage =
+                WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, 1)
+            for wave = 2, 1000 do
+                local hp, damage =
+                    WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, wave)
+                expect(hp >= previousHp and hp <= 1).to.equal(true)
+                expect(damage >= previousDamage and damage <= 1).to.equal(true)
+                expect(hp - previousHp < 0.02).to.equal(true)
+                expect(damage - previousDamage < 0.02).to.equal(true)
+                if wave >= 60 then
+                    expect(hp).to.equal(1)
+                    expect(damage).to.equal(1)
+                end
+                previousHp, previousDamage = hp, damage
+            end
+            local hp, damage = WaveGenerator.earlyDifficulty(prototype.early_wave_difficulty, 45)
+            expect(hp).to.near(0.75)
+            expect(damage).to.near(0.725)
+        end)
+
+        it("is neutral when absent, disabled, or empty", function()
+            for _, config in ipairs({
+                {},
+                { enabled = false },
+                { enabled = true, checkpoints = {} },
+            }) do
+                local hp, damage = WaveGenerator.earlyDifficulty(config, 1)
+                expect(hp).to.equal(1)
+                expect(damage).to.equal(1)
+            end
+            local hp, damage = WaveGenerator.earlyDifficulty(nil, 1)
+            expect(hp).to.equal(1)
+            expect(damage).to.equal(1)
+        end)
+    end)
     describe("Merge Egg endless wave generation", function()
         it("preserves authored waves and exposes a practical endless ceiling", function()
             local authored = { { id = "known" } }
