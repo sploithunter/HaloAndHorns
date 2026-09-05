@@ -62,6 +62,15 @@ Base pickup reach is 20 studs in `configs/drops.lua`, available before completin
 Regression: `scripts/studio/test_combat_tutorial_handoff.luau` executes the production methods with
 isolated doubles in Edit; it never changes player saves or the authored map.
 
+2026-09-05 return-order correction: mission close keeps `InMission` until the streaming-safe
+return warp finishes, or cancels the pending warp at the existing close deadline before clearing
+that attribute. Previously Merge could rebuild the player's bay first, then a late mission warp
+would move them to their old entry position (potentially another player's newly claimed bay).
+Merge still prefers the original bay and falls back to an available bay if occupied. The final
+Merge placement now happens after the old warp, not in a race with it. Regression:
+`scripts/studio/test_combat_training_return_order.luau` runs the production close/resume methods
+with delayed, timed-out, errored, and character-less returns, with both bay-availability cases.
+
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
 bound, cast, and enhanced, `first_fight` points the FIGHT trail at the
 Earth cave. **Later** on that card opens the Okay banner and parks Combat

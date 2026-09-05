@@ -8151,3 +8151,12 @@ first-session cohort rates.
   and a durable first-successful-mount receipt so guidance cannot reappear on every dismount.
 - Combat Training defaults the Players list to collapsed, permits manual expansion, and restores
   the pre-training state on exit so the course pet HUD is not covered by the default list.
+
+### 2026-09-05 — Combat Training returns to the restored Merge bay
+
+- Fixed mission-close readiness being published before its asynchronous return teleport finished.
+  Merge now restores the assigned bay only after the old teleport has completed or been cancelled,
+  preventing late streaming acknowledgements from moving graduates into another player's bay.
+- Eight isolated Studio regression cases execute real mission-close and Merge-resume methods:
+  delayed, missing, and failed streaming plus no character; original bay available or occupied.
+  Full `mise run ci` passed (2,658 headless tests). No profile resets or production publish.
