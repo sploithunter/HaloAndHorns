@@ -15,6 +15,14 @@ filtered out of production registries.
 
 - `ConfigLoader` validates config shape and cross-references at boot. Current focused validators cover currencies, game, breakables, pets/egg sources, events, economy exchange, egg system, inventory, upgrades, areas, markers, pet index, achievements, leaderboards, UI, context menus, items, and monetization.
 - `DataService` owns ProfileStore data, schema versioning, migrations, durable state, stat counter storage, pet index state, achievement completion state, and currency source/sink ledger aggregates.
+- Persistence cadence lives in `configs/profile_persistence.lua`: ProfileStore owns the single
+  periodic auto-save loop; routine mutation requests coalesce for 60 seconds, critical ownership
+  requests remain prompt. A confirmation timeout is not cancellation: DataService keeps one
+  unconfirmed manual writer/listener instead of stacking retries. Failed requests recover through
+  ProfileStore's periodic save. Optional `Persistence.lastRequestToken` identifies the actual saved
+  snapshot; an older auto-save cannot satisfy a newer ownership barrier. Mutations during a write
+  remain dirty, late confirmations are accepted, and release disconnects listeners without
+  cancelling ProfileStore's final save. `SaveAndConfirm` still returns failure on its own deadline.
 - `RetentionService` taps the server `FireGameEvent` stream and maps stable tutorial, quest, and
   area events through `configs/retention.lua`. It writes the native Roblox onboarding funnel and a
   low-cardinality custom milestone event, while persisting exact first-occurrence timestamps under

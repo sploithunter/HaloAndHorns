@@ -680,7 +680,23 @@ function ConfigLoader:GetMonetizationStatus()
 end
 
 function ConfigLoader:ValidateConfig(configName, config)
-    if configName == "farm_asset_warmup" then
+    if configName == "profile_persistence" then
+        if type(config) ~= "table" then
+            return false, "profile_persistence must be a table"
+        end
+        for _, key in ipairs({
+            "auto_save_seconds",
+            "ordinary_debounce_seconds",
+            "critical_debounce_seconds",
+            "confirmation_timeout_seconds",
+        }) do
+            local value = config[key]
+            if type(value) ~= "number" or value <= 0 or value ~= value or value == math.huge then
+                return false, "profile_persistence." .. key .. " must be finite and positive"
+            end
+        end
+        return true
+    elseif configName == "farm_asset_warmup" then
         return require(script.Parent.Game.FarmAssetPlan).validate(config)
     elseif configName == "merge_analytics" then
         return require(script.Parent.Game.MergeAnalyticsFunnel).validate(config)
