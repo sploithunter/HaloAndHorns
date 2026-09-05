@@ -1494,10 +1494,12 @@ function MissionInstanceService:_close(instanceId, reason)
         end)
     end
 
-    -- return surviving members to where they entered from; clear mission
-    -- HUD state and restore their camera zoom
+    -- Keep InMission until return warps finish (or are cancelled). Clearing it here lets
+    -- Merge reclaim a bay, then a delayed streaming acknowledgement warps the player back
+    -- to their old entry point, which may now belong to somebody else.
+    local returningMembers = membersOf(record.teamKey)
     local warping = 0
-    for _, member in ipairs(membersOf(record.teamKey)) do
+    for _, member in ipairs(returningMembers) do
         -- Cancel an entry request that is still waiting before replacing it with the return warp.
         self:_cancelStream(member)
         local back = record.returnCFrames[member.UserId]
@@ -1507,11 +1509,17 @@ function MissionInstanceService:_close(instanceId, reason)
             -- same fall-through risk as entry, so same streaming-safe warp
             warping += 1
             task.spawn(function()
-                self:_safeWarp(member, back)
+                local ok, err = pcall(self._safeWarp, self, member, back)
                 warping -= 1
+                if not ok then
+                    self:_log("Warn", "mission return warp failed", {
+                        player = member.Name,
+                        instanceId = instanceId,
+                        error = tostring(err),
+                    })
+                end
             end)
         end
-        self:_clearMemberMissionState(member, record)
     end
 
     -- enemies born inside the mission die with it — never loiter at the slot
@@ -1539,6 +1547,14 @@ function MissionInstanceService:_close(instanceId, reason)
     local deadline = os.clock() + STREAM_WAIT + 1
     while warping > 0 and os.clock() < deadline do
         task.wait(0.1)
+    end
+    for _, member in ipairs(returningMembers) do
+        if member:GetAttribute("InMission") == instanceId then
+            -- A missing client floor acknowledgement must not leave a stale return pending.
+            -- Cancel before publishing readiness so it cannot overwrite the newly claimed bay.
+            self:_cancelStream(member)
+            self:_clearMemberMissionState(member, record)
+        end
     end
 
     pcall(function()
