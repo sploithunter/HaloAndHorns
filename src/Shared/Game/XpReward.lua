@@ -44,6 +44,14 @@ function XpReward.applyOnramp(amount, playerLevel, cfg, source)
         return amount
     end
 
+    local byLevel = type(cfg.activity_mult_by_level) == "table"
+        and cfg.activity_mult_by_level[source]
+    local level = math.max(1, math.floor(tonumber(playerLevel) or 1))
+    local levelMultiplier = type(byLevel) == "table" and tonumber(byLevel[level])
+    if levelMultiplier then
+        return math.max(0, math.floor(amount * levelMultiplier + 0.5))
+    end
+
     local belowLevel = tonumber(cfg.below_level) or 5
     if (tonumber(playerLevel) or 1) >= belowLevel then
         return amount

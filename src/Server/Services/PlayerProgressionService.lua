@@ -862,7 +862,7 @@ function PlayerProgressionService:AddExperience(player, amount, source)
         end
         amount = XpReward.applyOnramp(
             amount,
-            tonumber(player:GetAttribute("Level")) or 1,
+            self:GetEarnedLevel(player),
             self._onrampCfg,
             source
         )
