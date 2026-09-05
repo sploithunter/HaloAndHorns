@@ -1,5 +1,37 @@
 # Merge an Egg Prototype
 
+## Watcher encounters and early activity XP (2026-09-05)
+
+`merge_egg_prototype.watcher` reuses the authored
+`GeneratedMap_MergeEggVoxel.HellFaceGateTest.HellFace` mesh. Merge boot caches only that anchored
+face and its two authored pupils in `ReplicatedStorage.MergeWatcherTemplate`; underground streaming does not control its
+availability. The source prop remains untouched. Farm & Fight's existing Hell-5 follower is unchanged.
+
+`MergeWatcher` renders one local apparition for the player's own Hell bay. The pure
+`MergeWatcherDirector` consumes existing bay attributes: fresh bulwark/gate crossings, rising
+overrun, configured current-wave milestones, and delayed Quartermaster proximity/tutorial nudges.
+No combat remotes or server NPCs are added. Encounters last nine seconds, have a 75-second global
+cooldown, at most two Quartermaster reminders, and a twelve-encounter client-session cap. Old
+breaches/milestones are not replayed on joining. All lines, asset bindings, palettes and animation
+tuning live in config. Heaven lines are staged, but no Heaven apparition is enabled without its model.
+
+The face descends, follows a fixed world bearing with capped speed, faces the player and softly
+fades; there is no camera grab, movement lock, collision, shadow or flashing strobe. A private
+client ColorCorrectionEffect fades the scene slightly darker without modifying shared lighting
+properties; cleanup destroys only that effect. Two smooth, short internal eye-light pulses add
+life without the Hell-5 full-scene lightning stutter. Menus,
+combat training, transit, prologue and Scriptable-camera ceremonies suppress it. Quartermaster
+taunts include an explicit Basic Combat Training hint so sarcastic advice cannot obscure how to
+unlock pets. Prerecorded voices are a future option; this version is text-only.
+
+`leveling.onramp.activity_mult_by_level` now gives combat/mining raw-XP multipliers of
+12.5/12.5/12.5/10/5 at earned levels 1/2/3/4/5 (formerly 2.5 through level 4 and 1 at 5).
+That is approximately five times the previous reward at 1–3, four times at 4, and five times at 5,
+subject to rounding. Earned level comes from saved XP, not a temporary Level attribute.
+Level 6+, quest lumps, guaranteed tutorial level grants and rebirth relative-difficulty reduction
+are unchanged. XP thresholds and saved totals are not rewritten. This is an onboarding tuning
+pass, not a measured promise that every roster reaches level 5 within fifteen minutes.
+
 ## Delayed-profile bay assignment (2026-09-05)
 
 Dedicated-place auto-join no longer abandons a player when profile loading exceeds 30 seconds.
@@ -28,9 +60,9 @@ at Wave 60; later waves are unchanged. Player level/rebirth does not switch the 
 so levelling during a run never strengthens its enemies. Bodies, ranks, armor, and wave timing
 remain authored; existing layer/composition changes still apply.
 
-XP payouts are unchanged for everyone, including rebirth runs: the opening relief deliberately
-does not enter the existing XP-yield calculation. Players progress faster by winning fights, not
-by a new payout multiplier. The XP simulator retains that payout baseline; its nominal difficulty
+The opening difficulty relief itself does not change XP payouts, including rebirth runs: it
+deliberately does not enter the existing XP-yield calculation. The later activity-XP onramp retune
+above is a separate earned-level multiplier. The XP simulator retains its payout baseline; its nominal difficulty
 ratio is not actual relieved opening HP. This is a first tuning pass based on reported difficulty, not a proven guarantee
 that every Level-1 roster clears Wave 30; verify the new-player failure-wave distribution in play.
 

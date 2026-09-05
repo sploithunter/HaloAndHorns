@@ -64,15 +64,18 @@ return function()
             expect(XpReward.applyOnramp(evenMinion, 3, leveling.onramp, "combat")).to.equal(75)
         end)
 
-        it("tapers activity rewards through level 5 without changing quest or veteran XP", function()
-            expect(XpReward.applyOnramp(10, 3, leveling.onramp, "egg")).to.equal(15)
-            expect(XpReward.applyOnramp(10, 1, leveling.onramp, "combat")).to.equal(125)
-            expect(XpReward.applyOnramp(10, 4, leveling.onramp, "combat")).to.equal(100)
-            expect(XpReward.applyOnramp(10, 5, leveling.onramp, "mining")).to.equal(50)
-            expect(XpReward.applyOnramp(10, 6, leveling.onramp, "combat")).to.equal(10)
-            expect(XpReward.applyOnramp(10, 1, leveling.onramp, "quest")).to.equal(10)
-            expect(XpReward.applyOnramp(10, 50, leveling.onramp, "combat")).to.equal(10)
-        end)
+        it(
+            "tapers activity rewards through level 5 without changing quest or veteran XP",
+            function()
+                expect(XpReward.applyOnramp(10, 3, leveling.onramp, "egg")).to.equal(15)
+                expect(XpReward.applyOnramp(10, 1, leveling.onramp, "combat")).to.equal(125)
+                expect(XpReward.applyOnramp(10, 4, leveling.onramp, "combat")).to.equal(100)
+                expect(XpReward.applyOnramp(10, 5, leveling.onramp, "mining")).to.equal(50)
+                expect(XpReward.applyOnramp(10, 6, leveling.onramp, "combat")).to.equal(10)
+                expect(XpReward.applyOnramp(10, 1, leveling.onramp, "quest")).to.equal(10)
+                expect(XpReward.applyOnramp(10, 50, leveling.onramp, "combat")).to.equal(10)
+            end
+        )
 
         it("handles missing config and non-positive amounts safely", function()
             expect(XpReward.applyOnramp(10, 3, nil, "mining")).to.equal(10)

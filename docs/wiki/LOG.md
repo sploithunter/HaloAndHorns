@@ -8266,3 +8266,18 @@ first-session cohort rates.
   Offline rows cannot invoke Roblox live-Player social actions. Config owns icon and hover copy.
 - Full CI: 2,689 passing headless tests. Merge Studio visual check showed the real player first
   and two active offline workers below it with the emoji, rank and saved highest wave. No publish.
+
+## 2026-09-05 — Hell Watcher encounters and faster early XP
+
+- Reused the under-map authored Hell face/pupils with a streaming-safe presentation cache and
+  local, cooldown-limited reactions to fresh breaches, milestones and Quartermaster training nudges.
+- Kept the soft fade; added gentle client-only dimming and smooth internal eye pulses. No camera
+  takeover, input lock, shared-lighting restoration race, new combat traffic, or Heaven model yet.
+- Combat/mining rewards increase approximately 5x over their old values at earned levels 1–3,
+  4x at level 4, and 5x at level 5. Level 6+, quests, tutorial guarantees and rebirth yield stay.
+- Headless regression covers source/level boundaries and encounter cooldown, run isolation,
+  suppression, reminder limits and no replay of veteran history. Studio preview confirmed the
+  face spawn/fade against a client-only test wave; no profile wave or ownership was changed.
+- Fixed the newly introduced pre-claim `false`-bay attribute read; false/nil bay snapshots are
+  regression tested. Final CI: 2,697 tests passing. Fresh Studio boot had no Watcher errors;
+  dimming reached -0.16 and removed itself after the encounter, with Lighting.Brightness still 3.

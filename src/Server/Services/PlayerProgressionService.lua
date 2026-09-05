@@ -860,12 +860,7 @@ function PlayerProgressionService:AddExperience(player, amount, source)
             end)
             self._onrampCfg = (ok and type(lvl) == "table" and lvl.onramp) or false
         end
-        amount = XpReward.applyOnramp(
-            amount,
-            self:GetEarnedLevel(player),
-            self._onrampCfg,
-            source
-        )
+        amount = XpReward.applyOnramp(amount, self:GetEarnedLevel(player), self._onrampCfg, source)
     end
     local newXp = self:GetExperience(player) + amount
     self._dataService:SetStat(player, "Experience", newXp)

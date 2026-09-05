@@ -820,6 +820,15 @@ do
 end
 
 -- Start Matter loop with client systems
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeWatcher).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeWatcher", { error = tostring(err) })
+    end
+end
+
 local systemsList = {}
 for name, system in pairs(systems) do
     table.insert(systemsList, system)
