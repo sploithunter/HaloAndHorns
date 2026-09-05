@@ -287,9 +287,9 @@ return {
     gate = {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
-        action_text = "Enter",
-        object_text = "Merge",
-        title = "MERGE",
+        action_text = "Merge Eggs & Battle Waves",
+        object_text = "Small eggs. Big waves.",
+        title = "MERGE EGGS • WAVE COMBAT\nSmall eggs. Big waves.",
         access = {
             -- Public release: the same policy opens the source prompt and direct-place joins.
             -- Keep preview grants available for an explicit future rollback, without changing
@@ -975,6 +975,9 @@ return {
             training_resume_label = "RESUME COMBAT TRAINING",
             training_body = "Basic unlocks pets. Advanced 1 and 2 are optional: earn a level and a boost token for each.",
             training_complete_label = "OPTIONAL ADVANCED TRAINING / REPLAY",
+            farm_fight_label = "FARM & FIGHT — TAKE A BREATHER",
+            farm_fight_body = "Farm coins. Hatch pets. Find the Merge gate when chaos calls.",
+            four_service_height = 586,
             close_label = "NOT NOW",
         },
     },

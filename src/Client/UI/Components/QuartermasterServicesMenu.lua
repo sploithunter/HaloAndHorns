@@ -93,7 +93,8 @@ function QuartermasterServicesMenu.show(payload, respond)
     end
     local priorSelection = GuiService.SelectedObject
     local trainingAvailable = payload.trainingAvailable ~= false
-    local serviceCount = trainingAvailable and 3 or 2
+    local farmFightAvailable = payload.farmFightAvailable == true
+    local serviceCount = (trainingAvailable and 3 or 2) + (farmFightAvailable and 1 or 0)
     local gui = Instance.new("ScreenGui")
     gui.Name = "QuartermasterServicesMenu"
     gui.IgnoreGuiInset = true
@@ -122,7 +123,11 @@ function QuartermasterServicesMenu.show(payload, respond)
     panel.Name = "Services"
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.fromScale(0.5, 0.5)
-    panel.Size = UDim2.fromOffset(680, serviceCount == 3 and 498 or 410)
+    panel.Size = UDim2.fromOffset(
+        680,
+        serviceCount == 4 and assert(tonumber(payload.fourServiceHeight))
+            or (serviceCount == 3 and 498 or 410)
+    )
     panel.BackgroundColor3 = Color3.fromRGB(20, 25, 36)
     panel.BorderSizePixel = 0
     panel.ZIndex = 2
@@ -229,6 +234,18 @@ function QuartermasterServicesMenu.show(payload, respond)
         )
     end
 
+    local farmFight
+    if farmFightAvailable then
+        farmFight = serviceButton(
+            serviceList,
+            "FarmAndFight",
+            tostring(payload.farmFightLabel),
+            tostring(payload.farmFightBody),
+            potions.BackgroundColor3,
+            4
+        )
+    end
+
     local notNow = Instance.new("TextButton")
     notNow.Name = "NotNow"
     notNow.AnchorPoint = Vector2.new(0.5, 1)
@@ -279,6 +296,11 @@ function QuartermasterServicesMenu.show(payload, respond)
     if training then
         training.Activated:Connect(function()
             resolve("combat_training")
+        end)
+    end
+    if farmFight then
+        farmFight.Activated:Connect(function()
+            resolve("farm_fight")
         end)
     end
 

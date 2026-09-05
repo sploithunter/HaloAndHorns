@@ -26,6 +26,19 @@ that every Level-1 roster clears Wave 30; verify the new-player failure-wave dis
 
 ## Farm & Fight return portals
 
+Quartermaster services includes **FARM & FIGHT — TAKE A BREATHER**, explaining farming, hatching,
+and the Merge gate back. It uses the existing owner/proximity validation and public return route,
+including shield/loading feedback. Failed travel leaves the active run intact. The source gate in
+Farm & Fight now reads **MERGE EGGS • WAVE COMBAT / Small eggs. Big waves.** All copy remains in
+`configs/merge_egg_prototype.lua`; the menu has room for four service buttons.
+
+Potion tents are static authored props. Their imported tent meshes were unanchored (the signs
+were anchored), so hiding vendors disabled collision and let the tents fall below the map. All ten
+meshes were anchored in the open Merge Edit model on 2026-09-05, and `_setPotionShopPosted` anchors
+all booth parts before toggling visibility/collision as a safeguard for future imports. The direct
+potion prompt remains suppressed: the Quartermaster owns interaction when posted. Keep these
+authored changes when manually publishing; do not replace the place with a scripts-only build.
+
 ### Player-list personal best
 
 In Merge, the People list Status column, hover, and player card show `Wave N`: the player's

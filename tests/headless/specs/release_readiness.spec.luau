@@ -52,7 +52,7 @@ return function()
             expect(pets.test_mode.enabled).to.equal(false)
         end)
 
-        it("opens only Week 4 public claims and no Studio claim overrides", function()
+        it("opens only Week 5 public claims and no Studio claim overrides", function()
             local rewards = loadModule("configs/tester_rewards.lua")
             local enabledCampaign = nil
             for campaignId, campaign in pairs(rewards.campaigns) do
@@ -62,13 +62,13 @@ return function()
                     enabledCampaign = campaignId
                 end
             end
-            expect(enabledCampaign).to.equal("beta_week_4_2026")
+            expect(enabledCampaign).to.equal("beta_week_5_2026")
 
-            local weekFour = rewards.campaigns.beta_week_4_2026
-            expect(weekFour.egg_id).to.equal("core_digger_egg")
-            expect(weekFour.pet_id).to.equal("core_digger")
-            expect(weekFour.claim.starts_at).to.equal(1787983200)
-            expect(weekFour.claim.ends_at).to.equal(1788588000)
+            local weekFive = rewards.campaigns.beta_week_5_2026
+            expect(weekFive.egg_id).to.equal("cache_bandit_egg")
+            expect(weekFive.pet_id).to.equal("cache_bandit")
+            expect(weekFive.claim.starts_at).to.equal(1788588000)
+            expect(weekFive.claim.ends_at).to.equal(1789192800)
         end)
 
         it("keeps the diagnostic promo code Studio-only", function()

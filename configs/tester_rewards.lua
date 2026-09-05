@@ -80,7 +80,7 @@ return {
             rainbow_level = 10,
             huge_chance = 0.01,
             claim = {
-                enabled = true,
+                enabled = false,
                 starts_at = 1787983200,
                 ends_at = 1788588000,
                 studio_enabled = false,
@@ -97,7 +97,7 @@ return {
             rainbow_level = 10,
             huge_chance = 0.01,
             claim = {
-                enabled = false,
+                enabled = true,
                 starts_at = 1788588000,
                 ends_at = 1789192800,
                 studio_enabled = false,
