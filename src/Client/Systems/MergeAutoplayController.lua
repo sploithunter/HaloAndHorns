@@ -20,7 +20,7 @@ local function horizontalDistance(a, b)
 end
 
 function Controller.start()
-    if started or not Config.enabled then
+    if not RunService:IsStudio() or started or not Config.enabled then
         return
     end
     started = true

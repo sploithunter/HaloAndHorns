@@ -1440,7 +1440,7 @@ return {
             location = "replicated_storage",
             direction = "client_to_server",
             authorization = "player",
-            environments = { production = true, studio = true, test = true },
+            environments = { production = false, studio = true, test = true },
             delivery = "request",
             rate_limit = 4,
             handler = "MergeAutoplayService.HandleToggle",

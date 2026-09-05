@@ -134,6 +134,9 @@ function Service:_begin(player, options)
 end
 
 function Service:HandleToggle(player, request)
+    if not RunService:IsStudio() then
+        return
+    end
     if type(request) ~= "table" or type(request.enabled) ~= "boolean" then
         return
     end
@@ -473,7 +476,7 @@ function Service:StudioControl(player, request)
 end
 
 function Service:Start()
-    if not self._config.enabled then
+    if not RunService:IsStudio() or not self._config.enabled then
         return
     end
     Signals.MergeAutoplayToggle.OnServerEvent:Connect(function(player, request)

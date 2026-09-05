@@ -372,6 +372,8 @@ return function()
 
             local signals =
                 SignalRegistry.build(networkConfig, transport, { environment = "production" })
+            expect(signals.MergeAutoplayToggle).to.equal(nil)
+            expect(created.MergeAutoplayToggle).to.equal(nil)
             expect(signals.GameAPICommand.name).to.equal("GameAPICommand")
             expect(signals.EggOpened.name).to.equal("EggOpened")
             expect(signals.MergeEggPrototypeUpgrade.name).to.equal("MergeEggPrototypeUpgrade")
