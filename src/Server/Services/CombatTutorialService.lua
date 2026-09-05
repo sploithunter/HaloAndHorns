@@ -1065,6 +1065,9 @@ function CombatTutorialService:_enforceLivePackCap(player)
 end
 
 function CombatTutorialService:_enter(player)
+    if self._sessions[player] and self._sessions[player].leaving then
+        return
+    end
     if not self._dataService:IsDataLoaded(player) then
         return
     end
@@ -1120,11 +1123,17 @@ function CombatTutorialService:_leave(player)
         return
     end
     local session = self._sessions[player]
+    if session and session.leaving then
+        return
+    end
+    if session then
+        session.leaving = true
+        self:_clearSessionLoops(session)
+    end
     if not (session and session.skipRewind) then
         self:_rewindLeaveResume(player)
     end
     self:_despawnTutorialEnemies(player)
-    player:SetAttribute("InCombatTutorial", nil)
     player:SetAttribute("CombatTutorialWoundSlot", nil)
     player:SetAttribute("CombatTutorialTargetEnemy", nil)
     player:SetAttribute("CombatTutorialHealerCue", nil)
@@ -1138,6 +1147,9 @@ function CombatTutorialService:_leave(player)
         self:_clearSessionLoops(session)
         self._sessions[player] = nil
     end
+    -- This is the return-to-game readiness signal. Squad restoration can yield; publishing it
+    -- earlier lets Merge reclaim a bay while the tutorial still owns/rebuilds the player's pets.
+    player:SetAttribute("InCombatTutorial", nil)
     if self._tutorialService and self._tutorialService._push then
         self._tutorialService:_push(player)
     end
