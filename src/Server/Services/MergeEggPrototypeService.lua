@@ -7550,11 +7550,15 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
         potionsBody = tostring(services.potions_body or "Buy supplies for your pets."),
         trainingLabel = tostring(trainingLabel),
         trainingBody = tostring(services.training_body or "Learn to use powers in combat."),
+        enhancementsLabel = services.enhancements_label,
+        enhancementsBody = services.enhancements_body,
+        enhancementsColor = services.enhancements_color,
         farmFightLabel = services.farm_fight_label,
         farmFightBody = services.farm_fight_body,
         farmFightAvailable = type(services.farm_fight_label) == "string"
             and PlaceRuntime.placeIdForRole(self._placesConfig, "main") ~= nil,
         fourServiceHeight = services.four_service_height,
+        fiveServiceHeight = services.five_service_height,
         closeLabel = tostring(services.close_label or "NOT NOW"),
         trainingAvailable = true,
         combatTutorialDone = done,
@@ -7612,6 +7616,9 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
     end
     local choice = tostring(type(request) == "table" and request.choice or "")
     local menuState = self:_quartermasterMenuState(record)
+    if choice == "enhancements" and menuState.enhancementsLabel then
+        return true, { operation = "enhancements_opened" }
+    end
     if choice == "farm_fight" then
         if not menuState.farmFightAvailable then
             return false, "place_role_unconfigured"

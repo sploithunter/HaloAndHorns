@@ -124,7 +124,7 @@ return function()
                 local potionShop = readFile("src/Server/Services/PotionShopService.lua")
 
                 expect(config.quartermaster.action_text).to.equal("Services")
-                expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS")
+                expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS — BUY SOME PICK-ME-UPS")
                 expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
                 expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
                 expect(
@@ -163,7 +163,7 @@ return function()
                 local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
                 local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
 
-                expect(config.quartermaster.services.training_label).to.equal("COMBAT TRAINING")
+                expect(config.quartermaster.services.training_label).to.equal("COMBAT TRAINING — UNLOCK YOUR PETS")
                 expect(config.quartermaster.greeting:find("Rebirths unlock new eggs", 1, true)).to.be.ok()
                 expect(config.quartermaster.services.body:find("Finish Combat Training", 1, true)).to.be.ok()
                 expect(

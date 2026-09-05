@@ -45,6 +45,11 @@ local function serviceButton(parent, name, titleText, bodyText, color, order)
     title.Text = titleText
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextSize = 22
+    title.TextScaled = true
+    local textBounds = Instance.new("UITextSizeConstraint")
+    textBounds.MinTextSize = 14
+    textBounds.MaxTextSize = 22
+    textBounds.Parent = title
     title.Font = Enum.Font.GothamBlack
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 6
@@ -94,7 +99,9 @@ function QuartermasterServicesMenu.show(payload, respond)
     local priorSelection = GuiService.SelectedObject
     local trainingAvailable = payload.trainingAvailable ~= false
     local farmFightAvailable = payload.farmFightAvailable == true
+    local enhancementsAvailable = type(payload.enhancementsLabel) == "string"
     local serviceCount = (trainingAvailable and 3 or 2) + (farmFightAvailable and 1 or 0)
+        + (enhancementsAvailable and 1 or 0)
     local gui = Instance.new("ScreenGui")
     gui.Name = "QuartermasterServicesMenu"
     gui.IgnoreGuiInset = true
@@ -125,7 +132,8 @@ function QuartermasterServicesMenu.show(payload, respond)
     panel.Position = UDim2.fromScale(0.5, 0.5)
     panel.Size = UDim2.fromOffset(
         680,
-        serviceCount == 4 and assert(tonumber(payload.fourServiceHeight))
+        serviceCount == 5 and assert(tonumber(payload.fiveServiceHeight))
+            or serviceCount == 4 and assert(tonumber(payload.fourServiceHeight))
             or (serviceCount == 3 and 498 or 410)
     )
     panel.BackgroundColor3 = Color3.fromRGB(20, 25, 36)
@@ -235,6 +243,17 @@ function QuartermasterServicesMenu.show(payload, respond)
     end
 
     local farmFight
+    local enhancements
+    if enhancementsAvailable then
+        enhancements = serviceButton(
+            serviceList,
+            "Enhancements",
+            payload.enhancementsLabel,
+            payload.enhancementsBody,
+            Color3.fromRGB(table.unpack(payload.enhancementsColor)),
+            4
+        )
+    end
     if farmFightAvailable then
         farmFight = serviceButton(
             serviceList,
@@ -242,7 +261,7 @@ function QuartermasterServicesMenu.show(payload, respond)
             tostring(payload.farmFightLabel),
             tostring(payload.farmFightBody),
             potions.BackgroundColor3,
-            4
+            5
         )
     end
 
@@ -303,9 +322,14 @@ function QuartermasterServicesMenu.show(payload, respond)
             resolve("farm_fight")
         end)
     end
+    if enhancements then
+        enhancements.Activated:Connect(function()
+            resolve("enhancements")
+        end)
+    end
 
     gui.Parent = playerGui
-    UIViewportScale.attach(panel, { min = 0.65 })
+    UIViewportScale.attach(panel)
     if player:GetAttribute("InputMode") == "gamepad" then
         GuiService.SelectedObject = gamePasses
     end
