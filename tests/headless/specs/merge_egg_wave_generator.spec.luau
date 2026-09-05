@@ -15,6 +15,15 @@ end
 
 return function()
     describe("Merge early-wave difficulty", function()
+        it("does not add an XP penalty to the easier opening", function()
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local first =
+                assert(service:find("function MergeEggPrototypeService:_combatXpYield(", 1, true))
+            local last = assert(service:find("\nfunction ", first + 1, true))
+            local method = service:sub(first, last - 1)
+            expect(method:find("earlyDifficulty", 1, true)).to.equal(nil)
+            expect(method:find("early_wave_difficulty", 1, true)).to.equal(nil)
+        end)
         it("uses the authored health/damage relief at each checkpoint", function()
             for _, point in ipairs(prototype.early_wave_difficulty.checkpoints) do
                 local hp, damage =

@@ -2431,11 +2431,8 @@ function MergeEggPrototypeService:_combatXpYield(record, waveIndex)
     local wave = self:_waveFor(record, resolvedWaveIndex)
     local enemyHpMultiplier =
         MergeEggXpYield.enemyHpMultiplier(stage.combat_layers, resolvedWaveIndex, wave)
-    local openingHp = MergeEggWaveGenerator.earlyDifficulty(
-        self._config.early_wave_difficulty,
-        resolvedWaveIndex
-    )
-    enemyHpMultiplier *= openingHp
+    -- Opening relief intentionally keeps existing XP payouts: it helps stalled players progress
+    -- by winning fights faster, without adding a new XP penalty (including after rebirth).
     local rebirthDamage =
         MergeEggRebirth.damageMultiplier(self._config.rebirth, record and record.rebirthCount)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")

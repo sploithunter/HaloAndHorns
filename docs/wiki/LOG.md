@@ -8111,3 +8111,7 @@ first-session cohort rates.
 - Kept rebirth XP difficulty and the offline simulator aligned with actual opening enemy HP.
 - Added interpolation/boundary/dependency regressions and isolated Studio production-method checks
   for deferred grant retry, exact XP, no duplicate/downgrade, and actual enemy-stat application.
+
+- Same-session correction after player feedback: removed the proposed extra rebirth XP reduction.
+  All existing XP payouts stay unchanged; early-wave relief affects enemy stats only. The XP
+  simulator retains the payout baseline, not the reduced opening HP as a difficulty estimate.

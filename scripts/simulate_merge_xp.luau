@@ -231,14 +231,13 @@ local function contextFor(rank, waveIndex, damageLevel, fireRateLevel)
     local rebirthCount = rank - 1
     local rebirthDamage = Rebirth.damageMultiplier(config.rebirth, rebirthCount)
     local managementDamage = upgradeMultiplier("damage", damageLevel)
-    local openingHp = WaveGenerator.earlyDifficulty(config.early_wave_difficulty, waveIndex)
     return XpYield.resolve(yieldConfig, {
         rebirthCount = rebirthCount,
         enemyHpMultiplier = XpYield.enemyHpMultiplier(
             stage.combat_layers,
             waveIndex,
             waveAt(waveIndex)
-        ) * openingHp,
+        ),
         alliedDamageMultiplier = DamageScope.additiveUpgradeMultiplier(
             managementDamage,
             rebirthDamage

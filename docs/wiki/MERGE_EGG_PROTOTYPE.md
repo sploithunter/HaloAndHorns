@@ -12,9 +12,10 @@ at Wave 60; later waves are unchanged. Player level/rebirth does not switch the 
 so levelling during a run never strengthens its enemies. Bodies, ranks, armor, and wave timing
 remain authored; existing layer/composition changes still apply.
 
-New-player payouts are unchanged. Rebirth XP difficulty includes the same opening HP factor,
-and the offline XP simulator uses the shared interpolation helper too. The no-rebirth XP bypass
-remains intact. This is a first tuning pass based on reported difficulty, not a proven guarantee
+XP payouts are unchanged for everyone, including rebirth runs: the opening relief deliberately
+does not enter the existing XP-yield calculation. Players progress faster by winning fights, not
+by a new payout multiplier. The XP simulator retains that payout baseline; its nominal difficulty
+ratio is not actual relieved opening HP. This is a first tuning pass based on reported difficulty, not a proven guarantee
 that every Level-1 roster clears Wave 30; verify the new-player failure-wave distribution in play.
 
 ## Farm & Fight return portals
