@@ -955,6 +955,9 @@ end
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
 function InventoryService:_initializePlayerProjection(player)
+    if require(script.Parent.Parent.OfflineActors).is(player) then
+        return
+    end
     if self._playerInventoryFolders[player] then
         return
     end
@@ -1246,6 +1249,9 @@ function InventoryService:_createEquippedFolder(player, category, parentFolder)
 end
 
 function InventoryService:_updateBucketFolders(player, bucketName)
+    if require(script.Parent.Parent.OfflineActors).is(player) then
+        return
+    end
     local inventoryFolder = self._playerInventoryFolders[player]
     if not inventoryFolder then
         self._logger:Warn("⚠️ REPLICATION - No inventory folder found for update", {
@@ -2722,6 +2728,9 @@ end
 function InventoryService:RebuildPetProjections(player)
     self:_recomputePetUsedSlots(player)
     self:_validateEquippedTable(player)
+    if require(script.Parent.Parent.OfflineActors).is(player) then
+        return
+    end
     self:_updateBucketFolders(player, "pets")
     self:_updateEquippedFolders(player, "pets")
     self.EquipmentChanged:Fire(player)
@@ -2733,6 +2742,9 @@ end
 -- layer or the equipped folder. Keeps mass hatching / per-breakable XP awards cheap.
 function InventoryService:RefreshPetInventory(player)
     self:_recomputePetUsedSlots(player)
+    if require(script.Parent.Parent.OfflineActors).is(player) then
+        return
+    end
     self:_updateBucketFolders(player, "pets")
     self.PetsChanged:Fire(player)
 end

@@ -2200,3 +2200,12 @@ Dedicated Merge place hides the Farm quest tracker. Wave status lives in
 its configured Merge top ratio for the current DisplayClass so it sits under
 the wave bar on phone, tablet, desktop, and ten-foot displays. Hatcher captains stand on
 the floor on the gate side of their egg; new slots get a cloned `EggStand`.
+
+## Offline Merge workers (2026-09-05)
+
+Automatic disconnected-account play is implemented for up to five empty Merge bays, including
+Studio. Exact internal IDs (except Colorado Plays) and registered Offline Gaming pass owners are
+selected from a randomized global pool. Real-player claims/login preempt workers; ordinary
+Waycoin-only gameplay saves actual earnings to exclusively locked canonical profiles. Online
+autoplay buttons remain Studio-only. See [Merge Autoplay](MERGE_AUTOPLAY.md) for verification,
+diagnostics and the coordinated two-place publish requirement. Not published by this change.

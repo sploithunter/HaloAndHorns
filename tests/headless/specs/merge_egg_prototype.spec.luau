@@ -1511,7 +1511,9 @@ return function()
             expect(observer:find("surface.Adornee = host", 1, true)).to.be.ok()
             expect(observer:find("surface.Parent = playerGui", 1, true)).to.be.ok()
             expect(observer:find("MergeEggPrototypeBoardResult.OnClientEvent", 1, true)).to.be.ok()
-            expect(service:find("MergeEggPrototypeBoardResult:FireClient", 1, true)).to.be.ok()
+            expect(
+                service:find("self:_sendClientSignal(Signals.MergeEggPrototypeBoardResult", 1, true)
+            ).to.be.ok()
             expect(network.packets.MergeEggPrototypeBoardAction.authorization).to.equal("player")
             expect(network.packets.MergeEggPrototypeBoardAction.environments.production).to.equal(
                 true

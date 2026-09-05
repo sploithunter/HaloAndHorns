@@ -1,14 +1,80 @@
-# Merge online autoplay
+# Merge offline play and Studio autoplay
 
-Status: implemented and branch-verified (2026-09-04).
+Status: offline workers implemented and Studio-verified (2026-09-05); publish both places together.
 
-Release correction (2026-09-04): the online autoplay button/controller, server toggle handler,
-and service Start are now explicitly `RunService:IsStudio()`-gated. The toggle remote is omitted
-from the production manifest. Live players do not receive this online test control. The intended
-paid feature is **offline play** for disconnected accounts; its shared eligibility pool,
-cross-server login cancellation, spare-bay workers and durable reward handoff are separate work
-and are **not enabled by this UI-only release**. The online production contract below describes
-the original implementation and now applies only to the Studio test runner.
+The online autoplay button/controller, server toggle handler and service Start remain
+`RunService:IsStudio()`-gated. Live players never receive that test control. The paid feature is
+now **offline play**: server-owned characters work for disconnected accounts in spare Merge bays.
+
+## Offline production contract
+
+- `configs/merge_offline.lua` enables automatic filling in live Merge **and Studio**, up to five
+  otherwise-empty bays. One candidate is started per fill cycle (20 seconds plus service latency),
+  not five synchronous loads at boot. Farm & Fight tracks login presence but does not host workers.
+- Eligibility is exact IDs from `internal_accounts`, excluding Colorado Plays `3200870803`, plus
+  verified `offline_gaming` pass owners (`1963628754`). Existing pass owners enter the persistent
+  pool on their first join to an updated server; Roblox ownership cannot be globally enumerated.
+  Purchase completion registers immediately and ownership is rechecked before a worker starts.
+- A randomized pivot/wrap query samples the global pool; a shuffle includes internal accounts.
+  Workers rotate after 30 minutes and are not guaranteed continuous time or a particular server.
+- Real Players preempt offline occupants when claiming their bay, and random allocation can
+  reclaim an offline bay when all bays are occupied. Cleanup checks exact claimant identity so
+  delayed cleanup cannot release another player's replacement session.
+- Login in either place writes online presence and publishes cancellation before profile load.
+  Messaging is the fast path; a 15-second renewal checks the 90-second fenced lease as fallback.
+  Lease loss, expiry, shutdown, death or runtime failure stops the worker. No new workers start
+  when profile storage or presence acquisition fails. Normal ProfileStore locking remains the
+  final authority even if presence/messaging is unavailable.
+- Server-only `OfflineActors` are table facades, never artificial Roblox Player instances.
+  `MergeOfflineRuntime` reuses ordinary Merge/autoplay methods with private session maps, real
+  walking/pathfinding, ordinary prices and owner-scoped encounters. It fields equipped, owned,
+  unlocked pets and preserves survivors; it does not fabricate a second combat simulation.
+- Only Waycoins are spent. Existing unlocked egg/defense options are used; no Gem purchases,
+  automatic rebirth, ascension, level claims or destructive defense-family replacements. Natural
+  combat XP and ordinary drops still accrue. An empty bay deploys an egg before saving for upgrades.
+- Offline actors do not emit online onboarding/funnel events or receive personal UI remotes.
+  Shared world models remain visible to nearby actual clients.
+
+## Ownership and earnings
+
+`MergeOfflinePresence_v1` (MemoryStore hash) stores fenced online/offline/cooldown leases;
+`MergeOfflinePool_v1` (OrderedDataStore) stores randomized eligible account IDs;
+`MergeOfflineLogin_v1` (MessagingService) accelerates login cancellation.
+
+There is **no second balance or replayable reward grant**. A worker exclusively acquires the
+existing `PlayerData_v2_mixedPets` / `Player_<id>` profile and ordinary economy/inventory/XP services
+mutate that canonical profile. Ending the worker persists Merge playstate and calls ProfileStore
+EndSession. The next actual login obtains those already-earned balances and inventory.
+
+`NonPreemptiveProfileStore` wraps the pinned ProfileStore 1.0.3 backend on a dedicated store
+instance. A read-only preflight skips absent/locked accounts; the UpdateAsync transform is the
+authoritative guard. Background work never creates a missing profile, requests force-load, steals
+an existing session, or writes after its exact session token is replaced. It depends on pinned
+private `data_store`, `template`, and `is_ready` fields: preserve adapter contract tests when
+upgrading ProfileStore. Template tracking: issue #456.
+
+Profile root `OfflineMerge` contains a cosmetic summary (`seconds`, `xp`, `gems`, `lastEnded`,
+`reason`, `presented`). The welcome-back receipt acknowledges that summary, not a second payout;
+repeated receipt delivery cannot duplicate earnings. Coins spent/collected and actions remain
+available in runtime reports; normal wallet and Merge checkpoint persistence retain their results.
+
+## Offline verification and diagnostics
+
+Studio-only `ServerStorage.MergeOfflineStudioControl` is a server BindableFunction, not a remote.
+Actions: `status`, `enable`, `pause_filling` (keep existing workers), `disable` (save/stop all),
+`fixture_start` with a real source Player, `fixture_step`, `fixture_stop`, and `fixture_preempt`.
+Fixtures use a negative account ID and an in-memory copy, never the source player's profile.
+`ServerStorage.MergeOfflineWorkers` attributes expose filling state, count, candidates, last
+start/stop/reason/error. Disabling through this control applies only to that Studio session.
+
+Verified in Studio: isolated start/stop/preemption; a real alternate advanced waves 30–32 and
+earned 250 XP, then an independent DataStore read confirmed saved XP/highest wave/summary and
+released profile ownership. Another alternate created/deployed its first egg, advanced wave 0–10,
+and upgraded production with zero navigation failures. A simulated cross-server online lease plus
+login message stopped only the matching worker. Actual two-server/account login and production
+load behavior still need a published smoke test; Studio tests are not evidence of those results.
+
+## Existing online Studio test runner
 
 Baseline before work: clean main `a8c20b65`, published Merge **v594**. Studio stays open.
 
@@ -17,7 +83,7 @@ Baseline before work: clean main `a8c20b65`, published Merge **v594**. Studio st
 Despite the dashboard name, this is **online character autoplay**, not offline accrual or an
 anti-idle system. Owners opt in per session; joining/rebirthing never silently enables it.
 
-## Production contract
+### Studio runner contract
 
 - Client sends only on/off intent through `MergeAutoplayToggle`. The server owns every target,
   price, action, and per-player state. Client walking uses pathfinding and normal humanoid input;

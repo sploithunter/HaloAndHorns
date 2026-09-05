@@ -2053,14 +2053,18 @@ function MergeEggRealmBuilder:Claim(player, bayId)
     if not (userId and bay) then
         return nil, "bay_unavailable"
     end
-    if bay.ownerUserId and bay.ownerUserId ~= userId then
-        return nil, "bay_occupied"
-    end
     local existing = self._claimsByUserId[userId]
     if existing and existing ~= bayId then
         return nil, "player_already_has_bay"
     end
+    if self.beforeClaim and typeof(player) == "Instance" then
+        self.beforeClaim(bayId)
+    end
+    if bay.ownerUserId and bay.ownerUserId ~= userId then
+        return nil, "bay_occupied"
+    end
     bay.ownerUserId = userId
+    bay.claimant = player
     self._claimsByUserId[userId] = bayId
     bay.model:SetAttribute("MergeEggBayOwnerUserId", userId)
     bay.model:SetAttribute("MergeEggBayOwnerName", player.Name)
@@ -2087,6 +2091,12 @@ function MergeEggRealmBuilder:ClaimRandom(player)
     local selected =
         MergeEggRealmLayout.pickAvailable(self._config, occupied, self._random:NextNumber())
     if not selected then
+        if self.vacateOffline and typeof(player) == "Instance" then
+            local bayId = self.vacateOffline()
+            if bayId then
+                return self:Claim(player, bayId)
+            end
+        end
         return nil, "realm_full"
     end
     return self:Claim(player, selected.id)
@@ -2096,10 +2106,11 @@ function MergeEggRealmBuilder:Release(player)
     local userId = player and player.UserId
     local bayId = userId and self._claimsByUserId[userId]
     local bay = bayId and self._bays[bayId]
-    if not bay then
+    if not bay or (bay.claimant and bay.claimant ~= player) then
         return false
     end
     bay.ownerUserId = nil
+    bay.claimant = nil
     self._claimsByUserId[userId] = nil
     bay.model:SetAttribute("MergeEggBayOwnerUserId", 0)
     bay.model:SetAttribute("MergeEggBayOwnerName", nil)

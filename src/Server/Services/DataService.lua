@@ -772,6 +772,7 @@ function DataService:Init()
     self.PersistenceWarningsIssued = {}
     self.BeforeProfileReleaseHandlers = {}
     self.BeforeProfileReleaseHandled = {}
+    self.BeforeProfileLoadHandlers = {}
 
     -- Connect to player events
     Players.PlayerAdded:Connect(function(player)
@@ -1120,6 +1121,10 @@ function DataService:_saveProfileNow(player, reason)
     return true
 end
 
+function DataService:RegisterBeforeProfileLoad(handler)
+    table.insert(self.BeforeProfileLoadHandlers, handler)
+end
+
 function DataService:LoadProfile(player)
     if self.LoadPromises[player] then
         return self.LoadPromises[player]
@@ -1128,6 +1133,18 @@ function DataService:LoadProfile(player)
     self._logger:Info("Loading profile", { player = player.Name, userId = player.UserId })
 
     local promise = task.spawn(function()
+        for _, handler in ipairs(self.BeforeProfileLoadHandlers) do
+            local ok, err = pcall(handler, player)
+            if not ok then
+                self._logger:Warn(
+                    "Before-profile-load hook failed; retaining normal session locking",
+                    {
+                        player = player.Name,
+                        error = tostring(err),
+                    }
+                )
+            end
+        end
         local profile = self.ProfileStore:StartSessionAsync("Player_" .. player.UserId, {
             Cancel = function()
                 return player.Parent == nil -- Cancel if player left

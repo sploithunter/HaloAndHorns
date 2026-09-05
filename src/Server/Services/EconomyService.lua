@@ -278,6 +278,9 @@ function EconomyService:SetCurrency(player, currencyType, amount, reason)
         self.CurrencyChanged:Fire(player, currencyType, newAmount, oldAmount)
     end)
     pcall(function()
+        if type(player) == "table" and player.OfflineActor == true then
+            return
+        end
         require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
             player,
             { currency = currencyType, amount = newAmount, change = newAmount - oldAmount }
@@ -382,6 +385,9 @@ function EconomyService:AddCurrency(player, currencyType, amount, reason)
         end)
 
         pcall(function()
+            if type(player) == "table" and player.OfflineActor == true then
+                return
+            end
             require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
                 player,
                 {
@@ -452,6 +458,9 @@ function EconomyService:RemoveCurrency(player, currencyType, amount, reason)
 
         -- Sync to client (with error handling)
         local bridgeSuccess, bridgeError = pcall(function()
+            if type(player) == "table" and player.OfflineActor == true then
+                return
+            end
             require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
                 player,
                 {

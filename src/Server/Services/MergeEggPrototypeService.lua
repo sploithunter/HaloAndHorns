@@ -2598,7 +2598,7 @@ function MergeEggPrototypeService:_awardFullModeHatch(record, deployedTier)
     local isNew = granted.petIndex ~= nil and granted.petIndex.isNew == true
     if isNew and Signals.MergeEggPrototypePlayerHatch then
         local petData = granted.petData or result.petData or {}
-        Signals.MergeEggPrototypePlayerHatch:FireClient(record.player, {
+        self:_sendClientSignal(Signals.MergeEggPrototypePlayerHatch, record.player, {
             eggType = source.eggId,
             eggTier = source.tier,
             petType = tostring(result.pet),
@@ -7030,7 +7030,7 @@ function MergeEggPrototypeService:_openBulwarkMenu(player, slot)
         record.tutorialTalkedEngineer = true
         self:_updateTutorial(record, os.clock(), true)
     end
-    Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+    self:_sendClientSignal(Signals.MergeEggPrototypeBoardResult, player, {
         ok = true,
         action = "open_bulwark_menu",
         value = self:_bulwarkMenuState(record, slot),
@@ -7586,7 +7586,7 @@ function MergeEggPrototypeService:_openQuartermasterTalk(player)
         self:_clearQuartermasterIntroduction(record)
     end
     value.milestone = completesTutorial and "quartermaster_ready" or nil
-    Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+    self:_sendClientSignal(Signals.MergeEggPrototypeBoardResult, player, {
         ok = true,
         action = "quartermaster_talk",
         value = value,
@@ -8359,7 +8359,7 @@ function MergeEggPrototypeService:_openCannonMenu(player, slot)
         record.tutorialTalkedCommander = true
         self:_updateTutorial(record, os.clock(), true)
     end
-    Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+    self:_sendClientSignal(Signals.MergeEggPrototypeBoardResult, player, {
         ok = true,
         action = "open_cannon_menu",
         value = self:_cannonMenuState(record, slot),
@@ -12257,6 +12257,13 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
         bay = record.bayId,
         departing = departing == true,
     })
+end
+
+function MergeEggPrototypeService:_sendClientSignal(signal, player, payload)
+    if require(script.Parent.Parent.OfflineActors).is(player) then
+        return
+    end
+    signal:FireClient(player, payload)
 end
 
 function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
@@ -18251,7 +18258,7 @@ function MergeEggPrototypeService:Start()
                 or action == "upgrade_base"
                 or (action == "deploy_to_hatcher" and operation == "upgraded")
             )
-        Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+        self:_sendClientSignal(Signals.MergeEggPrototypeBoardResult, player, {
             ok = ok == true,
             action = action,
             value = ok == true and result or nil,

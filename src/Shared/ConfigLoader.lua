@@ -680,7 +680,9 @@ function ConfigLoader:GetMonetizationStatus()
 end
 
 function ConfigLoader:ValidateConfig(configName, config)
-    if configName == "profile_persistence" then
+    if configName == "merge_offline" then
+        return require(script.Parent.Game.MergeOfflineLease).validate(config)
+    elseif configName == "profile_persistence" then
         if type(config) ~= "table" then
             return false, "profile_persistence must be a table"
         end

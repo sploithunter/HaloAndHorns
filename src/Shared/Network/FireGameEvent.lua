@@ -64,6 +64,10 @@ end
 
 local FireGameEvent = setmetatable({}, {
     __call = function(_, player, name, ctx)
+        -- Offline accounts earn through the ordinary economy, not online tutorials/funnels.
+        if type(player) == "table" and player.OfflineActor == true then
+            return
+        end
         for _, fn in ipairs(listeners) do
             pcall(fn, player, name, ctx)
         end
