@@ -1,4 +1,4 @@
--- Explicitly fetch the mesh and texture dependencies placed on the local player's bounded Merge
+-- Explicitly fetch the mesh, texture, and flat-image dependencies on the player's bounded
 -- warm shelf. Merely replicating an invisible template does not guarantee that Roblox fetches its
 -- content before the pet hatches. Live Workspace pets are intentionally outside this controller:
 -- they remain resident until the server removes them, regardless of unlock-frontier changes.
@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local config = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
+local farmConfig = require(ReplicatedStorage.Configs:WaitForChild("farm_asset_warmup"))
 local places = require(ReplicatedStorage.Configs:WaitForChild("places"))
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
@@ -29,6 +30,8 @@ local function isContentInstance(instance)
         or instance:IsA("SurfaceAppearance")
         or instance:IsA("Animation")
         or instance:IsA("Sound")
+        or instance:IsA("ImageLabel")
+        or instance:IsA("ImageButton")
 end
 
 function MergeAssetWarmup.start()
@@ -37,11 +40,9 @@ function MergeAssetWarmup.start()
     end
     started = true
 
-    if not PlaceRuntime.isMerge(game.PlaceId, places) then
-        return
-    end
-
-    local warmConfig = ((config.performance or {}).asset_warmup or {})
+    local warmConfig = if PlaceRuntime.isMerge(game.PlaceId, places)
+        then ((config.performance or {}).asset_warmup or {})
+        else farmConfig
     if warmConfig.enabled ~= true then
         return
     end
@@ -79,7 +80,7 @@ function MergeAssetWarmup.start()
         busy = true
         repeat
             pending = false
-            local models = cache.Parent and cache:FindFirstChild("Models")
+            local models = cache.Parent and cache
             local batch = {}
             if models then
                 for _, instance in ipairs(models:GetDescendants()) do

@@ -932,10 +932,7 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
             })
 
             local modelClone = nil
-            local modelsFolder = ModelTemplateStore.root()
-            local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
-            local petTypeFolder = petsFolder and petsFolder:FindFirstChild(petType)
-            local petModel = petTypeFolder and petTypeFolder:FindFirstChild(variant)
+            local petModel = ModelTemplateStore.pet(petType, variant)
             if petModel then
                 modelClone = petModel:Clone()
                 logger:debug("Got model from warm assets", {
