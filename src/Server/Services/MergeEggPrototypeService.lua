@@ -465,9 +465,8 @@ function MergeEggPrototypeService:_mergeDefenseProgress(player)
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local progress = MergeEggPlayerCombat.normalizeOnboarding(data.GameData.MergeDefense)
     data.GameData.MergeDefense = progress
-    progress.highest_wave = MergeWaveRecord.best(
-        progress, data.GameData.AchievementBanners, self._waveAwardCatalog
-    )
+    progress.highest_wave =
+        MergeWaveRecord.best(progress, data.GameData.AchievementBanners, self._waveAwardCatalog)
     player:SetAttribute("MergeHighestWave", progress.highest_wave)
     return progress
 end
@@ -1864,25 +1863,16 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
     end
     local step = record.tutorialStep
     local requiredEggs = self:_tutorialRequiredEggs()
-    local hasCombination = self:_tutorialHasCombination(record)
     local hasDeployment = self:_initializedHatcherCount(record) >= 1
     if step == "collect_setup" and self:_tutorialCollectedOpeningStash(record) then
         self:_setTutorialStep(record, "create_five")
     elseif step == "create_five" and (record.eggsCreated or 0) >= requiredEggs then
-        if hasCombination and hasDeployment then
-            self:_releaseTutorialForCombat(record)
-        elseif hasCombination then
-            self:_setTutorialStep(record, "deploy_one")
-        else
-            self:_setTutorialStep(record, "combine_once")
-        end
-    elseif step == "combine_once" and hasCombination then
         if hasDeployment then
             self:_releaseTutorialForCombat(record)
         else
-            self:_setTutorialStep(record, "deploy_one")
+            self:_setTutorialStep(record, "combine_once")
         end
-    elseif step == "deploy_one" and hasCombination and hasDeployment then
+    elseif (step == "combine_once" or step == "deploy_one") and hasDeployment then
         self:_releaseTutorialForCombat(record)
     elseif step == "collect_workshop_coins" and self:_tutorialCollectedStageCoin(record) then
         if self:_tutorialHasWorkshopBulwark(record) then
@@ -12120,13 +12110,26 @@ end
 
 function MergeEggPrototypeService:_analytics(record, event, wave)
     if self._mergeAnalyticsService and record then
-        pcall(self._mergeAnalyticsService.Observe, self._mergeAnalyticsService, record.player, record, event, wave)
+        pcall(
+            self._mergeAnalyticsService.Observe,
+            self._mergeAnalyticsService,
+            record.player,
+            record,
+            event,
+            wave
+        )
     end
 end
 
 function MergeEggPrototypeService:_analyticsFailure(player, reason, action)
     if self._mergeAnalyticsService then
-        pcall(self._mergeAnalyticsService.Failure, self._mergeAnalyticsService, player, reason, action)
+        pcall(
+            self._mergeAnalyticsService.Failure,
+            self._mergeAnalyticsService,
+            player,
+            reason,
+            action
+        )
     end
 end
 
@@ -12135,8 +12138,13 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
         return
     end
     if self._mergeAnalyticsService then
-        pcall(self._mergeAnalyticsService.EndBay, self._mergeAnalyticsService, record.player, record,
-            departing and "leave" or discardProgress and "reset" or "ended")
+        pcall(
+            self._mergeAnalyticsService.EndBay,
+            self._mergeAnalyticsService,
+            record.player,
+            record,
+            departing and "leave" or discardProgress and "reset" or "ended"
+        )
     end
     self:_clearQuartermasterIntroduction(record)
     if self._achievementBannerService then
@@ -12261,7 +12269,12 @@ function MergeEggPrototypeService:_beginInternal(player, requestedBayId, opts)
         end
         bayId = claimedId
         if self._mergeAnalyticsService then
-            pcall(self._mergeAnalyticsService.EntryEvent, self._mergeAnalyticsService, player, "bay_claimed")
+            pcall(
+                self._mergeAnalyticsService.EntryEvent,
+                self._mergeAnalyticsService,
+                player,
+                "bay_claimed"
+            )
         end
         world = self:_resolveWorld(bayId)
     else
@@ -12676,8 +12689,13 @@ function MergeEggPrototypeService:_beginInternal(player, requestedBayId, opts)
     -- their newly restored Full-mode pets.
     self:_switchPlayerCombatMode(record, player:GetAttribute("MergeDefenseMode"))
     if self._mergeAnalyticsService then
-        pcall(self._mergeAnalyticsService.BeginBay, self._mergeAnalyticsService, player, record,
-            resumePlaystate or resumeCheckpoint)
+        pcall(
+            self._mergeAnalyticsService.BeginBay,
+            self._mergeAnalyticsService,
+            player,
+            record,
+            resumePlaystate or resumeCheckpoint
+        )
     end
     local armed, armReason = self:_hatch(player)
     if not armed then
@@ -16976,7 +16994,10 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
         })
     end
     self:_analytics(record, "bulwark_opened")
-    self:_analytics(record, nextState.operation == "unlocked" and "bulwark_unlocked" or "bulwark_purchased")
+    self:_analytics(
+        record,
+        nextState.operation == "unlocked" and "bulwark_unlocked" or "bulwark_purchased"
+    )
     if nextState.operation == "upgraded" then
         self:_analytics(record, "bulwark_upgraded")
     end
@@ -17097,7 +17118,10 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
         })
     end
     self:_analytics(record, "cannon_opened")
-    self:_analytics(record, nextState.operation == "unlocked" and "cannon_unlocked" or "cannon_purchased")
+    self:_analytics(
+        record,
+        nextState.operation == "unlocked" and "cannon_unlocked" or "cannon_purchased"
+    )
     if nextState.operation == "upgraded" then
         self:_analytics(record, "cannon_upgraded")
     end
@@ -17512,7 +17536,11 @@ end
 function MergeEggPrototypeService:HandleBoardAction(player, request)
     local ok, value = self:_handleBoardActionInternal(player, request)
     if not ok then
-        self:_analyticsFailure(player, value, type(request) == "table" and request.action or "board")
+        self:_analyticsFailure(
+            player,
+            value,
+            type(request) == "table" and request.action or "board"
+        )
     end
     return ok, value
 end

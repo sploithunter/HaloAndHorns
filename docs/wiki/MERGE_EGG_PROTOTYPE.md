@@ -764,14 +764,15 @@ team and queue model:
   the trail to the wall origin. That explicit click cue teaches purchases one through three, then
   retires; the tutorial card continues counting the required five Earth Eggs down after every
   click, while the overlaid action toast confirms the actual egg created. The server then
-  accepts player-directed ordering: completion requires five purchased eggs, at least one real
-  equal-tier combination (board-to-board or board-to-deployed), and at least one deployed egg. It
-  does not require all four hatchers or prescribe whether merging happens before deployment. Wave 1
-  remains sealed until those facts are true. Auto Collector owners receive Coin Pup copy instead of
+  points directly to **DEPLOY BEST**, with the same `CLICK HERE` pill on that real button.
+  Completion requires five purchased eggs and at least one deployed egg; no manual combination,
+  egg selection, or board dragging is required. Legacy `combine_once` and `deploy_one` step IDs both
+  use this deployment-only guidance, so existing sessions cannot stick on the old merge gate. Wave 1
+  remains sealed until purchase/deployment are complete. Auto Collector owners receive Coin Pup copy instead of
   walking breadcrumbs and advance when that pet has actually placed all 600 Waycoins in the wallet.
   Phase 1 completion is stored as `tutorial_setup_completed` and releases Waves 1–2.
   Locked first-visit drip (pauses are end-of-wave, then the next wave is held):
-  - **Wave 0:** collect coins + gem, buy eggs, combine, deploy.
+  - **Wave 0:** collect coins + gem, buy eggs, click Deploy Best.
   - **End of Wave 2:** meet gold-line engineer, unlock Impaler for 1 Gem, install.
     Persists `tutorial_workshop_completed`.
   - **End of Wave 4:** if the Waycoin wallet is empty, chevron any existing

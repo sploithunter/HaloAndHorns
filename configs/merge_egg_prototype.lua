@@ -837,14 +837,14 @@ return {
                 target = "buy_egg",
             },
             combine_once = {
-                title = "COMBINE TWO MATCHING EGGS",
-                body = "Select one egg, then select a matching board or deployed egg.",
-                target = "board_egg",
+                title = "CLICK DEPLOY BEST",
+                body = "Click the highlighted DEPLOY BEST button.",
+                target = "equip_best",
             },
             deploy_one = {
-                title = "DEPLOY AN EGG",
-                body = "Select an egg, then select an open frontline slot, or press EQUIP BEST.",
-                target = "board_egg",
+                title = "CLICK DEPLOY BEST",
+                body = "Click the highlighted DEPLOY BEST button.",
+                target = "equip_best",
             },
             collect_workshop_coins = {
                 title = "PICK UP A WAYCOIN PILE",
@@ -1140,6 +1140,7 @@ return {
             egg_sign_size = 4.8,
             egg_sign_transparency = 0.12,
             equip_best_size = { x = 7, z = 12 },
+            equip_best_label = "DEPLOY BEST",
             equip_best_gap = 1.5,
             auto_combine_size = { x = 7, z = 12 },
             auto_combine_gap = 1.5,

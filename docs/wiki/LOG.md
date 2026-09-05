@@ -8078,3 +8078,10 @@ first-session cohort rates.
   its remote from production. Merge funnels remain enabled and unchanged for the immediate publish.
 - Offline account automation, randomized global eligibility, login cancellation and durable
   offline rewards are separate follow-up work; this release does not enable offline workers.
+
+## 2026-09-04 — Opening Merge tutorial: Deploy Best, not manual combining
+
+- Replaced the opening combine/deploy instructions with one `CLICK HERE` target on Deploy Best.
+  Five purchased eggs plus a deployment now release Wave 1; manual combination is no longer a gate.
+- Kept legacy tutorial step IDs and the existing deployment action; no inventory grants, board
+  automation, or changes to later workshop tutorials. Added regression checks for copy and gating.

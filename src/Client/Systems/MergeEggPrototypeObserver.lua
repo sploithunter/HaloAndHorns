@@ -777,6 +777,8 @@ local function tutorialTarget(world, targetKind)
             )
         end
         return host
+    elseif targetKind == "equip_best" then
+        return world and world:FindFirstChild(CONFIG.world.equip_best_control, true)
     elseif targetKind == "board_egg" then
         local board = world
             and world:FindFirstChild((CONFIG.world or {}).merge_board or "MergeBoard")
@@ -1145,6 +1147,7 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         tutorialPathTarget = tutorialTarget(world, targetKind)
         tutorialClickTarget = (
             (targetKind == "buy_egg" and tutorialBuyEggCueAllowed(world))
+            or targetKind == "equip_best"
             or targetKind == "engineer"
             or targetKind == "commander"
             or targetKind == "quartermaster"
@@ -3234,7 +3237,7 @@ local function createEquipBestSurface(host)
     button.AutoButtonColor = true
     button.Active = true
     button.Font = Enum.Font.GothamBlack
-    button.Text = "EQUIP BEST"
+    button.Text = CONFIG.team.merge_board.equip_best_label
     button.TextColor3 = Color3.new(1, 1, 1)
     button.TextScaled = true
     button.TextStrokeColor3 = Color3.fromRGB(20, 35, 28)
@@ -3417,7 +3420,7 @@ local function updateBoardWallControls(controls, observing)
         equipBest.button.AutoButtonColor = observing and available
         local stateColor = available and Color3.fromRGB(75, 190, 105) or Color3.fromRGB(70, 74, 84)
         equipBest.button.BackgroundColor3 = stateColor
-        equipBest.button.Text = "EQUIP BEST"
+        equipBest.button.Text = CONFIG.team.merge_board.equip_best_label
         local host = equipBest.host
         if host and host:IsA("BasePart") then
             host.Color = stateColor
@@ -4658,7 +4661,9 @@ function MergeEggPrototypeObserver.start()
                 and boardWallControls.board.buttons
                 and boardWallControls.board.buttons.buy_egg
             setTutorialClickCueTarget(
-                tutorialBuyingEggs and buyEggCard and buyEggCard.button or nil
+                tutorialBuyingEggs and buyEggCard and buyEggCard.button
+                    or world and world:GetAttribute("MergeEggTutorialActive") == true and (tutorialStep == "combine_once" or tutorialStep == "deploy_one") and boardWallControls and boardWallControls.equipBest and boardWallControls.equipBest.button
+                    or nil
             )
         end
 
