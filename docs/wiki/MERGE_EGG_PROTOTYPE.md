@@ -40,7 +40,14 @@ Quartermaster services includes **FARM & FIGHT — TAKE A BREATHER**, explaining
 and the Merge gate back. It uses the existing owner/proximity validation and public return route,
 including shield/loading feedback. Failed travel leaves the active run intact. The source gate in
 Farm & Fight now reads **MERGE EGGS • WAVE COMBAT / Small eggs. Big waves.** All copy remains in
-`configs/merge_egg_prototype.lua`; the menu has room for four service buttons.
+`configs/merge_egg_prototype.lua`; the menu has room for five service buttons.
+
+Quartermaster copy highlights the benefit of passes, potions, and basic/advanced training.
+The gem-marked **ENHANCEMENTS** row opens the existing inventory `EnhancementSell` panel through
+the ordinary owner/proximity-validated Quartermaster operation. Its **BUY IN POWERS** shortcut
+opens the existing power/enhancement shop, without buying or selling anything automatically.
+Rows remain full-sized touch targets and scroll on short screens rather than shrinking the
+whole menu. Labels remain config-owned; commerce and salvage rules are unchanged.
 
 Potion tents are static authored props. Their imported tent meshes were unanchored (the signs
 were anchored), so hiding vendors disabled collision and let the tents fall below the map. All ten

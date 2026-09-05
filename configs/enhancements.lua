@@ -399,6 +399,11 @@ return {
     shop = {
         enabled = true,
         currency = "gems",
+        salvage_ui = {
+            title = "💎 Sell Enhancements",
+            buy_label = "BUY IN POWERS",
+            buy_hint = "Choose a power, then browse enhancements to buy and slot.",
+        },
         -- BUY is offered only for these grades (v1 = naturals only; add "dual" after testing, "single"
         -- later). SELL accepts ANY owned grade — single/dual get a buyback even though they aren't sold.
         buyable_grades = { "natural", "dual", "single" },

@@ -91,6 +91,28 @@ return function()
     end)
 
     describe("Merge Quartermaster services", function()
+        it("offers benefit-led services and the existing enhancement selling window", function()
+            local services = config.quartermaster.services
+            expect(services.game_passes_label).to.equal(
+                "GAME PASSES — SUPERCHARGE YOUR CHARACTER"
+            )
+            expect(services.enhancements_label).to.equal("💎 ENHANCEMENTS")
+            expect(services.enhancements_body).to.equal("Buy what you need. Sell what you don't.")
+            expect(services.training_complete_label).to.equal(
+                "ADVANCED TRAINING — EARN LEVELS & BOOSTS"
+            )
+            expect(services.five_service_height > services.four_service_height).to.equal(true)
+            local server = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
+            local menu = readFile("src/Client/UI/Components/QuartermasterServicesMenu.lua")
+            local sell = readFile("src/Client/UI/Menus/EnhancementSellPanel.lua")
+            expect(server:find('operation = "enhancements_opened"', 1, true)).to.be.ok()
+            expect(observer:find('manager:OpenPanel("EnhancementSell", "bounce_in")', 1, true)).to.be.ok()
+            expect(menu:find('resolve("enhancements")', 1, true)).to.be.ok()
+            expect(menu:find('Instance.new("ScrollingFrame")', 1, true)).to.be.ok()
+            expect(sell:find('manager:OpenPanel("PowerChoice", "scale_in")', 1, true)).to.be.ok()
+        end)
+
         it("authors every live Merge-relevant pass in one config-owned catalog", function()
             local MonetizationCatalog = loadModule("src/Shared/Game/MonetizationCatalog.lua")
             local monetization = loadModule("configs/monetization.lua")
@@ -124,7 +146,9 @@ return function()
                 local potionShop = readFile("src/Server/Services/PotionShopService.lua")
 
                 expect(config.quartermaster.action_text).to.equal("Services")
-                expect(config.quartermaster.services.potions_label).to.equal("BROWSE POTIONS — BUY SOME PICK-ME-UPS")
+                expect(config.quartermaster.services.potions_label).to.equal(
+                    "BROWSE POTIONS — BUY SOME PICK-ME-UPS"
+                )
                 expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
                 expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
                 expect(
@@ -163,7 +187,9 @@ return function()
                 local mergeService = readFile("src/Server/Services/MergeEggPrototypeService.lua")
                 local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
 
-                expect(config.quartermaster.services.training_label).to.equal("COMBAT TRAINING — UNLOCK YOUR PETS")
+                expect(config.quartermaster.services.training_label).to.equal(
+                    "COMBAT TRAINING — UNLOCK YOUR PETS"
+                )
                 expect(config.quartermaster.greeting:find("Rebirths unlock new eggs", 1, true)).to.be.ok()
                 expect(config.quartermaster.services.body:find("Finish Combat Training", 1, true)).to.be.ok()
                 expect(
@@ -270,7 +296,8 @@ return function()
             expect(menu:find('resolve("combat_training")', 1, true)).to.be.ok()
             expect(menu:find("payload.trainingAvailable ~= false", 1, true)).to.be.ok()
             expect(menu:find("gui.ScreenInsets = Enum.ScreenInsets.None", 1, true)).to.be.ok()
-            expect(menu:find("UIViewportScale.attach(panel", 1, true)).to.be.ok()
+            expect(menu:find('Instance.new("UISizeConstraint")', 1, true)).to.be.ok()
+            expect(menu:find("serviceList.AutomaticCanvasSize = Enum.AutomaticSize.Y", 1, true)).to.be.ok()
             expect(shop:find("function RewardShopPanel:SetPresentation", 1, true)).to.be.ok()
             expect(shop:find("MonetizationCatalog.selectedPetShopPasses", 1, true)).to.be.ok()
             expect(

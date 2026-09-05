@@ -2815,6 +2815,11 @@ function PowerChoiceMenu:Hide()
     end
 end
 
+function PowerChoiceMenu:ShowEnhancementShopHint(message)
+    self.notice = message
+    self:_render()
+end
+
 function PowerChoiceMenu:GetFrame()
     return self.frame
 end

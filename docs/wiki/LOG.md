@@ -8225,3 +8225,14 @@ first-session cohort rates.
   all 197 checked cached image/mesh references were fetched successfully. The background
   Studio session also reported severe frame stalls, so this is functional verification,
   not evidence of a frame-rate improvement. No profile resets or production publish.
+
+## 2026-09-05 — Quartermaster benefit copy and enhancement shortcut
+
+- Added config-owned benefit-led pass, potion, and basic/advanced training labels plus a purple
+  gem-marked Enhancements option opening the existing inventory selling panel. Its Buy in Powers
+  shortcut leads to the existing enhancement purchase/slot workflow; no commerce rules changed.
+- Five service rows retain their touch size, wrap their copy, and scroll on short screens.
+  Desktop and a 390×844 layout fixture were visually checked in Merge Studio; all labels fit,
+  rows remained 78px tall, and clicking through selling to Powers succeeded without transactions.
+- Full CI passes (2,680 headless checks, including offline lease foundation tests still in progress).
+  Merge Play was stopped afterward; both Studio windows remain open. No production publish.

@@ -3,8 +3,6 @@
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 
-local UIViewportScale = require(script.Parent.Parent.UIViewportScale)
-
 local QuartermasterServicesMenu = {}
 
 local activeGui = nil
@@ -39,13 +37,14 @@ local function serviceButton(parent, name, titleText, bodyText, color, order)
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Position = UDim2.fromOffset(22, 8)
-    title.Size = UDim2.new(1, -44, 0, 28)
+    title.Position = UDim2.fromScale(0.035, 0.06)
+    title.Size = UDim2.fromScale(0.93, 0.47)
     title.BackgroundTransparency = 1
     title.Text = titleText
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextSize = 22
     title.TextScaled = true
+    title.TextWrapped = true
     local textBounds = Instance.new("UITextSizeConstraint")
     textBounds.MinTextSize = 14
     textBounds.MaxTextSize = 22
@@ -57,12 +56,17 @@ local function serviceButton(parent, name, titleText, bodyText, color, order)
 
     local body = Instance.new("TextLabel")
     body.Name = "Description"
-    body.Position = UDim2.fromOffset(22, 37)
-    body.Size = UDim2.new(1, -44, 0, 30)
+    body.Position = UDim2.fromScale(0.035, 0.55)
+    body.Size = UDim2.fromScale(0.93, 0.4)
     body.BackgroundTransparency = 1
     body.Text = bodyText
     body.TextColor3 = Color3.fromRGB(229, 237, 247)
     body.TextSize = 16
+    body.TextScaled = true
+    local bodyBounds = Instance.new("UITextSizeConstraint")
+    bodyBounds.MinTextSize = 12
+    bodyBounds.MaxTextSize = 16
+    bodyBounds.Parent = body
     body.Font = Enum.Font.GothamMedium
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
@@ -100,7 +104,8 @@ function QuartermasterServicesMenu.show(payload, respond)
     local trainingAvailable = payload.trainingAvailable ~= false
     local farmFightAvailable = payload.farmFightAvailable == true
     local enhancementsAvailable = type(payload.enhancementsLabel) == "string"
-    local serviceCount = (trainingAvailable and 3 or 2) + (farmFightAvailable and 1 or 0)
+    local serviceCount = (trainingAvailable and 3 or 2)
+        + (farmFightAvailable and 1 or 0)
         + (enhancementsAvailable and 1 or 0)
     local gui = Instance.new("ScreenGui")
     gui.Name = "QuartermasterServicesMenu"
@@ -130,12 +135,15 @@ function QuartermasterServicesMenu.show(payload, respond)
     panel.Name = "Services"
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.Position = UDim2.fromScale(0.5, 0.5)
-    panel.Size = UDim2.fromOffset(
+    panel.Size = UDim2.fromScale(0.92, 0.92)
+    local panelBounds = Instance.new("UISizeConstraint")
+    panelBounds.MaxSize = Vector2.new(
         680,
         serviceCount == 5 and assert(tonumber(payload.fiveServiceHeight))
             or serviceCount == 4 and assert(tonumber(payload.fourServiceHeight))
             or (serviceCount == 3 and 498 or 410)
     )
+    panelBounds.Parent = panel
     panel.BackgroundColor3 = Color3.fromRGB(20, 25, 36)
     panel.BorderSizePixel = 0
     panel.ZIndex = 2
@@ -194,16 +202,28 @@ function QuartermasterServicesMenu.show(payload, respond)
     body.Text = tostring(payload.body or payload.greeting or "Choose a service.")
     body.TextColor3 = Color3.fromRGB(218, 226, 240)
     body.TextSize = 20
+    body.TextScaled = true
+    local introBounds = Instance.new("UITextSizeConstraint")
+    introBounds.MinTextSize = 12
+    introBounds.MaxTextSize = 20
+    introBounds.Parent = body
     body.Font = Enum.Font.GothamMedium
     body.TextWrapped = true
     body.TextXAlignment = Enum.TextXAlignment.Left
     body.ZIndex = 3
     body.Parent = panel
 
-    local serviceList = Instance.new("Frame")
+    local serviceList = Instance.new("ScrollingFrame")
     serviceList.Name = "ServiceList"
-    serviceList.Position = UDim2.fromOffset(26, 138)
-    serviceList.Size = UDim2.new(1, -52, 0, serviceCount * 78 + (serviceCount - 1) * 10)
+    -- Fixed header/intro and footer chrome reserve local space; rows scroll rather
+    -- than shrinking touch targets when all five services cannot fit vertically.
+    serviceList.Position = UDim2.new(0.04, 0, 0, 138)
+    serviceList.Size = UDim2.new(0.92, 0, 1, -214)
+    serviceList.CanvasSize = UDim2.fromScale(0, 0)
+    serviceList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    serviceList.ScrollingDirection = Enum.ScrollingDirection.Y
+    serviceList.ScrollBarThickness = 4
+    serviceList.BorderSizePixel = 0
     serviceList.BackgroundTransparency = 1
     serviceList.ZIndex = 4
     serviceList.Parent = panel
@@ -329,7 +349,6 @@ function QuartermasterServicesMenu.show(payload, respond)
     end
 
     gui.Parent = playerGui
-    UIViewportScale.attach(panel)
     if player:GetAttribute("InputMode") == "gamepad" then
         GuiService.SelectedObject = gamePasses
     end
