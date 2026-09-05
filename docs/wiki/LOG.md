@@ -8061,3 +8061,13 @@ first-session cohort rates.
   rebirth, ascension, upgrade-destroying replacements, or offline/anti-idle behavior.
 - Added configurable strategy scheduling, bounded session reports, and server-only Studio
   comparison/rebirth controls. See [Merge Autoplay](MERGE_AUTOPLAY.md) for the safety boundary.
+
+## 2026-09-04 — Versioned native Merge analytics
+
+- Added seven separate Roblox funnels for entry health, fresh-board activation, live run depth,
+  artillery, bulwarks, rebirth and autoplay. Optional choices cannot block core activation.
+- Server outcomes drive bounded milestone, tutorial-stage, failure and exit diagnostics. Saved
+  wave numbers do not manufacture progression; stale bay callbacks are rejected per player.
+- Studio/internal exclusions, contiguous-prefix buffering, bounded transport and isolated tests
+  protect both data quality and gameplay. Definitions and Creator Hub verification are in
+  [Merge Analytics](MERGE_ANALYTICS.md). No historical analytics backfill or new profile fields.

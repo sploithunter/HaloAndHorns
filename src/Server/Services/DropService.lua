@@ -1416,7 +1416,13 @@ function DropService:_collect(rec, _force)
         local economy = self._moduleLoader and self._moduleLoader:Get("EconomyService")
         if economy and economy.AddCurrency then
             pcall(function()
-                economy:AddCurrency(plr, rec.currency, rec.amount, "drop_collect")
+                local credited = economy:AddCurrency(plr, rec.currency, rec.amount, "drop_collect")
+                if credited and rec.source == "merge_egg_prototype" then
+                    local analytics = self._moduleLoader:Get("MergeAnalyticsService")
+                    if analytics then
+                        analytics:CoinCollected(plr)
+                    end
+                end
             end)
         end
     end
