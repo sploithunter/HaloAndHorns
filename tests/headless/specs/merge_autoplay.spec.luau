@@ -18,6 +18,10 @@ end
 
 return function()
     describe("Coin-only Merge autoplay", function()
+        it("requires a deployed income source before saving for a base upgrade", function()
+            local service = readFile("src/Server/Services/MergeAutoplayService.lua")
+            expect(service:find("merge:_initializedHatcherCount(record) > 0", 1, true)).to.be.ok()
+        end)
         it("validates config and maps the purchase card to the live pass", function()
             expect(Policy.validate(Config)).to.equal(true)
             local pass

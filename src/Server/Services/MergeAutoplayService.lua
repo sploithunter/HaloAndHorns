@@ -248,7 +248,9 @@ function Service:_candidates(state)
         elseif merge:_mergeableEggTier(record) then
             add("merge", nil, 2)
         end
-        if merge:_canUpgradeBaseEgg(record) then
+        -- Establish income before saving for a production upgrade. An empty bay cannot
+        -- earn the remaining cost of an upgrade until its first egg is deployed.
+        if merge:_initializedHatcherCount(record) > 0 and merge:_canUpgradeBaseEgg(record) then
             local cost = merge:_baseEggUpgradeCost(record)
             if cost then
                 add("upgrade_base", cost)

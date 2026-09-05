@@ -30,6 +30,7 @@ local TweenService = game:GetService("TweenService")
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
 local QuantitySelector = require(script.Parent.Parent.Components.QuantitySelector)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
+local ShopCopy = require(ReplicatedStorage.Configs.enhancements).shop.salvage_ui
 
 -- Lay the game pill BORDER ring (area-themed, hollow) over a full-corner button so it reads as a
 -- pill while keeping its own fill color + intrinsic text. Same treatment the inventory buttons use.
@@ -274,10 +275,10 @@ function EnhancementSellPanel:_createHeader()
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Size = UDim2.new(1, -320, 1, 0)
-    title.Position = UDim2.new(0, 24, 0, 0)
+    title.Size = UDim2.fromScale(0.41, 1)
+    title.Position = UDim2.fromScale(0.025, 0)
     title.BackgroundTransparency = 1
-    title.Text = "💎 Salvage Enhancements"
+    title.Text = ShopCopy.title
     title.TextColor3 = COLORS.text
     title.TextScaled = true
     title.Font = Enum.Font.GothamBold
@@ -289,11 +290,45 @@ function EnhancementSellPanel:_createHeader()
     titleConstraint.MaxTextSize = 30
     titleConstraint.Parent = title
 
+    local buy = Instance.new("TextButton")
+    buy.Name = "BuyEnhancements"
+    buy.AnchorPoint = Vector2.new(0, 0.5)
+    buy.Position = UDim2.fromScale(0.45, 0.5)
+    buy.Size = UDim2.fromScale(0.24, 0.62)
+    buy.BackgroundColor3 = COLORS.junk
+    buy.TextColor3 = COLORS.text
+    buy.Text = ShopCopy.buy_label
+    buy.Font = Enum.Font.GothamBold
+    buy.TextScaled = true
+    local buyTextBounds = Instance.new("UITextSizeConstraint")
+    buyTextBounds.MinTextSize = 12
+    buyTextBounds.MaxTextSize = 22
+    buyTextBounds.Parent = buy
+    buy.ZIndex = 103
+    buy.Parent = header
+    pillify(buy)
+    buy.Activated:Connect(function()
+        local manager = _G.MenuManager
+        if not manager then
+            return
+        end
+        local function open()
+            if manager:OpenPanel("PowerChoice", "scale_in") then
+                manager:GetPanel("PowerChoice"):ShowEnhancementShopHint(ShopCopy.buy_hint)
+            end
+        end
+        if manager:GetPanel("PowerChoice") then
+            open()
+        else
+            manager:OnPanelRegistered("PowerChoice", open)
+        end
+    end)
+
     -- Live gem balance, right of the title (left of the X).
     local bal = Instance.new("TextLabel")
     bal.Name = "Balance"
-    bal.Size = UDim2.new(0, 220, 0, 36)
-    bal.Position = UDim2.new(1, -64, 0.5, 0)
+    bal.Size = UDim2.fromScale(0.20, 0.62)
+    bal.Position = UDim2.fromScale(0.92, 0.5)
     bal.AnchorPoint = Vector2.new(1, 0.5)
     bal.BackgroundTransparency = 1
     bal.Text = "💎 0"

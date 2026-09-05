@@ -1222,6 +1222,7 @@ end
 
 local function ownerRoot(userId)
     local plr = Players:GetPlayerByUserId(userId)
+        or require(script.Parent.Parent.OfflineActors).get(userId)
     if not plr then
         return nil, nil
     end
@@ -1330,7 +1331,12 @@ end
 -- Remove only matching live drops without granting them. Prototype automation uses this before it
 -- restores the tester's saved balance, preventing an old pickup from crediting after reset.
 function DropService:DiscardDrops(player, source)
-    local owner = typeof(player) == "Instance" and player.UserId or tonumber(player)
+    local offline = require(script.Parent.Parent.OfflineActors).is(player)
+    local owner = (typeof(player) == "Instance" or offline) and player.UserId or tonumber(player)
+    -- An invalid identity is not permission to clear every player's drops.
+    if not owner then
+        return 0
+    end
     local discarded = 0
     for index = #self._active, 1, -1 do
         local rec = self._active[index]
@@ -1353,6 +1359,7 @@ function DropService:_collect(rec, _force)
     end
     rec._done = true
     local plr = Players:GetPlayerByUserId(rec.owner)
+        or require(script.Parent.Parent.OfflineActors).get(rec.owner)
     if plr and rec.kind == "enhancement" then
         -- IDENTITY REVEALED AT PICKUP: grant to the inventory + float the name (GameEvents).
         local enh = self._moduleLoader and self._moduleLoader:Get("EnhancementService")
@@ -1417,7 +1424,11 @@ function DropService:_collect(rec, _force)
         if economy and economy.AddCurrency then
             pcall(function()
                 local credited = economy:AddCurrency(plr, rec.currency, rec.amount, "drop_collect")
-                if credited and rec.source == "merge_egg_prototype" then
+                if
+                    credited
+                    and rec.source == "merge_egg_prototype"
+                    and typeof(plr) == "Instance"
+                then
                     local analytics = self._moduleLoader:Get("MergeAnalyticsService")
                     if analytics then
                         analytics:CoinCollected(plr)

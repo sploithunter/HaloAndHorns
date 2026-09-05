@@ -405,14 +405,15 @@ function EnemyService:_playerForPetFolder(folder)
     if not folder then
         return nil
     end
-    local player = Players:FindFirstChild(folder.Name)
+    local offlineActors = require(script.Parent.Parent.OfflineActors)
+    local player = Players:FindFirstChild(folder.Name) or offlineActors.named(folder.Name)
     if player then
         return player
     end
     if folder:GetAttribute("NpcSquad") == true then
         local ownerName = tostring(folder:GetAttribute("NpcOwner") or "")
         if ownerName ~= "" then
-            return Players:FindFirstChild(ownerName)
+            return Players:FindFirstChild(ownerName) or offlineActors.named(ownerName)
         end
     end
     return nil
@@ -1702,7 +1703,9 @@ function EnemyService:_mergeXpParticipants(entry, targetId)
                 total += 1
                 if
                     eligible
-                    and folder:GetAttribute("NpcSquad") ~= true
+                    and (folder:GetAttribute("NpcSquad") ~= true or folder:GetAttribute(
+                        "OfflineOwnedSquad"
+                    ) == true)
                     and pet:GetAttribute("PetRecordKey") ~= nil
                 then
                     counts[player] = (counts[player] or 0) + 1
@@ -1794,7 +1797,11 @@ function EnemyService:_onDefeated(targetId)
     if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true then
         local participants, totalPets = self:_mergeXpParticipants(entry, targetId)
         local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
-        local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
+        local killer = killerUserId
+            and (
+                Players:GetPlayerByUserId(killerUserId)
+                or require(script.Parent.Parent.OfflineActors).get(killerUserId)
+            )
         -- A durable pet fielded in effective Full mode always earns its owner's combat XP. Combat
         -- Training still gates the broader Farm & Fight payout (currencies/tokens,
         -- enhancement/potion/boss drops, event, and kill stat). The trained path already includes
@@ -2168,7 +2175,11 @@ end
 -- The player who owns this pet folder + their profile data.
 function EnemyService:_petOwnerData(pet)
     local folder = pet.Parent
-    local player = folder and Players:FindFirstChild(folder.Name)
+    local player = folder
+        and (
+            Players:FindFirstChild(folder.Name)
+            or require(script.Parent.Parent.OfflineActors).named(folder.Name)
+        )
     local ds = player and self:_dataService()
     local data = ds and ds.GetData and ds:GetData(player)
     return player, data
@@ -2203,6 +2214,7 @@ function EnemyService:_enforceLockouts(now)
     self._secondWindAt = self._secondWindAt or setmetatable({}, { __mode = "k" })
     for _, folder in ipairs(pp:GetChildren()) do
         local player = Players:FindFirstChild(folder.Name)
+            or require(script.Parent.Parent.OfflineActors).named(folder.Name)
         local ds = player and self:_dataService()
         local data = ds and ds.GetData and ds:GetData(player)
         local state = data and data.PetLockouts

@@ -8225,3 +8225,35 @@ first-session cohort rates.
   all 197 checked cached image/mesh references were fetched successfully. The background
   Studio session also reported severe frame stalls, so this is functional verification,
   not evidence of a frame-rate improvement. No profile resets or production publish.
+
+## 2026-09-05 — Quartermaster benefit copy and enhancement shortcut
+
+- Added config-owned benefit-led pass, potion, and basic/advanced training labels plus a purple
+  gem-marked Enhancements option opening the existing inventory selling panel. Its Buy in Powers
+  shortcut leads to the existing enhancement purchase/slot workflow; no commerce rules changed.
+- Five service rows retain their touch size, wrap their copy, and scroll on short screens.
+  Desktop and a 390×844 layout fixture were visually checked in Merge Studio; all labels fit,
+  rows remained 78px tall, and clicking through selling to Powers succeeded without transactions.
+- Full CI passes (2,680 headless checks, including offline lease foundation tests still in progress).
+  Merge Play was stopped afterward; both Studio windows remain open. No production publish.
+
+## 2026-09-05 — Real offline Merge workers
+
+- Added randomized, pass/internal-ID eligible offline workers in up to five spare bays, enabled
+  in live Merge and Studio. Real-player claims and cross-place login presence preempt workers.
+  Colorado Plays is excluded; online test controls remain IsStudio-gated.
+- Workers use ordinary Merge encounters, walking, equipped pets and Waycoin-only purchases with
+  exclusive canonical ProfileStore sessions. No gem spending, rebirth, ascension or level claims.
+  Non-preemptive acquisition never creates missing accounts or steals another owner's profile.
+  Rewards are already in saved inventory/currency/XP; welcome-back receipts cannot grant twice.
+- Studio verification exercised isolated preemption, real alternate earnings/save/release,
+  first-egg deployment through wave ten, cannon/bulwark installs, and simulated cross-server login
+  cancellation without stopping the other worker. Corrected empty-bay upgrade deadlock, slow
+  waypoint navigation, client-only currency sends, missing-account acquisition noise and cleanup.
+- Full CI passes: 2,686 headless checks / 299 specs. See MERGE_AUTOPLAY for storage names,
+  pinned ProfileStore adapter dependency, diagnostics and remaining published smoke test.
+  No account reset or production publication. Both places must be published for login handoff.
+- Final automatic-fill run reached five simultaneous workers and saved/released all five cleanly.
+  Tracked-file CI caught new timer classifications omitted by the untracked local scan: shutdown
+  now awaits operation completion, while navigation deadlines and pool/presence timers are
+  explicitly classified. No architecture debt allowance was added.

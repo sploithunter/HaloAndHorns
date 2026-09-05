@@ -1068,6 +1068,21 @@ if isFeatureEnabled("map_binding") then
             "MergeEggPrototypeService",
         }
     )
+    loader:RegisterModule(
+        "MergeOfflineService",
+        ServerScriptService.Server.Services.MergeOfflineService,
+        {
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "EconomyService",
+            "MergeEggPrototypeService",
+            "MergeAutoplayService",
+            "NpcPrincipalService",
+            "InventoryService",
+            "PlayerProgressionService",
+        }
+    )
 end
 registerFeatureModule(
     "auto_target",
@@ -1485,6 +1500,7 @@ table.insert(requiredModules, "GameAPIService")
 appendIfEnabled(requiredModules, "map_binding", "AchievementBannerService")
 appendIfEnabled(requiredModules, "map_binding", "MergeEggPrototypeService")
 appendIfEnabled(requiredModules, "map_binding", "MergeAutoplayService")
+appendIfEnabled(requiredModules, "map_binding", "MergeOfflineService")
 if RunService:IsStudio() then
     table.insert(requiredModules, "StudioSmokeTestService")
     table.insert(requiredModules, "AutomationService")

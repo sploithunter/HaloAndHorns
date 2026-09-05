@@ -4368,6 +4368,17 @@ function MergeEggPrototypeObserver.start()
             QuartermasterServicesMenu.hide()
             if operation == "game_passes_opened" and type(result.value) == "table" then
                 openQuartermasterPasses(result.value)
+            elseif operation == "enhancements_opened" then
+                local manager = _G.MenuManager
+                if manager then
+                    if manager:GetPanel("EnhancementSell") then
+                        manager:OpenPanel("EnhancementSell", "bounce_in")
+                    else
+                        manager:OnPanelRegistered("EnhancementSell", function()
+                            manager:OpenPanel("EnhancementSell", "bounce_in")
+                        end)
+                    end
+                end
             end
             return
         end

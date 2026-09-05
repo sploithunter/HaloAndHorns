@@ -587,6 +587,7 @@ end
 do
     local ok, err = pcall(function()
         require(script.Systems.GameEvents).start()
+        require(script.Systems.OfflineMergeReceipt).start()
         require(script.Systems.PeopleListController).start()
         require(script.Systems.CombatRankController).start()
     end)

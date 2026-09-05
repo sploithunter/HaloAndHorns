@@ -572,6 +572,9 @@ function PlayerProgressionService:SetStatusBadge(player, request)
 end
 
 function PlayerProgressionService:_publishNativePlayerList(player, level)
+    if type(player) == "table" and player.OfflineActor == true then
+        return
+    end
     local leaderstats = player:FindFirstChild("leaderstats")
     if leaderstats and not leaderstats:IsA("Folder") then
         self._logger:Warn("Cannot publish native Level: leaderstats is not a Folder", {
@@ -1129,6 +1132,9 @@ end
 -- and after an altar claim. The `requiresAltar` break is the single guard that keeps a choice
 -- level from ever being silently claimed.
 function PlayerProgressionService:_advanceAuto(player)
+    if type(player) == "table" and player.OfflineActor == true then
+        return
+    end
     if not player or not self._dataService then
         return
     end
