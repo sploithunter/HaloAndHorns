@@ -91,7 +91,7 @@ return function()
             end
         )
 
-        it("closes prior weeks and ships the Week 4 Core Digger campaign", function()
+        it("closes prior weeks and preserves the Core Digger award definition", function()
             local config = loadModule("configs/tester_rewards.lua")
             local pets = loadModule("configs/pets.lua")
             local roles = loadModule("configs/pet_roles.lua")
@@ -128,13 +128,13 @@ return function()
             expect(weekThree.claim.ends_at).to.equal(1787983200)
             expect(weekFour.egg_id).to.equal("core_digger_egg")
             expect(weekFour.pet_id).to.equal("core_digger")
-            expect(weekFour.claim.enabled).to.equal(true)
+            expect(weekFour.claim.enabled).to.equal(false)
             expect(weekFour.claim.studio_enabled).to.equal(false)
             expect(weekFour.claim.starts_at).to.equal(1787983200)
             expect(weekFour.claim.ends_at).to.equal(1788588000)
             expect(Campaign.isClaimWindowOpen(weekFour, 1787983199, false)).to.equal(false)
-            expect(Campaign.isClaimWindowOpen(weekFour, 1787983200, false)).to.equal(true)
-            expect(Campaign.isClaimWindowOpen(weekFour, 1788587999, false)).to.equal(true)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1787983200, false)).to.equal(false)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1788587999, false)).to.equal(false)
             expect(Campaign.isClaimWindowOpen(weekFour, 1788588000, false)).to.equal(false)
             expect(coreDigger.display_name).to.equal("Core Digger")
             expect(coreDigger.category).to.equal("exclusive")
@@ -145,7 +145,7 @@ return function()
             expect(coreDiggerEgg.huge.pets.core_digger).to.equal(1)
         end)
 
-        it("authors tester weeks three through five with only Week 4 open", function()
+        it("authors tester weeks three through five with only Week 5 open", function()
             local config = loadModule("configs/tester_rewards.lua")
             local pets = loadModule("configs/pets.lua")
             local roles = loadModule("configs/pet_roles.lua")
@@ -168,7 +168,7 @@ return function()
                     aura = "yield",
                     starts_at = 1787983200,
                     ends_at = 1788588000,
-                    enabled = true,
+                    enabled = false,
                 },
                 {
                     campaign = "beta_week_5_2026",
@@ -178,7 +178,7 @@ return function()
                     aura = "xp",
                     starts_at = 1788588000,
                     ends_at = 1789192800,
-                    enabled = false,
+                    enabled = true,
                 },
             }
 
@@ -200,6 +200,18 @@ return function()
                 expect(egg.huge.pets[row.pet]).to.equal(1)
                 expect(egg.pet_weights[row.pet]).to.equal(1)
             end
+        end)
+
+        it("opens Cache Bandit only during Week 5 and reserves one account award", function()
+            local config = loadModule("configs/tester_rewards.lua")
+            local week = config.campaigns.beta_week_5_2026
+            expect(Campaign.isClaimWindowOpen(week, 1788587999, false)).to.equal(false)
+            expect(Campaign.isClaimWindowOpen(week, 1788588000, false)).to.equal(true)
+            expect(Campaign.isClaimWindowOpen(week, 1789192799, false)).to.equal(true)
+            expect(Campaign.isClaimWindowOpen(week, 1789192800, false)).to.equal(false)
+            expect(week.claim_limit).to.equal(1)
+            expect(week.minimum_claim_level).to.equal(2)
+            expect(week.claim.studio_enabled).to.equal(false)
         end)
 
         it(

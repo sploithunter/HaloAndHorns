@@ -7297,8 +7297,14 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible)
         1
     )
     local function stash(instance)
-        if instance:IsA("BasePart") and instance:GetAttribute("MergeShopBaseCanCollide") == nil then
-            instance:SetAttribute("MergeShopBaseCanCollide", instance.CanCollide)
+        if instance:IsA("BasePart") then
+            -- Authored tents are static scenery, but their loose mesh imports were unanchored.
+            -- Anchor BEFORE the vendor helper disables collision; otherwise the hidden tent
+            -- falls through the floor and is destroyed, leaving only the anchored sign behind.
+            instance.Anchored = true
+            if instance:GetAttribute("MergeShopBaseCanCollide") == nil then
+                instance:SetAttribute("MergeShopBaseCanCollide", instance.CanCollide)
+            end
         end
     end
     stash(shop)
@@ -7544,6 +7550,11 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
         potionsBody = tostring(services.potions_body or "Buy supplies for your pets."),
         trainingLabel = tostring(trainingLabel),
         trainingBody = tostring(services.training_body or "Learn to use powers in combat."),
+        farmFightLabel = services.farm_fight_label,
+        farmFightBody = services.farm_fight_body,
+        farmFightAvailable = type(services.farm_fight_label) == "string"
+            and PlaceRuntime.placeIdForRole(self._placesConfig, "main") ~= nil,
+        fourServiceHeight = services.four_service_height,
         closeLabel = tostring(services.close_label or "NOT NOW"),
         trainingAvailable = true,
         combatTutorialDone = done,
@@ -7601,6 +7612,14 @@ function MergeEggPrototypeService:UseQuartermasterService(player, request)
     end
     local choice = tostring(type(request) == "table" and request.choice or "")
     local menuState = self:_quartermasterMenuState(record)
+    if choice == "farm_fight" then
+        if not menuState.farmFightAvailable then
+            return false, "place_role_unconfigured"
+        end
+        -- Reuse the public gate's route and shield/loading feedback. Keep the session intact
+        -- until departure so failed/cancelled teleports cannot wipe the player's active run.
+        return self:_returnToFarmAndFight(player)
+    end
     if choice == "game_passes" then
         if #menuState.gamePassIds == 0 then
             return false, "game_pass_catalog_unavailable"

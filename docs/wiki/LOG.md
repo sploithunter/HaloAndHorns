@@ -8160,3 +8160,17 @@ first-session cohort rates.
 - Eight isolated Studio regression cases execute real mission-close and Merge-resume methods:
   delayed, missing, and failed streaming plus no character; original bay available or occupied.
   Full `mise run ci` passed (2,658 headless tests). No profile resets or production publish.
+
+### 2026-09-05 — Quartermaster travel, Week Five, and anchored potion tents
+
+- Added a config-fed Farm & Fight travel option to Quartermaster services, reusing the public
+  return gate's validated travel/feedback path without tearing down a run on failed teleport.
+  Farm & Fight's Merge gate now describes egg merging and wave combat with cheeky secondary copy.
+- Activated Cache Bandit Week Five for Sep 5–12 Mountain time; closed Week Four's claim flag.
+  Shared reward service/ledger already covers both places and grants one egg per account/campaign.
+- Found all ten tent meshes unanchored and unwelded in Edit. Vendor hiding disabled collision,
+  letting the mesh fall while signs stayed. Anchored those ten meshes through Studio MCP and
+  added runtime anchoring before hide/show. No props removed or replaced.
+- Full CI: 2,659 headless tests passed. Isolated Studio: 30 cloned-tent hide/show cycles plus
+  configured Quartermaster route and rejected-distance/pending-teleport cases passed.
+  Publication is explicitly left to the user for both places; no production publish or reset.

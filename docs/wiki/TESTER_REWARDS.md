@@ -1,10 +1,11 @@
 # Beta Tester Reward Campaigns
 
-Status: weeks one through three are closed to new claims. Week-four Core Digger claiming is enabled
-from Saturday 2026-08-29 00:00 through Saturday 2026-09-05 00:00 Mountain time, with the end
-exclusive. The Events panel shows the same explicit window as **Beta Test Week Four**.
+Status: weeks one through four are closed to new claims. Week-five Cache Bandit claiming is enabled
+from Saturday 2026-09-05 00:00 through Saturday 2026-09-12 00:00 Mountain time, with the end
+exclusive. The Events panel shows the same explicit window as **Beta Test Week Five**.
 Already-reserved and granted awards from earlier campaigns continue to reconcile after public
-claiming closes. Week five remains closed to production claims until its launch week.
+claiming closes. Both Merge and Farm & Fight register the same reward service and use the shared
+profile ledger: one egg per account/campaign, not one per place. Publish both places for activation.
 All `claim.studio_enabled` overrides are false in the release configuration.
 
 ## Player contract
@@ -103,10 +104,10 @@ the five-week collection identity without making the reward a general combat car
 | Core Digger | Prospector | currency earned from crystals |
 | Cache Bandit | XP Surge | all player XP |
 
-Core Digger's campaign is live for week four. Patch Phoenix, Core Digger, and Cache Bandit have
+Cache Bandit's campaign is live for week five. Patch Phoenix, Core Digger, and Cache Bandit have
 normal/Golden models and transparent card art; Rainbow reuses the normal asset with the standard
 runtime treatment. Their one-pet inventory eggs use distinct art, immutable award provenance, and
-the same level-2/5/10 plus 1% Huge contract. Future public claims and all Studio reservation
+the same level-2/5/10 plus 1% Huge contract. Prior public claims and all Studio reservation
 overrides are disabled; explicit Admin grants preserve the full regression path.
 XP Surge is intentionally last and Prospector second-to-last so early tester rounds assess baseline
 leveling and crystal-income balance rather than a reward-modified economy.
