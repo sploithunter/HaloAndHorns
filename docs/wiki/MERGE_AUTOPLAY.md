@@ -2,6 +2,14 @@
 
 Status: implemented and branch-verified (2026-09-04).
 
+Release correction (2026-09-04): the online autoplay button/controller, server toggle handler,
+and service Start are now explicitly `RunService:IsStudio()`-gated. The toggle remote is omitted
+from the production manifest. Live players do not receive this online test control. The intended
+paid feature is **offline play** for disconnected accounts; its shared eligibility pool,
+cross-server login cancellation, spare-bay workers and durable reward handoff are separate work
+and are **not enabled by this UI-only release**. The online production contract below describes
+the original implementation and now applies only to the Studio test runner.
+
 Baseline before work: clean main `a8c20b65`, published Merge **v594**. Studio stays open.
 
 `configs/merge_autoplay.lua` owns strategy order, navigation budgets, UI, and the symbolic

@@ -8071,3 +8071,10 @@ first-session cohort rates.
 - Studio/internal exclusions, contiguous-prefix buffering, bounded transport and isolated tests
   protect both data quality and gameplay. Definitions and Creator Hub verification are in
   [Merge Analytics](MERGE_ANALYTICS.md). No historical analytics backfill or new profile fields.
+
+## 2026-09-04 — Remove online autoplay control before ad publish
+
+- Gated the autoplay controller and server start/toggle with `RunService:IsStudio()` and omitted
+  its remote from production. Merge funnels remain enabled and unchanged for the immediate publish.
+- Offline account automation, randomized global eligibility, login cancellation and durable
+  offline rewards are separate follow-up work; this release does not enable offline workers.
