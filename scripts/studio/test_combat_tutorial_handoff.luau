@@ -203,6 +203,11 @@ local completion = {
 }
 completion._applyCompletionLevelGrant =
     method(services.CombatTutorialService, "CombatTutorialService", "_applyCompletionLevelGrant")
+completion._courseConfig =
+    method(services.CombatTutorialService, "CombatTutorialService", "_courseConfig")
+completion._courseId = method(services.CombatTutorialService, "CombatTutorialService", "_courseId")
+completion._progressKey =
+    method(services.CombatTutorialService, "CombatTutorialService", "_progressKey")
 local data = { CombatTutorial = { done = true }, CombatTutorialRewardGranted = true }
 completion:_applyCompletionLevelGrant(player, data)
 assert(xp == 0 and not data.CombatTutorial.completionLevelGranted)

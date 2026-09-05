@@ -1660,6 +1660,59 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
     end)
 end
 
+-- Count active combatants in this encounter, never the entire server or merely equipped pets.
+-- Targeting any live enemy in the same run counts, including weak/support pets without a hit.
+function EnemyService:_mergeXpParticipants(entry, targetId)
+    local counts, total = {}, 0
+    local cfg = self._combatConfig and self._combatConfig.merge_xp_credit
+    local runId = entry.model:GetAttribute("MergeRunId")
+    local root = Workspace:FindFirstChild("PlayerPets")
+    if not cfg or cfg.enabled ~= true or not runId or not root then
+        return counts, total
+    end
+    for _, folder in ipairs(root:GetChildren()) do
+        local player = self:_playerForPetFolder(folder)
+        local hrp = player
+            and player.Character
+            and player.Character:FindFirstChild("HumanoidRootPart")
+        local humanoid = player
+            and player.Character
+            and player.Character:FindFirstChildOfClass("Humanoid")
+        local eligible = player
+            and hrp
+            and humanoid
+            and humanoid.Health > 0
+            and player:GetAttribute("MergeEggPlayerCombatMode") == "full"
+            and (hrp.Position - entry.pos).Magnitude <= cfg.player_radius
+        for _, pet in ipairs(folder:GetChildren()) do
+            local target = pet:FindFirstChild("TargetID")
+            local targetType = pet:FindFirstChild("TargetType")
+            local fighting = target
+                and (target.Value == targetId and entry or self._enemies[target.Value])
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and targetType
+                and targetType.Value == "Enemy"
+                and fighting
+                and fighting.model
+                and fighting.model:GetAttribute("MergeRunId") == runId
+            then
+                total += 1
+                if
+                    eligible
+                    and folder:GetAttribute("NpcSquad") ~= true
+                    and pet:GetAttribute("PetRecordKey") ~= nil
+                then
+                    counts[player] = (counts[player] or 0) + 1
+                end
+            end
+        end
+    end
+    return counts, total
+end
+
 function EnemyService:_onDefeated(targetId)
     local entry = self._enemies[targetId]
     if not entry then
@@ -1739,6 +1792,7 @@ function EnemyService:_onDefeated(targetId)
     -- CombatApplication stamps the actual final damaging source, and only a durable player pet
     -- record can produce this id. No contributor or nearby-team sharing applies to this exception.
     if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true then
+        local participants, totalPets = self:_mergeXpParticipants(entry, targetId)
         local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
         local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
         -- A durable pet fielded in effective Full mode always earns its owner's combat XP. Combat
@@ -1766,6 +1820,28 @@ function EnemyService:_onDefeated(targetId)
                     rewardDef,
                     awardOptions
                 )
+            end
+        end
+        -- The killer already received the larger full award above. Other engaged owners receive
+        -- XP only: no extra drops, kill stats, quests, or currency from autonomous NPC kills.
+        if combat then
+            for player, personalPets in pairs(participants) do
+                if player ~= killer and player.Parent then
+                    combat:AwardExperience(
+                        player,
+                        entry.enemyId,
+                        model:GetAttribute("Level"),
+                        model:GetAttribute("EnemyTier"),
+                        entry.combatRewardDef or entry.def,
+                        {
+                            xpMultiplier = assert(
+                                tonumber(model:GetAttribute("MergeEggCombatXpMultiplier")),
+                                "Merge XP multiplier missing"
+                            )
+                                * EnemyRewardPolicy.mergeXpShare(personalPets, totalPets, false),
+                        }
+                    )
+                end
             end
         end
     end

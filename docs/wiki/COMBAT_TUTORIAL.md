@@ -1,6 +1,47 @@
 # Combat Tutorial
 
-Last checked: 2026-09-02
+Last checked: 2026-09-05
+
+## Current: three independent courses
+
+`configs/combat_courses.lua` projects the canonical lesson catalog below into:
+
+- **Basic Combat Training**: `ready` through `advance_heal` (14 steps). The Heal pillar exits
+  immediately and permanently unlocks pets/powers through `CombatTutorial.done` and
+  `CombatTutorialDone`. Each newly completed course grants one **earned** level, capped at 50;
+  Ascension/power choices remain manual. Basic keeps the existing coin/potion bundle.
+- **Advanced 1**: Weakening and brew stacking (9 steps), one Double XP consumable token.
+- **Advanced 2**: tanks, enemy healers, and the combined finale (10 steps), one Double Coins
+  consumable token. These are existing `configs/items.lua` tokens, not automatically activated.
+
+Advanced courses are optional and sequential. Cave/Quartermaster interaction opens the explicit
+course selector after Basic; neither course is automatically launched or covers the normal pet UI.
+The Merge instruction bar persists beyond Wave 10 while Basic is required, then disappears when
+Basic is complete or existing full-pet eligibility already applies. It never advertises Advanced
+1/2 over unlocked controls.
+
+Persist `CombatTutorialAdvanced1`, `CombatTutorialAdvanced2`, `CombatCoursesVersion`, and a
+`<progressKey>RewardGranted` receipt per course. `CombatTutorial` remains Basic's compatibility
+receipt. A fixed `completionLevelTarget` and independent level receipt prevent repeated +1 awards
+on retries. Token delivery requires an inventory UID before its receipt; missing service/failed
+delivery retries on subsequent progress reads. `RewardService` is now an explicit boot dependency.
+Replays use `CombatTutorialReplay`, never reset Basic or advance course rewards. Selection is
+per-player; immutable projected configs are not swapped globally. Entry is guarded against repeated
+requests. Existing v11 progress is split at its real lesson boundary. Historical graduates keep
+credit but do not mint new advanced rewards; old Basic level-2 top-ups still retry.
+
+Swift Tonic now closes 85% of its meter per sip, with +100% movement at full charge and a
+60-second full-charge drain. First sip gives +85% movement to both player and pets, subject to
+the existing shared +100% movement cap and other buffs. `Eff_Speed` drives character WalkSpeed;
+pet movement consumes the same potion source. No extra speed lesson was added.
+
+Tests: `combat_courses.spec.luau`, `scripts/studio/test_combat_courses.luau`, and the handoff
+smoke execute boundary, migration, capped rewards, retry/reentrancy, replay, and concurrent-profile
+cases. Studio client checks cover menu rendering and the persistent Basic reminder/unlocked state.
+
+**Historical context below:** references to a single 33-step course, final-pillar Level-2 floor,
+Skilled backfill on Basic completion, or Redo-only entry describe the pre-split implementation.
+Lesson content/mission/squad contracts still apply; the course rules above supersede those claims.
 
 2026-09-05 grant correction: the boot registration now includes the feature-gated
 `PlayerProgressionService` dependency. ModuleLoader injects only declared dependencies; having

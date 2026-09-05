@@ -9,7 +9,14 @@ local HallOfWorldsLogic = require(script.Parent.HallOfWorldsLogic)
 
 local HoverboardLogic = {}
 
-function HoverboardLogic.isEligible(claimedLevel, tutorialCompleted, unlock)
+function HoverboardLogic.isEligible(claimedLevel, tutorialCompleted, unlock, highestMergeWave)
+    if
+        unlock
+        and tonumber(unlock.merge_wave)
+        and (tonumber(highestMergeWave) or 0) >= unlock.merge_wave
+    then
+        return true
+    end
     local ok = HallOfWorldsLogic.meetsUnlock(claimedLevel, tutorialCompleted, unlock)
     return ok == true
 end
@@ -102,8 +109,7 @@ end
 
 function HoverboardLogic.shouldSuppress(flags)
     flags = type(flags) == "table" and flags or {}
-    return flags.in_combat == true
-        or flags.in_mission == true
+    return flags.in_mission == true
         or flags.dead == true
         or flags.teleporting == true
         or flags.precision_interact == true

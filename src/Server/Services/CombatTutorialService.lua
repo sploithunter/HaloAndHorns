@@ -16,6 +16,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local CombatRank = require(ReplicatedStorage.Shared.Game.CombatRank)
+local CombatCourses = require(ReplicatedStorage.Shared.Game.CombatCourses)
 local StatusBadge = require(ReplicatedStorage.Shared.Game.StatusBadge)
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local TutorialPack = require(ReplicatedStorage.Shared.Game.TutorialPack)
@@ -261,6 +262,25 @@ function CombatTutorialService:Init()
     self._rewardService = self._modules and self._modules.RewardService
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._config = self._configLoader:LoadConfig("combat_tutorial")
+    self._courses = self._configLoader:LoadConfig("combat_courses")
+    self._courseConfigs = {}
+    self._courseDefinitions = {}
+    self._activeCourses = setmetatable({}, { __mode = "k" })
+    self._opening = setmetatable({}, { __mode = "k" })
+    self._rewardInFlight = setmetatable({}, { __mode = "k" })
+    for _, definition in ipairs(self._courses.courses) do
+        self._courseConfigs[definition.id] = CombatCourses.project(self._config, definition)
+        local last =
+            self._courseConfigs[definition.id].steps[#self._courseConfigs[definition.id].steps]
+        last.title = self._courses.finish_pillar.title
+        last.body = self._courses.finish_pillar.body
+        last.body_gamepad = self._courses.finish_pillar.body
+        last.localization_key = "combat_courses." .. definition.id .. ".finish"
+        self._courseConfigs[definition.id].completion.localization_key = "combat_courses."
+            .. definition.id
+            .. ".completion"
+        self._courseDefinitions[definition.id] = definition
+    end
     self._ranksConfig = self._configLoader:LoadConfig("combat_ranks")
     self._homeTutorial = self._configLoader:LoadConfig("tutorial")
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
@@ -272,6 +292,26 @@ function CombatTutorialService:Init()
     fireGameEvent.tap(function(player, name, ctx)
         self:_onEvent(player, name, ctx)
     end)
+end
+
+function CombatTutorialService:_courseId(player)
+    local active = self._activeCourses and self._activeCourses[player]
+    return active and active.id or "basic"
+end
+
+function CombatTutorialService:_courseConfig(player, courseId)
+    return self._courseConfigs and self._courseConfigs[courseId or self:_courseId(player)]
+        or self._config
+end
+
+function CombatTutorialService:_progressKey(player, courseId)
+    local active = self._activeCourses and self._activeCourses[player]
+    if not courseId and active and active.replay then
+        return "CombatTutorialReplay"
+    end
+    local definition = self._courseDefinitions
+        and self._courseDefinitions[courseId or self:_courseId(player)]
+    return definition and definition.key or "CombatTutorial"
 end
 
 function CombatTutorialService:Start()
@@ -289,7 +329,33 @@ function CombatTutorialService:Start()
     Signals.CombatTutorialRedoAnswer.OnServerEvent:Connect(function(player, accepted)
         local pending = self._pendingConfirm[player]
         self._pendingConfirm[player] = nil
+        if not pending or self._opening[player] then
+            return
+        end
         local kind = type(pending) == "table" and pending.kind or pending
+        if kind == "courses" then
+            local definition = type(accepted) == "string" and self._courseDefinitions[accepted]
+            local data = self:_ensureProgress(player)
+            if
+                not definition
+                or not data
+                or not self:_canEnterCave(player)
+                or not CombatCourses.allowed(data, definition)
+            then
+                return
+            end
+            local replay = data[definition.key].done == true
+            self._activeCourses[player] = { id = definition.id, replay = replay }
+            local instanceId = self:_openRequestedMission(player, {
+                redo = replay,
+                beforeOpen = pending.beforeOpen,
+                onOpenFailed = pending.onOpenFailed,
+            })
+            if not instanceId then
+                self._activeCourses[player] = nil
+            end
+            return
+        end
         if accepted ~= true then
             return
         end
@@ -411,16 +477,26 @@ end
 
 function CombatTutorialService:_openRequestedMission(player, opts)
     opts = type(opts) == "table" and opts or {}
+    if self._opening[player] then
+        return nil, "combat_tutorial_opening"
+    end
+    self._opening[player] = true
     if type(opts.beforeOpen) == "function" then
         local ok, prepared = pcall(opts.beforeOpen)
         if not ok or prepared == false then
+            self._opening[player] = nil
             if type(opts.onOpenFailed) == "function" then
                 pcall(opts.onOpenFailed, "entry_prepare_failed")
             end
             return nil, "entry_prepare_failed"
         end
     end
-    local instanceId, err = self:_openCaveMission(player, { redo = opts.redo == true })
+    local ok, instanceId, err =
+        pcall(self._openCaveMission, self, player, { redo = opts.redo == true })
+    self._opening[player] = nil
+    if not ok then
+        err, instanceId = tostring(instanceId), nil
+    end
     if not instanceId and type(opts.onOpenFailed) == "function" then
         pcall(opts.onOpenFailed, err)
     end
@@ -431,12 +507,39 @@ end
 -- mission, redo confirmation, save track, rewards, and loaned-squad lifecycle instead of creating a
 -- Merge-specific tutorial fork.
 function CombatTutorialService:OpenForPlayer(player, opts)
-    if not self:_canEnterCave(player) then
+    if not self:_canEnterCave(player) or self._opening[player] then
         return false, "combat_tutorial_unavailable"
     end
     opts = type(opts) == "table" and opts or {}
+    local profile = self:_ensureProgress(player)
+    if profile and profile.CombatTutorial.done == true then
+        local copy = self._courses.menu
+        local choices = {}
+        for _, definition in ipairs(self._courses.courses) do
+            local progress = profile[definition.key]
+            local allowed = CombatCourses.allowed(profile, definition)
+            local action = progress.done and copy.replay
+                or (progress.step > 1 and copy.resume or copy.start)
+            table.insert(choices, {
+                id = definition.id,
+                enabled = allowed,
+                label = definition.title .. " — " .. (allowed and action or copy.locked),
+            })
+        end
+        self._pendingConfirm[player] =
+            { kind = "courses", beforeOpen = opts.beforeOpen, onOpenFailed = opts.onOpenFailed }
+        Signals.CombatTutorialRedoOffer:FireClient(player, {
+            kind = "courses",
+            title = copy.title,
+            body = copy.body,
+            no_text = copy.cancel,
+            choices = choices,
+        })
+        return true, { operation = "combat_training_confirmation", combatTutorialDone = true }
+    end
+    self._activeCourses[player] = nil
     local data = self._dataService and self._dataService:GetData(player)
-    local progress = data and data.CombatTutorial
+    local progress = data and data[self:_progressKey(player)]
     local done = type(progress) == "table" and progress.done == true
     local started = type(progress) == "table"
         and done ~= true
@@ -547,18 +650,7 @@ function CombatTutorialService:_offerCaveEnter(_player)
 end
 
 function CombatTutorialService:_onCaveEnterTriggered(player)
-    if not self:_canEnterCave(player) then
-        return
-    end
-    if self:_needsRedoConfirm(player) then
-        self:_offerConfirm(
-            player,
-            "redo",
-            (self._config.venue and self._config.venue.redo_confirm) or {}
-        )
-        return
-    end
-    self:_openCaveMission(player)
+    self:OpenForPlayer(player)
 end
 
 function CombatTutorialService:_canEnterCave(player)
@@ -618,7 +710,8 @@ function CombatTutorialService:_isInLobby(player)
         return false
     end
     local data = self._dataService:GetData(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     return TutorialFlow.isCombatLobbyStep(step)
 end
 
@@ -762,7 +855,11 @@ function CombatTutorialService:_needsRedoConfirm(player)
     if not data then
         return false
     end
-    return TutorialFlow.caveEnterNeedsConfirm(data.Tutorial, data.CombatTutorial, data.GameData)
+    return TutorialFlow.caveEnterNeedsConfirm(
+        data.Tutorial,
+        data[self:_progressKey(player)],
+        data.GameData
+    )
 end
 
 function CombatTutorialService:_prepareLiveTrack(player, redo)
@@ -770,9 +867,9 @@ function CombatTutorialService:_prepareLiveTrack(player, redo)
     if not data then
         return
     end
-    local combat = data.CombatTutorial
+    local combat = data[self:_progressKey(player)]
     if redo == true or (combat and combat.done == true) then
-        data.CombatTutorial = TutorialFlow.fresh(self._config)
+        data[self:_progressKey(player)] = TutorialFlow.fresh(self:_courseConfig(player))
         self._dataService:RequestSave(player, "combat_tutorial_reopen")
     end
 end
@@ -796,7 +893,7 @@ function CombatTutorialService:_isInside(player)
             return false
         end
         local data = self._dataService:GetData(player)
-        local combat = data and data.CombatTutorial
+        local combat = data and data[self:_progressKey(player)]
         if combat and combat.done == true then
             -- Finished this visit: leave. Isolated Hall leftovers can reopen
             -- while Homeworld is still on first_fight.
@@ -908,19 +1005,23 @@ end
 
 function CombatTutorialService:_rewindLeaveResume(player)
     local data = self:_ensureProgress(player)
-    if not (data and data.CombatTutorial) or data.CombatTutorial.done == true then
+    if
+        not (data and data[self:_progressKey(player)])
+        or data[self:_progressKey(player)].done == true
+    then
         return false
     end
-    local step = TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     local resumeId = step and step.leave_resume
     if type(resumeId) ~= "string" or resumeId == "" then
         return false
     end
-    local progress, changed = TutorialFlow.rewindTo(self._config, data.CombatTutorial, resumeId)
+    local progress, changed =
+        TutorialFlow.rewindTo(self:_courseConfig(player), data[self:_progressKey(player)], resumeId)
     if not changed then
         return false
     end
-    data.CombatTutorial = progress
+    data[self:_progressKey(player)] = progress
     local session = self._sessions[player]
     if session then
         session.spawned = {}
@@ -939,7 +1040,7 @@ function CombatTutorialService:_restartTrack(player)
     if not data then
         return
     end
-    data.CombatTutorial = TutorialFlow.fresh(self._config)
+    data[self:_progressKey(player)] = TutorialFlow.fresh(self:_courseConfig(player))
     local session = self:_session(player)
     session.spawned = {}
     session.shielded = {}
@@ -975,7 +1076,14 @@ function CombatTutorialService:ResetForBeginning(player)
     end
     local data = self._dataService:GetData(player)
     if data then
-        data.CombatTutorial = TutorialFlow.fresh(self._config)
+        data[self:_progressKey(player)] = TutorialFlow.fresh(self:_courseConfig(player))
+        self._activeCourses[player] = nil
+        for _, definition in ipairs(self._courses.courses) do
+            data[definition.key] = TutorialFlow.fresh(self._courseConfigs[definition.id])
+            data[definition.key .. "RewardGranted"] = nil
+        end
+        data.CombatCoursesVersion = self._courses.version
+        data.CombatTutorialReplay = nil
         data.CombatTutorialLoadout = nil
         data.CombatTutorialHealUnlocked = nil
         data.CombatTutorialRewardGranted = nil
@@ -1079,7 +1187,11 @@ function CombatTutorialService:_enter(player)
         return
     end
     player:SetAttribute("InCombatTutorial", true)
-    fireGameEvent(player, "combat_tutorial_started", { source = "cave" })
+    fireGameEvent(
+        player,
+        "combat_tutorial_started",
+        { source = "cave", courseId = self:_courseId(player) }
+    )
     local session = self:_session(player)
     if not session.enteredFrom then
         local character = player.Character
@@ -1109,7 +1221,9 @@ function CombatTutorialService:_enter(player)
     -- Normal first-entry grant: one low-level Healing enhancement is waiting by the time the player
     -- reaches the Heal lesson. `_applyGrant` records `entry` in the tutorial ledger, so reconnects
     -- and repeat visits do not mint duplicates.
-    self:_applyGrant(player, data, { id = "entry", grant = self._config.entry_grant })
+    if self:_progressKey(player) == "CombatTutorial" then
+        self:_applyGrant(player, data, { id = "entry", grant = self._config.entry_grant })
+    end
     self:_applyStepSideEffects(player, data, true)
     local look = (self._config.venue and self._config.venue.leave_prompt) or {}
     session.lobbyLeaveReadyAt = os.clock() + math.max(0, tonumber(look.enable_after) or 0.8)
@@ -1265,27 +1379,15 @@ function CombatTutorialService:_ensureProgress(player)
     if not data then
         return nil
     end
-    if type(data.CombatTutorial) == "table" then
-        local migrated, changed = TutorialFlow.migrateProgress(self._config, data.CombatTutorial)
-        data.CombatTutorial = migrated
-        if not TutorialFlow.current(self._config, data.CombatTutorial) then
-            if data.CombatTutorial.done ~= true then
-                data.CombatTutorial.done = true
-                changed = true
-            end
-        end
-        if changed then
-            self._dataService:RequestSave(player, "combat_tutorial_migration")
-        end
-        if data.CombatTutorial.done == true then
-            player:SetAttribute("CombatTutorialDone", true)
-            self:_applyCompletionReward(player, data)
-        end
-        return data
+    if CombatCourses.migrate(self._config, self._courses, data, TutorialFlow) then
+        self._dataService:RequestSave(player, "combat_courses_migration", { critical = true })
     end
-    data.CombatTutorial = TutorialFlow.fresh(self._config)
-    player:SetAttribute("CombatTutorialDone", false)
-    self._dataService:RequestSave(player, "combat_tutorial_init")
+    player:SetAttribute("CombatTutorialDone", data.CombatTutorial.done == true)
+    for _, definition in ipairs(self._courses.courses) do
+        if data[definition.key].done == true then
+            self:_applyCompletionReward(player, data, definition.id)
+        end
+    end
     return data
 end
 
@@ -1315,26 +1417,31 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         self:_onUnlockStateChanged(player, name)
     end
     local data = self:_ensureProgress(player)
-    if not data or data.CombatTutorial.done then
+    if not data or data[self:_progressKey(player)].done then
         return
     end
-    local completedIndex = data.CombatTutorial.step
-    local completedStep = self._config.steps and self._config.steps[completedIndex]
-    local progress, changed = TutorialFlow.advance(self._config, data.CombatTutorial, name, ctx)
+    local completedIndex = data[self:_progressKey(player)].step
+    local completedStep = self:_courseConfig(player).steps[completedIndex]
+    local progress, changed =
+        TutorialFlow.advance(self:_courseConfig(player), data[self:_progressKey(player)], name, ctx)
     if not changed then
         if name == "enemy_defeated" then
             self:_maybeClearRoom(player)
         end
         return
     end
-    data.CombatTutorial = progress
+    data[self:_progressKey(player)] = progress
     if progress.done then
-        local completion = self._config.completion or {}
-        local target = math.floor(tonumber(completion.grant_earned_level) or 0)
+        local completion = self:_courseConfig(player).completion or {}
+        local earned = self._playerProgressionService
+                and self._playerProgressionService:GetEarnedLevel(player)
+            or player:GetAttribute("Level")
+            or 1
+        local target = CombatCourses.levelTarget(completion, earned, self._courses.level_cap)
         if completion.apply_level_grant == true and target > 1 then
             -- Persist the target reached by this genuine completion. The independent grant
             -- receipt can safely retry later without depending on future config changes.
-            data.CombatTutorial.completionLevelTarget = target
+            data[self:_progressKey(player)].completionLevelTarget = target
         end
     end
     self._dataService:RequestSave(
@@ -1345,14 +1452,18 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         }
     )
     if progress.done then
-        player:SetAttribute("CombatTutorialDone", true)
-        self:_applyCompletionReward(player, data)
+        player:SetAttribute("CombatTutorialDone", data.CombatTutorial.done == true)
+        local active = self._activeCourses[player]
+        if not (active and active.replay) then
+            self:_applyCompletionReward(player, data)
+        end
     end
     if completedStep and (progress.done or progress.step ~= completedIndex) then
         fireGameEvent(player, "tutorial_step_completed", {
             stepId = "combat_" .. tostring(completedStep.id),
             stepIndex = completedIndex,
             track = "combat_tutorial",
+            courseId = self:_courseId(player),
         })
         if completedStep.drop_shields then
             self:_dropShields(player)
@@ -1398,7 +1509,8 @@ end
 
 function CombatTutorialService:_maybeClearRoom(player)
     local data = self:_ensureProgress(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     if
         not (step and step.complete_on and step.complete_on.event == "combat_tutorial_room_cleared")
     then
@@ -1459,7 +1571,8 @@ function CombatTutorialService:_tryFinishUnlockWhen(player, source)
         return
     end
     local data = self:_ensureProgress(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     if not (step and type(step.unlock_when) == "table") then
         return
     end
@@ -1498,10 +1611,10 @@ function CombatTutorialService:_onHotbarDone(player)
 end
 
 function CombatTutorialService:_applyStepSideEffects(player, data, isEnter)
-    if not (data and data.CombatTutorial) then
+    if not (data and data[self:_progressKey(player)]) then
         return
     end
-    local step = TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     if not step then
         return
     end
@@ -1527,7 +1640,7 @@ function CombatTutorialService:_applyStepSideEffects(player, data, isEnter)
     if step.complete_on and step.complete_on.event == "combat_tutorial_room_cleared" then
         self:_maybeClearRoom(player)
     end
-    if self:_doorShouldLock(data.CombatTutorial) then
+    if self:_doorShouldLock(player, data[self:_progressKey(player)]) then
         self:_sealDoors(player)
     else
         self:_unsealDoors(player)
@@ -1537,13 +1650,13 @@ function CombatTutorialService:_applyStepSideEffects(player, data, isEnter)
     self:_syncLobbyLeavePrompt(player)
 end
 
-function CombatTutorialService:_doorShouldLock(progress)
-    local step = TutorialFlow.current(self._config, progress)
+function CombatTutorialService:_doorShouldLock(player, progress)
+    local step = TutorialFlow.current(self:_courseConfig(player), progress)
     if step and step.lock_door == true then
         return true
     end
     local index = tonumber(progress and progress.step) or 1
-    for i, authored in ipairs(self._config.steps or {}) do
+    for i, authored in ipairs(self:_courseConfig(player).steps or {}) do
         if authored.unlock_door then
             return index <= i
         end
@@ -1556,12 +1669,12 @@ function CombatTutorialService:_applyGrant(player, data, step)
     if type(grant) ~= "table" then
         return
     end
-    local id = step.id or tostring(data.CombatTutorial.step)
-    data.CombatTutorial.granted = data.CombatTutorial.granted or {}
-    if data.CombatTutorial.granted[id] then
+    local id = step.id or tostring(data[self:_progressKey(player)].step)
+    data[self:_progressKey(player)].granted = data[self:_progressKey(player)].granted or {}
+    if data[self:_progressKey(player)].granted[id] then
         return
     end
-    data.CombatTutorial.granted[id] = true
+    data[self:_progressKey(player)].granted[id] = true
     local grantFailed = false
     if type(grant.potions) == "table" then
         local potions = self._potionService
@@ -1623,7 +1736,7 @@ function CombatTutorialService:_applyGrant(player, data, step)
         end
     end
     if grantFailed then
-        data.CombatTutorial.granted[id] = nil
+        data[self:_progressKey(player)].granted[id] = nil
     end
     self._dataService:RequestSave(player, "combat_tutorial_grant", { critical = true })
 end
@@ -1647,13 +1760,13 @@ end
 -- currencies/potions receipt below: if progression is temporarily unavailable, a completed
 -- track must retry the exact, monotonic top-up on the next state pull or join instead of losing
 -- Level 2 because the other rewards were already marked delivered.
-function CombatTutorialService:_applyCompletionLevelGrant(player, data)
-    local tutorial = data and data.CombatTutorial
+function CombatTutorialService:_applyCompletionLevelGrant(player, data, courseId)
+    local tutorial = data and data[self:_progressKey(player, courseId)]
     if not (tutorial and tutorial.done) or tutorial.completionLevelGranted == true then
         return
     end
 
-    local completion = self._config and self._config.completion or {}
+    local completion = self:_courseConfig(player, courseId).completion or {}
     local configuredTarget
     if completion.apply_level_grant == true then
         configuredTarget = tonumber(completion.grant_earned_level)
@@ -1709,40 +1822,69 @@ function CombatTutorialService:_applyCompletionLevelGrant(player, data)
     self._dataService:RequestSave(player, "combat_tutorial_completion_level", { critical = true })
 end
 
-function CombatTutorialService:_applyCompletionReward(player, data)
-    local completion = self._config and self._config.completion
+function CombatTutorialService:_applyCompletionReward(player, data, courseId)
+    local completion = self:_courseConfig(player, courseId).completion
     if type(completion) ~= "table" or not data then
         return
     end
 
     -- This remains callable after the one-time item reward is delivered so a transient
     -- progression failure cannot strand a completed player below earned Level 2.
-    self:_applyCompletionLevelGrant(player, data)
-
-    if data.CombatTutorialRewardGranted == true then
+    local key = self:_progressKey(player, courseId)
+    local rewardKey = key .. "RewardGranted"
+    self._rewardInFlight = self._rewardInFlight or setmetatable({}, { __mode = "k" })
+    local inflight = self._rewardInFlight[player] or {}
+    self._rewardInFlight[player] = inflight
+    if inflight[key] then
         return
     end
-    data.CombatTutorialRewardGranted = true
+    inflight[key] = true
+    self:_applyCompletionLevelGrant(player, data, courseId)
+    if data[rewardKey] == true then
+        inflight[key] = nil
+        return
+    end
 
     local grant = completion.grant
     if type(grant) == "table" then
-        self:_grantPotions(player, grant.potions)
-        if
-            self._rewardService
-            and self._rewardService.Grant
-            and type(grant.currencies) == "table"
-        then
-            pcall(function()
-                self._rewardService:Grant(player, {
-                    currencies = grant.currencies,
-                }, "combat_tutorial_complete")
-            end)
+        if not (self._rewardService and self._rewardService.Grant) then
+            inflight[key] = nil
+            return
+        end
+        local ok = pcall(function()
+            local result = self._rewardService:Grant(
+                player,
+                grant,
+                "combat_course_" .. (courseId or self:_courseId(player))
+            )
+            -- A successful call can still contain an inventory rejection (e.g. no space).
+            -- Advanced rewards contain one token, so retry only until its UID is confirmed.
+            if type(grant.items) == "table" then
+                assert(result and result.ok and result.granted, "Course reward failed")
+                for index in ipairs(grant.items) do
+                    assert(
+                        result.granted.items[index] and result.granted.items[index].uid,
+                        "Course token not delivered"
+                    )
+                end
+            end
+            self:_grantPotions(player, grant.potions)
+        end)
+        if not ok then
+            inflight[key] = nil
+            return
         end
     end
-
-    fireGameEvent(player, "combat_tutorial_complete", {
-        name = completion.banner or "Combat training complete!",
-    })
+    data[rewardKey] = true
+    inflight[key] = nil
+    fireGameEvent(
+        player,
+        key == "CombatTutorial" and "combat_tutorial_complete" or "combat_advanced_complete",
+        {
+            name = completion.banner or "Combat training complete!",
+            courseId = courseId or self:_courseId(player),
+        }
+    )
     self._dataService:RequestSave(player, "combat_tutorial_reward", { critical = true })
 end
 
@@ -2046,7 +2188,8 @@ function CombatTutorialService:_markTargetEnemy(player)
         end
     end
     local data = self._dataService:GetData(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     -- Healer hunt: never retarget a leftover dog after the marked healer dies.
     -- That would leave KILL THIS on a card that is not the healer (Jason).
     if not chosen and not stepWantsHealerFocus(step) then
@@ -2129,7 +2272,8 @@ end
 -- can auto-pick). A dead healer never asks for another click — the card is gone.
 function CombatTutorialService:_updateHealerFocus(player, justClicked)
     local data = self._dataService:GetData(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     if not stepWantsHealerFocus(step) then
         return
     end
@@ -2338,7 +2482,8 @@ function CombatTutorialService:_currentStep(player)
         return nil
     end
     local data = self:_ensureProgress(player)
-    return data and TutorialFlow.current(self._config, data.CombatTutorial)
+    return data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
 end
 
 function CombatTutorialService:_stepAcceptsEnter(player)
@@ -2360,7 +2505,7 @@ function CombatTutorialService:_doorPlateForPlayer(player)
     local buttonCfg = (self._config.door and self._config.door.button) or {}
     local data = self._dataService and self._dataService:GetData(player)
     local remainingText, remainingNudge =
-        TutorialFlow.doorButtonCopy(step, data and data.CombatTutorial)
+        TutorialFlow.doorButtonCopy(step, data and data[self:_progressKey(player)])
     if self:_stepAcceptsEnter(player) then
         return {
             pulse = true,
@@ -2698,7 +2843,11 @@ function CombatTutorialService:_bindAdvancePrompt(player, beacon)
                 return
             end
             local data = self:_ensureProgress(player)
-            local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+            local step = data
+                and TutorialFlow.current(
+                    self:_courseConfig(player),
+                    data[self:_progressKey(player)]
+                )
             if not (step and step.activate_beacon) then
                 return
             end
@@ -2881,7 +3030,8 @@ end
 
 function CombatTutorialService:_ensureWatchers(player)
     local data = self._dataService:GetData(player)
-    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    local step = data
+        and TutorialFlow.current(self:_courseConfig(player), data[self:_progressKey(player)])
     local session = self:_session(player)
     local stepId = step and step.id or nil
     -- Cave-door poll calls _enter every 0.4s while inside. Restarting these
@@ -2971,7 +3121,11 @@ function CombatTutorialService:_ensureWatchers(player)
                 end
                 self:_onUnlockStateChanged(player, "unlock_watch")
                 local data = self._dataService:GetData(player)
-                local current = data and TutorialFlow.current(self._config, data.CombatTutorial)
+                local current = data
+                    and TutorialFlow.current(
+                        self:_courseConfig(player),
+                        data[self:_progressKey(player)]
+                    )
                 if not current then
                     return
                 end
@@ -3113,8 +3267,17 @@ function CombatTutorialService:_syncCombatRank(player, data, ceremonyStepId)
             return true
         end
     end
-    local synced, changed =
-        CombatRank.syncFromTutorial(state, self._ranksConfig, self._config, data.CombatTutorial)
+    local synced, changed = state, false
+    for _, definition in ipairs(self._courses.courses) do
+        local courseChanged
+        synced, courseChanged = CombatRank.syncFromTutorial(
+            synced,
+            self._ranksConfig,
+            self._courseConfigs[definition.id],
+            data[definition.key]
+        )
+        changed = courseChanged or changed
+    end
     if changed then
         data.GameData.CombatRank = synced
         self._dataService:RequestSave(player, "combat_rank_sync")
@@ -3131,14 +3294,24 @@ function CombatTutorialService:_push(player)
         return
     end
     local data = self._dataService:GetData(player)
-    if not (data and data.CombatTutorial) then
+    if not (data and data[self:_progressKey(player)]) then
         return
     end
     pcall(function()
-        Signals.TutorialState:FireClient(
-            player,
-            TutorialFlow.stateFor(self._config, data.CombatTutorial)
-        )
+        local config = self:_courseConfig(player)
+        local state = TutorialFlow.stateFor(config, data[self:_progressKey(player)])
+        local active = self._activeCourses[player]
+        state.courseId = self:_courseId(player)
+        local definition = self._courseDefinitions[state.courseId]
+        state.courseTitle = definition.title
+        if state.done then
+            state.completion = active and active.replay and self._courses.replay_completion
+                or config.completion
+        else
+            local step = TutorialFlow.current(config, data[self:_progressKey(player)])
+            state.body_gamepad = step and step.body_gamepad
+        end
+        Signals.TutorialState:FireClient(player, state)
     end)
 end
 

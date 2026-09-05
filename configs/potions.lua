@@ -102,8 +102,8 @@ return {
         },
         speed = {
             display_name = "Swiftness",
-            cap = 0.5, -- +50% move speed at full (axis backstop: move_speed 1.0)
-            drain_seconds = 30,
+            cap = 1.0, -- +100% movement for BOTH player and pets; same axis backstop.
+            drain_seconds = 60,
             full_threshold = 0.98,
             maintain_at = 0.6, -- locked = auto-drink below 60% (see damage meter note)
             buff_axis = "move_speed",
@@ -151,9 +151,9 @@ return {
         },
         swift_tonic = {
             display_name = "Swift Tonic",
-            description = "Move faster for a short burst.",
+            description = "You and your pets move much faster. Sip again to keep the speed up.",
             meter = "speed",
-            sip_fraction = 0.6,
+            sip_fraction = 0.85,
             tradeable = true,
             icon = "💨",
         },

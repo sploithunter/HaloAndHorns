@@ -2377,10 +2377,8 @@ function MergeEggPrototypeService:_stageEnemyConfig(context, source, waveIndex)
         )
     )
     local waveScaling = (self:_waveFor(context, resolvedWaveIndex) or {}).enemy or {}
-    local openingHp, openingDamage = MergeEggWaveGenerator.earlyDifficulty(
-        self._config.early_wave_difficulty,
-        resolvedWaveIndex
-    )
+    local openingHp, openingDamage =
+        MergeEggWaveGenerator.earlyDifficulty(self._config.early_wave_difficulty, resolvedWaveIndex)
     local resolved = table.clone(source or {})
     resolved.hp = math.max(
         1,
@@ -7517,6 +7515,8 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
     local trainingLabel = services.training_label or "COMBAT TRAINING"
     if started then
         trainingLabel = services.training_resume_label or "RESUME COMBAT TRAINING"
+    elseif done then
+        trainingLabel = services.training_complete_label
     end
     local gamePassIds = {}
     for _, passId in ipairs(services.game_pass_ids or {}) do
@@ -7545,7 +7545,7 @@ function MergeEggPrototypeService:_quartermasterMenuState(record)
         trainingLabel = tostring(trainingLabel),
         trainingBody = tostring(services.training_body or "Learn to use powers in combat."),
         closeLabel = tostring(services.close_label or "NOT NOW"),
-        trainingAvailable = not done,
+        trainingAvailable = true,
         combatTutorialDone = done,
         combatTutorialStarted = started,
     }

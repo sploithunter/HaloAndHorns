@@ -62,9 +62,9 @@ return function()
             expect(count(enemies, 'model:GetAttribute("MergeEggPlayerPetKillUserId")')).to.equal(1)
             expect(mergeGate).to.be.ok()
             expect(mergeAward).to.be.ok()
-            expect(count(enemies, "combat:AwardExperience(")).to.equal(1)
+            expect(count(enemies, "combat:AwardExperience(")).to.equal(2)
             expect(count(enemies, "combat:AwardLoot(")).to.equal(1)
-            expect(count(enemies, "entry.combatRewardDef or entry.def")).to.equal(1)
+            expect(count(enemies, "entry.combatRewardDef or entry.def")).to.equal(2)
             expect(count(merge, "combatRewardDef = spec.enemyDef")).to.equal(1)
             expect(count(enemies, 'killer:GetAttribute("MergeEggPlayerCombatMode") == "full"')).to.equal(
                 1

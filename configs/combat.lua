@@ -15,6 +15,10 @@
 ]]
 
 return {
+    merge_xp_credit = {
+        enabled = true,
+        player_radius = 150,
+    },
     auto_target = "nearest",
 
     -- COMBAT BALANCE TRACING: gates the server balance logs ([RageTrace], [CombatXP], [Defeat],

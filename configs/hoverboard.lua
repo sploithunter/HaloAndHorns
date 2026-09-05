@@ -12,6 +12,7 @@ return {
     unlock = {
         tutorial_required = true,
         required_level = 2,
+        merge_wave = 6,
     },
     -- Floor under ordinary travel. Mounted speed is max(WalkSpeed * Eff_Speed, cruise * scale).
     -- 64 is a skate-cruise (~4× default walk) so the Hall fields do not take a jog.
@@ -254,6 +255,7 @@ return {
     button = {
         name = "HoverboardButton",
         text = "Board",
+        tutorial_text = "CLICK HERE\nBoard",
         icon = "rbxassetid://87061483301808",
     },
     shop = {

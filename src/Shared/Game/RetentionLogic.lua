@@ -632,11 +632,15 @@ function RetentionLogic.record(state, id, category, meta)
 end
 
 function RetentionLogic.funnelLists(config)
-    return {
+    local lists = {
         { key = "onboarding", steps = ((config or {}).onboarding or {}).steps },
         { key = "combat_training", steps = ((config or {}).combat_training or {}).steps },
         { key = "activation", steps = ((config or {}).activation or {}).steps },
     }
+    for _, funnel in ipairs((config or {}).course_funnels or {}) do
+        table.insert(lists, funnel)
+    end
+    return lists
 end
 
 function RetentionLogic.matchingSteps(config, eventName, ctx)
@@ -672,6 +676,10 @@ local function pendingSteps(steps, state, cursor)
         index += 1
     end
     return out
+end
+
+function RetentionLogic.pendingCourseSteps(funnel, state)
+    return pendingSteps(funnel.steps, state, (state.CombatCourseFunnelSteps or {})[funnel.key])
 end
 
 -- Returns the achieved steps immediately after AnalyticsFunnelStep. The caller submits these

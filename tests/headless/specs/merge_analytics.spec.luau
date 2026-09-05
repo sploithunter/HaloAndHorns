@@ -7,7 +7,7 @@ end
 
 return function()
     describe("Merge native analytics contract", function()
-        it("validates seven versioned funnels within the universe tab budget", function()
+        it("validates six active Merge funnels within the universe tab budget", function()
             expect(Funnel.validate(Config)).to.equal(true)
             local bad = table.clone(Config)
             bad.send_interval = 0
@@ -90,7 +90,7 @@ return function()
                     Funnel.observe(state, Config, event)
                 end
             end
-            expect(reached(state, "autoplay")).to.equal(4)
+            expect(reached(state, "autoplay")).to.equal(0)
             expect(state.autoActions).to.equal(10)
         end)
         it("only restarts wave identity when the caller confirms a real rebirth", function()

@@ -1122,6 +1122,15 @@ function HoverboardController.start()
             return
         end
         button.Visible = player:GetAttribute("HoverboardEligible") == true
+        local label = button:FindFirstChild("Label", true)
+        if label and label:IsA("TextLabel") then
+            label.Text = if player:GetAttribute("CombatTutorialDone") ~= true
+                    and player:GetAttribute("HoverboardMounted") ~= true
+                    and (tonumber(player:GetAttribute("MergeHighestWave")) or 0)
+                        >= config.unlock.merge_wave
+                then buttonCfg.tutorial_text
+                else buttonCfg.text
+        end
     end
 
     local function ensureButton()
@@ -1452,6 +1461,8 @@ function HoverboardController.start()
     player:GetAttributeChangedSignal("HoverboardYaw"):Connect(restampFromAttr)
 
     player:GetAttributeChangedSignal("HoverboardEligible"):Connect(paintButton)
+    player:GetAttributeChangedSignal("CombatTutorialDone"):Connect(paintButton)
+    player:GetAttributeChangedSignal("HoverboardMounted"):Connect(paintButton)
     player:GetAttributeChangedSignal("AdminOverlaysOn"):Connect(function()
         paintGlow(player.Character)
         if adminTunerOn() then

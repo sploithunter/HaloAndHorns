@@ -12,6 +12,12 @@ return function()
             expect(HoverboardLogic.isEligible(2, true, unlock)).to.equal(true)
         end)
 
+        it("unlocks at Merge wave six before Basic or level two", function()
+            expect(HoverboardLogic.isEligible(1, false, hoverboard.unlock, 5)).to.equal(false)
+            expect(HoverboardLogic.isEligible(1, false, hoverboard.unlock, 6)).to.equal(true)
+            expect(HoverboardLogic.isEligible(1, false, hoverboard.unlock, 30)).to.equal(true)
+        end)
+
         it("uses cruise speed as a floor under existing movement bonuses", function()
             expect(HoverboardLogic.mountedSpeed(16, 1, 64)).to.equal(64)
             expect(HoverboardLogic.mountedSpeed(16, 5, 64)).to.equal(80)
@@ -60,8 +66,8 @@ return function()
             end
         )
 
-        it("suppresses the board in combat, missions, and precision interactions", function()
-            expect(HoverboardLogic.shouldSuppress({ in_combat = true })).to.equal(true)
+        it("allows combat riding but suppresses missions and precision interactions", function()
+            expect(HoverboardLogic.shouldSuppress({ in_combat = true })).to.equal(false)
             expect(HoverboardLogic.shouldSuppress({ in_mission = true })).to.equal(true)
             expect(HoverboardLogic.shouldSuppress({ precision_interact = true })).to.equal(true)
             expect(HoverboardLogic.shouldSuppress({})).to.equal(false)

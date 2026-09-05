@@ -555,6 +555,11 @@ return {
         vfx = { kind = "burst", color = { 255, 215, 90 }, count = 24 },
         banner = { seconds = 4, color = { 255, 215, 90 } },
     },
+    combat_advanced_complete = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 255, 215, 90 }, count = 24 },
+        banner = { seconds = 4, color = { 255, 215, 90 } },
+    },
 
     -- An EXCLUSIVE boss egg was picked up (server: DropService _collect,
     -- kind "egg_item"). Jason: "it's a big deal" — full fireworks, gold

@@ -87,7 +87,7 @@ return {
     -- people who started training, not of every joiner (that is why the
     -- 42-step onboarding chart read as 0.04%).
     combat_training = {
-        enabled = true,
+        enabled = false, -- Archived 33-step track. Runtime uses named Basic / Advanced course funnels.
         name = "Combat Training",
         steps = {
             {
@@ -300,7 +300,7 @@ return {
     -- required. This named funnel starts at join so conversion is of all
     -- players, not of tutorial finishers.
     activation = {
-        enabled = true,
+        enabled = false, -- Retired to reserve the ten-funnel budget for optional combat courses.
         name = "Activation",
         steps = {
             { id = "joined", name = "Joined game", event = "retention_joined" },
