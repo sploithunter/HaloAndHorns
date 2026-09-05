@@ -38,16 +38,32 @@ end
 
 local PeopleList = {}
 
+function PeopleList.isOffline(player)
+    return type(player) == "table" and player.OfflineWorker == true
+end
+
 -- The watched roster is authoritative, not a GetPlayers snapshot inside PlayerRemoving:
 -- Roblox can still include the departing Player until that callback returns.
 function PeopleList.orderedRoster(watchedPlayers, localPlayer)
     local others = {}
+    local onlineIds = {}
     for player in pairs(watchedPlayers) do
-        if player ~= localPlayer then
+        if not PeopleList.isOffline(player) then
+            onlineIds[player.UserId] = true
+        end
+    end
+    for player in pairs(watchedPlayers) do
+        if
+            player ~= localPlayer
+            and not (PeopleList.isOffline(player) and onlineIds[player.UserId])
+        then
             table.insert(others, player)
         end
     end
     table.sort(others, function(a, b)
+        if PeopleList.isOffline(a) ~= PeopleList.isOffline(b) then
+            return not PeopleList.isOffline(a)
+        end
         local aName, bName = string.lower(a.DisplayName), string.lower(b.DisplayName)
         if aName == bName then
             return a.UserId < b.UserId
@@ -91,6 +107,9 @@ local function flagOn(flags, id, attribute)
 end
 
 function PeopleList.prefix(config, flags)
+    if flags and flags.offline then
+        return { id = "offline", glyph = config.offline.glyph, hover = config.offline.hover }
+    end
     local rows = config and config.prefixes
     if type(rows) ~= "table" then
         return nil
@@ -143,6 +162,7 @@ function PeopleList.flagsFromPlayer(player)
         return {}
     end
     return {
+        offline = player:GetAttribute("OfflineWorker") == true,
         owner = player:GetAttribute("IsOwner") == true,
         developer = player:GetAttribute("IsAdmin") == true,
         content_creator = player:GetAttribute("IsCreator") == true,

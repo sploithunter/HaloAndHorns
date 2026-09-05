@@ -12,6 +12,11 @@ return {
     version = 1,
     enabled = true,
     disable_core_player_list = true,
+    offline = {
+        roster_folder = "MergeOfflineRoster",
+        glyph = "💤",
+        hover = "Offline play — this account is not logged in. Its worker yields to real players.",
+    },
     merge_status = {
         format = "Wave %d",
         loading = "Wave —",
