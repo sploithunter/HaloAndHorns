@@ -485,8 +485,18 @@ return function()
                 "Follow the chevrons to the closest Waycoin stack. After all five, pick up the gem."
             )
             expect(config.tutorial.steps.create_five.target).to.equal("buy_egg")
-            expect(config.tutorial.steps.combine_once.target).to.equal("board_egg")
-            expect(config.tutorial.steps.deploy_one.target).to.equal("board_egg")
+            expect(config.tutorial.steps.combine_once.target).to.equal("equip_best")
+            expect(config.tutorial.steps.deploy_one.target).to.equal("equip_best")
+            expect(
+                service:find(
+                    'elseif (step == "combine_once" or step == "deploy_one") and hasDeployment then',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(
+                service:find("local hasCombination = self:_tutorialHasCombination(record)", 1, true)
+            ).to.equal(nil)
             expect(config.tutorial.steps.collect_workshop_coins.target).to.equal("stage_coins")
             expect(config.tutorial.steps.collect_cannon_coins.target).to.equal("stage_coins")
             expect(config.tutorial.stage_coins).to.equal(nil)
@@ -1406,8 +1416,14 @@ return function()
             expect(observer:find('boardDrag.mode = "tap"', 1, true)).to.be.ok()
             expect(config.team.merge_board.touch_input.max_movement_pixels).to.equal(24)
             expect(config.team.merge_board.touch_input.max_duration_seconds).to.equal(0.65)
-            expect(config.tutorial.steps.combine_once.body:find("Select one egg", 1, true)).to.be.ok()
-            expect(config.tutorial.steps.deploy_one.body:find("Select an egg", 1, true)).to.be.ok()
+            expect(config.tutorial.steps.combine_once.body).to.equal(
+                "Click the highlighted DEPLOY BEST button."
+            )
+            expect(config.tutorial.steps.deploy_one.body).to.equal(
+                "Click the highlighted DEPLOY BEST button."
+            )
+            expect(config.team.merge_board.equip_best_label).to.equal("DEPLOY BEST")
+            expect(observer:find("and boardWallControls.equipBest.button", 1, true)).to.be.ok()
             expect(observer:find("local function deploymentTeamFromInstance", 1, true)).to.be.ok()
             expect(observer:find("local function groundPanelCenterBehindEgg", 1, true)).to.be.ok()
             expect(observer:find('action = "upgrade_base"', 1, true)).to.be.ok()
