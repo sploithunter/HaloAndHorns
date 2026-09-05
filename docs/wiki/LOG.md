@@ -8185,3 +8185,13 @@ first-session cohort rates.
   Substituting the original ordering function fails with `Departed player row resurrected`.
   CI: 2,662 tests passed. This proves the departure bug; no production snapshot established
   whether every reported blank row belonged to a departed player. No fabricated stat fallbacks.
+
+### 2026-09-05 — Boot-load bounded Farm & Fight starter previews
+
+- Fixed StarterPetController still waiting on the removed replicated global model catalog.
+  Farm & Fight publishes four configured basic starter clones before model readiness; the client
+  prefetches models and flat images independently before UI readiness. Merge keeps the catalog
+  server-only and receives no starter shelf. No starter eligibility/grant/save behavior changed.
+- Farm & Fight Edit fixture passed with actual starter models: all four viewport fallbacks
+  replace paws; all eight preloads launch; rebuild and Merge exclusion preserve the source catalog.
+  No production publish or profile reset performed.

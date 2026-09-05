@@ -30,6 +30,7 @@ local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnail
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
 -- Record one model/mesh load attempt into the consolidated boot AssetReport. `kind` is inferred
 -- from the target folder (Pets -> pet_model, etc.) so failures read as "what + where" in one log.
@@ -67,6 +68,8 @@ function AssetPreloadService:Init()
     petConfig = self._modules.ConfigLoader:LoadConfig("pets")
     petRolesConfig = self._modules.ConfigLoader:LoadConfig("pet_roles")
     soundsConfig = self._modules.ConfigLoader:LoadConfig("sounds")
+    self._starterConfig = self._modules.ConfigLoader:LoadConfig("starter_pets")
+    self._placesConfig = self._modules.ConfigLoader:LoadConfig("places")
     local okThumbs, thumbs = pcall(function()
         return self._modules.ConfigLoader:LoadConfig("pet_thumbnail_assets")
     end)
@@ -89,6 +92,35 @@ function AssetPreloadService:Init()
     end
 
     logger:Info("AssetPreloadService initialized")
+end
+
+-- A bounded exception to the server-only catalog: these choices must be visible immediately
+-- after the Farm & Fight cutscene, before the player owns any pet or has a Merge warm cache.
+function AssetPreloadService:_warmStarterPetPreviews()
+    local config = self._starterConfig
+    local assets = ReplicatedStorage.Assets
+    local previous = assets:FindFirstChild(config.preview.folder)
+    if previous then
+        previous:Destroy()
+    end
+    if not config.enabled or not PlaceRuntime.isRole(game.PlaceId, self._placesConfig, "main") then
+        return
+    end
+    local shelf = Instance.new("Folder")
+    shelf.Name = config.preview.folder
+    local pets = ServerStorage.Assets.Models:FindFirstChild("Pets")
+    for _, choice in ipairs(config.choices) do
+        local family = pets and pets:FindFirstChild(choice.id)
+        local source = family and family:FindFirstChild(config.grant.variant)
+        if source and source:IsA("Model") then
+            local preview = source:Clone()
+            preview.Name = choice.id
+            preview.Parent = shelf
+        else
+            logger:Warn("Starter pet preview missing", { pet = choice.id })
+        end
+    end
+    shelf.Parent = assets
 end
 
 local function hasFlatPetThumbnail(petType, variant)
@@ -1167,6 +1199,7 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
     -- before models_ready is signalled: signalling first let BreakableSpawner attempt the Hall fill
     -- without Waycoin templates, then wait for its 30-second safety reconciler before trying again.
     self:LoadAllBreakableModelsIntoAssets()
+    self:_warmStarterPetPreviews()
 
     -- All model TEMPLATES (pets/eggs/breakables) are built by this point — open the gameplay gate
     -- NOW, before the cosmetic thumbnail pass. Egg placement (and anything else waiting on

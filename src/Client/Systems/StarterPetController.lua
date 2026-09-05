@@ -21,6 +21,9 @@ local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local STARTER = require(ReplicatedStorage.Configs:WaitForChild("starter_pets"))
+local PLACES = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 local StarterPetController = {}
 local started = false
@@ -97,6 +100,40 @@ end
 -- cheap for this one-time screen, so every card gets an already-replicated model underneath its
 -- flat thumbnail. The flat art still wins once Roblox reports Success; Failure, TimedOut, or a slow
 -- request leaves the real model visible instead of a terminal paw placeholder.
+local function waitForPreview(petId)
+    local timeout = STARTER.preview.wait_timeout_seconds
+    local assets = ReplicatedStorage:WaitForChild("Assets", timeout)
+    local shelf = assets and assets:WaitForChild(STARTER.preview.folder, timeout)
+    return shelf and shelf:WaitForChild(petId, timeout)
+end
+
+local function prewarmStarterChoices()
+    if not STARTER.enabled or not PlaceRuntime.isRole(game.PlaceId, PLACES, "main") then
+        return
+    end
+    -- Independent tasks let slow/missing artwork for one pet never hold up the other choices
+    -- or the cutscene. The shelf contains only configured basic starters, not the catalog.
+    for _, choice in ipairs(STARTER.choices) do
+        task.spawn(function()
+            local thumbnail =
+                PetThumbnailResolver.resolve(THUMBNAILS, choice.id, STARTER.grant.variant, false)
+            if thumbnail then
+                pcall(function()
+                    ContentProvider:PreloadAsync({ thumbnail })
+                end)
+            end
+        end)
+        task.spawn(function()
+            local model = waitForPreview(choice.id)
+            if model then
+                pcall(function()
+                    ContentProvider:PreloadAsync({ model })
+                end)
+            end
+        end)
+    end
+end
+
 local function attachModelFallback(imageBack, choice, fallback)
     local viewport = Instance.new("ViewportFrame")
     viewport.Name = "PetModelFallback"
@@ -119,11 +156,7 @@ local function attachModelFallback(imageBack, choice, fallback)
         -- AssetPreloadService publishes this authored hierarchy asynchronously. Wait on the
         -- hierarchy itself rather than polling; the starter screen remains responsive because
         -- this work is already isolated in its own task.
-        local assets = ReplicatedStorage:WaitForChild("Assets", 20)
-        local models = assets and assets:WaitForChild("Models", 20)
-        local petModels = models and models:WaitForChild("Pets", 20)
-        local family = petModels and petModels:WaitForChild(tostring(choice.id), 20)
-        local sourceModel = family and family:WaitForChild("basic", 20)
+        local sourceModel = waitForPreview(tostring(choice.id))
         if not imageBack.Parent or not sourceModel then
             return
         end
@@ -246,7 +279,7 @@ local function makeCard(parent, choice, index)
     image.Parent = imageBack
     attachFlatThumbnail(
         image,
-        PetThumbnailResolver.resolve(THUMBNAILS, choice.id, "basic", false),
+        PetThumbnailResolver.resolve(THUMBNAILS, choice.id, STARTER.grant.variant, false),
         modelFallback
     )
 
@@ -485,6 +518,7 @@ function StarterPetController.start()
         return
     end
     started = true
+    prewarmStarterChoices()
     Signals.StarterPetState.OnClientEvent:Connect(apply)
     task.spawn(function()
         local player = Players.LocalPlayer
