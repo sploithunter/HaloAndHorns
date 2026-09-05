@@ -366,6 +366,7 @@ local function leadingBoundsPoint(model, movementPosition, direction)
 end
 
 function MergeEggPrototypeService:Init()
+    self._mergeAnalyticsService = self._modules and self._modules.MergeAnalyticsService
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._npcPrincipalService = self._modules and self._modules.NpcPrincipalService
@@ -1976,6 +1977,12 @@ function MergeEggPrototypeService:_rebirthStatus(record)
     local price = MergeEggRebirth.nextCost(config, count, indexedEgg.amount)
     local requirementMet, minimumTier =
         MergeEggRebirth.requirementMet(config, count, self:_lowestDeployedEggTier(record))
+    if requirementMet and price and record and self._economyService then
+        local wallet = self._economyService:GetCurrency(record.player, price.currency)
+        if (tonumber(wallet) or 0) >= price.amount then
+            self:_analytics(record, "rebirth_eligible")
+        end
+    end
     local scaling = {}
     for _, definition in ipairs({
         { key = "petDefense", system = "pets", axis = "defense" },
@@ -3513,6 +3520,7 @@ function MergeEggPrototypeService:_applyEggMerge(record, tier)
     record.eggInventory[resolvedTier] = self:_eggInventoryCount(record, resolvedTier) - ratio
     record.eggInventory[resolvedTier + 1] = self:_eggInventoryCount(record, resolvedTier + 1) + 1
     record.eggsMerged = (record.eggsMerged or 0) + 1
+    self:_analytics(record, "board_merged")
     return true,
         self:_markEggTierMilestone(record, resolvedTier + 1),
         self:_markPetSlotMilestone(record, resolvedTier + 1)
@@ -7031,6 +7039,7 @@ function MergeEggPrototypeService:_openBulwarkMenu(player, slot)
         action = "open_bulwark_menu",
         value = self:_bulwarkMenuState(record, slot),
     })
+    self:_analytics(record, "bulwark_opened")
     return true
 end
 
@@ -8331,6 +8340,7 @@ function MergeEggPrototypeService:_openCannonMenu(player, slot)
         action = "open_cannon_menu",
         value = self:_cannonMenuState(record, slot),
     })
+    self:_analytics(record, "cannon_opened")
     return true
 end
 
@@ -9591,6 +9601,7 @@ function MergeEggPrototypeService:_replacementQueueDepth(record)
 end
 
 function MergeEggPrototypeService:_setWorldState(state, record)
+    self:_analytics(record, "tutorial_step", record and record.tutorialStep)
     local world = self:_worldFor(record)
     if not world then
         return
@@ -11192,6 +11203,7 @@ function MergeEggPrototypeService:_finishDefenseOverrun(record)
     if not self:_isRecordActive(record) or record.terminal == true then
         return
     end
+    self:_analytics(record, "defense_overrun")
     record.terminal = true
     record.terminalState = "DefenseOverrun"
     record.nextWaveAt = nil
@@ -12106,9 +12118,25 @@ function MergeEggPrototypeService:_clearEncounter(record)
     self:_setWorldState("ReadyToHatch", record)
 end
 
+function MergeEggPrototypeService:_analytics(record, event, wave)
+    if self._mergeAnalyticsService and record then
+        pcall(self._mergeAnalyticsService.Observe, self._mergeAnalyticsService, record.player, record, event, wave)
+    end
+end
+
+function MergeEggPrototypeService:_analyticsFailure(player, reason, action)
+    if self._mergeAnalyticsService then
+        pcall(self._mergeAnalyticsService.Failure, self._mergeAnalyticsService, player, reason, action)
+    end
+end
+
 function MergeEggPrototypeService:_end(record, teleportHome, departing, discardProgress)
     if not self:_isRecordActive(record) then
         return
+    end
+    if self._mergeAnalyticsService then
+        pcall(self._mergeAnalyticsService.EndBay, self._mergeAnalyticsService, record.player, record,
+            departing and "leave" or discardProgress and "reset" or "ended")
     end
     self:_clearQuartermasterIntroduction(record)
     if self._achievementBannerService then
@@ -12190,6 +12218,14 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
 end
 
 function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
+    local ok, reason = self:_beginInternal(player, requestedBayId, opts)
+    if not ok and reason ~= "already_inside" then
+        self:_analyticsFailure(player, reason)
+    end
+    return ok, reason
+end
+
+function MergeEggPrototypeService:_beginInternal(player, requestedBayId, opts)
     opts = type(opts) == "table" and opts or {}
     local ok, reason = self:_canBegin(player)
     if not ok then
@@ -12224,6 +12260,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
             return false, claimedId
         end
         bayId = claimedId
+        if self._mergeAnalyticsService then
+            pcall(self._mergeAnalyticsService.EntryEvent, self._mergeAnalyticsService, player, "bay_claimed")
+        end
         world = self:_resolveWorld(bayId)
     else
         world = self._world or self:_resolveWorld()
@@ -12636,6 +12675,10 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
     -- that one-time edge so an eligible veteran never keeps the temporary Simple roster alongside
     -- their newly restored Full-mode pets.
     self:_switchPlayerCombatMode(record, player:GetAttribute("MergeDefenseMode"))
+    if self._mergeAnalyticsService then
+        pcall(self._mergeAnalyticsService.BeginBay, self._mergeAnalyticsService, player, record,
+            resumePlaystate or resumeCheckpoint)
+    end
     local armed, armReason = self:_hatch(player)
     if not armed then
         self:_log("Warn", "Merge Egg prototype could not arm on entry", {
@@ -12672,6 +12715,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
         return false, "session_ended"
     end
     record.entryInitializing = false
+    self:_analytics(record, "session_ready")
     if not resumeCheckpoint then
         self:_startTutorial(record, opts.forceTutorial == true)
     end
@@ -12770,6 +12814,7 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         return
     end
     local waveCount = self:_waveCount(record)
+    self:_analytics(record, "wave_cleared", record.waveIndex)
     if record.waveIndex < waveCount then
         if self:_shouldStartWorkshopTutorial(record) then
             self:_startWorkshopTutorial(record)
@@ -13426,6 +13471,14 @@ function MergeEggPrototypeService:_resolveWaveEnemy(
 end
 
 function MergeEggPrototypeService:_spawnNextWave(record)
+    local ok, reason = self:_spawnNextWaveInternal(record)
+    if not ok then
+        self:_analyticsFailure(record.player, reason)
+    end
+    return ok, reason
+end
+
+function MergeEggPrototypeService:_spawnNextWaveInternal(record)
     if record.terminal == true then
         return false, "encounter_terminal"
     end
@@ -13608,6 +13661,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     end
 
     record.waveIndex = waveIndex
+    self:_analytics(record, "wave_started")
     self:_recordHighestWave(record)
     record.nextWaveOverride = nil
     -- AreaMusicController treats a changed cue as a request to rotate combat music without
@@ -16468,6 +16522,7 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
     if automatic.lineAdvances == 0 and automatic.boardMerges == 0 then
         self:_publishBoardMutation(record)
     end
+    self:_analytics(record, "egg_created")
     self:_log("Info", "Merge Egg prototype base egg created", {
         player = player.Name,
         cost = pricing.amount,
@@ -16600,6 +16655,7 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
     if automatic.lineAdvances == 0 and automatic.boardMerges == 0 then
         self:_publishBoardMutation(record)
     end
+    self:_analytics(record, "base_upgraded")
     self:_log("Info", "Merge Egg prototype base egg upgraded", {
         player = player.Name,
         fromTier = currentTier,
@@ -16671,6 +16727,7 @@ function MergeEggPrototypeService:MergeBoardEggs(player, request)
     record.lastEggMergeAt = now
     self:_publishBoardMutation(record)
     local progression = self:_eggProgression(record)
+    self:_analytics(record, "board_merged")
     self:_log("Info", "Merge Egg prototype eggs merged", {
         player = player.Name,
         fromTier = tier,
@@ -16743,6 +16800,7 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
     end
     record.lastEggMergeAt = now
     self:_publishBoardMutation(record)
+    self:_analytics(record, "board_merged")
     self:_log("Info", "Merge Egg prototype board eggs manually merged", {
         player = player.Name,
         sourceSlot = sourceSlot,
@@ -16917,6 +16975,11 @@ function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
             critical = false,
         })
     end
+    self:_analytics(record, "bulwark_opened")
+    self:_analytics(record, nextState.operation == "unlocked" and "bulwark_unlocked" or "bulwark_purchased")
+    if nextState.operation == "upgraded" then
+        self:_analytics(record, "bulwark_upgraded")
+    end
     self:_log("Info", "Merge Egg bulwark changed", {
         player = player.Name,
         operation = nextState.operation,
@@ -17032,6 +17095,11 @@ function MergeEggPrototypeService:PurchaseCannonAction(player, request)
             debounceSeconds = 10,
             critical = false,
         })
+    end
+    self:_analytics(record, "cannon_opened")
+    self:_analytics(record, nextState.operation == "unlocked" and "cannon_unlocked" or "cannon_purchased")
+    if nextState.operation == "upgraded" then
+        self:_analytics(record, "cannon_upgraded")
     end
     self:_log("Info", "Merge Egg cannon changed", {
         player = player.Name,
@@ -17222,6 +17290,7 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
     end
 
     local countBefore = status.count
+    self:_analytics(record, "rebirth_confirmed")
     local price = status.price
     record.rebirthInProgress = true
     local commitFailure
@@ -17338,6 +17407,7 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         return false, armReason
     end
     self:_startTutorial(record)
+    self:_analytics(record, "rebirth_completed")
     self:_log("Info", "Merge Egg rebirth purchased", {
         player = player.Name,
         rebirthCount = record.rebirthCount,
@@ -17440,6 +17510,14 @@ function MergeEggPrototypeService:EquipBestHatchers(player)
 end
 
 function MergeEggPrototypeService:HandleBoardAction(player, request)
+    local ok, value = self:_handleBoardActionInternal(player, request)
+    if not ok then
+        self:_analyticsFailure(player, value, type(request) == "table" and request.action or "board")
+    end
+    return ok, value
+end
+
+function MergeEggPrototypeService:_handleBoardActionInternal(player, request)
     request = type(request) == "table" and request or {}
     local action = tostring(request.action or "")
     if action == "create" then
@@ -17670,6 +17748,7 @@ function MergeEggPrototypeService:_advanceHatcherEgg(player, request, trustedAut
             })
         end
     end
+    self:_analytics(record, "egg_placed")
     self:_log("Info", "Merge Egg prototype crafted egg placed", {
         player = player.Name,
         team = team.id,
@@ -17937,6 +18016,7 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
                 return
             end
             if not character:WaitForChild("HumanoidRootPart", 10) then
+                self:_analyticsFailure(player, "character_unavailable")
                 self:_log("Warn", "Merge place character had no root part", {
                     player = player.Name,
                 })
@@ -17952,6 +18032,7 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
                 RunService.Heartbeat:Wait()
             end
             if self._dataService and not self._dataService:IsDataLoaded(player) then
+                self:_analyticsFailure(player, "profile_timeout")
                 self:_log("Warn", "Merge place profile was not ready before session entry", {
                     player = player.Name,
                 })

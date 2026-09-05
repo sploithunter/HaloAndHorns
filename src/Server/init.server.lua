@@ -1017,6 +1017,7 @@ if isFeatureEnabled("map_binding") then
     -- Fight and the public return door plus gameplay in the dedicated Merge place. Automation is
     -- still a Studio-only optional dependency used by balancing runs.
     local mergeEggPrototypeDeps = {
+        "MergeAnalyticsService",
         "Logger",
         "ConfigLoader",
         "ZoneService",
@@ -1038,6 +1039,9 @@ if isFeatureEnabled("map_binding") then
     if RunService:IsStudio() then
         table.insert(mergeEggPrototypeDeps, "AutomationService")
     end
+    loader:RegisterModule("MergeAnalyticsService", ServerScriptService.Server.Services.MergeAnalyticsService, {
+        "ConfigLoader",
+    })
     loader:RegisterModule(
         "MergeEggPrototypeService",
         ServerScriptService.Server.Services.MergeEggPrototypeService,

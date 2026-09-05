@@ -125,6 +125,10 @@ function Service:_begin(player, options)
         nextReport = os.clock() + self._config.report_seconds,
     }
     player:SetAttribute("MergeAutoplayEnabled", true)
+    if self._merge._analytics then
+        self._merge:_analytics(record, "autoplay_owned")
+        self._merge:_analytics(record, "autoplay_enabled")
+    end
     self:_status(player, "ready", nil)
     return true
 end
@@ -384,6 +388,9 @@ function Service:_tick(player, state)
     state.targetKey = nil
     if ok then
         state.failures = 0
+        if self._merge._analytics then
+            self._merge:_analytics(state.record, "autoplay_action")
+        end
         -- Income can arrive while a successful purchase builds its models. Record the verified
         -- purchase price, not a wallet delta that would subtract those concurrent earnings.
         state.spent += action.amount
@@ -394,6 +401,9 @@ function Service:_tick(player, state)
     else
         state.blocked[action.key] = os.clock() + cfg.blocked_retry_seconds
         state.failures += 1
+        if self._merge._analyticsFailure then
+            self._merge:_analyticsFailure(player, reason, "autoplay")
+        end
     end
     state.history[#state.history + 1] = {
         kind = action.kind,

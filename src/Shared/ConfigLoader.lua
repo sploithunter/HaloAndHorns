@@ -680,7 +680,9 @@ function ConfigLoader:GetMonetizationStatus()
 end
 
 function ConfigLoader:ValidateConfig(configName, config)
-    if configName == "merge_autoplay" then
+    if configName == "merge_analytics" then
+        return require(script.Parent.Game.MergeAnalyticsFunnel).validate(config)
+    elseif configName == "merge_autoplay" then
         return require(script.Parent.Game.MergeAutoplayPolicy).validate(config)
     elseif configName == "monetization" then
         return self:_validateMonetizationConfig(config)
