@@ -8129,3 +8129,15 @@ first-session cohort rates.
   and Merge Autoplay emission to keep the full universe at ten funnels; custom milestones remain.
 - Added headless and isolated Studio production-method coverage for migration, course boundaries,
   concurrency, cap-50 rewards, retry/reentrancy, replay, and squad-restore preservation.
+
+### 2026-09-05 — combat participation XP and early hoverboards
+
+- Merge enemy defeats now pay engaged durable personal pets' fraction of all active same-run pets,
+  including NPC defenders in the denominator. Owners must be alive, Full-mode and within the
+  config-owned 150-stud radius. Killing-blow full credit replaces, rather than adds to, that share.
+  No participation drops, kill stats or quest credit; no further reduction to the existing XP curve.
+- Hoverboards unlock at Merge highest Wave 6 independently of Basic training, retain their flank
+  button outside covered power slots, and advertise CLICK HERE while Basic is unfinished/unmounted.
+  Combat no longer dismounts; mission/death/precision gates remain intact.
+- Isolated Studio fixtures execute real award methods for NPC and personal kills, concurrent helper
+  shares, idle/downed exclusions and other-bay isolation. Existing course/handoff fixtures pass too.

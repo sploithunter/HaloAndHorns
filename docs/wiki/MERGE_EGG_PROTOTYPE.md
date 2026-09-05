@@ -510,8 +510,9 @@ team and queue model:
   cubed before the config-owned 5%–100% clamp. This fits the live Rebirth Rank 10 / Wave 30
   checkpoint: its baseline 0.45 ratio pays 9.1% instead of 45%, about one fifth of the former XP.
   Cubing does not move the ratio-1 crossing, so full XP automatically returns at the same wave when
-  enemy HP catches up. Only durable player-pet final hits remain eligible; the offline simulator
-  uses the authored 50% player-pet kill share for expected totals.
+  enemy HP catches up. As of 2026-09-05, engaged personal pets also receive proportional XP below.
+  The offline simulator's authored 50% final-hit estimate predates participation credit and must
+  not be treated as the new expected leveling rate without updating that model.
 - `scripts/simulate_merge_xp.luau` advances the real authored/endless wave generator for 1,000 waves
   without Studio. It reports opening XP yield, expected and maximum XP, first full-yield wave, next
   rank price, and an intentionally optimistic no-spend/all-pickups affordability bound. The safety
@@ -602,9 +603,22 @@ team and queue model:
   fallback), enhancement and potion rolls, boss-exclusive egg roll, `enemy_defeated`, and
   `enemies_defeated`. Home onboarding or Ascension alone remains insufficient for those broader
   rewards because powers and targeting have not been taught. Autonomous and Simple-mode combat
-  never grants ordinary combat XP or those broader rewards. Merge's own physical Waycoin/Gem
+  never grants those broader rewards. Merge's own physical Waycoin/Gem
   callback remains separate, so reusing the combat reward path neither duplicates it nor gives NPCs
   contributor credit.
+
+### Engaged personal-pet XP floor (2026-09-05)
+
+On each Merge enemy defeat, `EnemyService` counts non-downed pets with an active Enemy target
+in that same `MergeRunId`. Personal and NPC pets both enter the denominator. A living Full-mode
+player within `configs/combat.lua merge_xp_credit.player_radius` (150 studs) receives their durable
+personal pet count divided by that total, applied to the existing challenge-scaled enemy XP.
+No damage or final hit is required. Helpers targeting this fight qualify; idle pets, unrelated bays,
+downed pets and distant owners do not earn participation XP. NPCs/summons never enter the personal
+numerator. The personal-pet killer keeps the existing full award **instead of** an additional share.
+Participation grants XP only; kill stats, quests, currency and special drops retain final-hit gates.
+Regression: `scripts/studio/test_merge_participation_xp.luau` executes the actual production methods
+against isolated instances without touching live profiles.
 
 ## Simple-mode session reserve roster (2026-08-26)
 

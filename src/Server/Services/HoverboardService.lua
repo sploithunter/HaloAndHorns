@@ -1,8 +1,8 @@
 --[[
     HoverboardService — server-authoritative Hall Level-2 board.
 
-    Eligibility is tutorial complete + claimed Level 2. Mounted state is a player
-    attribute, never a save field. Combat, missions, and death force a
+    Eligibility is tutorial complete + claimed Level 2, or Merge Wave 6. Mounted state is a player
+    attribute, never a save field. Missions and death force a
     dismount. Walking Hall_1–Hall_4 (old gate lines) is not a teleport and
     must not dismount. Speed is max(normal effective walk, cruise * player scale).
 ]]
@@ -60,6 +60,9 @@ function HoverboardService:Start()
     end)
 
     local function watch(player)
+        player:GetAttributeChangedSignal("MergeHighestWave"):Connect(function()
+            self:_refresh(player)
+        end)
         player:GetAttributeChangedSignal("InCombat"):Connect(function()
             self:_refresh(player)
         end)
@@ -158,7 +161,8 @@ function HoverboardService:_isEligible(player)
     return HoverboardLogic.isEligible(
         self:_claimedLevel(player),
         self:_tutorialDone(player),
-        self._config.unlock
+        self._config.unlock,
+        player:GetAttribute("MergeHighestWave")
     ) == true
 end
 

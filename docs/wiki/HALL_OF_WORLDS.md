@@ -387,6 +387,12 @@ These remain design contracts, not active Plaza gameplay:
 
 ## Hoverboard Travel
 
+2026-09-05: Merge also unlocks the standard board at highest Wave 6, independently of Basic
+training or Level 2 (`hoverboard.unlock.merge_wave`). The persistent flank button stays outside
+the tutorial-covered power slots and advertises CLICK HERE before the first mount while Basic is
+unfinished. Combat no longer suppresses mounting or dismounts a rider. Mission, death, teleport,
+and precision-interaction suppression remain unchanged. The ordinary Hall unlock below still works.
+
 The Hall awards a standard hoverboard when the player completes the tutorial and earns Level
 2. It is a traversal graduation reward for the Hall and later large worlds, not a combat power,
 developer product, or second permanent-speed entitlement. Press **H** or the **Board** button
