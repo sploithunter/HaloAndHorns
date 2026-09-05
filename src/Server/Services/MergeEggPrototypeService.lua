@@ -17972,9 +17972,11 @@ end
 
 function MergeEggPrototypeService:_resumeAfterCombatTraining(player, reason)
     local pending = player and self._combatTrainingReturns[player]
-    if not pending
+    if
+        not pending
         or player:GetAttribute("InMission") ~= nil
-        or player:GetAttribute("InCombatTutorial") == true then
+        or player:GetAttribute("InCombatTutorial") == true
+    then
         return
     end
     self._combatTrainingReturns[player] = nil
@@ -18019,9 +18021,11 @@ end
 
 function MergeEggPrototypeService:_watchCombatTrainingReturn(player)
     local function resumeWhenReady()
-        if player:GetAttribute("InMission") == nil
+        if
+            player:GetAttribute("InMission") == nil
             and player:GetAttribute("InCombatTutorial") ~= true
-            and self._combatTrainingReturns[player] then
+            and self._combatTrainingReturns[player]
+        then
             task.defer(function()
                 self:_resumeAfterCombatTraining(player, "mission_closed")
             end)

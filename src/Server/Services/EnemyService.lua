@@ -370,8 +370,11 @@ function EnemyService:_engagesCombat(player)
     local eng = self._combatConfig and self._combatConfig.engagement
     -- Completing the real training track is an alternative to the peaceful level onramp.
     -- Read the live receipt, not a join-time cache, so graduates can acquire targets immediately.
-    if eng and eng.training_completion_unlocks_engagement == true
-        and player:GetAttribute("CombatTutorialDone") == true then
+    if
+        eng
+        and eng.training_completion_unlocks_engagement == true
+        and player:GetAttribute("CombatTutorialDone") == true
+    then
         return true
     end
     local minLvl = eng and tonumber(eng.min_engage_level)

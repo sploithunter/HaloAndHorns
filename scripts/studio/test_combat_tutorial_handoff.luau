@@ -92,6 +92,71 @@ attrs.Level, attrs.EffectiveLevel = 2, 2
 assert(enemy:_engagesCombat(player) == false, "Untrained onramp changed")
 attrs.CombatTutorialDone = true
 assert(enemy:_engagesCombat(player) == true, "Graduate still blocked until rejoin")
+-- Run real target assignment too: an enemy engaged with a hatcher (not this player) must
+-- become acquirable immediately after graduation. Fixtures stay outside Workspace.
+local fixture = Instance.new("Folder")
+local squad = Instance.new("Folder")
+squad.Parent = fixture
+local pet = Instance.new("Model")
+local part = Instance.new("Part")
+part.Parent = pet
+pet.PrimaryPart = part
+pet.Parent = squad
+local tid = Instance.new("NumberValue")
+tid.Name = "TargetID"
+tid.Parent = pet
+local tt = Instance.new("StringValue")
+tt.Name = "TargetType"
+tt.Value = "Enemy"
+tt.Parent = pet
+local foe = Instance.new("Model")
+foe:SetAttribute("HP", 100)
+foe.Parent = fixture
+local targetPriority = require(game.ReplicatedStorage.Shared.Game.TargetPriority)
+enemy._assignPetTargets = method(
+    services.EnemyService,
+    "EnemyService",
+    "_assignPetTargets",
+    "local Workspace, TargetPriority = ...\nlocal AggroTable = {get=function() return 0 end}\nlocal function traceEnabled() return false end",
+    {
+        FindFirstChild = function()
+            return {
+                GetChildren = function()
+                    return { squad }
+                end,
+            }
+        end,
+    },
+    targetPriority
+)
+enemy._enemies = {
+    [1] = { model = foe, pos = Vector3.new(1, 0, 0), def = {}, aggroPlayerName = "HatcherFixture" },
+}
+function enemy:_petFollowService()
+    return nil
+end
+function enemy:_playerForPetFolder()
+    return player
+end
+function enemy:_petPosition()
+    return Vector3.zero
+end
+function enemy:_aggroV2()
+    return nil
+end
+function enemy:_inTerritory()
+    return true
+end
+function enemy:_petHostileToEnemy()
+    return true
+end
+attrs.CombatTutorialDone = nil
+enemy:_assignPetTargets(combatConfig.engagement)
+assert(tid.Value == 0, "Untrained pet initiated combat")
+attrs.CombatTutorialDone = true
+enemy:_assignPetTargets(combatConfig.engagement)
+assert(tid.Value == 1 and tt.Value == "Enemy", "Graduate did not acquire nearby enemy")
+fixture:Destroy()
 attrs.CombatTutorialDone = nil
 attrs.Level, attrs.EffectiveLevel = 5, 5
 assert(enemy:_engagesCombat(player) == true, "Existing level gate changed")
