@@ -286,7 +286,9 @@ function Service:_startWorker(id, bayId, profile, token, lease, fixtureAvatar)
         startGems = tonumber(profile.Data.Currencies.gems) or 0,
         startXP = tonumber(profile.Data.Stats.Experience) or 0,
         fixture = fixtureAvatar ~= nil,
+        operationFinished = Instance.new("BindableEvent"),
     }
+    worker.operationFinished.Parent = actor.State
     self._workers[id] = worker
     self:_updateCount()
     self._data.Profiles[actor] = profile
@@ -331,6 +333,7 @@ function Service:_startWorker(id, bayId, profile, token, lease, fixtureAvatar)
         end
     end)
     worker.busy = false
+    worker.operationFinished:Fire()
     if not built then
         self:_status("LastError", tostring(reason))
         self:_stop(id, "startup_failed")
@@ -349,7 +352,7 @@ function Service:_stop(id, reason)
     -- Join/claim may arrive while a normal gameplay operation yields for model creation or
     -- pathfinding. Do not release its profile or bay until that operation has unwound.
     while worker.busy and worker.thread ~= coroutine.running() do
-        task.wait()
+        worker.operationFinished.Event:Wait()
     end
     -- Teardown is scoped by actor identity; a delayed cleanup cannot release a new claimant.
     if worker.runtime then
@@ -362,7 +365,8 @@ function Service:_stop(id, reason)
     end
     local data = worker.profile.Data
     local summary = data[self._config.profile_summary_key] or {}
-    summary.seconds = (tonumber(summary.seconds) or 0) + math.max(0, os.time() - worker.started)
+    local previousSeconds = tonumber(summary.seconds)
+    summary.seconds = (previousSeconds or 0) + math.max(0, os.time() - worker.started)
     summary.xp = (tonumber(summary.xp) or 0)
         + math.max(0, (data.Stats.Experience or 0) - worker.startXP)
     summary.gems = (tonumber(summary.gems) or 0)
@@ -701,6 +705,9 @@ function Service:Start()
                             end
                         end)
                         worker.busy = false
+                        if self._workers[id] == worker then
+                            worker.operationFinished:Fire()
+                        end
                         if not ok then
                             self:_status("LastError", tostring(err))
                             self:_stop(id, "runtime_error")

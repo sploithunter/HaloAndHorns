@@ -8253,3 +8253,7 @@ first-session cohort rates.
 - Full CI passes: 2,686 headless checks / 299 specs. See MERGE_AUTOPLAY for storage names,
   pinned ProfileStore adapter dependency, diagnostics and remaining published smoke test.
   No account reset or production publication. Both places must be published for login handoff.
+- Final automatic-fill run reached five simultaneous workers and saved/released all five cleanly.
+  Tracked-file CI caught new timer classifications omitted by the untracked local scan: shutdown
+  now awaits operation completion, while navigation deadlines and pool/presence timers are
+  explicitly classified. No architecture debt allowance was added.

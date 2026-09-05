@@ -101,7 +101,7 @@ function Lease.validate(config)
         or config.selection_count % 1 ~= 0
         or config.maximum_bays % 1 ~= 0
         or config.acquisition_attempts % 1 ~= 0
-        or config.pool_sort_range > 2147483647
+        or config.pool_sort_range > 2 ^ 31 - 1 -- math.random's signed integer limit, not tuning.
         or config.pool_sort_range % 1 ~= 0
     then
         return false, "offline bounds must fit platform limits"

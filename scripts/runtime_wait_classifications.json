@@ -12,6 +12,12 @@
   "watchdog"
  ],
  "files": {
+  "src/Server/MergeOfflineRuntime.lua": {
+   "deadline": 1
+  },
+  "src/Server/Services/MergeOfflineService.lua": {
+   "periodic": 2
+  },
   "src/Client/Systems/AdminController.lua": {
    "retry_backoff": 1
   },

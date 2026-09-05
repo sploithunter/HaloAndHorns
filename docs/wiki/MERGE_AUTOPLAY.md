@@ -70,7 +70,9 @@ start/stop/reason/error. Disabling through this control applies only to that Stu
 Verified in Studio: isolated start/stop/preemption; a real alternate advanced waves 30–32 and
 earned 250 XP, then an independent DataStore read confirmed saved XP/highest wave/summary and
 released profile ownership. Another alternate created/deployed its first egg, advanced wave 0–10,
-and upgraded production with zero navigation failures. A simulated cross-server online lease plus
+and upgraded production with zero navigation failures. Automatic filling reached five workers;
+all five stopped and released their bays successfully. Cannon and bulwark installs/upgrades also
+ran through normal purchases. A simulated cross-server online lease plus
 login message stopped only the matching worker. Actual two-server/account login and production
 load behavior still need a published smoke test; Studio tests are not evidence of those results.
 
