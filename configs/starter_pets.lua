@@ -10,6 +10,11 @@ return {
     version = 1,
     enabled = true,
 
+    preview = {
+        folder = "StarterPetPreviews",
+        wait_timeout_seconds = 20,
+    },
+
     grant = {
         variant = "basic",
         source = "starter_choice",
