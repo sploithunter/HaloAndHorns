@@ -8101,3 +8101,13 @@ first-session cohort rates.
   Below 30 it is excluded before random selection; at 30+ it retains its ordinary pool chance.
 - The archetype fallback obeys the same gate. Other boss species, wave counts, and realm egg
   rosters are unchanged. Regression sweeps cover levels 1–29 and the exact level-30 boundary.
+
+## 2026-09-05 — Combat Training grant wiring and easier opening waves
+
+- Fixed the missing boot dependency for Combat Training's earned Level-2 grant. Completed saves
+  with an undelivered receipt catch up through the existing idempotent top-up; Ascension stays manual.
+- Added config-owned HP/damage relief for Merge Waves 1–30, smoothly fading to the previous curve
+  at Wave 60. No level-up cliff, roster/count changes, or new-player reward reductions.
+- Kept rebirth XP difficulty and the offline simulator aligned with actual opening enemy HP.
+- Added interpolation/boundary/dependency regressions and isolated Studio production-method checks
+  for deferred grant retry, exact XP, no duplicate/downgrade, and actual enemy-stat application.

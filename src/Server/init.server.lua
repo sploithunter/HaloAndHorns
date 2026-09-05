@@ -650,7 +650,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "CombatTutorialService",
     ServerScriptService.Server.Services.CombatTutorialService,
-    {
+    appendIfEnabled({
         "Logger",
         "ConfigLoader",
         "DataService",
@@ -664,7 +664,7 @@ loader:RegisterModule(
         "PetGrantService",
         "PowerService",
         "FocusService",
-    }
+    }, "player_progression", "PlayerProgressionService")
 )
 -- RetentionService: persisted activation milestones + Roblox onboarding/custom analytics.
 loader:RegisterModule(

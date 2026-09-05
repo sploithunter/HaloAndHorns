@@ -3,6 +3,20 @@
 Status: Phase 6 endless defense running in the dedicated Studio-authored Merge place; durable
 Wave-10 checkpoints and 56 egg tiers await live balance verification
 
+## New-player opening relief (2026-09-05)
+
+`early_wave_difficulty` applies a wave-owned multiplier to final enemy HP/damage, after the
+normal archetype/rank, layer, and endless scaling. Wave 1 uses 0.25 HP / 0.20 damage; Wave 10
+0.30 / 0.25; Wave 20 0.40 / 0.35; Wave 30 0.50 / 0.45. Linear interpolation tapers to 1 / 1
+at Wave 60; later waves are unchanged. Player level/rebirth does not switch the relief on/off,
+so levelling during a run never strengthens its enemies. Bodies, ranks, armor, and wave timing
+remain authored; existing layer/composition changes still apply.
+
+New-player payouts are unchanged. Rebirth XP difficulty includes the same opening HP factor,
+and the offline XP simulator uses the shared interpolation helper too. The no-rebirth XP bypass
+remains intact. This is a first tuning pass based on reported difficulty, not a proven guarantee
+that every Level-1 roster clears Wave 30; verify the new-player failure-wave distribution in play.
+
 ## Farm & Fight return portals
 
 ### Player-list personal best

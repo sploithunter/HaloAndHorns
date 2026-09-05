@@ -25,6 +25,18 @@ end
 
 return function()
     describe("combat tutorial config", function()
+        it("injects progression into Combat Training so its level floor can run", function()
+            local source = readFile("src/Server/init.server.lua")
+            local first = assert(
+                source:find("ServerScriptService.Server.Services.CombatTutorialService,", 1, true)
+            )
+            local last = assert(source:find("-- RetentionService:", first, true))
+            local registration = source:sub(first, last - 1)
+            expect(registration:find("appendIfEnabled({", 1, true)).to.be.ok()
+            expect(
+                registration:find('}, "player_progression", "PlayerProgressionService")', 1, true)
+            ).to.be.ok()
+        end)
         it("restores the squad before publishing tutorial exit readiness", function()
             local source = readFile("src/Server/Services/CombatTutorialService.lua")
             local first =

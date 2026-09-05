@@ -2377,6 +2377,10 @@ function MergeEggPrototypeService:_stageEnemyConfig(context, source, waveIndex)
         )
     )
     local waveScaling = (self:_waveFor(context, resolvedWaveIndex) or {}).enemy or {}
+    local openingHp, openingDamage = MergeEggWaveGenerator.earlyDifficulty(
+        self._config.early_wave_difficulty,
+        resolvedWaveIndex
+    )
     local resolved = table.clone(source or {})
     resolved.hp = math.max(
         1,
@@ -2384,6 +2388,7 @@ function MergeEggPrototypeService:_stageEnemyConfig(context, source, waveIndex)
             (tonumber(source and source.hp) or 1)
                 * math.max(0.01, tonumber(scaling.hp_multiplier) or 1)
                 * math.max(0.01, tonumber(waveScaling.hp_multiplier) or 1)
+                * openingHp
         )
     )
     resolved.damage = math.max(
@@ -2391,6 +2396,7 @@ function MergeEggPrototypeService:_stageEnemyConfig(context, source, waveIndex)
         (tonumber(source and source.damage) or 0)
             * math.max(0, tonumber(scaling.damage_multiplier) or 1)
             * math.max(0, tonumber(waveScaling.damage_multiplier) or 1)
+            * openingDamage
     )
     resolved.armor = math.max(
         0,
@@ -2425,6 +2431,11 @@ function MergeEggPrototypeService:_combatXpYield(record, waveIndex)
     local wave = self:_waveFor(record, resolvedWaveIndex)
     local enemyHpMultiplier =
         MergeEggXpYield.enemyHpMultiplier(stage.combat_layers, resolvedWaveIndex, wave)
+    local openingHp = MergeEggWaveGenerator.earlyDifficulty(
+        self._config.early_wave_difficulty,
+        resolvedWaveIndex
+    )
+    enemyHpMultiplier *= openingHp
     local rebirthDamage =
         MergeEggRebirth.damageMultiplier(self._config.rebirth, record and record.rebirthCount)
     local managementDamage = self:_managementUpgradeMultiplier(record, "damage")
