@@ -34,6 +34,12 @@ now **offline play**: server-owned characters work for disconnected accounts in 
   combat XP and ordinary drops still accrue. An empty bay deploys an egg before saving for upgrades.
 - Offline actors do not emit online onboarding/funnel events or receive personal UI remotes.
   Shared world models remain visible to nearby actual clients.
+- The custom Players list shows active workers after all real players, with only a 💤 name
+  prefix (no text suffix or extra column). Rank, highest wave and location remain visible.
+  `ReplicatedStorage.MergeOfflineRoster` exposes only username/display name, user ID and the
+  five presentation attributes needed for those columns; never profiles, balances or leases.
+  Rows update on attributes, disappear at stop, and yield to a same-account real Player during
+  login handoff. Offline rows do not open live-Player avatar/friend/block controls.
 
 ## Ownership and earnings
 

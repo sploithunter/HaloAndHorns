@@ -8257,3 +8257,12 @@ first-session cohort rates.
   Tracked-file CI caught new timer classifications omitted by the untracked local scan: shutdown
   now awaits operation completion, while navigation deadlines and pool/presence timers are
   explicitly classified. No architecture debt allowance was added.
+
+## 2026-09-05 — Offline workers in the Players list
+
+- Added a sanitized, event-driven public worker roster with online-first ordering and 💤 only
+  before worker names. No Offline label consumes row space. Existing rank/wave/location stay.
+- Login suppresses stale same-account offline rows; worker stop removes its row immediately.
+  Offline rows cannot invoke Roblox live-Player social actions. Config owns icon and hover copy.
+- Full CI: 2,689 passing headless tests. Merge Studio visual check showed the real player first
+  and two active offline workers below it with the emoji, rank and saved highest wave. No publish.
