@@ -8220,3 +8220,8 @@ first-session cohort rates.
   one timeout warning; late confirmation, dirty preservation, stale snapshots, exact critical
   barriers, failed-start handling and inactive profiles are covered. The initial reported
   DataStore-level throttle was not reproduced in the asset Play check; no backend cause claimed.
+- Follow-up verification: all 2,675 headless checks pass. Farm & Fight's normal runtime
+  SaveAndConfirm completed in 1.12 seconds against the active profile without gameplay edits;
+  all 197 checked cached image/mesh references were fetched successfully. The background
+  Studio session also reported severe frame stalls, so this is functional verification,
+  not evidence of a frame-rate improvement. No profile resets or production publish.
