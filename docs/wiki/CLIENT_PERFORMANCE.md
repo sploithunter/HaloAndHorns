@@ -1,5 +1,31 @@
 # Client Performance
 
+## Farm & Fight predictive cache (2026-09-05)
+
+`FarmAssetWarmupService` now clones from the prebuilt server catalog into each owner's
+`PlayerGui.FarmAssetWarmCache`. `configs/farm_asset_warmup.lua` owns all budgets and intervals.
+The closest two distinct egg stands supply current/approaching pools (including rare outcomes
+and configured variants); Earth is the pre-world/prologue fallback. This is geographic anticipation,
+not a claim that every unlocked egg across distant realms stays resident.
+
+Validated equipped pets, living own pets, nearby player pets, recent owned variants, and bounded
+explicit preview requests supplement those pools. Unneeded cache entries expire with a capped
+grace set; no live Workspace actor is destroyed. Explicit 3D requests validate ownership/current
+prediction, rate-limit, cap retained requests, and never fetch arbitrary client asset IDs.
+Flat inventory cards stay virtualized and flat-only. Legacy 3D helpers now select the exact
+pet/variant instead of the first model they find, and do not attempt client InsertService loads.
+
+The shared warmup worker (retaining its historical `MergeAssetWarmup` module name) selects the
+appropriate place cache and fetches mesh/texture and flat-image dependencies. Failed content has
+bounded retries; a replacement PlayerGui cache is not skipped behind an old pending preload.
+The four-starter boot shelf below remains available before player-profile readiness.
+
+Feature-branch Farm & Fight Play verified 24 pet types / 2 egg pools, all 56 flat image references
+and 158 unique MeshPart mesh/texture references reporting Success, and no replicated global
+Models catalog. Profile loading succeeded in that run. This is not a cold-client timing/memory
+benchmark. Isolated Studio tests cover two-owner isolation, living-pet retention, unused eviction,
+owned-only requests, Merge exclusion, failed-content retries, and replacement-cache loading.
+
 ## Starter-picker boot exception (2026-09-05)
 
 Farm & Fight boot publishes only the four `configs/starter_pets.lua.choices` basic models in

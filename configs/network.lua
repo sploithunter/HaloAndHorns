@@ -18,6 +18,17 @@ return {
     -- Manifest-driven packets. Signals builds these through SignalRegistry; the
     -- legacy bridge table below remains during the incremental migration.
     packets = {
+        PetPreviewRequest = {
+            name = "PetPreviewRequest",
+            transport = "remote_function",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 4,
+            handler = "FarmAssetWarmupService.Request",
+            schema = { kind = "tuple", arguments = { { name = "request", type = "table" } } },
+        },
         Combat_PresentationBatch = {
             name = "Combat_PresentationBatch",
             transport = "reliable_event",

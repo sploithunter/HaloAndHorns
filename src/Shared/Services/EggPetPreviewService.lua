@@ -812,7 +812,7 @@ function EggPetPreviewService:CreatePetContent(petFrame, petInfo, previewConfig,
             end
         elseif displayMethod == "viewports" then
             -- 3D ViewportFrame creation (restored from working implementation)
-            if petInfo.petData.asset_id and petInfo.petData.asset_id ~= "rbxassetid://0" then
+            if petInfo.petData then
                 -- Scale-based ViewportFrame (fixes the core scaling issue)
                 local viewport = Instance.new("ViewportFrame")
                 viewport.Name = "PetViewport"
@@ -932,10 +932,7 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
             })
 
             local modelClone = nil
-            local modelsFolder = ModelTemplateStore.root()
-            local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
-            local petTypeFolder = petsFolder and petsFolder:FindFirstChild(petType)
-            local petModel = petTypeFolder and petTypeFolder:FindFirstChild(variant)
+            local petModel = ModelTemplateStore.pet(petType, variant)
             if petModel then
                 modelClone = petModel:Clone()
                 logger:debug("Got model from warm assets", {
@@ -946,8 +943,8 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
                 })
             end
 
-            -- Fallback to runtime loading if not in assets
-            if not modelClone then
+            -- Client misses use the server's validated preview request, never runtime insertion.
+            if not modelClone and RunService:IsServer() then
                 local InsertService = game:GetService("InsertService")
                 local cleanId = assetId:match("%d+")
 
@@ -980,6 +977,12 @@ function EggPetPreviewService:Load3DPetModel(assetId, viewport, camera, petType,
                 loadedAsset:Destroy() -- Clean up the original asset
             end
 
+            if not modelClone or not viewport.Parent then
+                if modelClone then
+                    modelClone:Destroy()
+                end
+                return
+            end
             if petVisualsOk and PetVariantVisuals then
                 PetVariantVisuals.ApplyServerMetadata(modelClone, petType, variant)
                 PetVariantVisuals.ApplyStaticVisuals(modelClone)

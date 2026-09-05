@@ -3354,11 +3354,11 @@ function InventoryPanel:_createItemsGrid()
     if self._virtualGridSizeConn then
         self._virtualGridSizeConn:Disconnect()
     end
-    self._virtualGridSizeConn = invGridContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(
-        function()
+    self._virtualGridSizeConn = invGridContainer
+        :GetPropertyChangedSignal("AbsoluteSize")
+        :Connect(function()
             self:_requestCull()
-        end
-    )
+        end)
 end
 
 function InventoryPanel:_releaseVirtualInventorySlot(index)
@@ -3405,12 +3405,8 @@ function InventoryPanel:_refreshVirtualInventoryWindow()
     end
 
     local columns = VirtualGridWindow.columns(width, self.cardSize.X, self.cardPadding.X)
-    local contentHeight = VirtualGridWindow.contentHeight(
-        #items,
-        columns,
-        self.cardSize.Y,
-        self.cardPadding.Y
-    )
+    local contentHeight =
+        VirtualGridWindow.contentHeight(#items, columns, self.cardSize.Y, self.cardPadding.Y)
     if contentHeight ~= self._virtualInventoryContentHeight then
         self._virtualInventoryContentHeight = contentHeight
         if self._updateInventorySectionHeights then
@@ -4970,7 +4966,7 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
         local success, result = pcall(function()
             -- Get pet data from config
             local petData = petConfig.getPet(item.petType, item.variant)
-            if not petData or not petData.asset_id then
+            if not petData then
                 self.logger:warn("No pet data or asset ID found", {
                     petType = item.petType,
                     variant = item.variant,
@@ -4980,10 +4976,7 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
 
             -- Prefer the bounded owner warm shelf when this family is near the unlock frontier.
             local modelClone = nil
-            local modelsFolder = ModelTemplateStore.root()
-            local petsFolder = modelsFolder and modelsFolder:FindFirstChild("Pets")
-            local petTypeFolder = petsFolder and petsFolder:FindFirstChild(item.petType)
-            local petModel = petTypeFolder and petTypeFolder:FindFirstChild(item.variant)
+            local petModel = ModelTemplateStore.pet(item.petType, item.variant)
             if petModel then
                 modelClone = petModel:Clone()
                 self.logger:debug("Loaded pet model from warm assets", {
@@ -4993,8 +4986,8 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
                 })
             end
 
-            -- Fallback to InsertService loading
-            if not modelClone then
+            -- Runtime asset insertion is server-only; client previews use the bounded shelf.
+            if not modelClone and RunService:IsServer() then
                 local assetId = petData.asset_id
                 if assetId and assetId ~= "rbxassetid://0" then
                     local assetNumber = tonumber(assetId:match("%d+"))

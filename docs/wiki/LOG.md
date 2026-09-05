@@ -8195,3 +8195,14 @@ first-session cohort rates.
 - Farm & Fight Edit fixture passed with actual starter models: all four viewport fallbacks
   replace paws; all eight preloads launch; rebuild and Merge exclusion preserve the source catalog.
   No production publish or profile reset performed.
+
+### 2026-09-05 — Predictive Farm assets and delayed Merge arrival
+
+- Added owner-only current/nearby egg, recent owned, active, and validated explicit-preview
+  caching from the prebuilt server catalog. Added bounded texture/image retry; retained active
+  actors independently of dormant cache eviction. Fixed exact model identity in old 3D helpers.
+- Farm Play: 24 pet types / 2 pools, 56 images and 158 unique mesh/texture references all Success;
+  full catalog absent on client. Isolated fixtures verify two-owner separation and failure paths.
+- Replaced the one-shot 30-second Merge profile deadline with character-scoped automatic entry
+  retries and persistent waiting guidance. A 45-second delayed-profile regression now succeeds.
+- Save throttling is being investigated separately in issue #453; no profile reset or publish.

@@ -201,6 +201,11 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.AssetPreloadService,
     { "Logger", "ConfigLoader" }
 )
+loader:RegisterModule(
+    "FarmAssetWarmupService",
+    ServerScriptService.Server.Services.FarmAssetWarmupService,
+    { "Logger", "ConfigLoader", "DataService", "AssetPreloadService" }
+)
 registerFeatureModule(
     "map_binding",
     "WorldBindingService",

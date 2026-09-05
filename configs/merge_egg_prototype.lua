@@ -58,6 +58,23 @@ local MERGE_TIER_ART = require(script.Parent.merge_tier_art)
 
 return {
     version = 6,
+    place_join = {
+        retry_seconds = 2,
+        slow_warning_seconds = 30,
+        messages = {
+            data = "Still syncing your data. Your bay will be assigned automatically.",
+            character = "Getting your character ready…",
+            bay = "Preparing your bay. No need to claim one yourself.",
+            full = "Waiting for a free bay. We’ll assign one automatically.",
+        },
+        display_order = 120,
+        position = { 0.5, 0.3 },
+        width_scale = 0.7,
+        height = 60,
+        text_size = 20,
+        background = { 20, 24, 35 },
+        text_color = { 255, 224, 145 },
+    },
     enabled = true,
     stream_timeout = 8,
     tier_art = MERGE_TIER_ART,

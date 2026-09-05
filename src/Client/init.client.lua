@@ -399,6 +399,7 @@ end
 do
     local ok, err = pcall(function()
         require(script.Systems.MergeAssetWarmup).start()
+        require(script.Systems.MergeJoinStatus).start()
     end)
     if not ok then
         Logger:Warn("Failed to start MergeAssetWarmup", { error = tostring(err) })
