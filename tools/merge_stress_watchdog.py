@@ -117,6 +117,13 @@ def suspend_exact(process, identity, expected_path, send_signal=os.kill):
     return True
 
 
+def observation_reason(baseline, current, elapsed, duration):
+    """Passive observation ignores memory thresholds and never requests a signal."""
+    if current["start_identity"] != baseline["start_identity"]:
+        return "process_identity_changed"
+    return "observation_complete" if elapsed >= duration else None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pid", type=int, required=True)
@@ -124,7 +131,13 @@ def main():
     parser.add_argument("--log", type=Path, required=True, help="New JSONL file outside /tmp; exclusive create")
     parser.add_argument("--suspend-on-limit", action="store_true", help="Only with operator authorization")
     parser.add_argument("--sample-only", action="store_true", help="One read-only sample; never sends signals")
+    parser.add_argument("--observe-seconds", type=float, help="Passive time series: no memory gates or process signals")
     args = parser.parse_args()
+    if args.observe_seconds is not None:
+        if not math.isfinite(args.observe_seconds) or args.observe_seconds <= 0:
+            parser.error("Observation duration must be positive and finite")
+        if args.suspend_on_limit or args.sample_only:
+            parser.error("Passive observation cannot be combined with signaling or sample-only mode")
     if args.pid <= 1:
         parser.error("An explicit Studio PID greater than 1 is required")
     cfg = json.loads(args.config.read_text())
@@ -146,16 +159,20 @@ def main():
         emit("sample" if args.sample_only else "starting", **baseline, config=cfg)
         if args.sample_only:
             return 0
-        reason = limit_reason(cfg, baseline, baseline, 0, startup=True)
+        reason = None if args.observe_seconds else limit_reason(cfg, baseline, baseline, 0, startup=True)
         if reason:
             emit("refused_start", reason=reason)
             return 2  # Never suspend an already unsafe process merely by arming.
-        emit("ready", pid=args.pid, suspension_enabled=args.suspend_on_limit)
+        emit("observing" if args.observe_seconds else "ready", pid=args.pid, suspension_enabled=args.suspend_on_limit)
         while True:
             time.sleep(cfg["sample_seconds"])
             try:
                 current = process.sample()
-                reason = limit_reason(cfg, baseline, current, time.monotonic() - started)
+                elapsed = time.monotonic() - started
+                if args.observe_seconds:
+                    reason = observation_reason(baseline, current, elapsed, args.observe_seconds)
+                else:
+                    reason = limit_reason(cfg, baseline, current, elapsed)
                 emit("sample", **current)
             except ProcessLookupError:
                 emit("process_exited")
@@ -166,6 +183,9 @@ def main():
                 reason = "measurement_failed"
                 emit("measurement_error", detail=str(error))
             if reason:
+                if reason == "observation_complete":
+                    emit("completed", reason=reason, suspended=False, pid=args.pid)
+                    return 0
                 suspended = False
                 if args.suspend_on_limit and reason not in ("process_identity_changed", "duration_limit"):
                     try:

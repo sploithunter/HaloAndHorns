@@ -18,7 +18,7 @@ local function isolatedProfile(source)
     function profile:Reconcile() end
     function profile:Save()
         self.LastSavedData = HttpService:JSONDecode(HttpService:JSONEncode(self.Data))
-        saved:Fire()
+        saved:Fire(self.LastSavedData)
     end
     function profile:EndSession()
         if not active then

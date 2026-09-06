@@ -4608,7 +4608,6 @@ function MergeEggPrototypeService:_spawnInitialTeam(record, team, source, tier)
     team.initialized = true
     for slot, model in ipairs(models) do
         team.units[#team.units + 1] = model
-        record.units[#record.units + 1] = model
         self:_recordEggRoll(record, team, squad[slot])
         self:_publishTeamSlot(team, slot, squad[slot])
     end
@@ -4659,7 +4658,6 @@ function MergeEggPrototypeService:_expandTeamForEggTier(record, team, source, ti
         local definition = definitions[offset]
         squad[slot] = definition
         team.units[#team.units + 1] = model
-        record.units[#record.units + 1] = model
         self:_recordEggRoll(record, team, definition)
         self:_publishTeamSlot(team, slot, definition)
     end
@@ -10331,8 +10329,13 @@ end
 function MergeEggPrototypeService:_syncTeamState(record, team)
     local folder = team and team.folder
     if not (folder and folder.Parent) then
+        if team then
+            team.units = {}
+        end
         return
     end
+    -- The live squad folder owns membership, not every replaced pet in the run.
+    local units = {}
     local active = 0
     local targeted = 0
     local returned = 0
@@ -10345,6 +10348,7 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
 
     for _, pet in ipairs(folder:GetChildren()) do
         if pet:IsA("Model") and pet:GetAttribute("MergeEggObjective") ~= true then
+            units[#units + 1] = pet
             active += 1
             local positionNumber = pet:FindFirstChild("PositionNumber")
             local slot =
@@ -10368,6 +10372,7 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
         end
     end
 
+    team.units = units
     local expected = math.max(1, math.floor(tonumber(team.expectedPets) or 5))
     local now = os.clock()
     self:_queueMissingPets(record, team, occupiedSlots, expected, now)
@@ -10752,7 +10757,6 @@ function MergeEggPrototypeService:_restoreCheckpoint(record, cause, options)
     record.enemies = {}
     record.enemyByTargetId = {}
     record.resolvedTargets = {}
-    record.units = {}
     self:_clearTowerShots(record)
     self:_clearPlayerEscortModels(record)
 
@@ -10846,7 +10850,6 @@ function MergeEggPrototypeService:_restoreCheckpoint(record, cause, options)
             end
             for slot, model in ipairs(models) do
                 team.units[#team.units + 1] = model
-                record.units[#record.units + 1] = model
                 self:_publishTeamSlot(team, slot, squad[slot])
             end
             team.activePets = spawned
@@ -11056,7 +11059,6 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
     local model = models[1]
     squad[queued.slot] = definition
     team.units[#team.units + 1] = model
-    record.units[#record.units + 1] = model
     self:_recordEggRoll(record, team, definition)
     self:_publishTeamSlot(team, queued.slot, definition)
     self:_ensurePlayerEscort(record)
@@ -11118,12 +11120,15 @@ function MergeEggPrototypeService:_syncPlayerEscort(record, now)
     end
     local folder = record.petFolder or self:_playerPetFolder(record.player, false)
     if not folder then
+        record.playerUnits = {}
         return
     end
+    local units = {}
     local occupied = {}
     local active = 0
     for _, pet in ipairs(folder:GetChildren()) do
         if pet:IsA("Model") and pet:GetAttribute("MergeEggPlayerReserveUnit") == true then
+            units[#units + 1] = pet
             active += 1
             local positionNumber = pet:FindFirstChild("PositionNumber")
             local slot =
@@ -11132,6 +11137,7 @@ function MergeEggPrototypeService:_syncPlayerEscort(record, now)
         end
     end
 
+    record.playerUnits = units
     record.playerEscortActive = active
     record.playerReplacementQueue = record.playerReplacementQueue or {}
     record.playerPendingReplacementSlots = record.playerPendingReplacementSlots or {}
@@ -12126,7 +12132,6 @@ function MergeEggPrototypeService:_clearEncounter(record)
     end
     record.teams = {}
     record.teamById = {}
-    record.units = {}
     record.encounterSpawned = false
     record.player:SetAttribute("CombatAssistTarget", nil)
     record.player:SetAttribute("CombatAssistUntil", nil)
@@ -12396,7 +12401,6 @@ function MergeEggPrototypeService:_beginInternal(player, requestedBayId, opts)
         assistUntil = player:GetAttribute("CombatAssistUntil"),
         enemies = {},
         enemyByTargetId = {},
-        units = {},
         towerShots = {},
         artilleryCommanderSpawning = {},
         bulwarkEngineerSpawning = {},
@@ -12843,6 +12847,13 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         self:_setWorldState(self:_activeWaveState(record), record)
         return
     end
+
+    -- All arrivals/defeats in this wave have resolved. Keep deduplication IDs,
+    -- but release old spawn results (and their model references) before the next
+    -- wave. Replace, rather than mutate, the list so an in-flight traversal can
+    -- finish its own snapshot without skipping enemies. Living enemies never
+    -- reach this branch, and EnemyService still owns visual despawn/cleanup.
+    record.enemies = {}
 
     for _, assignedTeam in ipairs(record.teams or {}) do
         assignedTeam.engaged = false
@@ -15326,7 +15337,6 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
         for _, model in ipairs(team.folder and team.folder:GetChildren() or {}) do
             if model:IsA("Model") then
                 team.units[#team.units + 1] = model
-                record.units[#record.units + 1] = model
             end
         end
         if team.principalModel then
@@ -15481,7 +15491,6 @@ function MergeEggPrototypeService:_clearProgressionStageActors(record)
     end
     record.enemies = {}
     record.enemyByTargetId = {}
-    record.units = {}
     self:_clearTowerShots(record)
     record.teams = {}
     record.teamById = {}
@@ -16071,7 +16080,15 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
     local deployedEggs = 0
     local initializedHatchers = 0
     local deployedTiers = {}
+    local retainedUnitModels = 0
+    local detachedUnitModels = 0
     for _, team in ipairs(record and record.teams or {}) do
+        for _, model in ipairs(team.units or {}) do
+            retainedUnitModels += 1
+            if not model.Parent then
+                detachedUnitModels += 1
+            end
+        end
         local tier = math.max(0, math.floor(tonumber(team.eggTier) or 0))
         if team.initialized == true then
             initializedHatchers += 1
@@ -16136,6 +16153,10 @@ function MergeEggPrototypeService:GetLifecycleAudit(player)
         {
             active = record ~= nil and record.terminal ~= true,
             runId = record and record.runId or nil,
+            retainedEnemyModels = record and #(record.enemies or {}) or 0,
+            retainedUnitModels = retainedUnitModels,
+            detachedUnitModels = detachedUnitModels,
+            retainedEscortModels = record and #(record.playerUnits or {}) or 0,
             wave = record and math.max(0, math.floor(tonumber(record.waveIndex) or 0)) or 0,
             encounterSpawned = record and record.encounterSpawned == true or false,
             tutorialActive = record and record.tutorialActive == true or false,

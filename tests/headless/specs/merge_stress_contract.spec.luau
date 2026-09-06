@@ -15,8 +15,48 @@ return function()
             expect(source:find("StartSessionAsync", 1, true)).to.equal(nil)
             expect(source:find("GetDataStore", 1, true)).to.equal(nil)
             expect(source:find("PublishAsync", 1, true)).to.equal(nil)
+            expect(source:find("saved:Fire(self.LastSavedData)", 1, true)).to.be.ok()
             expect(source:find("target <= cfg.maximum_occupied_bays", 1, true)).to.be.ok()
             expect(source:find("target - occupied", 1, true)).to.be.ok()
+        end)
+        it(
+            "releases completed-wave model history only after all enemies and spawns resolve",
+            function()
+                local source = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+                local start =
+                    assert(source:find("function MergeEggPrototypeService:_resolveEnemy(", 1, true))
+                local gate = assert(
+                    source:find(
+                        "record.aliveEnemies > 0 or (record.pendingEnemySpawns or 0) > 0",
+                        start,
+                        true
+                    )
+                )
+                local release = assert(source:find("record.enemies = {}", gate, true))
+                local transition = assert(source:find("for _, assignedTeam", gate, true))
+                expect(gate < release and release < transition).to.equal(true)
+            end
+        )
+        it(
+            "moves pet visibility out of per-frame traversal and detaches recycled drop watchers",
+            function()
+                local movement = readFile("src/Client/Systems/PetFollowController.lua")
+                expect(movement:find("PetDownedVisibility.watch(Workspace)", 1, true)).to.be.ok()
+                expect(movement:find("m:GetDescendants()", 1, true)).to.equal(nil)
+                local drops = readFile("src/Client/Systems/DropVisibility.lua")
+                expect(drops:find("folder.ChildRemoved:Connect(remove)", 1, true)).to.be.ok()
+                expect(drops:find("connection:Disconnect()", 1, true)).to.be.ok()
+                expect(drops:find("if watched[model]", 1, true)).to.be.ok()
+            end
+        )
+        it("keeps replacement model membership tied to the current squad", function()
+            local source = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            expect(source:find("record.units", 1, true)).to.equal(nil)
+            expect(source:find("team.units = units", 1, true)).to.be.ok()
+            expect(source:find("record.playerUnits = units", 1, true)).to.be.ok()
+            local follow = readFile("src/Server/Services/PetFollowService.lua")
+            expect(follow:find("if now >= readyAt then", 1, true)).to.be.ok()
+            expect(follow:find("self._nextHit[pet] = nil", 1, true)).to.be.ok()
         end)
         it("does not hold a profiling call open and restores wrappers on stop", function()
             local source = readFile("src/Server/MergeStressHarness.lua")

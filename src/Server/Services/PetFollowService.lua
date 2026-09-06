@@ -1564,6 +1564,15 @@ function PetFollowService:_tickPrincipal(principal)
 end
 
 function PetFollowService:_tick()
+    -- Expired cooldowns no longer affect damage gating. Releasing their keys
+    -- prevents retired/replaced pets from staying alive through this cache.
+    -- Keep unexpired entries even when a pet is temporarily reparented.
+    local now = os.clock()
+    for pet, readyAt in pairs(self._nextHit) do
+        if now >= readyAt then
+            self._nextHit[pet] = nil
+        end
+    end
     -- Principals, not Players: live players PLUS registered NPC principals (the Creator
     -- summon). Player principals resolve to the same Player objects with the same levels,
     -- so this is behaviour-identical for everyone who was already being ticked.

@@ -17,35 +17,73 @@ local Workspace = game:GetService("Workspace")
 local DropVisibility = {}
 local started = false
 
-local function applyVisibility(model, mine)
-    for _, d in ipairs(model:GetDescendants()) do
-        if d:IsA("BasePart") then
-            d.LocalTransparencyModifier = mine and 0 or 1
-        elseif d:IsA("Light") or d:IsA("ParticleEmitter") then
-            d.Enabled = mine
-        end
+local function applyPart(d, mine)
+    if d:IsA("BasePart") then
+        d.LocalTransparencyModifier = mine and 0 or 1
+    elseif d:IsA("Light") or d:IsA("ParticleEmitter") then
+        d.Enabled = mine
     end
 end
 
-local function watch(model)
-    if not model:IsA("Model") and not model:IsA("BasePart") then
-        return
-    end
-    local function refresh()
-        local owner = model:GetAttribute("DropOwner")
-        if owner == nil then
-            return -- templates/unstamped: leave alone
+function DropVisibility.bind(folder, userId)
+    local watched = {}
+    local function remove(model)
+        local record = watched[model]
+        if record then
+            watched[model] = nil
+            record.active = false
+            for _, connection in ipairs(record.connections) do
+                connection:Disconnect()
+            end
         end
-        applyVisibility(model, owner == Players.LocalPlayer.UserId)
     end
-    model:GetAttributeChangedSignal("DropOwner"):Connect(refresh)
-    -- parts stream in after the model lands in the folder (pool reparent)
-    model.DescendantAdded:Connect(function(d)
-        if d:IsA("BasePart") or d:IsA("Light") or d:IsA("ParticleEmitter") then
-            task.defer(refresh)
+
+    local function watch(model)
+        if watched[model] or (not model:IsA("Model") and not model:IsA("BasePart")) then
+            return
         end
-    end)
-    refresh()
+        local record = { active = true, connections = {} }
+        watched[model] = record
+        local function refresh()
+            if not record.active then
+                return
+            end
+            local owner = model:GetAttribute("DropOwner")
+            if owner == nil then
+                return -- templates/unstamped: leave alone
+            end
+            applyPart(model, owner == userId)
+            for _, descendant in ipairs(model:GetDescendants()) do
+                applyPart(descendant, owner == userId)
+            end
+        end
+        record.connections = {
+            model:GetAttributeChangedSignal("DropOwner"):Connect(refresh),
+            model.DescendantAdded:Connect(function(descendant)
+                if not record.active then
+                    return
+                end
+                local owner = model:GetAttribute("DropOwner")
+                if owner ~= nil then
+                    applyPart(descendant, owner == userId)
+                end
+            end),
+        }
+        refresh()
+    end
+
+    local added = folder.ChildAdded:Connect(watch)
+    local removed = folder.ChildRemoved:Connect(remove)
+    for _, model in ipairs(folder:GetChildren()) do
+        watch(model)
+    end
+    return function()
+        added:Disconnect()
+        removed:Disconnect()
+        for model in pairs(watched) do
+            remove(model)
+        end
+    end
 end
 
 function DropVisibility.start()
@@ -53,16 +91,21 @@ function DropVisibility.start()
         return
     end
     started = true
-    task.spawn(function()
-        local folder = Workspace:WaitForChild("CoinDrops", 30)
-        if not folder then
+    local current, disconnect
+    local function refresh()
+        local folder = Workspace:FindFirstChild("CoinDrops")
+        if folder == current then
             return
         end
-        for _, m in ipairs(folder:GetChildren()) do
-            watch(m)
+        if disconnect then
+            disconnect()
         end
-        folder.ChildAdded:Connect(watch)
-    end)
+        current = folder
+        disconnect = folder and DropVisibility.bind(folder, Players.LocalPlayer.UserId) or nil
+    end
+    Workspace.ChildAdded:Connect(refresh)
+    Workspace.ChildRemoved:Connect(refresh)
+    refresh()
 end
 
 return DropVisibility

@@ -29,6 +29,7 @@ local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
 local PetAttackMotion = require(ReplicatedStorage.Shared.Game.PetAttackMotion)
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
+local PetDownedVisibility = require(script.Parent.PetDownedVisibility)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
@@ -273,6 +274,7 @@ function PetFollowController.start()
     if not config.service_owned then
         return -- legacy scripts own movement; controller idle
     end
+    PetDownedVisibility.watch(Workspace)
     local startClock = os.clock()
     -- Idle meander (PetMeander): per-pet stroll state + how long the PLAYER has
     -- been standing still (the gate that releases the squad to wander).
@@ -532,8 +534,6 @@ function PetFollowController.start()
     -- OTHER players' pets, server-relayed (the server never relays our own — those stay local).
     local remoteTargets = setmetatable({}, { __mode = "k" }) -- pet model -> latest relayed CFrame
     local remoteBaseCF = setmetatable({}, { __mode = "k" }) -- clean smoothed CFrame, no gait
-    local remoteDownAccum = 0 -- throttle for the remote downed-hide sweep (~4 Hz)
-    local remoteDownApplied = setmetatable({}, { __mode = "k" }) -- pet -> last applied downed bool
     Signals.PetPositionsRelay.OnClientEvent:Connect(function(list)
         if type(list) ~= "table" then
             return
@@ -586,35 +586,6 @@ function PetFollowController.start()
             end
         end
 
-        -- Downed pets hide on EVERY client, not just their owner's (Jason live-caught: a
-        -- teammate's downed bear froze mid-world on the other screen — the owner's client
-        -- stops positioning it AND was the only one hiding it). CombatDowned replicates;
-        -- once invisible the stale pivot doesn't matter. Throttled — it's a rare state.
-        remoteDownAccum += dt
-        if remoteDownAccum >= 0.25 then
-            remoteDownAccum = 0
-            local pp = Workspace:FindFirstChild("PlayerPets")
-            for _, folder in ipairs(pp and pp:GetChildren() or {}) do
-                if folder.Name ~= localPlayer.Name then
-                    for _, m in ipairs(folder:GetChildren()) do
-                        if m:IsA("Model") then
-                            local downed = m:GetAttribute("CombatDowned") == true
-                            if remoteDownApplied[m] ~= downed then -- touch parts only on change
-                                remoteDownApplied[m] = downed
-                                for _, d in ipairs(m:GetDescendants()) do
-                                    if d:IsA("BasePart") then
-                                        d.LocalTransparencyModifier = downed and 1 or 0
-                                    elseif d:IsA("BillboardGui") then
-                                        d.Enabled = not downed
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
         -- ── drive ONE anchor's folder ─────────────────────────────────────────────
         -- Extracted so the SAME code that drives the local player's squad drives an NPC
         -- principal's (docs/CREATOR_SUMMON.md). Jason: "you should look at how the client
@@ -632,8 +603,8 @@ function PetFollowController.start()
                 return
             end
 
-            -- Downed pets are OUT of the fight: hide them (client-only LocalTransparencyModifier
-            -- so we never touch base Transparency) + any billboards, and skip positioning them.
+            -- Downed pets are OUT of the fight. PetDownedVisibility handles their
+            -- local visibility on state changes; this loop only skips positioning.
             -- They reappear when the player summons them (server clears CombatDowned).
             local pets = {}
             for _, m in ipairs(petsFolder:GetChildren()) do
@@ -643,13 +614,6 @@ function PetFollowController.start()
                     and m:GetAttribute("MergeEggObjective") ~= true
                 then
                     local downed = m:GetAttribute("CombatDowned")
-                    for _, d in ipairs(m:GetDescendants()) do
-                        if d:IsA("BasePart") then
-                            d.LocalTransparencyModifier = downed and 1 or 0
-                        elseif d:IsA("BillboardGui") then
-                            d.Enabled = not downed
-                        end
-                    end
                     -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
                     -- positioning it while the window is live (it stays visible; the hold badge
                     -- on its card says why it stopped).

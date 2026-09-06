@@ -8378,3 +8378,14 @@ first-session cohort rates.
 - Paused overnight retries and restored Rojo connectivity without starting another load test. Added a read-only-by-default host footprint/pressure watchdog with explicitly authorized exact-process suspension as an optional fail-safe. Fresh Edit footprint (~6.2 GiB) failed its conservative startup gate; no signal or extra bays.
 - Reduced default stress target to two occupied bays and duration to 120 seconds. Profiling now returns immediately, validates the complete method selection, includes pet aggro, and restores wrappers on stop/completion. This also fixes the hosted architecture-check failure discovered on the previous commit.
 - Verification: full local CI 2,706 tests / 301 specs, seven Python watchdog tests, isolated Edit smoke for profiling validation/return values/cleanup. PR #460 remains draft, unmerged, and unpublished; matched runtime improvements and the full-server goal remain incomplete. See [stress testing](MERGE_STRESS_TESTING.md).
+
+## 2026-09-06 — Passive one/two-bay memory investigation
+
+- Honored the user's daytime no-guards override with passive host logging, one real viewer, one isolated read-only-profile fixture, then teardown. The load increase was not an immediate OOM; memory kept growing over time even after returning to one bay. Raw evidence is durable outside `/tmp`.
+- Fixed the `merge_stress_host` schema omission that prevented both sides from booting. Fresh boot is clean. Found retained pooled-drop connections, append-only enemy results, and replaced-pet modifier/history arrays; fixes preserve living models and authoritative combat. Added event-driven downed visibility with native lifecycle smoke tests.
+- Local CI 2,710 tests and eight Python tests pass. Follow-up runtime validation of the replacement-history fix is pending; no claim that total memory growth is solved, no production publish, PR #460 remains draft. See [Merge Stress Testing](MERGE_STRESS_TESTING.md).
+
+### Follow-up verification
+
+- Fresh Play verified bounded enemy/squad references through many waves and replacements. Expired mining cooldowns were a fourth retention path; native expiry test preserves unexpired timing and releases expired keys. Final scene query: Merge one detached Model; no detached Models held by DropVisibility or PetFollowService.
+- Whole-Studio memory still increased through one/two/one despite these fixes, then stabilized when Play stopped; much remained allocated in Edit. These are combined server/client/editor figures, not deployment memory budgets or matched FPS gains. Studio remains open; production unchanged. Remaining allocator investigation and full-server validation continue on PR #460.

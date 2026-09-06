@@ -22,6 +22,12 @@ class WatchdogTest(unittest.TestCase):
         watchdog.validate_config(self.cfg)
         self.assertIsNone(self.reason())
 
+    def test_passive_observation_ignores_memory_limits(self):
+        high = {**self.base, "footprint_bytes": 30 * 1024**3, "pressure_level": 4}
+        self.assertIsNone(watchdog.observation_reason(self.base, high, 179, 1200))
+        self.assertEqual(watchdog.observation_reason(self.base, high, 1200, 1200), "observation_complete")
+        self.assertEqual(watchdog.observation_reason(self.base, {**high, "start_identity": 124}, 1, 1200), "process_identity_changed")
+
     def test_footprint_not_rss_is_the_limit(self):
         self.assertEqual(self.reason(footprint_bytes=8 * 1024**3, resident_bytes=1), "process_footprint")
 
