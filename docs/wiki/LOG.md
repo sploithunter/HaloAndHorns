@@ -8305,3 +8305,25 @@ first-session cohort rates.
 - Full CI: 2,699 tests passing. Merge replay confirmed voice on WatcherVoice, Effects -24 dB,
   Music -28 dB and unchanged user bus volumes; both EQ effects disappeared after speech. Voice
   followed a temporary Effects-volume change and its restoration without any settings save.
+
+## 2026-09-05 — Heaven Watcher source asset and strict geometry gates
+
+- Created an original imagegen reference and Meshy counterpart to the Hell face: calm ivory/
+  opalescent planes, inset gold seams, luminous almond eyes and an integrated crystalline crown.
+- Preserved two failed raw topology generations and their reports. The canonical voxel repair
+  produced one closed 4,468-triangle surface; retexturing that exact repaired GLB kept it strict-
+  passing. Final embedded-texture FBX also passes, with zero multiple-UV vertices.
+- Source/reference/prompt, editable Blender, GLB/FBX, atlas and cardinal previews are versioned
+  under the Heaven Watcher asset directories; manifest is `assets/manifest/heaven_watcher.json`.
+- Used 20 Meshy credits total. Local CI passed all 2,697 tests. Held at visual approval before
+  Roblox upload; no Studio mutation, experience publishing, audio or runtime encounter changes.
+
+- Follow-up: user approved the Heaven face and specified a female voice. Uploaded the exact
+  validated embedded FBX as group-owned Model `90097153593365`; manifest records source hashes.
+  Studio review is pending coordination with concurrent Hell voice testing; no audio generated.
+
+- Follow-up verification: imported Model into Merge Edit below the map at
+  `GeneratedMap_MergeEggVoxel.HeavenFaceGateTest.HeavenFace`. Mesh/texture loads succeeded;
+  front and angle review confirmed clean texture, local -Z front and +Y up without correction.
+  Kept the original Hell face/map intact; anchored/noncollidable review head only, no Play or
+  publish. Asset manifest now includes verified Mesh/Texture IDs and the 14-stud staging size.

@@ -1,0 +1,13 @@
+{
+  "source_image": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/reference.png",
+  "source_sha256": "cd20c231635333ae2d0527e7e52a49c7fbec7543020d09d3d2a4cc0224e44d65",
+  "model_type": "smart-topology",
+  "ai_model": "meshy-t2",
+  "target_polycount": 6500,
+  "should_texture": false,
+  "target_formats": [
+    "glb"
+  ],
+  "auto_size": true,
+  "origin_at": "bottom"
+}

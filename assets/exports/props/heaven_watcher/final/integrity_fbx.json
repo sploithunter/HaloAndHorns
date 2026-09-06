@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/exports/props/heaven_watcher/final/HeavenFace.fbx",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 2236,
+    "edges": 6702,
+    "faces": 4468,
+    "triangles": 4468,
+    "face_components": 1,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "HeavenFace",
+      "vertices": 2236,
+      "raw_vertices": 13176,
+      "welded_coincident_vertices": 10940,
+      "inspection_weld_distance": 3.069971847093317e-07,
+      "edges": 6702,
+      "faces": 4468,
+      "triangles": 4468,
+      "face_components": 1,
+      "bounds_diagonal": 3.069971847093317,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

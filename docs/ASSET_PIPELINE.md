@@ -427,6 +427,16 @@ right-click ServerStorage.MissionProps in the server DataModel -> Save to File..
 NOTE: current Studio saves the native `Tags` property; Rojo >= 7.7.0 required
 to parse it (pinned in .mise.toml — 7.6.1 and lune 0.10.4 both reject it).
 
+## Heaven Watcher reference implementation
+
+The original Heaven floating-face asset lives in
+`assets/source/props/heaven_watcher/`, with a reproducible asset-local export
+companion and geometry/retexture provenance. Its repaired 4,468-triangle closed
+mesh was retextured from the exact local GLB, then exported with embedded color
+and one UV per vertex. The source README and final export reports distinguish
+the failed raw Meshy topology from the strict-passing repaired/textured result.
+This asset delivery does not itself enable Heaven encounters or publish a place.
+
 ## Status Values
 
 - `concept`: A reference/prompt is tracked for developer asset generation, but it is not wired into runtime config.
