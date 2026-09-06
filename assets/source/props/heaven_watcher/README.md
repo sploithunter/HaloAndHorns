@@ -66,4 +66,23 @@ Model **90097153593365**, owner group **15872767**. Hashes and IDs live in
 The intended Heaven voice is female: serene, melodious and reassuring. No voice
 audio was generated as part of the mesh pipeline.
 
-Status: uploaded; coordinated Studio orientation/texture verification pending.
+## Studio verification
+
+Loaded the uploaded Model through InsertService in **Merge Edit**, then staged
+only the new head at
+`Workspace.GeneratedMap_MergeEggVoxel.HeavenFaceGateTest.HeavenFace`, position
+`(350, -122, 0)`. The original Hell face and map were not moved or replaced.
+No Play restart was performed. The review model is anchored, noncollidable,
+non-queryable, non-touchable and shadowless; no scripts or lights were added.
+
+- Mesh: **108643101634541**; embedded texture: **83897218968240**.
+- ContentProvider returned Success for both IDs. Front and angled Studio views
+  show the correct facial features and intact texture, with no UV shattering.
+- Local **-Z is front**, **+Y is up**, no correction rotation needed.
+- Bounds-centered size at 14-stud maximum: **11.867157 × 14 × 11.179547**.
+- Eyes are baked warm gold; no separate pupil objects yet. Parent runtime can
+  add the side-aware eye-light presentation when Heaven encounters are enabled.
+
+Status: verified group-owned asset and staged Edit prop. **Not published and not
+enabled for runtime Heaven encounters.** The staging placement still needs the
+normal Studio save/publish workflow; the Model ID is the durable recovery source.

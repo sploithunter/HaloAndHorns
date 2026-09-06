@@ -8297,3 +8297,9 @@ first-session cohort rates.
 - Follow-up: user approved the Heaven face and specified a female voice. Uploaded the exact
   validated embedded FBX as group-owned Model `90097153593365`; manifest records source hashes.
   Studio review is pending coordination with concurrent Hell voice testing; no audio generated.
+
+- Follow-up verification: imported Model into Merge Edit below the map at
+  `GeneratedMap_MergeEggVoxel.HeavenFaceGateTest.HeavenFace`. Mesh/texture loads succeeded;
+  front and angle review confirmed clean texture, local -Z front and +Y up without correction.
+  Kept the original Hell face/map intact; anchored/noncollidable review head only, no Play or
+  publish. Asset manifest now includes verified Mesh/Texture IDs and the 14-stud staging size.

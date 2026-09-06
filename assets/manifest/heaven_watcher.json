@@ -2,7 +2,7 @@
   "schema_version": 1,
   "key": "heaven_watcher",
   "name": "Heaven Watcher",
-  "status": "uploaded",
+  "status": "verified",
   "created_date": "2026-09-05",
   "reference": "assets/source/props/heaven_watcher/reference.png",
   "prompt": "assets/source/props/heaven_watcher/PROMPT.md",
@@ -36,9 +36,9 @@
   "roblox": {
     "creator_group_id": 15872767,
     "model_asset_id": 90097153593365,
-    "mesh_asset_id": null,
-    "texture_asset_id": null,
-    "verified_in_studio": false,
+    "mesh_asset_id": 108643101634541,
+    "texture_asset_id": 83897218968240,
+    "verified_in_studio": true,
     "experience_published": false
   },
   "integration": {
@@ -49,6 +49,16 @@
     "expected_front": "-Z",
     "up": "+Y",
     "target_max_dimension_studs": 14,
+    "studio_staging_path": "Workspace.GeneratedMap_MergeEggVoxel.HeavenFaceGateTest.HeavenFace",
+    "studio_staging_position": [350, -122, 0],
+    "studio_size": [11.867156982421875, 14, 11.179547309875488],
+    "studio_head_rotation": [0, 0, 0],
+    "anchored": true,
+    "can_collide": false,
+    "can_query": false,
+    "can_touch": false,
+    "cast_shadow": false,
+    "pupil_parts": [],
     "voice_direction": "Female; serene, melodious, warm and reassuring. Audio supplied separately.",
     "notes": "Requires side-aware Watcher runtime integration; asset delivery does not activate Heaven encounters."
   }
