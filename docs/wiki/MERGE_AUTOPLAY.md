@@ -15,6 +15,15 @@ now **offline play**: server-owned characters work for disconnected accounts in 
   verified `offline_gaming` pass owners (`1963628754`). Existing pass owners enter the persistent
   pool on their first join to an updated server; Roblox ownership cannot be globally enumerated.
   Purchase completion registers immediately and ownership is rechecked before a worker starts.
+- Entitlement alone is insufficient: the canonical profile must have completed Merge onboarding
+  (including the Wave-14 introduction), graduated Farm & Fight/Basic combat, or already rebirthed
+  in Merge. Partial power-lesson receipts do not qualify. Read-only profile preflight avoids
+  repeated session writes for unfinished accounts; the locked profile is checked again before
+  migration, bay allocation or automated spending. Admin Reset clears the completion/exemption
+  fields, so a reset account must qualify again. No tutorial completions or levels are fabricated.
+  **Rollout caveat:** already-published servers retain the old policy until restarted. Isolated
+  tests validate the new gate but do not prove live-account isolation from old workers. For a
+  clean live test, publish/restart old servers, verify profile release, then reset the test account.
 - A randomized pivot/wrap query samples the global pool; a shuffle includes internal accounts.
   Workers rotate after 30 minutes and are not guaranteed continuous time or a particular server.
 - Real Players preempt offline occupants when claiming their bay, and random allocation can

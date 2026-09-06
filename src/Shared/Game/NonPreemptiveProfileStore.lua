@@ -5,7 +5,7 @@ local Adapter = {}
 function Adapter.wrap(backend)
     local expected, denied = {}, {}
     local proxy = {}
-    function proxy:canAcquire(key)
+    function proxy:canAcquire(key, eligible)
         -- Cheap read-only screening avoids treating nonexistent pool accounts as API failures.
         -- This is only a hint: UpdateAsync below still makes the authoritative lock decision.
         local current = backend:GetAsync(key)
@@ -13,6 +13,7 @@ function Adapter.wrap(backend)
             and type(current.Data) == "table"
             and type(current.MetaData) == "table"
             and current.MetaData.ActiveSession == nil
+            and (eligible == nil or eligible(current.Data))
     end
     function proxy:UpdateAsync(key, transform)
         local value, info = backend:UpdateAsync(key, function(current, keyInfo)

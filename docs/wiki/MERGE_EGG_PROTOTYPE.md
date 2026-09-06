@@ -6,20 +6,23 @@ This supersedes the older Wave-6 egg / Wave-10 mandatory-training drip described
 The opening egg, Wave-2 bulwark and Wave-4 cannon lessons stay. New players then receive:
 
 - Wave 6: an earned Level-2 floor, manual power selection through Powers. Recommend Magnet,
-  or Swift for Auto Collector users. Reveal the hotbar; guidance no longer covers its controls.
+  including for Auto Collector users. Reveal the hotbar; guidance no longer covers its controls.
 - Wave 8: the optional egg improvement lesson, skipped for existing work or tutorial graduates.
   Buy Egg → Deploy Best is the visual route. **Placement remains an intentional fallback** for
   players who spent their coins filling the line; an existing egg can finish the lesson without
   two new purchases, even while collecting lesson coins. The existing 600-Waycoin shortfall
   supply remains. This is not a strict combine-only gate.
 - Wave 10: an earned Level-3 floor, manual allocation of two enhancement slots. The pointer
-  and title read Pick 2 → Pick 1 → Commit; Undo reverses those counts.
+  and title read Pick 2 → Pick 1 → Commit; Undo reverses those counts. Slot and enhancement
+  pointers prefer the power chosen in the earlier lesson, never the innate Resonance row.
 - Wave 12: guide owned power → slot → enhancement → Apply. If no compatible, usable inventory
   enhancement exists, grant one Natural Focus at earned level +5 (max 55), once per profile.
 - Wave 14: a timed Quartermaster introduction; no interaction, purchase, or training required.
 
 `GameData.MergePowerLessons` stores `unlocked`, per-stage `completed`, level-grant receipts and
-the granted enhancement UID. The canonical grant and its receipt share one profile before flush.
+the granted enhancement UID, and `targetPower` (the owned power used by subsequent lesson cues).
+Older profiles fall back to their latest acquired non-starter power; reset clears the receipt.
+The canonical grant and its receipt share one profile before flush.
 Completion uses actual claimed levels, allocated non-inherent slots and usable slotted pieces.
 No choice/Commit is automated. Floors do not add levels to already-higher players. Farm & Fight
 or Basic graduates skip the new power lessons without fabricated course completions or rewards.

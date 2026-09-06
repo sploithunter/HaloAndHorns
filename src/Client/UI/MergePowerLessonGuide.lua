@@ -203,10 +203,25 @@ function Guide.refresh(menu)
         -- Ordinary ascensions need a visible entry point too; a recommendation is optional.
         target = target or menu.naturalCol
     elseif action == "slots" or action == "owned" then
+        local preferred = player:GetAttribute("MergePowerLessonTarget")
+        if
+            preferred
+            and menu.owned[preferred]
+            and (
+                action == "owned"
+                or menu:_effectiveSlots(preferred) < augmentation.max_slots_per_power
+            )
+        then
+            target = menu.frame:FindFirstChild("Row_" .. preferred, true)
+        end
         for _, child in ipairs(menu.naturalCol:GetChildren()) do
+            if target then
+                break
+            end
             local id = child.Name:match("^Row_(.+)$")
             if
                 id
+                and (not stage or table.find(cfg.excluded_lesson_powers, id) == nil)
                 and menu.owned[id]
                 and (
                     action == "owned"

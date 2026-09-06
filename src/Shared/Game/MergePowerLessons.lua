@@ -24,6 +24,33 @@ function Lessons.recommended(cfg, hasDog)
     return hasDog and cfg.recommended_with_dog or cfg.recommended_without_dog
 end
 
+function Lessons.offlineEligible(data)
+    local progress = data and data.GameData and data.GameData.MergeDefense
+    return Lessons.graduate(data)
+        or (
+            progress ~= nil
+            and (progress.tutorial_completed == true or (tonumber(progress.rebirths) or 0) > 0)
+        )
+end
+
+-- Powers preserve acquisition order. Keep the lesson's chosen power if still owned;
+-- old profiles without a receipt fall back to their most recently acquired non-starter power.
+function Lessons.target(cfg, powers, saved)
+    local function allowed(id)
+        return table.find(cfg.excluded_lesson_powers, id) == nil
+    end
+    if saved and table.find(powers or {}, saved) and allowed(saved) then
+        return saved
+    end
+    for index = #(powers or {}), 1, -1 do
+        local id = powers[index]
+        if allowed(id) then
+            return id
+        end
+    end
+    return nil
+end
+
 function Lessons.guide(
     cfg,
     stage,

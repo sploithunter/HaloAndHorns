@@ -9,6 +9,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Lease = require(ReplicatedStorage.Shared.Game.MergeOfflineLease)
+local Lessons = require(ReplicatedStorage.Shared.Game.MergePowerLessons)
 local Adapter = require(ReplicatedStorage.Shared.Game.NonPreemptiveProfileStore)
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local ProfileStore = Locations.getPackage("ProfileStore")
@@ -222,7 +223,8 @@ function Service:_acquire(id, bayId)
         return false
     end
     local key = "Player_" .. tostring(id)
-    local screened, available = pcall(self._backend.canAcquire, self._backend, key)
+    local screened, available =
+        pcall(self._backend.canAcquire, self._backend, key, Lessons.offlineEligible)
     if not screened or not available then
         return false
     end
@@ -273,6 +275,20 @@ function Service:_acquire(id, bayId)
 end
 
 function Service:_startWorker(id, bayId, profile, token, lease, fixtureAvatar)
+    -- Entitlement is not onboarding completion. Check the canonical locked profile
+    -- before migration, bay allocation, purchases, or any automated progression.
+    if not Lessons.offlineEligible(profile.Data) then
+        self:_status("LastReason", "onboarding_incomplete")
+        if profile:IsActive() then
+            profile:EndSession()
+        end
+        if not fixtureAvatar then
+            self:_presenceUpdate(id, function(value)
+                return Lease.release(value, token, os.time(), self._config.logout_grace_seconds)
+            end)
+        end
+        return false
+    end
     profile:Reconcile()
     self._data:MigrateProfile(profile)
     local nameOk, username = pcall(Players.GetNameFromUserIdAsync, Players, fixtureAvatar or id)

@@ -8512,3 +8512,15 @@ first-session cohort rates.
   all source commits remain reachable from main. No stashes or untracked work were discarded.
   Studio-owned endpoint edits remain outside Git and must be saved with the authored place.
   No Roblox publication or additional player-data reset was performed during reconciliation.
+
+## 2026-09-06 — Offline onboarding gate and chosen-power guidance
+
+- Follow-up live testing exposed entitled/reset accounts progressing offline before onboarding.
+  Offline startup now requires completed or exempt onboarding, in both read-only screening and
+  the canonical locked-profile check before any worker mutation. Existing published workers
+  need a later publish/server restart; no temporary live-data bridge is claimed.
+- Magnet is recommended at Level 2 even with Auto Dog. Later slot/enhancement cues follow the
+  selected power via a durable target receipt and exclude innate Resonance from lesson fallback.
+  Ordinary manual power/slot choices are unchanged. Tests cover reset/incomplete/graduate
+  eligibility, no-write preflight, real offline rejection/release, target retention, and retries.
+  No publication, server shutdown, or account reset accompanies this patch.
