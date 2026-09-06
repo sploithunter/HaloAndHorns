@@ -8341,3 +8341,20 @@ first-session cohort rates.
   correct female arrival line played with the Heaven mesh/subtitle on WatcherVoice at 1.2. User
   approved the voice volume. Reduced Heaven internal light to 0.15 after the initial pale mesh
   overexposed; a second Studio preview retained facial/gold detail. No experience publish.
+
+## 2026-09-05 — Heaven/Hell funnel context and internal comparison records
+
+- Captured authoritative realm per Merge bay session. Native control-mode filters now combine
+  mode and realm while preserving board cohort and published build; entry remains unassigned
+  from its real join step. Outgoing exits retain their realm through bay changes/attribute resets.
+- Mirrored bounded native observations once into the existing RetentionEvents archive with
+  separate realm, level/rebirth, bay/visit identity, elapsed time and wave-depth context. No new
+  store, gameplay saves, client remotes or per-attack telemetry. Never reopen raw sessions during
+  departure. Offline workers excluded; internal raw traces retained only for QA.
+- Full CI: 2,701 passing tests. Isolated three-actor Studio Edit smoke passed realm changes,
+  immutable funnel filters, current-mode custom fields, archive sink guards, stale records and
+  transport failure checks. Gameplay network import stubbed only in the isolated archive-sink
+  test; no Play session, real profile mutation, native analytics call or publish.
+- This enables observational realm comparisons, not causal A/B results or verified voice/face
+  exposure. Documented same-build/fresh/manual cuts, missing-event caveats and a future randomized
+  within-realm Watcher/control experiment rather than silently changing player assignment.

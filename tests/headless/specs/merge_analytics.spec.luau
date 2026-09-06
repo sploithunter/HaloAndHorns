@@ -7,6 +7,17 @@ end
 
 return function()
     describe("Merge native analytics contract", function()
+        it("keeps realm filters finite and preserves manual versus autoplay cohorts", function()
+            expect(Funnel.realm("heaven")).to.equal("heaven")
+            expect(Funnel.realm("hell")).to.equal("hell")
+            for _, value in ipairs({ false, "unknown", "arbitrary player text", 12 }) do
+                expect(Funnel.realm(value)).to.equal("unassigned")
+            end
+            expect(Funnel.realm(nil)).to.equal("unassigned")
+            expect(Funnel.controlRealm(false, "heaven")).to.equal("manual:heaven")
+            expect(Funnel.controlRealm(true, "hell")).to.equal("autoplay:hell")
+            expect(Funnel.controlRealm(nil, nil)).to.equal("manual:unassigned")
+        end)
         it("validates six active Merge funnels within the universe tab budget", function()
             expect(Funnel.validate(Config)).to.equal(true)
             local bad = table.clone(Config)

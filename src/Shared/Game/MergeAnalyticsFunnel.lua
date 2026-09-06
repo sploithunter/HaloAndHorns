@@ -1,6 +1,14 @@
 -- Pure bounded state. Never send a later native step before its real predecessors.
 local Funnel = {}
 
+function Funnel.realm(value)
+    return (value == "heaven" or value == "hell") and value or "unassigned"
+end
+
+function Funnel.controlRealm(autoplay, realm)
+    return (autoplay == true and "autoplay" or "manual") .. ":" .. Funnel.realm(realm)
+end
+
 function Funnel.new(config, cohort)
     local state = {
         cohort = cohort,

@@ -6,8 +6,14 @@ local Smoke = {}
 function Smoke.run()
     local container = Instance.new("Folder")
     local ok, result = pcall(function()
+        local archived = {}
         local service = setmetatable({
             _modules = {
+                RetentionService = {
+                    RecordMergeTelemetry = function(_, player, name, context)
+                        table.insert(archived, { player = player, name = name, context = context })
+                    end,
+                },
                 ConfigLoader = {
                     LoadConfig = function(_, name)
                         return require(RS.Configs[name])
@@ -34,7 +40,19 @@ function Smoke.run()
             return player
         end
         local a, b, c = actor(-1), actor(-2), actor(-3)
-        local ra, rb, rc = { player = a }, { player = b }, { player = c }
+        local function world(side)
+            local model = Instance.new("Model")
+            model:SetAttribute("MergeEggBaySide", side)
+            model.Parent = container
+            return model
+        end
+        local ra, rb, rc =
+            { player = a, world = world("heaven") },
+            { player = b, world = world("hell") },
+            { player = c, world = world("heaven") }
+        local offline = { UserId = 123, Name = "offline_test", OfflineActor = true }
+        service:Register(offline)
+        assert(service._players[offline] == nil, "Offline worker entered player funnels")
         a:SetAttribute("DataLoaded", true)
         b:SetAttribute("DataLoaded", true)
         c:SetAttribute("DataLoaded", true)
@@ -46,6 +64,30 @@ function Smoke.run()
         service:Observe(a, ra, "egg_placed")
         service:Observe(a, ra, "wave_started")
         service:Observe(a, ra, "wave_cleared", 1)
+        local aState = service:Snapshot(a)
+        assert(
+            aState.entry.fields.entry.CustomField02 == "manual:unassigned",
+            "Entry was relabeled"
+        )
+        assert(
+            aState.bay.fields.activation.CustomField02 == "manual:heaven",
+            "Missing Heaven filter"
+        )
+        assert(
+            aState.bay.fields.depth.CustomField03 == tostring(game.PlaceVersion),
+            "Build filter lost"
+        )
+        a:SetAttribute("MergeAutoplayEnabled", true)
+        service:Observe(a, ra, "coin_collected")
+        assert(
+            aState.bay.fields.activation.CustomField02 == "manual:heaven",
+            "Funnel cohort changed"
+        )
+        assert(
+            aState.trace[#aState.trace].fields.CustomField03 == "autoplay:heaven",
+            "Current mode missing"
+        )
+        a:SetAttribute("MergeAutoplayEnabled", false)
         assert(
             service:Snapshot(a).bay.funnels.activation.reached == 5,
             "Fresh activation incomplete"
@@ -55,13 +97,22 @@ function Smoke.run()
         service:Observe(c, rc, "session_ready")
         service:Observe(c, rc, "wave_cleared", 308)
         assert(service:Snapshot(c).bay.clears == 1, "Restored history counted as live clears")
+        a:SetAttribute("MergeEggBaySide", "hell") -- Incoming attribute must not relabel outgoing exit.
         service:EndBay(a, ra, "ended")
+        assert(archived[#archived].context.realm == "heaven", "Exit attributed to incoming bay")
+        assert(archived[#archived].context.resolvedWavesCapped == 1, "Exit lost run depth")
+        assert(archived[#archived].context.baySessionId == aState.bay.id, "Exit lost bay identity")
         assert(
             service:Snapshot(b).bay ~= nil and service:Snapshot(c).bay ~= nil,
             "Other bays ended"
         )
-        local replacement = { player = a }
+        local replacement = { player = a, world = world("hell") }
         service:BeginBay(a, replacement, true)
+        service:Observe(a, replacement, "session_ready")
+        assert(
+            service:Snapshot(a).bay.fields.depth.CustomField02 == "manual:hell",
+            "Switch kept old realm"
+        )
         service:Observe(a, ra, "wave_cleared", 500)
         service:EndBay(a, ra, "ended")
         assert(service:Snapshot(a).bay.clears == 0, "Stale record changed replacement session")
@@ -83,6 +134,35 @@ function Smoke.run()
             "Wrong exit stage"
         )
         assert(service:Snapshot(a).queued == 0, "Studio must not send native analytics")
+        assert(
+            #archived > 0 and archived[1].name == service._config.archive_event,
+            "Raw mirror missing"
+        )
+
+        -- Test the actual archive sink with no stores, real players, profile saves or remotes.
+        local Retention = require(game.ServerScriptService.Server.Services.RetentionService)
+        local rawBegins, rawWrites = 0, 0
+        local sink = setmetatable({
+            _dataService = {
+                IsDataLoaded = function(_, player)
+                    return player.loaded
+                end,
+            },
+            _beginRawSession = function()
+                rawBegins += 1
+            end,
+            _appendRawEvent = function()
+                rawWrites += 1
+            end,
+        }, { __index = Retention })
+        sink:RecordMergeTelemetry({ Parent = true, loaded = true }, "test", {})
+        sink:RecordMergeTelemetry({ Parent = true, loaded = false }, "test", {})
+        sink:RecordMergeTelemetry({ Parent = true, loaded = true, OfflineActor = true }, "test", {})
+        sink:RecordMergeTelemetry({ loaded = true }, "test", {})
+        assert(
+            rawBegins == 0 and rawWrites == 1,
+            "Raw sink must reject unloaded/departed/offline actors"
+        )
 
         -- Inject transport to test failures without AnalyticsService/production traffic.
         local emissions = 0
@@ -141,7 +221,7 @@ function Smoke.run()
             actors = 3,
             isolated = true,
             nativeCalls = 0,
-            coverage = "activation, restored waves, stale sessions, exit, tutorial, failure buckets, transport retries, dedup, overflow",
+            coverage = "activation, realms, immutable cohorts, raw mirror, offline exclusion, restored waves, stale sessions, exit, tutorial, failure buckets, transport retries, dedup, overflow",
         }
     end)
     container:Destroy()

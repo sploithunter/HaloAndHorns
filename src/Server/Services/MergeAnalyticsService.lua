@@ -1,4 +1,4 @@
--- Native Roblox analytics only. No gameplay remotes, profile writes, or rewards.
+-- Native Roblox analytics + the existing raw retention archive. No gameplay remotes or rewards.
 local AnalyticsService = game:GetService("AnalyticsService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -42,14 +42,47 @@ function Service:_suppressed(player)
     return false
 end
 
-function Service:_fields(player, cohort)
+function Service:_fields(player, state)
     return {
-        [Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = cohort,
-        [Enum.AnalyticsCustomFieldKeys.CustomField02.Name] = player:GetAttribute(
-            "MergeAutoplayEnabled"
-        ) == true and "autoplay" or "manual",
+        [Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = state.cohort,
+        [Enum.AnalyticsCustomFieldKeys.CustomField02.Name] = Funnel.controlRealm(
+            player:GetAttribute("MergeAutoplayEnabled"),
+            state.realm
+        ),
         [Enum.AnalyticsCustomFieldKeys.CustomField03.Name] = tostring(game.PlaceVersion),
     }
+end
+
+function Service:_archive(player, event)
+    local retention = self._modules.RetentionService
+    if not retention or not retention.RecordMergeTelemetry then
+        return
+    end
+    local visit = self._players[player]
+    local state = visit.bay or visit.entry
+    -- Entry's fixed native filters remain unassigned. Raw events also retain the actual bay
+    -- context at event time, including the old realm when an outgoing bay is being cleared.
+    pcall(retention.RecordMergeTelemetry, retention, player, self._config.archive_event, {
+        contextVersion = self._config.context_version,
+        kind = event.kind,
+        name = event.name,
+        funnel = event.funnel,
+        funnelSession = event.session,
+        step = event.step,
+        value = event.value,
+        nativeFields = event.fields,
+        visitId = visit.entry.id,
+        baySessionId = visit.bay and state.id,
+        realm = Funnel.realm(state.realm),
+        cohort = state.cohort,
+        mode = player:GetAttribute("MergeAutoplayEnabled") == true and "autoplay" or "manual",
+        placeVersion = game.PlaceVersion,
+        level = player:GetAttribute("Level"),
+        rebirths = player:GetAttribute("MergeDefenseRebirths"),
+        elapsedSeconds = math.max(0, os.clock() - state.started),
+        resolvedWavesCapped = state.clears,
+        lastResolvedWave = state.lastWave,
+    })
 end
 
 function Service:_enqueue(player, event)
@@ -61,6 +94,8 @@ function Service:_enqueue(player, event)
     if #visit.trace > self._config.trace_limit then
         table.remove(visit.trace, 1)
     end
+    -- Archive observations once, not delivery attempts; native failure must not erase evidence.
+    self:_archive(player, event)
     if self:_suppressed(player) then
         return
     end
@@ -79,7 +114,7 @@ function Service:_observe(player, state, event)
     for _, step in ipairs(Funnel.observe(state, self._config, event)) do
         local fields = state.fields[step.funnel]
         if not fields then
-            fields = self:_fields(player, state.cohort)
+            fields = self:_fields(player, state)
             state.fields[step.funnel] = fields
         end
         self:_enqueue(player, {
@@ -94,6 +129,8 @@ function Service:_observe(player, state, event)
 end
 
 function Service:_custom(player, category, id, detail, value)
+    local visit = self._players[player]
+    local state = visit and (visit.bay or visit.entry)
     self:_enqueue(player, {
         kind = "custom",
         name = self._config.custom[category],
@@ -101,15 +138,20 @@ function Service:_custom(player, category, id, detail, value)
         fields = {
             [Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = id,
             [Enum.AnalyticsCustomFieldKeys.CustomField02.Name] = detail,
-            [Enum.AnalyticsCustomFieldKeys.CustomField03.Name] = player:GetAttribute(
-                "MergeAutoplayEnabled"
-            ) == true and "autoplay" or "manual",
+            [Enum.AnalyticsCustomFieldKeys.CustomField03.Name] = Funnel.controlRealm(
+                player:GetAttribute("MergeAutoplayEnabled"),
+                state and state.realm
+            ),
         },
     })
 end
 
 function Service:Register(player)
-    if not self._enabled or self._players[player] then
+    if
+        not self._enabled
+        or self._players[player]
+        or (type(player) == "table" and player.OfflineActor == true)
+    then
         return
     end
     local state = self:_state("unknown")
@@ -136,6 +178,9 @@ function Service:BeginBay(player, record, restored)
         self:EndBay(player, visit.record, "replaced")
     end
     visit.bay = self:_state(restored and "restored" or "fresh")
+    -- Read the record's authoritative world once. Player attributes can change/clear before
+    -- EndBay; never attribute the old session's exit to the newly selected bay.
+    visit.bay.realm = Funnel.realm(record.world and record.world:GetAttribute("MergeEggBaySide"))
     visit.bay.funnels.entry = nil
     visit.record = record
     visit.lastExit = nil

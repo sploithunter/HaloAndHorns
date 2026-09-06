@@ -454,6 +454,22 @@ function RetentionService:_appendRawEvent(player, name, context)
     end
 end
 
+-- Server-only Merge observer sink: shares the existing batched archive, never requests a
+-- gameplay profile save or emits a client event. Internal accounts stay available for QA;
+-- offline workers are not human sessions and must not enter this dataset.
+function RetentionService:RecordMergeTelemetry(player, name, context)
+    if
+        (type(player) == "table" and player.OfflineActor == true)
+        or not (player and player.Parent)
+        or not self._dataService:IsDataLoaded(player)
+    then
+        return
+    end
+    -- Use only the session owned by Start/PlayerRemoving. Reopening here during departure
+    -- could restart chunk numbering and overwrite an already archived session.
+    self:_appendRawEvent(player, name, context)
+end
+
 function RetentionService:_rawPayload(session, chunk, events)
     return {
         kind = "events",
