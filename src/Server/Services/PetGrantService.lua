@@ -303,6 +303,11 @@ function PetGrantService:GrantPet(player, request)
     -- request.deferFlush (bulk-grant seam, task #274): a multi-hatch loop grants N pets in
     -- pure data and flushes replication + the save ONCE after the loop (FlushBucket) —
     -- previously EVERY hatched pet paid a full pets-folder rebuild + two critical saves.
+    -- Server-owned cancellable grants recheck their profile/run after serial allocation yields.
+    -- No ownership is inserted when a reset, departure or replacement session invalidated it.
+    if request and type(request.validateGrant) == "function" and not request.validateGrant() then
+        return { ok = false, error = "grant_cancelled" }
+    end
     local deferFlush = request ~= nil and request.deferFlush == true
     local uid, addResult = self:_addPetRecord(player, petData, { deferFlush = deferFlush })
     if not uid then

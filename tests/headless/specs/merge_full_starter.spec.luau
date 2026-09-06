@@ -27,22 +27,19 @@ local function fixture()
             end,
         },
         _petGrantService = {
-            BuildPetData = function(_, request)
+            GrantPet = function(_, _, request)
                 if observed.beforeBuild then
                     observed.beforeBuild()
                 end
-                return { id = request.petType, variant = request.variant }
+                assert(request.deferFlush)
+                if not request.validateGrant() or observed.failAt == #observed.added + 1 then
+                    return { ok = false }
+                end
+                table.insert(observed.added, { id = request.petType, variant = request.variant })
+                return { ok = true, uid = "pet-" .. #observed.added }
             end,
         },
         _inventoryService = {
-            AddItem = function(_, _, bucket, pet, opts)
-                assert(bucket == "pets" and opts.deferFlush)
-                if observed.failAt == #observed.added + 1 then
-                    return nil
-                end
-                table.insert(observed.added, pet)
-                return "pet-" .. #observed.added
-            end,
             FlushBucket = function()
                 observed.flushes += 1
             end,

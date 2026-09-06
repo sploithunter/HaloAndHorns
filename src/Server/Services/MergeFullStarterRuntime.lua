@@ -51,22 +51,20 @@ function Runtime.grant(service, record)
             if not result or not result.pet then
                 break
             end
-            local petData = grants:BuildPetData({
+            local granted = grants:GrantPet(player, {
                 petType = result.pet,
                 variant = result.variant or "basic",
                 huge = result.huge == true,
                 source = "merge_full_starter",
-            }, player)
+                deferFlush = true,
+                validateGrant = valid,
+            })
             -- Serial allocation can yield. Do not insert into a reset/replaced profile or
             -- a departed player's new bay after that yield.
-            if not petData or not valid() then
+            if not granted or not granted.ok or not granted.uid then
                 break
             end
-            local uid = inventory:AddItem(player, "pets", petData, { deferFlush = true })
-            if not uid then
-                break
-            end
-            table.insert(receipt.refs, uid)
+            table.insert(receipt.refs, granted.uid)
             changed = true
         end
     end)
