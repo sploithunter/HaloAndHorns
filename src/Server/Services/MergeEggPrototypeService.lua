@@ -18193,8 +18193,7 @@ end
 
 -- Cache only the authored face, not the under-map staging model or the pet catalog. This makes
 -- it available even when the client's streamed map has not loaded the underground source.
-function MergeEggPrototypeService:_cacheWatcherTemplate()
-    local cfg = self._config.watcher
+function MergeEggPrototypeService:_cacheWatcherTemplate(cfg)
     if not cfg or not cfg.enabled or not self:_isDedicatedMergePlace() then
         return
     end
@@ -18271,7 +18270,16 @@ function MergeEggPrototypeService:Start()
         end)
     end
     local world = self:_resolveWorld()
-    self:_cacheWatcherTemplate()
+    do
+        local watcher = self._config.watcher
+        local director = require(ReplicatedStorage.Shared.Game.MergeWatcherDirector)
+        for side in pairs(watcher.themes) do
+            local theme = director.theme(watcher, side)
+            if theme then
+                self:_cacheWatcherTemplate(theme)
+            end
+        end
+    end
     if world then
         self:_bindWorldControls(world)
         self:_setPortalVisible(nil, false)

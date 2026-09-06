@@ -5,6 +5,29 @@ function Director.new()
     return { seen = {}, count = 0, nextAt = 0, reminders = 0, reminderAt = 0 }
 end
 
+-- Theme overlays are one level deep: copy nested settings before overriding so switching bays
+-- never recolors another client's defaults or replaces shared voice/dialogue catalogs.
+function Director.theme(config, side)
+    local theme = config.themes and config.themes[side]
+    if not config.enabled or not theme or theme.enabled == false then
+        return nil
+    end
+    local resolved = table.clone(config)
+    for key, value in pairs(theme) do
+        if type(value) == "table" and type(config[key]) == "table" then
+            local combined = table.clone(config[key])
+            for field, override in pairs(value) do
+                combined[field] = override
+            end
+            resolved[key] = combined
+        else
+            resolved[key] = value
+        end
+    end
+    resolved.side = side
+    return resolved
+end
+
 function Director.duckAmount(amount, speaking, dt, config)
     local duration = speaking and config.fade_in_seconds or config.fade_out_seconds
     local direction = speaking and 1 or -1

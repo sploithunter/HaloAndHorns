@@ -8327,3 +8327,17 @@ first-session cohort rates.
   front and angle review confirmed clean texture, local -Z front and +Y up without correction.
   Kept the original Hell face/map intact; anchored/noncollidable review head only, no Play or
   publish. Asset manifest now includes verified Mesh/Texture IDs and the 14-stud staging size.
+
+## 2026-09-05 — Heaven Watcher voice and realm integration
+
+- Integrated the approved Heaven source-asset branch without dropping either branch's log entries.
+  Enabled an independent cached Heaven face with warm lighting, baked gold eyes and realm-specific
+  dialogue. Side changes clear prior presentation and breach history; Hell stays red/mocking.
+- Uploaded the user's five supplied female-voice MP3s as group-owned Audio and mapped each line.
+  Source files remain intact in Downloads, with repo copies, duration measurements and upload IDs.
+- Raised shared voice volume from 0.8 to 1.2 at the user's request; retained the approved background
+  ducking and master/Effects preference behavior. Headless theme isolation and timing checks pass.
+- Full CI: 2,700 tests passing. All five Heaven audio assets loaded in the Merge client, and the
+  correct female arrival line played with the Heaven mesh/subtitle on WatcherVoice at 1.2. User
+  approved the voice volume. Reduced Heaven internal light to 0.15 after the initial pale mesh
+  overexposed; a second Studio preview retained facial/gold detail. No experience publish.

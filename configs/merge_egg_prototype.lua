@@ -62,7 +62,19 @@ return {
         enabled = true,
         source_path = { "GeneratedMap_MergeEggVoxel", "HellFaceGateTest", "HellFace" },
         template_name = "MergeWatcherTemplate",
-        side = "hell", -- Heaven gets its own model before it is enabled.
+        themes = {
+            hell = {}, -- uses the shared infernal defaults below
+            heaven = {
+                source_path = { "GeneratedMap_MergeEggVoxel", "HeavenFaceGateTest", "HeavenFace" },
+                template_name = "MergeHeavenWatcherTemplate",
+                light_color = { 255, 235, 186 },
+                light_brightness = 0.15,
+                atmosphere = { brightness = -0.06, contrast = 0.02, saturation = 0 },
+                dialogue = { color = { 255, 245, 212 }, stroke_color = { 38, 31, 24 } },
+                -- This face has baked gold eyes; do not reuse the Hell pupil placement.
+                eyes = { source_names = {}, pulse_at_seconds = {}, light_boost = 0 },
+            },
+        },
         scan_seconds = 1,
         cooldown_seconds = 75,
         duration_seconds = 9,
@@ -125,6 +137,13 @@ return {
             rolloff_max_distance = 150,
             -- Order matches lines[side][event], so spoken and printed variants stay together.
             clips = {
+                heaven = {
+                    arrival = { { asset_id = 81601042465211, seconds = 4.911 } },
+                    milestone = { { asset_id = 88701494532813, seconds = 4.728125 } },
+                    bulwark = { { asset_id = 74885643187236, seconds = 6.504438 } },
+                    gate = { { asset_id = 78687244136825, seconds = 4.5975 } },
+                    quartermaster = { { asset_id = 82818620245348, seconds = 5.328938 } },
+                },
                 hell = {
                     arrival = { { asset_id = 83115701780534, seconds = 7.967313 } },
                     milestone = {

@@ -1,4 +1,4 @@
--- Sparse, local-only Hell encounters. No remotes, camera ownership, input locks or gameplay changes.
+-- Sparse, local-only realm encounters. No remotes, camera ownership, input locks or gameplay changes.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,23 +28,25 @@ function Watcher.start()
         return
     end
     local config = ConfigLoader:LoadConfig("merge_egg_prototype")
-    local cfg = config.watcher
-    if not cfg or not cfg.enabled then
+    local watcher = config.watcher
+    if not watcher or not watcher.enabled then
         return
     end
+    local cfg = watcher
+    local activeSide
     local player = Players.LocalPlayer
     local audio = WatcherAudio.new(cfg.voice)
     local director = Director.new()
     local random = Random.new()
     local world, bayId, apparition
     local elapsed = cfg.scan_seconds
-    local voicePreloadStarted = false
+    local voicePreloadStarted = {}
 
     local function preloadVoices()
-        if voicePreloadStarted or not cfg.voice.enabled then
+        if voicePreloadStarted[cfg.side] or not cfg.voice.enabled then
             return
         end
-        voicePreloadStarted = true
+        voicePreloadStarted[cfg.side] = true
         local ids = {}
         for _, clips in pairs(cfg.voice.clips[cfg.side] or {}) do
             for _, clip in ipairs(clips) do
@@ -223,6 +225,16 @@ function Watcher.start()
 
     RunService.Heartbeat:Connect(function(dt)
         audio:step(dt)
+        local side = player:GetAttribute("MergeEggBaySide")
+        if side ~= activeSide then
+            clear()
+            director.previous = nil
+            activeSide = side
+            cfg = Director.theme(watcher, side)
+        end
+        if not cfg or not cfg.side then
+            return
+        end
         local now = os.clock()
         local root = rootPart()
         local eligible = player:GetAttribute("InMergeEggPrototype") == true

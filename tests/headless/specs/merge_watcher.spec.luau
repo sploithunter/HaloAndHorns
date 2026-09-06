@@ -13,6 +13,31 @@ end
 
 return function()
     describe("Merge Watcher director", function()
+        it(
+            "selects each side without leaking palette/asset overrides into shared defaults",
+            function()
+                local shared = {
+                    enabled = true,
+                    template_name = "Hell",
+                    dialogue = { color = "red", width = 340 },
+                    themes = {
+                        hell = {},
+                        heaven = { template_name = "Heaven", dialogue = { color = "gold" } },
+                    },
+                }
+                local heaven = Director.theme(shared, "heaven")
+                expect(heaven.side).to.equal("heaven")
+                expect(heaven.template_name).to.equal("Heaven")
+                expect(heaven.dialogue.color).to.equal("gold")
+                expect(heaven.dialogue.width).to.equal(340)
+                expect(Director.theme(shared, "hell").dialogue.color).to.equal("red")
+                expect(shared.dialogue.color).to.equal("red")
+                expect(Director.theme(shared, "unknown")).to.equal(nil)
+                expect(Director.theme(shared, nil)).to.equal(nil)
+                shared.enabled = false
+                expect(Director.theme(shared, "heaven")).to.equal(nil)
+            end
+        )
         it("ducks quickly, restores smoothly, clamps long frames and reverses cleanly", function()
             local duck = { fade_in_seconds = 0.15, fade_out_seconds = 0.6 }
             expect(Director.duckAmount(0, true, 0.075, duck)).to.equal(0.5)
