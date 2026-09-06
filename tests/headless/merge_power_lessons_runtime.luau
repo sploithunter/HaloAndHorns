@@ -153,6 +153,7 @@ r.waveIndex = 8
 assert(not Runtime.tryStart(s, r))
 r.waveIndex = 10
 assert(Runtime.tryStart(s, r) and c.levels == 2)
+assert(r.player.attrs.MergePowerLessonTarget == "magnet")
 claim(3)
 d.Slots.magnet = { { inherent = true }, {} }
 Runtime.update(s, r)
@@ -163,6 +164,7 @@ assert(c.resumes == 2)
 r.waveIndex = 12
 assert(Runtime.tryStart(s, r))
 assert(c.grants == 1 and inv[1].type == "focus" and #inv[1].origins == 0 and inv[1].level == 8)
+assert(r.player.attrs.MergePowerLessonTarget == "magnet")
 for _ = 1, 10 do
     Runtime.update(s, r)
 end
@@ -190,7 +192,7 @@ for _, kind in ipairs({ "Tutorial", "CombatTutorial", "legacy", "rebirth", "offl
     assert(counts.levels == 0 and counts.grants == 0, kind)
 end
 local a, b, data, counts = fixture(6, true)
-assert(Runtime.tryStart(a, b) and b.player.attrs.MergePowerRecommendation == "swift")
+assert(Runtime.tryStart(a, b) and b.player.attrs.MergePowerRecommendation == "magnet")
 assert(d.GameData.MergePowerLessons.completed.enhance, "other player's receipts untouched")
 b.ended = true
 assert(not Runtime.update(a, b) and counts.levels == 1)
@@ -267,6 +269,62 @@ assert(not done({}, { eggsCreated = 2 }))
 assert(done({}, { eggsCreated = 0, eggsPlaced = 1 }))
 assert(done({}, { eggsCreated = 0, eggsMerged = 1 }))
 assert(done({}, { baseEggTier = 2, upgradeBeatBaseEggTier = 1 }))
+-- The real offline start method must reject an incomplete locked profile before
+-- reconciliation/migration, actor creation, or purchases. No real accounts are loaded.
+local offlineDeps = {
+    MergePowerLessons = Lessons,
+    MergeOfflineLease = pure("src/Shared/Game/MergeOfflineLease.lua"),
+    Locations = {
+        getPackage = function()
+            return {}
+        end,
+    },
+}
+local offline = luau.load(fs.readFile("src/Server/Services/MergeOfflineService.lua"), {
+    environment = {
+        game = {
+            GetService = function(_, id)
+                return node(id)
+            end,
+        },
+        script = node("script"),
+        require = function(path)
+            return offlineDeps[tostring(path):match("([^.]+)$")] or {}
+        end,
+    },
+})()
+local ended, released = 0, 0
+local profile = {
+    Data = { GameData = { MergePowerLessons = { unlocked = true } } },
+    IsActive = function()
+        return true
+    end,
+    EndSession = function()
+        ended += 1
+    end,
+    Reconcile = function()
+        error("incomplete profiles must not reach migration")
+    end,
+}
+local service = setmetatable({
+    _config = { logout_grace_seconds = 1 },
+    _status = function(_, key, value)
+        assert(key == "LastReason" and value == "onboarding_incomplete")
+    end,
+    _presenceUpdate = function(_, _, transform)
+        released += 1
+        transform({ kind = "offline", token = "test", expires = os.time() + 10 })
+    end,
+}, { __index = offline })
+assert(not service:_startWorker(-1, "test", profile, "test", {}))
+assert(ended == 1 and released == 1)
+profile.Data.GameData.MergeDefense = { tutorial_completed = true }
+profile.Reconcile = function()
+    error("eligible_profile_reached_normal_start")
+end
+local ok, err = pcall(service._startWorker, service, -1, "test", profile, "test", {})
+assert(not ok and tostring(err):find("eligible_profile_reached_normal_start", 1, true))
+assert(ended == 1 and released == 1)
 print(
     "PASS: actual lesson runtime, grants/retries/isolation/graduate skips, real menu Pick/Undo, no-money placement fallback, full-chunk compilation"
 )

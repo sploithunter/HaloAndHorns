@@ -26,6 +26,20 @@ return function()
             store.value.MetaData.ActiveSession = { 1, "other", "online" }
             expect(adapter:canAcquire("a")).to.equal(false)
         end)
+        it("screens profile eligibility without writing or acquiring a session", function()
+            local store = backend({ Data = { ready = false }, MetaData = {} })
+            store.UpdateAsync = function()
+                error("preflight must not write")
+            end
+            local adapter = Adapter.wrap(store)
+            local function eligible(data)
+                return data.ready
+            end
+            expect(adapter:canAcquire("a", eligible)).to.equal(false)
+            store.value.Data.ready = true
+            expect(adapter:canAcquire("a", eligible)).to.equal(true)
+            expect(store.value.MetaData.ActiveSession).to.equal(nil)
+        end)
         it("never creates missing accounts or invokes a transform on a locked account", function()
             for _, value in ipairs({
                 false,

@@ -907,7 +907,8 @@ return {
             hotbar_reveal_wave = 6,
             card_lift_scale = 1.05,
             recommended_without_dog = "magnet",
-            recommended_with_dog = "swift",
+            recommended_with_dog = "magnet",
+            excluded_lesson_powers = { "resonance" },
             stages = {
                 { id = "power", wave = 6, level = 2 },
                 { id = "slots", wave = 10, level = 3, slots = 2 },

@@ -62,6 +62,7 @@ function Runtime.clear(record)
     record.powerLessonId = nil
     record.player:SetAttribute("MergePowerLesson", nil)
     record.player:SetAttribute("MergePowerRecommendation", nil)
+    record.player:SetAttribute("MergePowerLessonTarget", nil)
 end
 
 function Runtime.update(service, record)
@@ -102,6 +103,7 @@ function Runtime.update(service, record)
             return
         end
         if completed(service, record, stage, data) or Lessons.graduate(data) then
+            state.targetPower = Lessons.target(cfg, data.Powers, state.targetPower)
             state.completed[stage.id] = true
             save(service, record)
             Runtime.clear(record)
@@ -193,6 +195,8 @@ function Runtime.tryStart(service, record)
                 record.nextWaveAt = nil
                 record.tutorialActive = true
                 record.player:SetAttribute("MergePowerLesson", stage.id)
+                state.targetPower = Lessons.target(cfg, data.Powers, state.targetPower)
+                record.player:SetAttribute("MergePowerLessonTarget", state.targetPower)
                 record.player:SetAttribute(
                     "MergePowerRecommendation",
                     Lessons.recommended(cfg, service:_tutorialUsesAutoCollector(record))

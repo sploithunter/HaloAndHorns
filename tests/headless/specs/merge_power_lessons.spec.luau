@@ -21,8 +21,42 @@ return function()
         end)
         it("recommends without choosing for the player", function()
             expect(Lessons.recommended(cfg.power_lessons, false)).to.equal("magnet")
-            expect(Lessons.recommended(cfg.power_lessons, true)).to.equal("swift")
+            expect(Lessons.recommended(cfg.power_lessons, true)).to.equal("magnet")
         end)
+        it("follows the chosen power, never the innate starter", function()
+            local c = cfg.power_lessons
+            expect(Lessons.target(c, { "resonance", "swift" })).to.equal("swift")
+            expect(Lessons.target(c, { "magnet", "swift" }, "magnet")).to.equal("magnet")
+            expect(Lessons.target(c, { "swift" }, "magnet")).to.equal("swift")
+            expect(Lessons.target(c, { "resonance" }, "resonance")).to.equal(nil)
+        end)
+        it(
+            "does not run unfinished or reset profiles offline, regardless of entitlement",
+            function()
+                expect(Lessons.offlineEligible(nil)).to.equal(false)
+                expect(Lessons.offlineEligible({ GameData = {} })).to.equal(false)
+                expect(
+                    Lessons.offlineEligible({
+                        GameData = {
+                            MergeDefense = { tutorial_setup_completed = true },
+                            MergePowerLessons = {
+                                completed = { power = true, slots = true, enhance = true },
+                            },
+                        },
+                    })
+                ).to.equal(false)
+                expect(
+                    Lessons.offlineEligible({
+                        GameData = { MergeDefense = { tutorial_completed = true } },
+                    })
+                ).to.equal(true)
+                expect(Lessons.offlineEligible({ GameData = { MergeDefense = { rebirths = 1 } } })).to.equal(
+                    true
+                )
+                expect(Lessons.offlineEligible({ Tutorial = { done = true } })).to.equal(true)
+                expect(Lessons.offlineEligible({ CombatTutorial = { done = true } })).to.equal(true)
+            end
+        )
         it("skips graduates but never fabricates a graduation", function()
             expect(Lessons.graduate({ Tutorial = { done = true } })).to.equal(true)
             expect(Lessons.graduate({ CombatTutorial = { done = true } })).to.equal(true)
