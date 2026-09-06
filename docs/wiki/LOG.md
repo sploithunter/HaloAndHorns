@@ -8281,3 +8281,15 @@ first-session cohort rates.
 - Fixed the newly introduced pre-claim `false`-bay attribute read; false/nil bay snapshots are
   regression tested. Final CI: 2,697 tests passing. Fresh Studio boot had no Watcher errors;
   dimming reached -0.16 and removed itself after the encounter, with Lighting.Brightness still 3.
+
+## 2026-09-05 — Heaven Watcher source asset and strict geometry gates
+
+- Created an original imagegen reference and Meshy counterpart to the Hell face: calm ivory/
+  opalescent planes, inset gold seams, luminous almond eyes and an integrated crystalline crown.
+- Preserved two failed raw topology generations and their reports. The canonical voxel repair
+  produced one closed 4,468-triangle surface; retexturing that exact repaired GLB kept it strict-
+  passing. Final embedded-texture FBX also passes, with zero multiple-UV vertices.
+- Source/reference/prompt, editable Blender, GLB/FBX, atlas and cardinal previews are versioned
+  under the Heaven Watcher asset directories; manifest is `assets/manifest/heaven_watcher.json`.
+- Used 20 Meshy credits total. Local CI passed all 2,697 tests. Held at visual approval before
+  Roblox upload; no Studio mutation, experience publishing, audio or runtime encounter changes.
