@@ -1,8 +1,9 @@
-assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/colorado_icons
-icon_count: 5
+assets_dir: /Users/jason/Documents/HaloAndHorns/assets/ui/colorado_icons
+icon_count: 6
 
 armor_chest.png
 arrow_right.png
+colorado_fist_impact_yellow.png
 fist_impact.png
 hand_stop.png
 star_sparkle.png
