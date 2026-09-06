@@ -2209,3 +2209,12 @@ selected from a randomized global pool. Real-player claims/login preempt workers
 Waycoin-only gameplay saves actual earnings to exclusively locked canonical profiles. Online
 autoplay buttons remain Studio-only. See [Merge Autoplay](MERGE_AUTOPLAY.md) for verification,
 diagnostics and the coordinated two-place publish requirement. Not published by this change.
+
+## Main reconciliation (2026-09-06)
+
+PRs #465/#467/#469/#470 are merged into main: Hell gate lightning, Auto Dog enhancement/potion
+pickups, low-focus utility toggles, and wave-paced Powers-menu onboarding. Integrated main passed
+local/GitHub CI (2,781 tests / 314 specs) and a fresh Merge Studio boot/runtime smoke check with
+an active bay and live Hell strikes. Merged feature branches and the redundant Auto Dog worktree
+were pruned; broader product-design questions remain tracked separately, not discarded.
+This reconciliation did not publish either Roblox place. Save authored Studio map edits separately.
