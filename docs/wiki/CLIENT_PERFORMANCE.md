@@ -59,7 +59,21 @@ The expiration callback is now explicitly classified as an animation lifetime;
 enabled pools require the configured capacity instead of a numeric tuning fallback.
 The tracked-source full CI and native smoke rerun pass (2,755/309; identical visual
 signatures, 359 created versus 1,077). Artifacts: `effect-pool-tracked-ci.log` and
-`effect-pool-native-retest.json`. Hosted checks must pass before landing.
+`effect-pool-native-retest.json`. Both hosted fast gates passed for `5478db22`.
+
+A second fresh eight-bay verification loaded the corrected source. The runtime pool
+reported **2,985 created / 77,541 reused / 1,500 active / 879 idle**, within the
+2,048-idle cap. Census retained **72 eggs, zero hidden eggs**, with 438 of 637
+pet/objective models hidden. Captured combat view showed normal pets, effects and
+defenses; this visual inspection supplements, not replaces, the native parity tests.
+A 20.058 s profile recorded enemy combat ticks 4.316 s inclusive, nested pet aggro
+1.632 s, target assignment 1.239 s, engagement 0.818 s, and PetFollow ticks 1.461 s.
+29,789 target lookups totaled 0.0294 s. Do not add nested counters or label elapsed
+instrumentation script-exclusive CPU. Low-FPS/frame warnings remain; no script error
+was identified in this capture. Stop confirmed zero synthetic workers/errors; diagnostic
+script/bindable removed, Play stopped, production config restored. Raw
+`effect-pool-eight-visual-{profile,census,console}.json` and passive host JSONL are in
+the same directory; native capture ID `EffectPool_EightBay_Combat`.
 No production publish; Studio stays open.
 
 ## Character-local Merge bay detail (2026-09-06)
