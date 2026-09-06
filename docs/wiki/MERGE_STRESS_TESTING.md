@@ -147,6 +147,63 @@
   `direct-chase-native.json`, `direct-chase-{server,client}-memory.json`, `direct-chase-host.jsonl`
   and `direct-chase-ci.log`. These are the MCP response envelopes, with JSON payloads in text.
 
+## Memory isolation after direct pursuit (2026-09-06)
+
+- A server-only Studio **Run** confirmed `IsRunMode() == true` and zero Players. One
+  isolated level-50 worker used the same sanitized source and normal combat runtime,
+  advancing wave 60→64 with 82 pet/objective models. No real account was present. The
+  120-second fixture cap completed and an explicit stop confirmed zero workers/errors.
+  BaseParts grew **11,144.443→11,146.306 MB** over 135 s including loading and teardown;
+  in the populated interval (5–120 s), growth was about **0.718 MB**. Sampled heartbeat
+  means were approximately 16.7 ms. Total Stats still grew 20,041→20,127 MB, so this is
+  not a claim of zero allocation. Evidence: `server-only-one-bay.json` and
+  `server-only-host.jsonl` in the durable directory above; the passive monitor completed
+  without signals. The server viewport still renders, and this is the same warm Studio
+  process—not a headless production server or a matched client/server memory budget.
+- Unlike the previous synchronous pivot test, an Edit-only probe exercised **actual
+  Heartbeat frames**: 20 temporary copies of `frostblight_lamb.basic`, 20 s stationary,
+  40 s moving, 20 s stationary, then cleanup and a final sample at 90 s. It performed
+  **48,020 PivotTo calls**. BaseParts stayed exactly 11,138.585 MB from clone creation
+  through the last sample, and live instances returned from 29,991 to 27,430 (including
+  the diagnostic control, subsequently destroyed). Original templates/camera/gameplay
+  were unchanged. This narrows the search but does not reproduce Play's replication,
+  effects, animation or listeners. Files: `edit-frame-pivot-probe.luau`,
+  `edit-frame-pivot-result.json`, and `edit-frame-pivot-host.jsonl` outside the repo.
+- LibMP snapshot access remains limited: backend ready and counters available, but
+  frame range is 0–0. Its stale frame-tagged counter samples are not a usable current
+  frame-time capture; no new FPS or allocation-stack claim is made.
+- Bounded Edit effects-style tests created 8,000 short-lived Parts over real frames,
+  each tween completing and each Part destroyed after one second. BaseParts remained
+  **9.035 MB higher** at 40 s with live instance count back to baseline. An identical
+  run explicitly destroying each Tween still added **9.033 MB**. A subsequent plain
+  synchronous 8,000 `Instance.new("Part"):Destroy()` sequence, with no parenting or
+  tween, immediately added 14.893 MB. These are observed native allocation/retention
+  counters, not proof that TweenService leaks or that the game holds Lua references.
+  Forced garbage collection is unavailable (`collectgarbage` accepts only `count`).
+  Do not conflate this with the earlier mesh-template clone test. Raw `edit-tween-*`
+  scripts/results live outside Git alongside the other diagnostics.
+- A fresh normal Play with **one real viewer, no workers**, and offline filling
+  verified disabled at runtime counted Workspace BasePart additions/removals for 90 s.
+  It saw **127,572 additions / 126,088 removals**; 112,817 additions (~88.4%) were
+  `Effects/Part:Part`, followed by 3,912 each lightning bolt/core Parts and 2,941 rock
+  MeshParts. BaseParts rose 11,183.265→11,335.979 MB. Additions measure parenting,
+  not necessarily construction, and the first window includes startup. This identifies
+  transient effects as a strong churn target, not a quantified deployment leak. Next:
+  bounded reuse of effects primitives, tested for unchanged appearance/lifetimes and
+  stale-callback safety. Evidence: `client-part-churn-probe.luau`,
+  `client-part-churn-result.json`, `client-part-churn-host.jsonl`. Probe disconnected;
+  Play stopped; original offline configuration restored; Studio open; no publish.
+- A matched effects-primitive reuse experiment then completed the same **8,000 tweens**
+  using **400 created Parts / 7,600 reuses** (maximum idle capacity 512). At 40 s, all
+  tweens completed, fixture/idle Parts were destroyed, and instances returned to baseline.
+  BaseParts increased **0.451 MB**, versus 9.033 MB for the explicit-Tween-destroy variant.
+  This proves a **95% reduction in new Parts in the isolated test**, not a production
+  memory/FPS improvement. The mechanism is bounded reuse, not skipping effects or
+  changing combat. `edit-tween-pooled-probe.luau` and `edit-tween-pooled-result.json`
+  preserve the experiment. Production integration still needs full effect property
+  reset, child/tween ownership, lease-safe delayed callbacks, cancellation/overflow/
+  teardown tests, and fresh one/eight-bay visual and memory verification.
+
 ## Historical memory incident and restart gate (2026-09-06)
 
 - Persistent macOS evidence: `/Library/Logs/DiagnosticReports/JetsamEvent-2026-09-05-202648.ips` identifies `RobloxStudio` as the largest process. Merge PID 45162 had 5,413,905 accounted pages versus Farm PID 43412's 326,964, with 16,384-byte pages. These are memory-accounting figures, **not a claim of 88 GB physically resident on the machine**. `/Library/Logs/DiagnosticReports/ResetCounter-2026-09-06-071804.diag` records a button reset. Root allocation cause remains unproven.
