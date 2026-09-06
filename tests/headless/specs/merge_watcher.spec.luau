@@ -14,6 +14,20 @@ end
 return function()
     describe("Merge Watcher director", function()
         it(
+            "extends for spoken clips with room to finish and fade, but bounds late audio",
+            function()
+                local timing = {
+                    duration_seconds = 9,
+                    fade_seconds = 1.5,
+                    voice = { tail_seconds = 0.35, maximum_encounter_seconds = 13 },
+                }
+                expect(Director.duration(timing, nil, 0)).to.equal(9)
+                expect(Director.duration(timing, { seconds = 3 }, 0.75)).to.equal(9)
+                expect(Director.duration(timing, { seconds = 8.25 }, 0.9)).to.equal(11)
+                expect(Director.duration(timing, { seconds = 100 }, 2)).to.equal(13)
+            end
+        )
+        it(
             "handles false/nil bays before claim or on the other side without reading attributes",
             function()
                 local state = Director.new()

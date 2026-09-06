@@ -5,6 +5,17 @@ function Director.new()
     return { seen = {}, count = 0, nextAt = 0, reminders = 0, reminderAt = 0 }
 end
 
+function Director.duration(config, clip, startedAt)
+    if not clip then
+        return config.duration_seconds
+    end
+    return math.clamp(
+        startedAt + clip.seconds + config.voice.tail_seconds + config.fade_seconds,
+        config.duration_seconds,
+        config.voice.maximum_encounter_seconds
+    )
+end
+
 -- `eligible and findWorld()` may produce false during startup, not just nil.
 -- Keep all bay reads behind this boundary so unclaimed/other-side players are safe.
 function Director.snapshot(bay)

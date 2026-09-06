@@ -5,10 +5,12 @@ local RunService = game:GetService("RunService")
 local GuiService = game:GetService("GuiService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local ContentProvider = game:GetService("ContentProvider")
 
 local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local Director = require(ReplicatedStorage.Shared.Game.MergeWatcherDirector)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 
 local Watcher = {}
 local started = false
@@ -35,6 +37,26 @@ function Watcher.start()
     local random = Random.new()
     local world, bayId, apparition
     local elapsed = cfg.scan_seconds
+    local voicePreloadStarted = false
+
+    local function preloadVoices()
+        if voicePreloadStarted or not cfg.voice.enabled then
+            return
+        end
+        voicePreloadStarted = true
+        local ids = {}
+        for _, clips in pairs(cfg.voice.clips[cfg.side] or {}) do
+            for _, clip in ipairs(clips) do
+                table.insert(ids, "rbxassetid://" .. tostring(clip.asset_id))
+            end
+        end
+        -- Small, side-specific preload; failures leave the text/visual encounter usable.
+        task.spawn(function()
+            pcall(function()
+                ContentProvider:PreloadAsync(ids)
+            end)
+        end)
+    end
 
     local function clear()
         if apparition then
@@ -154,11 +176,27 @@ function Watcher.start()
         label.TextStrokeTransparency = 1
         local lines = cfg.lines[cfg.side]
         local choices = lines[event]
-        label.Text = choices[random:NextInteger(1, #choices)]
+        local variant = random:NextInteger(1, #choices)
+        label.Text = choices[variant]
         if event == "quartermaster" then
             label.Text = label.Text .. "\n\n" .. lines.quartermaster_hint
         end
         label.Parent = gui
+        local voice, clip
+        local sideClips = cfg.voice.clips[cfg.side]
+        if cfg.voice.enabled and sideClips and sideClips[event] then
+            clip = sideClips[event][variant]
+            if clip then
+                voice = Instance.new("Sound")
+                voice.Name = "WatcherVoice"
+                voice.SoundId = "rbxassetid://" .. tostring(clip.asset_id)
+                voice.Volume = cfg.voice.volume
+                voice.RollOffMinDistance = cfg.voice.rolloff_min_distance
+                voice.RollOffMaxDistance = cfg.voice.rolloff_max_distance
+                SoundGroups.assign(voice, cfg.voice.bus)
+                voice.Parent = face
+            end
+        end
         -- A private effect avoids racing realm/weather systems when restoring lighting.
         local atmosphere
         if cfg.atmosphere.enabled then
@@ -175,6 +213,9 @@ function Watcher.start()
             startedAt = now,
             atmosphere = atmosphere,
             eyes = eyes,
+            voice = voice,
+            clip = clip,
+            duration = cfg.duration_seconds,
         }
     end
 
@@ -191,6 +232,9 @@ function Watcher.start()
         elapsed = elapsed + dt
         if elapsed >= cfg.scan_seconds then
             elapsed = 0
+            if eligible then
+                preloadVoices()
+            end
             local bay = eligible and findWorld() or nil
             local unlocked = player:GetAttribute("CombatTutorialDone") == true
                 or player:GetAttribute("MergeEggPlayerCombatMode") == "full"
@@ -218,19 +262,33 @@ function Watcher.start()
             return
         end
         local age = now - current.startedAt
+        if current.voice and not current.voiceResolved and age >= cfg.voice.start_seconds then
+            if age > cfg.voice.load_deadline_seconds then
+                -- Never start a late line over a different tutorial/encounter.
+                current.voiceResolved = true
+            elseif current.voice.IsLoaded then
+                current.voiceResolved = true
+                current.duration = Director.duration(cfg, current.clip, age)
+                current.voice:Play()
+            end
+        end
         if
-            age >= cfg.duration_seconds
+            age >= current.duration
             or (current.face.Position - root.Position).Magnitude > cfg.teleport_distance
         then
             clear()
             return
         end
         local opacity = math.clamp(
-            math.min(age / cfg.fade_seconds, (cfg.duration_seconds - age) / cfg.fade_seconds),
+            math.min(age / cfg.fade_seconds, (current.duration - age) / cfg.fade_seconds),
             0,
             1
         )
         current.face.Transparency = 1 - opacity
+        if current.voice then
+            current.voice.Volume = cfg.voice.volume
+                * math.clamp((current.duration - age) / cfg.fade_seconds, 0, 1)
+        end
         if current.atmosphere then
             current.atmosphere.Brightness = cfg.atmosphere.brightness * opacity
             current.atmosphere.Contrast = cfg.atmosphere.contrast * opacity

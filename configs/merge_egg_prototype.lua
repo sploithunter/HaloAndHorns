@@ -107,6 +107,39 @@ return {
             stroke_color = { 28, 8, 5 },
             stroke_transparency = 0.25,
         },
+        voice = {
+            enabled = true,
+            volume = 0.8,
+            bus = "effects",
+            start_seconds = 0.75,
+            load_deadline_seconds = 2,
+            tail_seconds = 0.35,
+            maximum_encounter_seconds = 13,
+            rolloff_min_distance = 45,
+            rolloff_max_distance = 150,
+            -- Order matches lines[side][event], so spoken and printed variants stay together.
+            clips = {
+                hell = {
+                    arrival = { { asset_id = 83115701780534, seconds = 7.967313 } },
+                    milestone = {
+                        { asset_id = 121144391804606, seconds = 7.131375 },
+                        { asset_id = 138478642208090, seconds = 4.127313 },
+                    },
+                    bulwark = {
+                        { asset_id = 72488797174915, seconds = 6.112625 },
+                        { asset_id = 94111602731424, seconds = 4.780375 },
+                    },
+                    gate = {
+                        { asset_id = 107808585107297, seconds = 4.310188 },
+                        { asset_id = 109366570268360, seconds = 3.343625 },
+                    },
+                    quartermaster = {
+                        { asset_id = 77606311575803, seconds = 8.254688 },
+                        { asset_id = 129441341688169, seconds = 6.817938 },
+                    },
+                },
+            },
+        },
         lines = {
             hell = {
                 arrival = { "So. Another brave little soul. Let's see how long those eggs last." },

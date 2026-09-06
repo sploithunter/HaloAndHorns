@@ -8281,3 +8281,15 @@ first-session cohort rates.
 - Fixed the newly introduced pre-claim `false`-bay attribute read; false/nil bay snapshots are
   regression tested. Final CI: 2,697 tests passing. Fresh Studio boot had no Watcher errors;
   dimming reached -0.16 and removed itself after the encounter, with Lighting.Brightness still 3.
+
+## 2026-09-05 — Hell Watcher voice recordings
+
+- Copied the user's nine Downloads MP3s without modifying originals, uploaded project-group Audio
+  assets, and paired each clip with its matching taunt variant in config.
+- Voice follows the face, respects Effects/master settings and stops on all encounter cleanup
+  paths. Side-specific preload and a two-second late-start cutoff preserve text-only fallback.
+  Measured clip durations extend the apparition before its fade, up to thirteen seconds.
+- Full CI: 2,698 headless tests passing, including short/long/missing/bounded voice timing.
+- Merge Play verification: all nine clips returned AssetFetchStatus.Success and IsLoaded=true,
+  with lengths matching local ffprobe measurements. Arrival speech was playing with the matching
+  subtitle and Effects SoundGroup; voice/face/lighting effect cleaned up after the encounter.

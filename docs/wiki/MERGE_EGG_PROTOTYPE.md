@@ -22,7 +22,13 @@ properties; cleanup destroys only that effect. Two smooth, short internal eye-li
 life without the Hell-5 full-scene lightning stutter. Menus,
 combat training, transit, prologue and Scriptable-camera ceremonies suppress it. Quartermaster
 taunts include an explicit Basic Combat Training hint so sarcastic advice cannot obscure how to
-unlock pets. Prerecorded voices are a future option; this version is text-only.
+unlock pets. Nine user-supplied ElevenLabs Hell clips now map one-to-one to those text variants
+in `watcher.voice`; source MP3s and upload provenance live in `assets/audio/voices/hell_watcher`.
+Only the local Hell client preloads this small clip set. Voice uses the existing Effects/master
+bus, follows the apparition spatially, and is destroyed with it on interruption. Loading failures
+retain the text-only encounter; a clip cannot start after the configured two-second deadline.
+Loaded clips extend the encounter through the measured spoken duration plus its exit fade,
+bounded at thirteen seconds. No Heaven voice clips are supplied yet.
 
 `leveling.onramp.activity_mult_by_level` now gives combat/mining raw-XP multipliers of
 12.5/12.5/12.5/10/5 at earned levels 1/2/3/4/5 (formerly 2.5 through level 4 and 1 at 5).
