@@ -145,6 +145,7 @@ local SCHEMAS = {
         currency = "string",
         crystal_world_effectiveness = "number",
         arch_lightning = "table",
+        hell_gate_lightning = "table",
         theme = "table",
         egg_stand = "table",
         play_areas = "table",

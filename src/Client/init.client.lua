@@ -271,6 +271,16 @@ do
     end
 end
 
+-- Merge Hell gates have their own authored endpoint contract, independent of Hall access.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.HellGateLightning).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start HellGateLightning", { error = tostring(err) })
+    end
+end
+
 -- The dedicated Merge place's authored Farm & Fight return portals use their LightningRing parts
 -- as invisible layout markers for themed FARM/FIGHT lettering, energy veils, and random ring arcs.
 do

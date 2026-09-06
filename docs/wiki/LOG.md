@@ -8437,3 +8437,7 @@ first-session cohort rates.
 ## 2026-09-06 — Land verified eight-bay performance changes
 
 - PR #460 merged as `6abe9eed`; bounded effects reuse PR #462 merged as `b5cfea50`, both through passing hosted CI. Follow-up eight-bay validation retained 72 eggs with zero hidden eggs; 438 of 637 models hidden and 77,541 effect-Part reuses at capture. Fixtures and probes cleaned up; Studio open in Edit, production not published. Memory growth/frame warnings remain documented in [Client Performance](CLIENT_PERFORMANCE.md); no controlled whole-game or eight-real-client improvement claim. Reconcile the completed icon files in their own PR, preserving the original artwork and appending its existing log entry.
+
+## 2026-09-06 — Authored Hell gate ambient lightning
+
+- Added independent, config-driven sky and inner-to-side lightning using Gate 1's sixteen repaired named points. Client-only, character-distance-aware, nearest-two and global active-strike budgets, no catch-up bursts, Prop Effects opt-out. Markers are never generated or moved at runtime; legacy Hall lightning remains separate. Endpoint policy tests added. Gate 1 live visual verification and endpoint replication are tracked in issue #464 before claiming the other gates ready. See [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md).
