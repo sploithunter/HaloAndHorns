@@ -25,18 +25,21 @@ return function()
             expect(Funnel.validate(bad)).to.equal(false)
         end)
         it("buffers late prerequisites without Roblox inventing skipped actions", function()
-            local state = Funnel.new(Config, "fresh")
-            Funnel.observe(state, Config, "wave_cleared")
+            local state = Funnel.new(Config, "fresh", true)
+            Funnel.observe(state, Config, "wave_resolved_1")
             Funnel.observe(state, Config, "wave_started")
             Funnel.observe(state, Config, "egg_placed")
             expect(reached(state, "activation")).to.equal(0)
             Funnel.observe(state, Config, "session_ready")
             expect(reached(state, "activation")).to.equal(1)
             local pending = Funnel.observe(state, Config, "egg_created")
-            expect(reached(state, "activation")).to.equal(5)
-            expect(#pending).to.equal(4)
+            expect(reached(state, "activation")).to.equal(1)
+            expect(#pending).to.equal(0)
+            pending = Funnel.observe(state, Config, "coin_collected")
+            expect(reached(state, "activation")).to.equal(6)
+            expect(#pending).to.equal(5)
             expect(pending[1].step).to.equal(2)
-            expect(pending[4].step).to.equal(5)
+            expect(pending[5].step).to.equal(6)
             expect(#Funnel.observe(state, Config, "egg_created")).to.equal(0)
         end)
         it("does not manufacture first activation from a restored board", function()
@@ -66,12 +69,12 @@ return function()
         end)
         it("isolates three players and a replacement bay session", function()
             local a, b, c =
-                Funnel.new(Config, "fresh"),
-                Funnel.new(Config, "fresh"),
+                Funnel.new(Config, "fresh", true),
+                Funnel.new(Config, "fresh", true),
                 Funnel.new(Config, "restored")
             Funnel.observe(a, Config, "session_ready")
             Funnel.observe(a, Config, "egg_created")
-            expect(reached(a, "activation")).to.equal(2)
+            expect(reached(a, "activation")).to.equal(1)
             expect(reached(b, "activation")).to.equal(0)
             expect(reached(c, "depth")).to.equal(0)
             a = Funnel.new(Config, "restored")
@@ -112,5 +115,33 @@ return function()
             Funnel.wave(state, Config, 1)
             expect(state.clears).to.equal(2)
         end)
+        it(
+            "has a named 33-step onboarding path with no optional training or egg-merge gate",
+            function()
+                local state = Funnel.new(Config, "fresh", true)
+                expect(Config.funnels.activation.name).to.equal("Merge Onboarding v2")
+                expect(#Config.funnels.activation.steps).to.equal(33)
+                for _, step in ipairs(Config.funnels.activation.steps) do
+                    expect(#step[2] > 0).to.equal(true)
+                    expect(step[1] == "board_merged" or step[1] == "egg_lesson_completed").to.equal(
+                        false
+                    )
+                    Funnel.observe(state, Config, step[1])
+                end
+                expect(reached(state, "activation")).to.equal(33)
+                expect(Funnel.new(Config, "fresh", false).funnels.activation).to.equal(nil)
+                expect(Funnel.new(Config, "restored", true).funnels.activation).to.equal(nil)
+            end
+        )
+        it(
+            "requires each actual early-wave clear, never inferring earlier clears from wave 10",
+            function()
+                local state = Funnel.new(Config, "fresh", true)
+                local events = Funnel.wave(state, Config, 10)
+                expect(table.find(events, "wave_resolved_10") ~= nil).to.equal(true)
+                expect(table.find(events, "wave_resolved_8")).to.equal(nil)
+                expect(#Funnel.wave(state, Config, 10)).to.equal(0)
+            end
+        )
     end)
 end

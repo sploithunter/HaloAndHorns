@@ -1,10 +1,11 @@
 # Merge analytics
 
-2026-09-06: the existing Merge Tutorial stage allowlist now includes `power_lesson`,
-`slots_lesson`, and `enhance_lesson` for the Wave-6/10/12 lessons. Quartermaster introduction
-is at Wave 14 and no longer requires talking. Stage events still mean **entered**, not completed;
-per-profile lesson completion receipts live in `GameData.MergePowerLessons`. No native funnel
-names or step meanings were changed and no synthetic Studio events are emitted.
+2026-09-06: **Merge Onboarding v2** replaces the five-step Merge Activation v1. It has 33
+named, ordered steps through Wave 20, including satisfied Wave-6/10/12 power lessons and the
+Wave-14 Quartermaster introduction. No optional combat course, mandatory egg combine, or
+Quartermaster conversation is required. Existing Merge Tutorial events still mean **entered**;
+new completion milestones mean the server verified the requirement. No synthetic Studio events
+are emitted. These changes require publishing; existing live servers retain the old contract.
 
 Updated 2026-09-05. `configs/merge_analytics.lua` owns the versioned native Roblox event contract.
 `MergeAnalyticsService` runs only in the dedicated Merge place and observes authoritative server
@@ -19,7 +20,7 @@ table below is retained as the versioned contract; its Autoplay row is inactive.
 ## Creator Hub readout
 
 Open the experience in Creator Hub → Analytics → Funnels. After publishing and real eligible
-traffic, look for the seven **Merge … v1** funnels below. Do not rename/reorder their steps in
+traffic, look for **Merge Onboarding v2** and the five active **Merge … v1** funnels below. Do not rename/reorder their steps in
 place: publish a new version if meanings change. The current allocation above uses the ten-funnel
 budget. Roblox ingestion/dashboard delay applies; Studio tests cannot populate these charts.
 Limits reset daily; old servers emitting retired names can temporarily consume capacity until they
@@ -28,17 +29,36 @@ drain. See Roblox's [event tracking limitations](https://create.roblox.com/docs/
 | Funnel | Denominator / grain | Steps and interpretation |
 | --- | --- | --- |
 | Merge Entry v1 | One player visit to a Merge server, starting when this service registers the player | Joined → profile ready → bay assigned → session armed/restored → first live wave started. The last step can take longer for a fresh board. Entry failures are separate diagnostics. |
-| Merge Activation v1 | One **fresh-board** bay session, not an experience-first-time user | Board ready → egg bought → egg placed on defense line → wave started → wave resolved alive. Restored saves/checkpoints are excluded. A returning player starting an empty board can qualify; do not label this new-user conversion. |
+| Merge Onboarding v2 | One fresh-board, unfinished, non-exempt onboarding bay attempt | The 33-step path below. Restored boards, completed Merge onboarding, rebirths, and Farm & Fight/combat graduates are excluded. Returning unfinished players starting fresh can qualify: this is not unique new-user conversion. Retires Merge Activation v1; no historical backfill. |
 | Merge Run Depth v1 | One armed bay session, including restored boards | Ready → 1 / 5 / 10 / 25 / 50 / 100 newly resolved waves. Resuming wave 308 and resolving it counts **one**. This is engagement depth, not highest-wave achievement. |
 | Merge Artillery v1 | First accepted artillery interaction per bay session | Interaction → installation or upgrade → upgrade. A restored cannon's first upgrade legitimately meets the last two steps. Unlocking alone is not installation. |
 | Merge Bulwark v1 | First accepted bulwark interaction per bay session | Same definition as artillery. Autoplay's accepted purchase counts as an interaction even without a visible menu. |
 | Merge Rebirth v1 | First observed egg requirements **and wallet** eligibility per bay session | Eligible → valid confirmed request admitted → completed rebirth with rearmed session. Confirmation can fail after admission; successful debit alone is not completion. No automatic rebirth is introduced. |
-| Merge Autoplay v1 | Owned entitlement observed in a bay session | Owned → enabled → one successful automated action → ten successful actions. This is pass utilization, **not purchase conversion**. |
+| Merge Autoplay v1 (inactive) | Owned entitlement observed in a bay session | Custom milestones remain; native emission disabled to reserve course-funnel capacity. |
 
-Primary measures: entry success = step 4 / step 1; fresh-board activation = step 5 / step 1;
+Primary measures: entry success = step 4 / step 1; first-wave resolution = onboarding step 6 / step 1;
+onboarding completion = step 27 / step 1; Wave-20 resolution = step 33 / step 1;
 run depth = each threshold / ready. Use funnel sessions (not unique-user totals) consistently.
 Review daily after traffic arrives, with a weekly cohort view to reduce small-sample noise.
 No baseline or target is claimed yet. The game owner owns interpretation and tuning decisions.
+
+### Onboarding v2 step map
+
+| Steps | Meaning |
+| --- | --- |
+| 1–5 | Fresh onboarding bay ready; collected coins; bought egg; deployed egg; started wave |
+| 6–10 | Resolved Waves 1, 2; opened bulwark manager; installed bulwark; resolved Wave 3 |
+| 11–15 | Resolved Wave 4; opened cannon manager; installed cannon; resolved Waves 5, 6 |
+| 16–21 | Level 2 claimed/power choice ready; resolved Waves 7, 8, 9, 10; Level 3 claimed/two earned slots allocated |
+| 22–27 | Resolved Waves 11, 12; usable enhancement equipped; resolved Waves 13, 14; Quartermaster introduction/onboarding complete |
+| 28–33 | Resolved each of Waves 15–20 |
+
+Power/slot/enhancement requirements can already be satisfied before their lesson begins; the
+completion event does not claim a particular click or menu visit. Wave-8 egg placement fallback
+remains valid and emits `egg_lesson_completed` without requiring a board combine in the ordered
+path. Simple/Full is a choice, not a required funnel step: `full_mode_active` records activation
+(including a restored preference), and `full_starter_pets_granted` records successful welcome
+batch delivery. Both are bounded custom milestones, not additional native funnels.
 
 ## Filters and diagnostic events
 
@@ -63,8 +83,14 @@ errors, bay IDs, currency amounts, GUIDs, or arbitrary client text as dimensions
   before a bay exists). Field 02 = action category. Includes entry timeout, missing profile/root,
   session cancellation, and rejected board requests. Unknown errors bucket to `other`.
   These counts are affected **sessions**, not total failed clicks.
-- **Merge Exit v1**: once per ended bay session, or failed/no-bay visit. Field 01 = last tutorial
-  stage, activation prefix, restored-session marker, or entry prefix. Field 02 = end reason.
+- **Merge Early Wave v2**: started/resolved once per phase per numbered Wave 1–20, even when an
+  earlier ordered-funnel step is missing. Field 01 = `started`/`resolved`, field 02 = `wave_N`.
+  Counts are affected bay sessions, not retries or all encounters. Restored/graduate sessions also
+  emit these diagnostics; filter cohort/mode and use raw profile context before comparing them.
+- **Merge Exit v2**: once per ended bay session, or failed/no-bay visit. Field 01 = last tutorial
+  stage or numbered early wave (later waves bucket to `wave_later`), falling back to the activation
+  prefix, restored-session marker, or entry prefix. Field 02 = end reason. Raw context retains
+  `currentWave` separately from the last resolved wave.
   Event **value is elapsed seconds**; use event count for exits and average value for duration.
   Bay reset/switch/character removal is an ending, not necessarily a player quitting the game.
 
@@ -107,7 +133,7 @@ source of truth; these events are **not** a revenue ledger or a highest-wave sav
   `game.ServerStorage.MergeAnalyticsStudioSnapshot:Invoke(player)` (read-only, Studio only).
   It returns entry/bay prefixes, bounded trace, queue size and dropped events.
 - Final acceptance in production: Quick Publish Merge, join with a non-internal account, perform
-  a fresh-board activation and a restored visit, then verify v1 funnel counts/fields in Creator Hub
+  a fresh onboarding path and a restored visit, then verify v2 onboarding and v1 companion counts/fields in Creator Hub
   after ingestion. Internal accounts and Studio alone cannot satisfy this check.
 
 Sources: [Roblox funnel events](https://create.roblox.com/docs/production/analytics/funnel-events)

@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 local Funnel = require(ReplicatedStorage.Shared.Game.MergeAnalyticsFunnel)
+local Lessons = require(ReplicatedStorage.Shared.Game.MergePowerLessons)
 local InternalAccounts = require(ReplicatedStorage.Shared.Game.InternalAccounts)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
@@ -23,8 +24,8 @@ function Service:Init()
     self._elapsed, self._dropped = 0, 0
 end
 
-function Service:_state(cohort)
-    local state = Funnel.new(self._config, cohort)
+function Service:_state(cohort, onboarding)
+    local state = Funnel.new(self._config, cohort, onboarding)
     state.id, state.started = HttpService:GenerateGUID(false), os.clock()
     state.fields = {}
     return state
@@ -82,6 +83,7 @@ function Service:_archive(player, event)
         elapsedSeconds = math.max(0, os.clock() - state.started),
         resolvedWavesCapped = state.clears,
         lastResolvedWave = state.lastWave,
+        currentWave = state.currentWave,
     })
 end
 
@@ -177,7 +179,12 @@ function Service:BeginBay(player, record, restored)
     if visit.bay then
         self:EndBay(player, visit.record, "replaced")
     end
-    visit.bay = self:_state(restored and "restored" or "fresh")
+    local dataService = self._modules.DataService
+    local data = dataService and dataService:GetData(player)
+    visit.bay = self:_state(
+        restored and "restored" or "fresh",
+        data ~= nil and not Lessons.offlineEligible(data)
+    )
     -- Read the record's authoritative world once. Player attributes can change/clear before
     -- EndBay; never attribute the old session's exit to the newly selected bay.
     visit.bay.realm = Funnel.realm(record.world and record.world:GetAttribute("MergeEggBaySide"))
@@ -209,6 +216,7 @@ function Service:Observe(player, record, event, wave)
             return
         end
         state.tutorialStep = wave
+        state.lastActivity = "tutorial_" .. tostring(wave)
         if wave and (self._tutorialSteps[wave] or self._config.tutorial_stages[wave]) then
             local key = "tutorial_" .. wave
             if not state.milestones[key] then
@@ -220,6 +228,23 @@ function Service:Observe(player, record, event, wave)
     end
     self:_observe(player, visit.entry, event)
     self:_observe(player, state, event)
+    if
+        (event == "wave_started" or event == "wave_cleared")
+        and type(wave) == "number"
+        and wave >= 1
+        and wave < math.huge
+        and wave % 1 == 0
+    then
+        state.currentWave = wave
+        state.lastActivity = wave <= self._config.early_wave_limit and "wave_" .. wave
+            or "wave_later"
+        local phase = event == "wave_started" and "started" or "resolved"
+        local key = phase .. "_" .. wave
+        if wave <= self._config.early_wave_limit and not state.milestones[key] then
+            state.milestones[key] = true
+            self:_custom(player, "wave", phase, "wave_" .. wave)
+        end
+    end
     if self._config.milestones[event] and not state.milestones[event] then
         state.milestones[event] = true
         self:_custom(player, "milestone", event, state.cohort)
@@ -278,7 +303,13 @@ function Service:EndBay(player, record, reason)
         stage = "tutorial_" .. state.tutorialStep
     end
     reason = self._config.exit_reasons[reason] and reason or "ended"
-    self:_custom(player, "exit", stage, reason, math.max(0, os.clock() - state.started))
+    self:_custom(
+        player,
+        "exit",
+        state.lastActivity or stage,
+        reason,
+        math.max(0, os.clock() - state.started)
+    )
     visit.lastExit = visit.trace[#visit.trace]
     visit.bay, visit.record = nil, nil
 end
