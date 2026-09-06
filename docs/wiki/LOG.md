@@ -8445,3 +8445,14 @@ first-session cohort rates.
 ## 2026-09-06 — Replicate and preview repaired Hell gate endpoints
 
 - Native isolated copier tests passed dry-run, translated/rotated/scaled targets, source/art preservation, recoverable backups, idempotence, and unrelated-content refusal. Applied Gate 1's sixteen endpoints to Gates 2–5 in Merge Edit; immediate repeat made zero changes. Gate 1 preview recorded 24 sky, 62 left and 63 right routes; moved viewer confirmed Gate 4/5 sky and inner routes. 51 original source/art Parts preserved. Temporary preview is not a fresh full-game Play verification; Rojo reconnect remains blocked by locked Mac. Studio map changes require saving; no publish. See [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md).
+
+## 2026-09-06 — Auto Dog retrieves enhancements and potions
+
+- Extended the passive Trail Pup Auto Collector to owned enhancement and potion drops, alongside
+  currency. Configured eligible kinds share one server target/validation/pickup policy. Existing
+  entitlement, movement, 11-stud reach, owner isolation, and canonical grant/done guard remain;
+  potions are stored rather than consumed, enhancements stored rather than slotted, and boss egg
+  collection is unchanged. Pure eligibility tests and the isolated `tests/headless/auto_collector_runtime.luau`
+  harness cover actual service movement/grants, duplicate attempts, ownership, entitlement,
+  radius and currency. No live profiles, Studio state or publishing modified. See
+  [Decisions](DECISIONS.md#magnet-enchant-scales-the-complete-player-pickup-radius-2026-08-06-revised-2026-08-27).

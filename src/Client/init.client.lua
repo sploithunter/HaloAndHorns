@@ -197,7 +197,7 @@ do
     end
 end
 
--- Auto Collector is a separate passive, inventory-free pet. The server owns its currency target
+-- Auto Collector is a separate passive, inventory-free pet. The server owns its loot target
 -- and movement; this controller only smooths the authored model for each observer.
 do
     local ok, err = pcall(function()

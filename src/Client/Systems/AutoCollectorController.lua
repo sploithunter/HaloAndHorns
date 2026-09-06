@@ -1,7 +1,7 @@
 --[[
     AutoCollectorController — presentation for the inventory-free Auto Collector pet.
 
-    DropService owns entitlement, target selection, bounded movement, and wallet credit. The server
+    DropService owns entitlement, target selection, bounded movement, and loot grants. The server
     publishes the collector's authoritative position at a modest rate; every client smooths and
     animates the authored pet locally. AutoCollectors live outside PlayerPets by design, so normal
     equip, HUD, work, combat, and aggro systems can never mistake this passive actor for a squad pet.

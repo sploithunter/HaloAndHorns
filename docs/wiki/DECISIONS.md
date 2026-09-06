@@ -425,11 +425,17 @@ result as `CollectRadius`; clients display that server value verbatim. This make
 meaningful without introducing a second collection formula or migrating existing pet records.
 
 Auto Collector is deliberately orthogonal to Magnet. Its entitlement creates a passive,
-inventory-free collector pet outside `PlayerPets`; that actor travels to physical currency using the
-player’s published pet-speed axis and collects through its own configured 11-stud reach. It never
+inventory-free collector pet outside `PlayerPets`; that actor travels to owned physical currency,
+enhancements, and potions using the player’s published pet-speed axis and collects through its own
+configured 11-stud reach. It never
 adds radius, consumes an equip slot, attacks, or enters enemy aggro enumeration. While waiting at
 its follow position, its client presentation reuses the ordinary pet idle-meander behavior without
 moving the server-authoritative pickup position.
+
+Eligible drop kinds live in `configs/drops.lua` `auto_collector.pickup_kinds`. Selection, cached-target
+validation, and the final pickup use one eligibility policy; the existing server `_collect` method
+grants wallet/inventory rewards and guards duplicate pickup attempts. Collecting never drinks a
+potion or slots an enhancement. Boss egg items remain outside the Auto Collector's eligible kinds.
 
 ## Designated Powers Are the Differentiation Unit (2026-06-17)
 
