@@ -109,7 +109,7 @@ return {
         },
         voice = {
             enabled = true,
-            volume = 0.8,
+            volume = 1.2,
             bus = "effects",
             group_name = "WatcherVoice",
             ducking = {
