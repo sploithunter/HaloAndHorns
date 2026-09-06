@@ -8544,3 +8544,16 @@ first-session cohort rates.
 - Diagnosed healing/roster stagnation: hatcher upgrades refresh stat multipliers but only expand new
   slots; ordinary replacements queue missing slots. Healing therefore preserves old species. A future
   refresh must compare strength and retain better/lucky incumbents; no roster replacement rule changed.
+
+## 2026-09-06 — Heal-cannon defender stagnation and missing consumable drops
+
+- Added bounded, upgrade-triggered stronger-only refresh to NPC hatcher squads. Protect lucky
+  incumbents, Huge status and the final tank/support; preserve position/damage fraction and leave
+  personal Full-mode pets manually managed. No inventory awards from refresh rolls.
+- Removed the obsolete optional-training gate from Full-mode killing-blow potion/enhancement
+  rolls, preserving ordinary odds, enemy origin and all other reward/participation rules.
+- Reconcile owned potion bindings into empty top-row slots on hotbar state reads, without duplicate
+  bindings, displacement, or repeatedly undoing deliberate Edit removals during the session.
+- Isolated Studio exercised actual replacement and defeat methods: successful/failed/stale swaps,
+  finite budget, missing-slot priority, retained damage/position, trained/untrained drops, origin and
+  duplicate-death rejection. No real profile or native analytics changes during verification.

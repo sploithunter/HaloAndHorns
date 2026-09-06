@@ -18,12 +18,18 @@ return function()
             expect(source:find('fireGameEvent(player, "enemy_defeated"', reward, true) < defeat).to.equal(
                 true
             )
-            expect(source:find("drops:TrySpawnEnhancementDrop", reward, true) < defeat).to.equal(
+            expect(source:find("self:_spawnCombatConsumables(player", reward, true) < defeat).to.equal(
                 true
             )
             expect(normalization ~= nil and gate ~= nil and gate > normalization).to.equal(true)
             expect(award ~= nil and award > gate).to.equal(true)
             expect(callback ~= nil and callback > award).to.equal(true)
+            local training =
+                source:find('killer:GetAttribute("CombatTutorialDone") == true', defeat, true)
+            local untrained = source:find("else", training, true)
+            local drops = source:find("self:_spawnCombatConsumables(killer", untrained, true)
+            local xp = source:find("combat:AwardExperience(", untrained, true)
+            expect(drops ~= nil and drops < xp).to.equal(true)
         end)
 
         it("destroys opted-in ephemeral pets before down or lockout writes", function()

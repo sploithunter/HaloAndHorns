@@ -1593,6 +1593,37 @@ function EnemyService:DespawnEnemiesInBounds(minV, maxV)
     return removed
 end
 
+-- Consumable drops are independent of optional Combat Training. Reuse exactly the same origin,
+-- rank and probability path; this helper does not award XP, currency, quests or boss eggs.
+function EnemyService:_spawnCombatConsumables(player, entry, model, rewardDef)
+    local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+    local position = entry.pos or (pp and pp.Position)
+    local drops = self._dropService
+    if not position or not drops then
+        return
+    end
+    if drops.TrySpawnEnhancementDrop then
+        pcall(function()
+            local def = type(rewardDef) == "table" and rewardDef or entry.def
+            local enemyElement = type(def) == "table" and def.element or nil
+            if type(enemyElement) ~= "string" or enemyElement == "" then
+                enemyElement = model:GetAttribute("Element")
+            end
+            drops:TrySpawnEnhancementDrop(player, "enemy", position, {
+                tier = model:GetAttribute("EnemyTier"),
+                enemy_level = model:GetAttribute("Level"),
+                enemy_element = enemyElement,
+                enemy_origin_locked = true,
+            })
+        end)
+    end
+    if drops.TrySpawnPotionDrop then
+        pcall(function()
+            drops:TrySpawnPotionDrop(player, "enemy", position)
+        end)
+    end
+end
+
 -- One player's complete ordinary combat-reward path for one defeated enemy. Ordinary Farm & Fight
 -- enemies call this for every credited contributor/nearby teammate. Merge Defense may call it only
 -- for the trained owner of the durable player pet that dealt the final damaging hit; the encounter's
@@ -1632,26 +1663,7 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
         return
     end
 
-    pcall(function()
-        -- Rank premium: bosses roll better (enemy_rank_mult).
-        local defeatedDef = type(rewardDef) == "table" and rewardDef or entry.def
-        local enemyElement = type(defeatedDef) == "table" and defeatedDef.element or nil
-        if type(enemyElement) ~= "string" or enemyElement == "" then
-            enemyElement = model:GetAttribute("Element")
-        end
-        drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
-            tier = model:GetAttribute("EnemyTier"),
-            enemy_level = model:GetAttribute("Level"),
-            enemy_element = enemyElement,
-            enemy_origin_locked = true,
-        })
-    end)
-    -- Potion drop (same odds as enhancements; independent roll).
-    if drops.TrySpawnPotionDrop then
-        pcall(function()
-            drops:TrySpawnPotionDrop(player, "enemy", dropPos)
-        end)
-    end
+    self:_spawnCombatConsumables(player, entry, model, rewardDef)
 
     -- Boss-exclusive egg: each credited player rolls independently. Prefer the resolved reward
     -- definition because isolated encounters may use a ranked clone; fall back to the static config.
@@ -1818,7 +1830,7 @@ function EnemyService:_onDefeated(targetId)
             )
         -- A durable pet fielded in effective Full mode always earns its owner's combat XP. Combat
         -- Training still gates the broader Farm & Fight payout (currencies/tokens,
-        -- enhancement/potion/boss drops, event, and kill stat). The trained path already includes
+        -- boss drops, event, and kill stat), but no longer consumable drops. The trained path includes
         -- XP through AwardLoot, so the untrained branch calls AwardExperience directly exactly once.
         if
             killer
@@ -1833,6 +1845,7 @@ function EnemyService:_onDefeated(targetId)
             if killer:GetAttribute("CombatTutorialDone") == true then
                 self:_awardCombatDefeat(killer, entry, model, combat, rewardDef, awardOptions)
             else
+                self:_spawnCombatConsumables(killer, entry, model, rewardDef)
                 combat:AwardExperience(
                     killer,
                     entry.enemyId,

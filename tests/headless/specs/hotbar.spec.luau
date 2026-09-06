@@ -264,6 +264,35 @@ return function()
     end)
 
     describe("HotbarLogic.potionAutoBindSlot", function()
+        it(
+            "repairs acquired potions without duplicates, displacement or forced edit reversal",
+            function()
+                local hotbar = { ["20"] = { type = "power", target = "swift" } }
+                local seen = {}
+                local potions =
+                    { { id = "berserk_brew", count = 2 }, { id = "fortune_flask", count = 0 } }
+                expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(1)
+                expect(hotbar["20"].target).to.equal("swift")
+                expect(hotbar["19"].target).to.equal("berserk_brew")
+                expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(0)
+                hotbar["19"] = nil
+                expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(0)
+                table.insert(potions, { id = "new_potion", count = 1 })
+                expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(1)
+                expect(hotbar["19"].target).to.equal("new_potion")
+            end
+        )
+        it("retries a missing potion after space opens", function()
+            local hotbar, seen = {}, {}
+            for slot = 11, 20 do
+                hotbar[tostring(slot)] = { type = "power", target = "owned" }
+            end
+            local potions = { { id = "berserk_brew", count = 1 } }
+            expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(0)
+            hotbar["16"] = nil
+            expect(HotbarLogic.reconcilePotions(hotbar, potions, seen, config)).to.equal(1)
+            expect(hotbar["16"].target).to.equal("berserk_brew")
+        end)
         it("fills the top row from the right", function()
             local hotbar = {
                 ["11"] = { type = "tactical", target = "rally" },

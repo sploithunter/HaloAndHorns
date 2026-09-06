@@ -1737,3 +1737,32 @@ clean.
   `rbxthumb` because it preserves the authored alpha and resolves reliably without creating a
   `ViewportFrame`. Deployment remains separate: all five static families share the generalized
   anchor orientation, while only Land Shark is exempted in `MergeBulwarkModels.LONG_AXIS`.
+
+## Stronger-only defender refresh and consumable access (2026-09-06)
+
+Egg upgrades no longer rely solely on defenders dying to improve species quality. Each upgraded
+NPC hatcher receives a finite refresh budget (`reinforcement.stronger_refresh`: one attempt per
+defender slot), using its current tier's draft count at the normal reinforcement cadence. Missing
+slots take priority and egg damage still pauses production. Compare against the weakest eligible
+living defender: require at least 10% more configured combat power, retain ties/better incumbents,
+never swap a Huge for an ordinary pet, and preserve the last tank/support unless the replacement
+has the same role. This does not generate personal hatch awards or an infinite survivor-reroll loop.
+
+Spawn the accepted replacement before retiring the old model; stale records, tier changes, downed
+incumbents or missing assets leave the old defender untouched. The replacement retains the melee
+position and scales accumulated damage by the new/old Power ratio. Refresh applies **only to NPC
+defense squads**. The user's personal Full-mode team stays manually selected; no owned pet is
+deleted or automatically displaced. Refresh budgets are runtime-only and do not re-arm on rejoin.
+
+The old CombatTutorialDone check still gates the wider Farm & Fight currency/quest/boss-egg award
+for a durable Full-mode killing blow, but no longer gates its potion/enhancement drop rolls. Both
+trained and untrained kills share the canonical independent drop paths and enemy-origin metadata.
+This does not widen kill credit: non-killing participants retain XP-only sharing, and NPC kills do
+not suddenly pay global combat loot. Ordinary chances and Auto Dog/manual pickup paths are unchanged.
+
+Hotbar state reads repair missing bindings for owned potions into empty top-row slots regardless
+of Merge pet-management mode. Existing bindings are never overwritten; full rows remain pending.
+Seen potion kinds are tracked per player session so a subsequent intentional Edit removal is
+respected. Training overlays remain publish-only and are never written into the saved hotbar.
+Enhancements are inventory gear for power slots, not drinkable hotbar items; no automatic power
+enhancement selection or spending is introduced.
