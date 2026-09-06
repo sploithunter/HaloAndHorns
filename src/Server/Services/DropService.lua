@@ -26,6 +26,7 @@ local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
 local MagnetRadius = require(ReplicatedStorage.Shared.Game.MagnetRadius)
+local AutoCollectorPickup = require(ReplicatedStorage.Shared.Game.AutoCollectorPickup)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
@@ -317,17 +318,9 @@ end
 
 function DropService:_nearestAutoCollectorDrop(userId, position)
     local nearest, nearestDistance
+    local kinds = (self._config.auto_collector or {}).pickup_kinds or {}
     for _, rec in ipairs(self._active) do
-        if
-            rec
-            and rec._done ~= true
-            and rec.kind == nil
-            and rec.owner == userId
-            and rec.currency ~= nil
-            and rec.settling ~= true
-            and rec.part
-            and rec.part.Parent
-        then
+        if AutoCollectorPickup.eligible(rec, userId, kinds) then
             local distance = (rec.part.Position - position).Magnitude
             if not nearestDistance or distance < nearestDistance then
                 nearest = rec
@@ -344,6 +337,7 @@ function DropService:_stepAutoCollectors(now, dt)
         return
     end
     local entitlementAttribute = tostring(cfg.entitlement_attribute or "AutoCollectorEnabled")
+    local kinds = cfg.pickup_kinds or {}
     local present = {}
     for _, player in ipairs(Players:GetPlayers()) do
         if player:GetAttribute(entitlementAttribute) == true then
@@ -353,12 +347,7 @@ function DropService:_stepAutoCollectors(now, dt)
             if state and frame then
                 local target = state.target
                 if
-                    not target
-                    or target._done == true
-                    or target.kind ~= nil
-                    or target.owner ~= player.UserId
-                    or target.settling == true
-                    or not (target.part and target.part.Parent)
+                    not AutoCollectorPickup.eligible(target, player.UserId, kinds)
                     or now >= (state.nextTargetAt or 0)
                 then
                     target = self:_nearestAutoCollectorDrop(player.UserId, state.position)
@@ -405,14 +394,11 @@ function DropService:_stepAutoCollectors(now, dt)
 
                 local radius = math.max(0, tonumber(cfg.collect_radius) or 11)
                 if
-                    target
-                    and target._done ~= true
-                    and target.part
-                    and target.part.Parent
+                    AutoCollectorPickup.eligible(target, player.UserId, kinds)
                     and (target.part.Position - current).Magnitude <= radius
                 then
-                    -- Collector pickup is direct-to-wallet: the physical drop does not fly to the
-                    -- character and the player's own Magnet radius is never consulted.
+                    -- Reuse the owner-authoritative wallet/inventory grant and done guard. No
+                    -- fly-to-character animation, auto-use/slotting, or player Magnet changes.
                     self:_collect(target)
                     state.target = nil
                     state.nextTargetAt = 0

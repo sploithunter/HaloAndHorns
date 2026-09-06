@@ -2097,7 +2097,10 @@ return function()
             expect(dropService:find("function DropService:_stepAutoCollectors", 1, true)).to.be.ok()
             expect(dropService:find('model:SetAttribute("AutoCollectorPet", true)', 1, true)).to.be.ok()
             expect(dropService:find('player:GetAttribute("Eff_Speed")', 1, true)).to.be.ok()
-            expect(dropService:find("and rec.kind == nil", 1, true)).to.be.ok()
+            expect(dropService:find("AutoCollectorPickup.eligible", 1, true)).to.be.ok()
+            expect(loadModule("configs/drops.lua").auto_collector.pickup_kinds.currency).to.equal(
+                true
+            )
             expect(dropService:find("self:_collect(target)", 1, true)).to.be.ok()
             expect(
                 currencyStack:find('player:GetAttribute("InMergeEggPrototype") == true', 1, true)

@@ -219,11 +219,11 @@ return {
         {
             id = "auto_collect",
             name = "🤖 Auto Collector",
-            description = "A passive pet runs out and collects your dropped resources!",
+            description = "A passive pet retrieves your coins, gems, enhancements, and potions!",
             price_robux = 29,
             benefits = {
                 -- Auto Collector is a manifested, inventory-free passive pet. It never joins
-                -- combat or occupies a squad slot; DropService moves it to physical currency at
+                -- combat or occupies a squad slot; DropService moves it to owned loot at
                 -- the player's ordinary pet-speed multiplier. It deliberately contributes ZERO
                 -- collect radius to the player: Magnet remains the one reach mechanic.
                 features = {

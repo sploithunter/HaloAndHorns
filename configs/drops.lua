@@ -29,13 +29,14 @@ return {
     magnet_pull_speed = 60, -- studs/s a drop travels while being pulled in
 
     -- Auto Collector Game Pass: a separate passive pet, never an extension of the player's
-    -- Magnet. It chases only physical currency pickups and credits them when its own fixed-radius
-    -- reach touches one. `trail_pup` is the temporary Wayfinder Hall visual until the dedicated
+    -- Magnet. It chases owned currency, enhancement, and potion pickups and collects within its
+    -- own fixed-radius reach. `trail_pup` is the temporary Wayfinder Hall visual until the dedicated
     -- collector pet is authored. Travel scales from the published Eff_Speed axis, so VIP, Speed
     -- Boost, Swift, and speed potions affect it exactly like ordinary pet movement.
     auto_collector = {
         enabled = true,
         entitlement_attribute = "AutoCollectorEnabled",
+        pickup_kinds = { currency = true, enhancement = true, potion = true },
         pet = "trail_pup",
         variant = "basic",
         collect_radius = 11,
