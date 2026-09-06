@@ -8473,3 +8473,23 @@ first-session cohort rates.
 - Verification: full `mise run ci` passed (2,774 tests / 313 specs); isolated actual-service
   toggle/conversion and egg-purchase harnesses passed, including full Luau chunk compilation.
   Wiki consistency and whitespace checks passed. Fresh Studio Play for this slice is not claimed.
+
+## 2026-09-06 — Wave-paced powers and guided ascension
+
+- Added earned level floors/power guidance at Wave 6, optional eggs at Wave 8, two manual slots
+  at Wave 10, a usable enhancement lesson at Wave 12, and an interaction-free Quartermaster
+  introduction at Wave 14. Farm & Fight/Basic graduates skip the power lessons. Combat courses
+  remain optional with their existing capped rewards; Merge pet progression no longer requires one.
+- Preserved the intentional egg-placement fallback after Jason explained the spent-wallet case.
+  An existing egg can satisfy the lesson without two further purchases; the existing coin supply
+  remains. Guidance uses Buy Egg → Deploy Best, not mandatory board dragging.
+- New profile receipts make level floors and the one-time Natural Focus gift retry-safe.
+  Pulsing/blinking guidance follows the actual Powers button, staged picks/slots, Undo, Commit,
+  enhancement controls and manual origin review. A list spacer keeps its pointer off other choices.
+  New cue labels support English/Spanish/Brazilian Portuguese; origin choice timing is unchanged.
+- Full CI passed (2,781 tests / 314 specs); isolated actual-runtime tests cover reward receipts,
+  retries, graduates/offline actors, player isolation, real menu Pick/Undo and placement fallback.
+  Fresh Merge Studio Play verified visual menu callouts and the actual Powers-button cue with
+  isolated client state. Profile-loading timeout warnings mean no full fresh-account walkthrough
+  is claimed. No live reward grants, account reset, or publishing. Work is in PR #470, stacked
+  on the utility-toggle slice. See [Merge onboarding](MERGE_EGG_PROTOTYPE.md#wave-paced-power-onboarding-2026-09-06).

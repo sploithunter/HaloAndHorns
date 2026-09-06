@@ -184,7 +184,7 @@ return {
                     "You don't need your own pets. Go on—face me alone.",
                     "Ignore the Quartermaster. I prefer my opponents unprepared.",
                 },
-                quartermaster_hint = "Prove him wrong: Quartermaster → Basic Combat Training unlocks your pets.",
+                quartermaster_hint = "Prove him wrong: Quartermaster → Optional Training earns a level.",
             },
             heaven = {
                 arrival = { "Small beginnings can become something wonderful. Guard your eggs." },
@@ -196,7 +196,7 @@ return {
                 quartermaster = {
                     "You need not face this alone. The Quartermaster can help your pets join you.",
                 },
-                quartermaster_hint = "Quartermaster → Basic Combat Training unlocks your pets.",
+                quartermaster_hint = "Quartermaster → Optional Training earns a level.",
             },
         },
     },
@@ -902,7 +902,86 @@ return {
     -- one equal-tier combination has happened, either on the board or at a deployed hatcher. Auto
     -- Collector owners may skip only the walking portion.
     tutorial = {
+        power_lessons = {
+            enabled = true,
+            hotbar_reveal_wave = 6,
+            card_lift_scale = 1.05,
+            recommended_without_dog = "magnet",
+            recommended_with_dog = "swift",
+            stages = {
+                { id = "power", wave = 6, level = 2 },
+                { id = "slots", wave = 10, level = 3, slots = 2 },
+                { id = "enhance", wave = 12 },
+            },
+            -- Focus fits every utility power. Natural works before an origin is chosen.
+            starter_enhancement = { type = "focus", level_offset = 5 },
+            guide = {
+                entry_poll_seconds = 0.25,
+                entry_size = { 2.1, 0.8 },
+                entry_position = { 0.5, -0.12 },
+                entry_bounce = 0.1,
+                entry_background = { 20, 22, 34 },
+                entry_corner = 0.15,
+                entry_z_index = 50,
+                menu_cue_size = { 0.3, 0.055 },
+                menu_cue_gap = 0.008,
+                menu_cue_bounce = 0.008,
+                menu_cue_z_index = 150,
+                row_cue_height_scale = 1,
+                click_here = "CLICK HERE",
+                pulse_seconds = 0.65,
+                stroke_thickness = 3,
+                text_fade = 0.4,
+                stroke_fade = 0.8,
+                color = { 255, 220, 90 },
+                recommended = "RECOMMENDED",
+                pick_power = "PICK A POWER",
+                pick_slots = "PICK %d",
+                commit = "COMMIT",
+                open_power = "CHOOSE YOUR POWER TO ENHANCE",
+                choose_slot = "PICK A SLOT TO ENHANCE",
+                choose_enhancement = "PICK AN ENHANCEMENT",
+                apply = "APPLY",
+                open_menu = "OPEN POWERS",
+                level_up = "LEVEL UP",
+                choose_origin = "CHOOSE AN ORIGIN",
+                review_origin = "REVIEW — PERMANENT CHOICE",
+            },
+            translations = {
+                es = {
+                    choose_origin = "ELIGE UN ORIGEN",
+                    review_origin = "REVISA: ELECCIÓN PERMANENTE",
+                    click_here = "HAZ CLIC AQUÍ",
+                    recommended = "RECOMENDADO",
+                    pick_power = "ELIGE UN PODER",
+                    pick_slots = "ELIGE %d",
+                    commit = "CONFIRMAR",
+                    open_power = "ELIGE UN PODER PARA MEJORAR",
+                    choose_slot = "ELIGE UNA RANURA",
+                    choose_enhancement = "ELIGE UNA MEJORA",
+                    apply = "APLICAR",
+                    open_menu = "ABRIR PODERES",
+                    level_up = "SUBIR DE NIVEL",
+                },
+                ["pt-br"] = {
+                    choose_origin = "ESCOLHA UMA ORIGEM",
+                    review_origin = "REVISE: ESCOLHA PERMANENTE",
+                    click_here = "CLIQUE AQUI",
+                    recommended = "RECOMENDADO",
+                    pick_power = "ESCOLHA UM PODER",
+                    pick_slots = "ESCOLHA %d",
+                    commit = "CONFIRMAR",
+                    open_power = "ESCOLHA UM PODER PARA MELHORAR",
+                    choose_slot = "ESCOLHA UM ESPAÇO",
+                    choose_enhancement = "ESCOLHA UMA MELHORIA",
+                    apply = "APLICAR",
+                    open_menu = "ABRIR PODERES",
+                    level_up = "SUBIR DE NÍVEL",
+                },
+            },
+        },
         basic_combat_reminder = {
+            enabled = false,
             progress = "BASIC COMBAT TRAINING",
             title = "COMPLETE BASIC COMBAT TRAINING TO UNLOCK PETS",
             body = "Talk to the Quartermaster to start or resume. Finish the Heal lesson to unlock your pets and powers.",
@@ -958,7 +1037,7 @@ return {
         },
         disable_after_rebirth = true,
         -- Locked drip: Wave 0 eggs → Wave 2 Impaler → Wave 4 Heal →
-        -- Wave 6 optional coins + egg upgrades → Wave 10 Quartermaster.
+        -- Wave 6 power → Wave 8 eggs → Wave 10 slots → Wave 12 enhance → Wave 14 Quartermaster.
         -- Phase 1 unlocks Waves 1–2. After this wave clears, hold Wave 3
         -- and baby-step the gold-line (second) engineer workshop.
         pause_after_wave = 2,
@@ -970,17 +1049,17 @@ return {
         pause_after_cannon_wave = 4,
         workshop_cannon_slot = "right",
         workshop_cannon_family = "heal",
-        -- After Wave 6, pause only if they have not upgraded or installed
+        -- After Wave 8, pause only if they have not upgraded or installed
         -- eggs since the Heal install. 600 Waycoins covers six Earth eggs
         -- at the opening price. Then one loose card: create a couple,
-        -- then upgrade or place. Skip entirely when they already did that work.
-        pause_after_upgrade_wave = 6,
+        -- then Deploy Best. Placement counts as a safe fallback for a spent wallet.
+        pause_after_upgrade_wave = 8,
         upgrade_coin_target = 600,
         upgrade_create_count = 2,
-        -- After Wave 10, reveal the potion tent and post Macros as
-        -- Quartermaster. Talk only for now; the shop opens after that.
-        pause_after_quartermaster_wave = 10,
-        -- The central hotbar remains covered through Wave 10. Between the hands-on lesson pauses,
+        -- After Wave 14, introduce the Quartermaster without requiring interaction.
+        pause_after_quartermaster_wave = 14,
+        quartermaster_introduction_only = true,
+        -- The central hotbar is revealed at Wave 6. Between the hands-on lesson pauses,
         -- keep that footprint useful with a concise preview of the next tutorial milestone instead
         -- of leaving a blank hole in both desktop and compact HUDs.
         combat_cards = {
@@ -997,15 +1076,30 @@ return {
             upgrade_waves = {
                 progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
                 title = "DEFEND THROUGH WAVE 6",
-                body = "The egg-upgrade lesson will begin after Wave 6.",
+                body = "Earn Level 2 and choose your first utility power after Wave 6.",
             },
             quartermaster_waves = {
                 progress = "MERGE DEFENSE TUTORIAL  •  COMBAT",
-                title = "DEFEND THROUGH WAVE 10",
-                body = "The Quartermaster arrives after Wave 10.",
+                title = "KEEP YOUR LINE STRONG",
+                body = "Wave 10: add power slots. Wave 12: enhance a power. Wave 14: meet the Quartermaster.",
             },
         },
         steps = {
+            power_lesson = {
+                title = "LEVEL UP AND PICK A POWER",
+                body = "Open Powers. Magnet helps collect loot; if you have a Coin Pup, try Swift for speed. Pick one, then Commit.",
+                target = "powers",
+            },
+            slots_lesson = {
+                title = "LEVEL 3: PICK TWO POWER SLOTS",
+                body = "Open Powers. Pick two extra slots on your existing powers, then Commit. Undo lets you change your picks.",
+                target = "powers",
+            },
+            enhance_lesson = {
+                title = "GIVE YOUR POWER A BOOST",
+                body = "Open Powers and choose an owned power. Pick an empty slot, choose an enhancement, then Apply. We provide a Focus enhancement if you need one.",
+                target = "powers",
+            },
             collect_setup = {
                 title = "COLLECT 600 WAYCOINS AND 1 GEM",
                 body = "Follow the chevrons to the closest Waycoin stack. After all five, pick up the gem.",
@@ -1080,12 +1174,17 @@ return {
             },
             upgrade_eggs = {
                 title = "MAKE A COUPLE OF EGGS",
-                body = "Create a couple of eggs, then upgrade one or place one on the line. However you like.",
+                body = "Use Deploy Best to combine matching eggs or place an egg on your line. Either keeps you moving.",
+                create_one_title = "CREATE ONE MORE EGG",
+                create_more_title = "CREATE %d MORE EGGS",
+                create_body = "Click BUY EGG, then DEPLOY BEST. Already have an egg? You can deploy it now.",
+                combine_title = "UPGRADE OR PLACE AN EGG",
+                combine_body = "Click DEPLOY BEST to combine or place eggs. Either works for this lesson.",
                 target = "buy_egg",
             },
             talk_quartermaster = {
-                title = "THE QUARTERMASTER POSTED UP",
-                body = "Macros is at the potion tent. Follow the chevrons and Talk.",
+                title = "MEET YOUR QUARTERMASTER",
+                body = "Macros has potions, enhancements, passes and optional training. Visit whenever you like—or take a breather in Farm & Fight.",
                 target = "quartermaster",
             },
         },
@@ -1107,7 +1206,7 @@ return {
         },
     },
 
-    -- Macros sits at the bay supply booth. Hidden with the booth until Wave 10, then owns potion
+    -- Macros sits at the bay supply booth. Introduced at Wave 14, then owns potion
     -- sales, the Merge-relevant permanent-pass catalog, and the full Combat Training mission. The
     -- authored tent remains scenery only; its legacy Browse Potions prompt is deliberately
     -- disabled by the Merge service. Pass membership lives here rather than in client UI code so
@@ -1124,12 +1223,12 @@ return {
         stand_front_studs = 8,
         shop_visible_transparency = 0,
         introduction_seconds = 5,
-        greeting = "Rebirths unlock new eggs. Finish Combat Training, and their pets are yours to keep.",
-        greeting_complete = "Training complete. Pets from your rebirth eggs are yours to keep.",
+        greeting = "Need a pick-me-up? Potions, enhancements and optional training—I'm your guy. Or take a breather in Farm & Fight!",
+        greeting_complete = "Ready for more? Browse boosts, trade enhancements, or try optional training for a level.",
         services = {
             title = "QUARTERMASTER",
-            body = "Rebirths unlock personal eggs. Finish Combat Training so their pets can enter your inventory.",
-            body_complete = "Training complete. Pets from your rebirth eggs now enter your inventory.",
+            body = "Stock up, tune your powers, or try optional training. Pets from your rebirth eggs are yours to keep.",
+            body_complete = "Stock up, tune your powers, or try optional training. Pets from your rebirth eggs are yours to keep.",
             game_passes_label = "GAME PASSES — SUPERCHARGE YOUR CHARACTER",
             game_passes_body = "Permanent upgrades for speed, pets, hatches, and recovery.",
             game_passes_shop_title = "QUARTERMASTER PASSES",
@@ -1147,9 +1246,9 @@ return {
             },
             potions_label = "BROWSE POTIONS — BUY SOME PICK-ME-UPS",
             potions_body = "A little bottled courage. Browse boosts for you and your pets.",
-            training_label = "COMBAT TRAINING — UNLOCK YOUR PETS",
-            training_resume_label = "FINISH TRAINING — UNLOCK YOUR PETS",
-            training_body = "Basic unlocks pets. Advanced 1 and 2 are optional: earn a level and a boost token for each.",
+            training_label = "OPTIONAL TRAINING — EARN A LEVEL",
+            training_resume_label = "RESUME TRAINING — EARN A LEVEL",
+            training_body = "Optional practice with a level reward per course, capped at 50. Advanced courses also award boost tokens.",
             training_complete_label = "ADVANCED TRAINING — EARN LEVELS & BOOSTS",
             enhancements_label = "💎 ENHANCEMENTS",
             enhancements_body = "Buy what you need. Sell what you don't.",
@@ -1963,7 +2062,7 @@ return {
         -- resolves back to Simple until either eligibility route has been earned.
         full_mode = {
             default_mode = "full",
-            minimum_level = 10,
+            minimum_level = 2,
             notices = {
                 full_intro = {
                     title = "FULL COMBAT ACTIVE",
@@ -1980,12 +2079,12 @@ return {
             -- Personal inventory hatches are Merge-rebirth progression, not a mirror of Farm &
             -- Fight purchases. Rank 1 owns Grass; every paid rebirth adds the next ordinary egg.
             -- Owning an egg also grants its corresponding Farm & Fight area, but LayerService's
-            -- earned-level gates remain independent. Inventory delivery is stricter than Full-mode
-            -- availability: no personal hatch enters inventory before Combat Training is complete.
+            -- earned-level gates remain independent. Combat Training is optional; personal hatch
+            -- inventory delivery is no longer conditional on completing a course.
             personal_hatches = {
                 starting_tier = 1,
                 tiers_per_rebirth = 1,
-                inventory_requires_combat_tutorial = true,
+                inventory_requires_combat_tutorial = false,
                 unlock_area_by_egg = {
                     ice_egg = "Ice",
                     lava_egg = "Lava",

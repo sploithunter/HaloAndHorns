@@ -228,6 +228,13 @@ end
 -- older player already ascended, while profiles with neither tutorial record retain the legacy
 -- compatibility behavior rather than being relocked after an update.
 function TutorialFlow.ascensionUnlocked(config, progress, combatProgress, gameData, claimedLevel)
+    if
+        type(gameData) == "table"
+        and type(gameData.MergePowerLessons) == "table"
+        and gameData.MergePowerLessons.unlocked == true
+    then
+        return true -- Server-earned Merge wave lesson; no fabricated combat-training receipt.
+    end
     if not (config and config.hold_level_claim == true) then
         return true
     end

@@ -23,6 +23,7 @@ local GameEvents = require(script.Parent.GameEvents)
 
 local LevelUpController = {}
 LevelUpController.__index = LevelUpController
+LevelUpController.lessonGuide = require(script.Parent.Parent.UI.MergePowerLessonGuide)
 
 -- ---- palette -------------------------------------------------------------
 local GOLD = Color3.fromRGB(255, 205, 70)
@@ -101,6 +102,9 @@ function LevelUpController.start()
     self.player:GetAttributeChangedSignal("AscensionUnlocked"):Connect(function()
         self:_refreshButton()
     end)
+    self.player:GetAttributeChangedSignal("MergePowerLesson"):Connect(function()
+        self:_refreshButton()
+    end)
     Signals.LevelUp_Claimed.OnClientEvent:Connect(function(data)
         if data and data.auto then
             self:_toast(data) -- field auto-claim (filler) -> small toast
@@ -131,6 +135,7 @@ function LevelUpController.start()
     -- re-evaluates when the menu's open-state actually flips.
     local lastMenuOpen
     RunService.Heartbeat:Connect(function()
+        self.lessonGuide.entry(self)
         local open = _G.PowerChoiceMenuOpen == true
         if open ~= lastMenuOpen then
             lastMenuOpen = open
@@ -201,10 +206,9 @@ function LevelUpController:_build()
     -- pixel-designed nudge: shrink on small viewports (center-anchored, scales in place)
     require(script.Parent.Parent.UI.UIViewportScale).attach(btn)
     self.button = btn
-    -- The nudge is informational rather than another menu entry. Both the authored altar and the
-    -- permanent Powers button lead into the same ascension flow, so remind players of both routes.
+    -- Both this nudge and the permanent Powers button open the complete manual choice flow.
     btn.Activated:Connect(function()
-        self:_toast({ title = "Ascend at the altar or from the Powers menu", auto = true })
+        self:_openChoiceMenu()
     end)
 
     -- gentle pulse so it draws the eye
@@ -366,11 +370,14 @@ end
 function LevelUpController:_refreshButton()
     local training = tonumber(self.player:GetAttribute("PendingTraining")) or 0
     local ascensionUnlocked = self.player:GetAttribute("AscensionUnlocked") == true
+    local lesson = self.player:GetAttribute("MergePowerLesson")
     -- Suppressed while the level-up menu is open so the nudge never covers it.
     self.button.Visible = ascensionUnlocked
-        and training > 0
+        and (training > 0 or lesson ~= nil)
         and not (_G.PowerChoiceMenuOpen == true)
-    if training > 1 then
+    if lesson then
+        self.button.Text = self.lessonGuide.text(lesson == "enhance" and "open_menu" or "level_up")
+    elseif training > 1 then
         self.button.Text = string.format("ASCEND  (%d)", training)
     else
         self.button.Text = "ASCEND"
