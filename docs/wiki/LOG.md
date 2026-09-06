@@ -8561,3 +8561,11 @@ first-session cohort rates.
   potion bindings, preserved an existing power, avoided repeat writes, and kept a training overlay
   out of saved data. Live read-only inspection found four retained potion stacks and no enhancement
   entries on the untrained test player, confirming that inventory possession and binding are distinct.
+
+### 2026-09-06 — Equal Natural/origin power-choice guidance
+
+- Generic power picks now pulse both columns once an origin is selected. The initial pre-origin
+  Magnet lesson remains targeted; stale recommendation attributes and already-owned Magnet do not
+  turn later choices into a Natural-only recommendation. Slot/enhancement target behavior is unchanged.
+- Actual guide target-selection tests cover Pyromancer, stale attributes, initial recommendations,
+  owned powers and pre-origin generic choices; lesson runtime checks pass without changing live picks.

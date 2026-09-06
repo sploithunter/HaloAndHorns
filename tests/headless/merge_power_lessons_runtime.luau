@@ -50,6 +50,62 @@ for _, path in ipairs({
     assert(luau.load(fs.readFile(path)), path)
 end
 
+do
+    local guideDependencies = {
+        MergePowerLessons = Lessons,
+        TutorialLocalization = {},
+        merge_egg_prototype = { tutorial = cfg },
+        augmentation = {},
+        level_track = {},
+    }
+    local Guide = luau.load(fs.readFile("src/Client/UI/MergePowerLessonGuide.lua"), {
+        environment = {
+            game = {
+                GetService = function(_, id)
+                    return node(id)
+                end,
+            },
+            require = function(path)
+                return assert(guideDependencies[tostring(path):match("([^.]+)$")])
+            end,
+        },
+    })()
+    local magnet, natural, origin = {}, {}, {}
+    local menu = {
+        frame = {
+            FindFirstChild = function(_, name)
+                return name == "Row_magnet" and magnet or nil
+            end,
+        },
+        naturalCol = natural,
+        originCol = origin,
+        owned = {},
+    }
+    local targets, recommended = Guide.powerTargets(menu, "power", "magnet")
+    assert(#targets == 1 and targets[1] == magnet and recommended, "first Magnet lesson")
+    menu.archetype = "pyromancer"
+    for _, stage in ipairs({ "power", "slots", "" }) do
+        targets, recommended = Guide.powerTargets(menu, stage, "magnet")
+        assert(
+            #targets == 2 and targets[1] == natural and targets[2] == origin and not recommended,
+            "origin choices get equal cues, even with a stale recommendation"
+        )
+    end
+    menu.archetype = nil
+    menu.owned.magnet = true
+    targets, recommended = Guide.powerTargets(menu, "power", "magnet")
+    assert(
+        #targets == 1 and targets[1] == natural and not recommended,
+        "do not recommend owned power"
+    )
+    menu.owned.magnet = nil
+    targets, recommended = Guide.powerTargets(menu, nil, "magnet")
+    assert(
+        #targets == 1 and targets[1] == natural and not recommended,
+        "later generic pre-origin choice"
+    )
+end
+
 local function fixture(wave, dog)
     local player = { attrs = {}, Name = "isolated" }
     function player:SetAttribute(k, v)
