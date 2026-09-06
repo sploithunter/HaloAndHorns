@@ -8441,3 +8441,7 @@ first-session cohort rates.
 ## 2026-09-06 — Authored Hell gate ambient lightning
 
 - Added independent, config-driven sky and inner-to-side lightning using Gate 1's sixteen repaired named points. Client-only, character-distance-aware, nearest-two and global active-strike budgets, no catch-up bursts, Prop Effects opt-out. Markers are never generated or moved at runtime; legacy Hall lightning remains separate. Endpoint policy tests added. Gate 1 live visual verification and endpoint replication are tracked in issue #464 before claiming the other gates ready. See [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md).
+
+## 2026-09-06 — Replicate and preview repaired Hell gate endpoints
+
+- Native isolated copier tests passed dry-run, translated/rotated/scaled targets, source/art preservation, recoverable backups, idempotence, and unrelated-content refusal. Applied Gate 1's sixteen endpoints to Gates 2–5 in Merge Edit; immediate repeat made zero changes. Gate 1 preview recorded 24 sky, 62 left and 63 right routes; moved viewer confirmed Gate 4/5 sky and inner routes. 51 original source/art Parts preserved. Temporary preview is not a fresh full-game Play verification; Rojo reconnect remains blocked by locked Mac. Studio map changes require saving; no publish. See [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md).

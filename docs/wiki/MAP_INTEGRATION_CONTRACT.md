@@ -346,6 +346,23 @@ All tuning is config-owned. This changes no combat damage, rewards, or network a
 The legacy Hall `ArchLightning` only recognizes numbered `lightning1..N` markers. Do not broaden
 its loose-Workspace scanner to consume these markers or duplicate their effects.
 
+For Studio Edit replication, `tools/hell_gate_endpoint_copy.luau` returns a copier accepting
+`{ root, source, targets, groupName, markerNames, legacyMarkerPattern }, dryRun`. Resolve root
+from `root_path`, source from `source_host`, targets from the other matching `host_prefix` Models,
+flatten `markers` for markerNames, and use `marker_group` / `legacy_marker_pattern` from config.
+Always dry-run first. The copier preserves source markers and non-marker art, transforms/scales
+copies relative to each gate pivot, refuses unrelated group contents, and moves replaced groups
+to a uniquely named ServerStorage backup. A repeat run makes no changes. Its native isolated
+regression runner is `tools/hell_gate_endpoint_copy_smoke.luau` (pass the copier to its returned function).
+
+On 2026-09-06, Merge Edit Gates 2–5 received Gate 1's sixteen endpoints each; 51 original source/art
+Parts passed transform, size and key-property preservation checks. The twenty old target points
+remain recoverable under `ServerStorage.HellGateEndpointBackup_235da4cf-8453-4cd2-bf3d-41e582a62b38`.
+An isolated current-source preview confirmed sky and both side routes on Gate 1 and sky/inner
+routes on Gates 4/5 after moving the test viewer. This is not a full fresh-Play or main verification:
+the existing Rojo reconnect blocker remains. Save the Studio-owned map edits before closing;
+neither map nor game has been published by this task.
+
 - [Foundation & Requirements K8](../FOUNDATION_AND_REQUIREMENTS.md)
 - [Implementation Plan Phase 1](../IMPLEMENTATION_PLAN.md)
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)

@@ -115,6 +115,8 @@ return {
         root_path = { "GeneratedMap_MergeEggVoxel", "HellGates" },
         host_prefix = "HellGateCrisp_",
         marker_group = "ArchLightning",
+        source_host = "HellGateCrisp_01",
+        legacy_marker_pattern = "^lightning%d+$",
         markers = {
             sky = { "lightningSky" },
             inner = { "lightning1InnerPointFront", "lightning2InnerPointBack" },
