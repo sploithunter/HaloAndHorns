@@ -2,6 +2,14 @@
 
 Status: implemented 2026-07-18.
 
+2026-09-05 realm comparison: the Merge observer now mirrors its bounded native observations as
+`merge_analytics` into the existing raw event store. Each carries separate Heaven/Hell, bay/visit
+identity, control mode, board cohort, build, level/rebirth and elapsed/depth context. No new store,
+profile saves or per-event client messages; existing batching/lifecycle and loss caveats apply.
+See [Merge Analytics](MERGE_ANALYTICS.md#heavenhell-comparison-2026-09-05) for filter meanings and
+the distinction between side played and actual Watcher exposure. Offline workers are excluded;
+internal-account raw traces remain QA-only, not player conversion evidence.
+
 2026-09-05 course split: RetentionService derives three named funnels from `combat_courses` plus
 the canonical lesson catalog: **Basic Combat Training v1** (15 steps including entry),
 **Advanced 1 v1** (10), and **Advanced 2 v1** (11). Each starts at that course's entry, uses

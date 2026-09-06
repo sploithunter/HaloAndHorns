@@ -7,6 +7,9 @@ return {
     entry_timeout_seconds = 45,
     trace_limit = 120,
     leave_flush_limit = 12,
+    -- Native filters combine mode + realm; the existing raw archive retains separate dimensions.
+    archive_event = "merge_analytics",
+    context_version = 1,
     funnels = {
         entry = {
             name = "Merge Entry v1",

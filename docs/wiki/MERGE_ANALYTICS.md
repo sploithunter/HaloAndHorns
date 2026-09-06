@@ -1,8 +1,9 @@
 # Merge analytics
 
-Updated 2026-09-04. `configs/merge_analytics.lua` owns the versioned native Roblox event contract.
+Updated 2026-09-05. `configs/merge_analytics.lua` owns the versioned native Roblox event contract.
 `MergeAnalyticsService` runs only in the dedicated Merge place and observes authoritative server
-outcomes. It does not write profiles, grant rewards, change gameplay, or add client remotes.
+outcomes. It mirrors bounded observations into the existing batched retention archive; it does not
+write gameplay profiles, grant rewards, change gameplay, or add client remotes.
 2026-09-05: Combat Training is now three named Basic/Advanced course funnels (see
 [Combat Tutorial](COMBAT_TUTORIAL.md)). Legacy Activation and Combat Training native emission is
 disabled, and **Merge Autoplay v1** is disabled (custom autoplay milestones remain). There are now
@@ -36,13 +37,14 @@ No baseline or target is claimed yet. The game owner owns interpretation and tun
 ## Filters and diagnostic events
 
 Funnel custom fields: **01** board cohort (`fresh`, `restored`, `unknown` at entry), **02** control
-mode (`manual` / `autoplay`) when that funnel first starts, **03** published place version.
+mode plus realm (`manual:heaven`, `manual:hell`, `autoplay:heaven`, `autoplay:hell`, or either mode
+with `:unassigned`) when that funnel first starts, **03** published place version.
 Roblox freezes filters at the first step; a manual starter who enables autoplay remains in that
 funnel's manual cohort. Use current-mode custom events for subsequent actions. Do not infer a
 causal autoplay benefit by comparing these self-selected cohorts.
 
 Custom events use field 01 = event/reason/stage, field 02 = context below, field 03 = **current**
-manual/autoplay mode. Names and finite allowlists live in config; never use player names, raw
+manual/autoplay mode plus the bay session's realm. Names and finite allowlists live in config; never use player names, raw
 errors, bay IDs, currency amounts, GUIDs, or arbitrary client text as dimensions.
 
 - **Merge Milestone v1**: once per milestone per bay session: collected an actually credited
@@ -82,8 +84,9 @@ source of truth; these events are **not** a revenue ledger or a highest-wave sav
   retries block subsequent steps of that same funnel so missing predecessors cannot be fabricated.
   Departures prioritize the independent exit summary and flush a bounded ordered remainder.
   Very short visits, overload, API failures, abrupt server termination, or Roblox rate limits can
-  lose events. This is best-effort product telemetry, not a durable transaction log. No extra
-  Datastore writes or per-attack network traffic. Native calls are protected from gameplay.
+  lose events. This is best-effort product telemetry, not a durable transaction log. The raw mirror
+  shares existing retention batching (more event bytes/chunks, no new store or synchronous
+  per-event write); no per-attack network traffic. Native calls are protected from gameplay.
 - No historical backfill: charts start with the published build. Funnel conversion is grouped by
   funnel start date. Check cohort sizes and transport health before diagnosing a drop as gameplay.
 
@@ -104,3 +107,37 @@ source of truth; these events are **not** a revenue ledger or a highest-wave sav
 Sources: [Roblox funnel events](https://create.roblox.com/docs/production/analytics/funnel-events)
 and [AnalyticsService](https://create.roblox.com/docs/reference/engine/classes/AnalyticsService).
 See also [Retention Analytics](RETENTION_ANALYTICS.md) and [Merge Autoplay](MERGE_AUTOPLAY.md).
+
+## Heaven/Hell comparison (2026-09-05)
+
+Bay realm is captured from `record.world.MergeEggBaySide` at `BeginBay`, not inferred from a
+player name, pet origin or active camera. It remains attached to that bay session through exit,
+even if the player's attributes already point at another bay. Each replacement gets a new session
+identity and realm. The entry funnel starts before allocation, so its native realm stays
+`unassigned`; do not drop join failures or backfill that first step to make a prettier comparison.
+No funnel names or steps are added/reordered. Builds predating this change have mode-only filters;
+use Custom Field 03 to separate the instrumentation boundary.
+
+`RetentionEvents_v1` receives `merge_analytics` events (`contextVersion = 1`) once per observed
+native funnel/custom event, independently of native suppression, queue overflow or send retries.
+Context includes separate `realm`, `cohort`, `mode`, `placeVersion`, `level`, `rebirths`, `visitId`,
+`baySessionId`, `funnelSession`, native fields, elapsed bay/entry seconds, last resolved wave and
+`resolvedWavesCapped` (capped at the configured final depth threshold, currently 100). These are
+observations, not proof of successful Roblox delivery. Reuse the existing retention exporter and
+join to course/level/return events using user/session/time; native Merge course funnels themselves
+are not changed. The archive only accepts an already-open raw retention session: pre-profile,
+pre-recorder, late-close and failed-write events can be absent. It never reopens an ended session.
+Internal test accounts remain in raw QA traces; exclude them for player comparisons. Offline
+workers cannot register Merge funnels or write these human-session observations.
+
+For the initial readout, compare **fresh/manual** bay sessions on the same published build:
+activation, newly resolved-wave depth, Quartermaster tutorial-stage reach, workshop use and exit
+duration. Raw records support separating level/rebirth and first-versus-returning sessions, plus
+joining return windows after they mature. A bay ending is not necessarily a game departure.
+Do not treat native stage entry as training completion or compare only surviving/high-wave players.
+
+This is observational realm segmentation, **not a randomized Watcher A/B test**: availability,
+player bay switching, side-specific gameplay and player history can differ. No client exposure
+receipt is collected, so neither a realm tag nor an eligible milestone proves the face rendered or
+the voice played. A causal follow-up would randomize Watcher-on versus control **within each
+realm**, persist assignment and measure actual exposure; that experiment is not enabled here.

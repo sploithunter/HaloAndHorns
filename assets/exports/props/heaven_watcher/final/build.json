@@ -1,0 +1,24 @@
+{
+  "source": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/textured/model.glb",
+  "triangles": 4468,
+  "vertices": 13176,
+  "size_blender": [
+    1.695307970046997,
+    1.5970779657363892,
+    2.0
+  ],
+  "front_blender": "-Y",
+  "front_roblox_expected": "-Z",
+  "pivot": "bounds center",
+  "uv_seam_edges_split": 0,
+  "vertices_with_multiple_uvs": 0,
+  "images": [
+    "base_color"
+  ],
+  "texture_sizes": {
+    "base_color": [
+      2048,
+      2048
+    ]
+  }
+}

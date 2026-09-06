@@ -8266,3 +8266,95 @@ first-session cohort rates.
   Offline rows cannot invoke Roblox live-Player social actions. Config owns icon and hover copy.
 - Full CI: 2,689 passing headless tests. Merge Studio visual check showed the real player first
   and two active offline workers below it with the emoji, rank and saved highest wave. No publish.
+
+## 2026-09-05 — Hell Watcher encounters and faster early XP
+
+- Reused the under-map authored Hell face/pupils with a streaming-safe presentation cache and
+  local, cooldown-limited reactions to fresh breaches, milestones and Quartermaster training nudges.
+- Kept the soft fade; added gentle client-only dimming and smooth internal eye pulses. No camera
+  takeover, input lock, shared-lighting restoration race, new combat traffic, or Heaven model yet.
+- Combat/mining rewards increase approximately 5x over their old values at earned levels 1–3,
+  4x at level 4, and 5x at level 5. Level 6+, quests, tutorial guarantees and rebirth yield stay.
+- Headless regression covers source/level boundaries and encounter cooldown, run isolation,
+  suppression, reminder limits and no replay of veteran history. Studio preview confirmed the
+  face spawn/fade against a client-only test wave; no profile wave or ownership was changed.
+- Fixed the newly introduced pre-claim `false`-bay attribute read; false/nil bay snapshots are
+  regression tested. Final CI: 2,697 tests passing. Fresh Studio boot had no Watcher errors;
+  dimming reached -0.16 and removed itself after the encounter, with Lighting.Brightness still 3.
+
+## 2026-09-05 — Hell Watcher voice recordings
+
+- Copied the user's nine Downloads MP3s without modifying originals, uploaded project-group Audio
+  assets, and paired each clip with its matching taunt variant in config.
+- Voice follows the face, respects Effects/master settings and stops on all encounter cleanup
+  paths. Side-specific preload and a two-second late-start cutoff preserve text-only fallback.
+  Measured clip durations extend the apparition before its fade, up to thirteen seconds.
+- Full CI: 2,698 headless tests passing, including short/long/missing/bounded voice timing.
+- Merge Play verification: all nine clips returned AssetFetchStatus.Success and IsLoaded=true,
+  with lengths matching local ffprobe measurements. Arrival speech was playing with the matching
+  subtitle and Effects SoundGroup; voice/face/lighting effect cleaned up after the encounter.
+
+## 2026-09-05 — Watcher voice foreground mix
+
+- User found combat/music too loud under speech. Added private Effects -24 dB / Music -28 dB
+  attenuation with a 0.15s attack and 0.6s release. Speech moves to a separate WatcherVoice group
+  that follows the Effects/master preference without receiving the background EQ attenuation.
+- No saved preferences or shared bus volumes are overwritten. Missing/muted voice does not keep
+  the background ducked; completion and interruption restore the normal mix. Envelope unit tests
+  cover attack/release, long frames and interrupted transitions.
+- Full CI: 2,699 tests passing. Merge replay confirmed voice on WatcherVoice, Effects -24 dB,
+  Music -28 dB and unchanged user bus volumes; both EQ effects disappeared after speech. Voice
+  followed a temporary Effects-volume change and its restoration without any settings save.
+
+## 2026-09-05 — Heaven Watcher source asset and strict geometry gates
+
+- Created an original imagegen reference and Meshy counterpart to the Hell face: calm ivory/
+  opalescent planes, inset gold seams, luminous almond eyes and an integrated crystalline crown.
+- Preserved two failed raw topology generations and their reports. The canonical voxel repair
+  produced one closed 4,468-triangle surface; retexturing that exact repaired GLB kept it strict-
+  passing. Final embedded-texture FBX also passes, with zero multiple-UV vertices.
+- Source/reference/prompt, editable Blender, GLB/FBX, atlas and cardinal previews are versioned
+  under the Heaven Watcher asset directories; manifest is `assets/manifest/heaven_watcher.json`.
+- Used 20 Meshy credits total. Local CI passed all 2,697 tests. Held at visual approval before
+  Roblox upload; no Studio mutation, experience publishing, audio or runtime encounter changes.
+
+- Follow-up: user approved the Heaven face and specified a female voice. Uploaded the exact
+  validated embedded FBX as group-owned Model `90097153593365`; manifest records source hashes.
+  Studio review is pending coordination with concurrent Hell voice testing; no audio generated.
+
+- Follow-up verification: imported Model into Merge Edit below the map at
+  `GeneratedMap_MergeEggVoxel.HeavenFaceGateTest.HeavenFace`. Mesh/texture loads succeeded;
+  front and angle review confirmed clean texture, local -Z front and +Y up without correction.
+  Kept the original Hell face/map intact; anchored/noncollidable review head only, no Play or
+  publish. Asset manifest now includes verified Mesh/Texture IDs and the 14-stud staging size.
+
+## 2026-09-05 — Heaven Watcher voice and realm integration
+
+- Integrated the approved Heaven source-asset branch without dropping either branch's log entries.
+  Enabled an independent cached Heaven face with warm lighting, baked gold eyes and realm-specific
+  dialogue. Side changes clear prior presentation and breach history; Hell stays red/mocking.
+- Uploaded the user's five supplied female-voice MP3s as group-owned Audio and mapped each line.
+  Source files remain intact in Downloads, with repo copies, duration measurements and upload IDs.
+- Raised shared voice volume from 0.8 to 1.2 at the user's request; retained the approved background
+  ducking and master/Effects preference behavior. Headless theme isolation and timing checks pass.
+- Full CI: 2,700 tests passing. All five Heaven audio assets loaded in the Merge client, and the
+  correct female arrival line played with the Heaven mesh/subtitle on WatcherVoice at 1.2. User
+  approved the voice volume. Reduced Heaven internal light to 0.15 after the initial pale mesh
+  overexposed; a second Studio preview retained facial/gold detail. No experience publish.
+
+## 2026-09-05 — Heaven/Hell funnel context and internal comparison records
+
+- Captured authoritative realm per Merge bay session. Native control-mode filters now combine
+  mode and realm while preserving board cohort and published build; entry remains unassigned
+  from its real join step. Outgoing exits retain their realm through bay changes/attribute resets.
+- Mirrored bounded native observations once into the existing RetentionEvents archive with
+  separate realm, level/rebirth, bay/visit identity, elapsed time and wave-depth context. No new
+  store, gameplay saves, client remotes or per-attack telemetry. Never reopen raw sessions during
+  departure. Offline workers excluded; internal raw traces retained only for QA.
+- Full CI: 2,701 passing tests. Isolated three-actor Studio Edit smoke passed realm changes,
+  immutable funnel filters, current-mode custom fields, archive sink guards, stale records and
+  transport failure checks. Gameplay network import stubbed only in the isolated archive-sink
+  test; no Play session, real profile mutation, native analytics call or publish.
+- This enables observational realm comparisons, not causal A/B results or verified voice/face
+  exposure. Documented same-build/fresh/manual cuts, missing-event caveats and a future randomized
+  within-realm Watcher/control experiment rather than silently changing player assignment.

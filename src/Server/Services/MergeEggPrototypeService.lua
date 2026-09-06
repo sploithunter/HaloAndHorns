@@ -18191,6 +18191,53 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
     end
 end
 
+-- Cache only the authored face, not the under-map staging model or the pet catalog. This makes
+-- it available even when the client's streamed map has not loaded the underground source.
+function MergeEggPrototypeService:_cacheWatcherTemplate(cfg)
+    if not cfg or not cfg.enabled or not self:_isDedicatedMergePlace() then
+        return
+    end
+    if ReplicatedStorage:FindFirstChild(cfg.template_name) then
+        return
+    end
+    local source = Workspace
+    for _, name in ipairs(cfg.source_path) do
+        source = source and source:FindFirstChild(name)
+    end
+    if not source or not source:IsA("BasePart") then
+        self:_log("Warn", "Merge Watcher authored face missing; encounters disabled")
+        return
+    end
+    local face = source:Clone()
+    face.Name = cfg.template_name
+    face.Anchored = true
+    face.CanCollide = false
+    face.CanTouch = false
+    face.CanQuery = false
+    face.CastShadow = false
+    -- Imported executable/physics children are not part of the presentation contract.
+    for _, child in ipairs(face:GetChildren()) do
+        if not child:IsA("SurfaceAppearance") then
+            child:Destroy()
+        end
+    end
+    for _, name in ipairs(cfg.eyes.source_names) do
+        local original = source.Parent:FindFirstChild(name)
+        if original and original:IsA("BasePart") then
+            local eye = original:Clone()
+            eye:ClearAllChildren()
+            eye.Anchored = true
+            eye.CanCollide = false
+            eye.CanTouch = false
+            eye.CanQuery = false
+            eye.CastShadow = false
+            eye:SetAttribute("WatcherLocalCFrame", source.CFrame:ToObjectSpace(original.CFrame))
+            eye.Parent = face
+        end
+    end
+    face.Parent = ReplicatedStorage
+end
+
 function MergeEggPrototypeService:Start()
     if self._config.enabled == false then
         return
@@ -18223,6 +18270,16 @@ function MergeEggPrototypeService:Start()
         end)
     end
     local world = self:_resolveWorld()
+    do
+        local watcher = self._config.watcher
+        local director = require(ReplicatedStorage.Shared.Game.MergeWatcherDirector)
+        for side in pairs(watcher.themes) do
+            local theme = director.theme(watcher, side)
+            if theme then
+                self:_cacheWatcherTemplate(theme)
+            end
+        end
+    end
     if world then
         self:_bindWorldControls(world)
         self:_setPortalVisible(nil, false)

@@ -1,0 +1,34 @@
+{
+  "id": "01a07418-4407-766a-8679-c41c010cf4b6",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 5,
+  "created_at": 1788654143297,
+  "started_at": 1788654143304,
+  "finished_at": 1788654155158,
+  "expires_at": 1788913355158,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/reference.png",
+    "source_sha256": "cd20c231635333ae2d0527e7e52a49c7fbec7543020d09d3d2a4cc0224e44d65",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 4000,
+    "should_texture": false,
+    "target_formats": [
+      "glb"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

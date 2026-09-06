@@ -58,6 +58,148 @@ local MERGE_TIER_ART = require(script.Parent.merge_tier_art)
 
 return {
     version = 6,
+    watcher = {
+        enabled = true,
+        source_path = { "GeneratedMap_MergeEggVoxel", "HellFaceGateTest", "HellFace" },
+        template_name = "MergeWatcherTemplate",
+        themes = {
+            hell = {}, -- uses the shared infernal defaults below
+            heaven = {
+                source_path = { "GeneratedMap_MergeEggVoxel", "HeavenFaceGateTest", "HeavenFace" },
+                template_name = "MergeHeavenWatcherTemplate",
+                light_color = { 255, 235, 186 },
+                light_brightness = 0.15,
+                atmosphere = { brightness = -0.06, contrast = 0.02, saturation = 0 },
+                dialogue = { color = { 255, 245, 212 }, stroke_color = { 38, 31, 24 } },
+                -- This face has baked gold eyes; do not reuse the Hell pupil placement.
+                eyes = { source_names = {}, pulse_at_seconds = {}, light_boost = 0 },
+            },
+        },
+        scan_seconds = 1,
+        cooldown_seconds = 75,
+        duration_seconds = 9,
+        fade_seconds = 1.5,
+        max_encounters = 12,
+        quartermaster_delay_seconds = 18,
+        quartermaster_radius = 45,
+        quartermaster_reminder_seconds = 180,
+        quartermaster_max_reminders = 2,
+        milestone_waves = { 1, 5, 10, 20, 30, 50, 100 },
+        size = 14,
+        distance = 30,
+        height = 13,
+        entrance_height = 12,
+        side_offset = 16,
+        follow_rate = 2,
+        max_speed = 28,
+        turn_rate = 3,
+        teleport_distance = 100,
+        bob_height = 0.6,
+        bob_rate = 1.3,
+        light_color = { 255, 65, 30 },
+        light_brightness = 5,
+        light_range = 30,
+        atmosphere = { enabled = true, brightness = -0.16, contrast = 0.08, saturation = -0.12 },
+        eyes = {
+            source_names = { "PupilL", "PupilR" },
+            color = { 255, 110, 45 },
+            idle_opacity = 0.18,
+            pulse_at_seconds = { 2.4, 6 },
+            pulse_seconds = 0.7,
+            light_boost = 4,
+        },
+        dialogue = {
+            width = 340,
+            height = 160,
+            offset_y = -8,
+            max_distance = 200,
+            font = "GothamBold",
+            text_size = 18,
+            color = { 255, 214, 172 },
+            stroke_color = { 28, 8, 5 },
+            stroke_transparency = 0.25,
+        },
+        voice = {
+            enabled = true,
+            volume = 1.2,
+            bus = "effects",
+            group_name = "WatcherVoice",
+            ducking = {
+                fade_in_seconds = 0.15,
+                fade_out_seconds = 0.6,
+                gains_db = { effects = -24, music = -28 },
+            },
+            start_seconds = 0.75,
+            load_deadline_seconds = 2,
+            tail_seconds = 0.35,
+            maximum_encounter_seconds = 13,
+            rolloff_min_distance = 45,
+            rolloff_max_distance = 150,
+            -- Order matches lines[side][event], so spoken and printed variants stay together.
+            clips = {
+                heaven = {
+                    arrival = { { asset_id = 81601042465211, seconds = 4.911 } },
+                    milestone = { { asset_id = 88701494532813, seconds = 4.728125 } },
+                    bulwark = { { asset_id = 74885643187236, seconds = 6.504438 } },
+                    gate = { { asset_id = 78687244136825, seconds = 4.5975 } },
+                    quartermaster = { { asset_id = 82818620245348, seconds = 5.328938 } },
+                },
+                hell = {
+                    arrival = { { asset_id = 83115701780534, seconds = 7.967313 } },
+                    milestone = {
+                        { asset_id = 121144391804606, seconds = 7.131375 },
+                        { asset_id = 138478642208090, seconds = 4.127313 },
+                    },
+                    bulwark = {
+                        { asset_id = 72488797174915, seconds = 6.112625 },
+                        { asset_id = 94111602731424, seconds = 4.780375 },
+                    },
+                    gate = {
+                        { asset_id = 107808585107297, seconds = 4.310188 },
+                        { asset_id = 109366570268360, seconds = 3.343625 },
+                    },
+                    quartermaster = {
+                        { asset_id = 77606311575803, seconds = 8.254688 },
+                        { asset_id = 129441341688169, seconds = 6.817938 },
+                    },
+                },
+            },
+        },
+        lines = {
+            hell = {
+                arrival = { "So. Another brave little soul. Let's see how long those eggs last." },
+                milestone = {
+                    "Still here? How irritating. Let's try another wave.",
+                    "You won that one. Don't get comfortable.",
+                },
+                bulwark = {
+                    "Ooh, that was close. I rather like my chances.",
+                    "Your bulwark blinked first. Did you?",
+                },
+                gate = {
+                    "Something slipped through. Shall I start celebrating?",
+                    "That gate won't hold forever, little hero.",
+                },
+                quartermaster = {
+                    "You don't need your own pets. Go on—face me alone.",
+                    "Ignore the Quartermaster. I prefer my opponents unprepared.",
+                },
+                quartermaster_hint = "Prove him wrong: Quartermaster → Basic Combat Training unlocks your pets.",
+            },
+            heaven = {
+                arrival = { "Small beginnings can become something wonderful. Guard your eggs." },
+                milestone = { "One more wave behind you. Take heart—you are growing stronger." },
+                bulwark = {
+                    "That was close. Breathe. There is still time to strengthen your defenses.",
+                },
+                gate = { "A breach is not the end. Regroup—we still believe in you." },
+                quartermaster = {
+                    "You need not face this alone. The Quartermaster can help your pets join you.",
+                },
+                quartermaster_hint = "Quartermaster → Basic Combat Training unlocks your pets.",
+            },
+        },
+    },
     place_join = {
         retry_seconds = 2,
         slow_warning_seconds = 30,

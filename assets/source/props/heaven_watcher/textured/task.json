@@ -1,0 +1,30 @@
+{
+  "id": "01a0741c-dbfe-74d0-bd94-483d765ba005",
+  "type": "retexture",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 10,
+  "created_at": 1788654444250,
+  "started_at": 1788654444254,
+  "finished_at": 1788654482292,
+  "expires_at": 1788913682292,
+  "task_error": null,
+  "request": {
+    "model": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/repaired_voxel/model.glb",
+    "model_sha256": "74d12788724fe02d7d605a1e9bf2a9adf003ddfed66478638f929571d1173a90",
+    "style_image": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/reference.png",
+    "style_image_sha256": "cd20c231635333ae2d0527e7e52a49c7fbec7543020d09d3d2a4cc0224e44d65",
+    "ai_model": "latest",
+    "enable_original_uv": false,
+    "enable_pbr": false,
+    "texture_resolution": "2k",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

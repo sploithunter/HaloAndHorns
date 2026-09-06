@@ -1050,6 +1050,7 @@ if isFeatureEnabled("map_binding") then
         ServerScriptService.Server.Services.MergeAnalyticsService,
         {
             "ConfigLoader",
+            "RetentionService",
         }
     )
     loader:RegisterModule(
