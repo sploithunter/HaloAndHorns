@@ -8293,3 +8293,7 @@ first-session cohort rates.
   under the Heaven Watcher asset directories; manifest is `assets/manifest/heaven_watcher.json`.
 - Used 20 Meshy credits total. Local CI passed all 2,697 tests. Held at visual approval before
   Roblox upload; no Studio mutation, experience publishing, audio or runtime encounter changes.
+
+- Follow-up: user approved the Heaven face and specified a female voice. Uploaded the exact
+  validated embedded FBX as group-owned Model `90097153593365`; manifest records source hashes.
+  Studio review is pending coordination with concurrent Hell voice testing; no audio generated.

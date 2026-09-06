@@ -56,4 +56,14 @@ The `.blend`, `.glb`, embedded `.fbx`, standalone atlas and four preview PNGs ar
 under `assets/exports/props/heaven_watcher/final/`. Pivot is bounds-centered.
 Source front is Blender -Y; Roblox front must be verified on import as local -Z.
 
-Status: validated textured source/export; Roblox upload and Studio verification pending.
+## Roblox handoff
+
+The user approved the appearance ("the face looks awesome"). The exact embedded
+FBX was uploaded using the canonical `upload_models.js` helper as group-owned
+Model **90097153593365**, owner group **15872767**. Hashes and IDs live in
+`assets/manifest/heaven_watcher.json`; no runtime asset literals were added.
+
+The intended Heaven voice is female: serene, melodious and reassuring. No voice
+audio was generated as part of the mesh pipeline.
+
+Status: uploaded; coordinated Studio orientation/texture verification pending.
