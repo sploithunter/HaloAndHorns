@@ -24,7 +24,11 @@ local RESET_PROPERTIES = {
 
 function EffectPartPool.new(config)
     config = config or {}
-    local capacity = config.enabled == true and config.maximum_idle or 0
+    local capacity = 0 -- Disabled means no idle retention, not a second tuning default.
+    if config.enabled == true then
+        assert(type(config.maximum_idle) == "number", "enabled effect pool needs maximum_idle")
+        capacity = config.maximum_idle
+    end
     local prototype = Instance.new("Part")
     local defaults = {}
     for _, property in ipairs(RESET_PROPERTIES) do
@@ -110,6 +114,7 @@ function EffectPartPool.new(config)
         return pool:release(part, lease)
     end
     function api.retireAfter(part, lease, lifetime)
+        -- Animation lifetime, not readiness polling. Lease identity fences late callbacks.
         task.delay(lifetime, function()
             pool:release(part, lease)
         end)

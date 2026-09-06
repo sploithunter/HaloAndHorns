@@ -39,7 +39,27 @@ Full local CI: 2,755 tests / 309 specs. The first combined run sampled the tempo
 offline-fill-disabled diagnostic config and failed its policy assertion; rerunning with
 the restored production config passed. Evidence: `effect-pool-native.json`,
 `effect-pool-one-{probe.luau,result.json,host.jsonl}` and `effect-pool-final-ci.log` in the
-durable [stress directory](MERGE_STRESS_TESTING.md). Eight-bay validation remains pending.
+durable [stress directory](MERGE_STRESS_TESTING.md).
+
+The subsequent eight-bay run used seven isolated level-50 fixtures plus the viewer,
+635–639 pet/objective models and 79 NPC squads. Fixtures advanced wave 60→65/66;
+the 120-second cap removed all workers and status reported no harness errors. Across
+the 115.9-second populated capture, BaseParts rose **11,521.0→11,578.5 MB** and shared
+Studio total **21,618.9→22,021.5 MB**. Weighted client frame interval was **29.43 ms**.
+These are warm-process observations with changing combat/view, not a matched FPS gain.
+One-bay samples continued after worker teardown and still show growth; no OOM-cure
+claim. Both probes were explicitly stopped/destroyed, and Play stopped with Studio open.
+Raw `effect-pool-eight-{server,client}-memory.json` and `effect-pool-eight-host.jsonl`
+are preserved in the stress directory. No eight-bay pool-counter or visual-parity
+claim comes from those memory probes.
+
+Hosted CI caught two new-module issues omitted from the earlier local architecture
+scan: that scanner uses `git ls-files --cached`, so untracked source was absent.
+The expiration callback is now explicitly classified as an animation lifetime;
+enabled pools require the configured capacity instead of a numeric tuning fallback.
+The tracked-source full CI and native smoke rerun pass (2,755/309; identical visual
+signatures, 359 created versus 1,077). Artifacts: `effect-pool-tracked-ci.log` and
+`effect-pool-native-retest.json`. Hosted checks must pass before landing.
 No production publish; Studio stays open.
 
 ## Character-local Merge bay detail (2026-09-06)

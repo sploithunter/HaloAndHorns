@@ -12,6 +12,9 @@
   "watchdog"
  ],
  "files": {
+  "src/Shared/Effects/EffectPartPool.lua": {
+   "animation": 1
+  },
   "src/Server/MergeOfflineRuntime.lua": {
    "deadline": 1
   },
