@@ -24,6 +24,15 @@ NPC formation work to 10 Hz, considering camera/player proximity. The Studio-onl
 `DisableNpcPresentationBudget` script attribute is an A/B seam for that cadence only,
 not the bay visibility policy.
 
+Summary correction: `ActiveEnemies > 0` alone previously triggered decorative impacts
+while enemies merely spawned/marched. Summaries now require an observed HP decrease
+between bounded client snapshots, and remain excluded for detailed actors. First
+observation, unchanged HP and healing are silent. Replacing the snapshot each pass
+releases departed models; this uses existing replicated HP, not new remotes. The user
+clarified that the premature symptom was effects only, not early damage; damage/report
+gating was left unchanged. Isolated production-classifier tests pass; fresh-session
+visual confirmation is still required. Summary size has not been increased yet.
+
 Native eight-bay validation before the final offline-personal-squad eligibility addition:
 621 pet/objective models, 378 hidden, all 72 eggs retained, zero hidden-body visibility
 errors. Visiting Hell 2 changed focus to `hell_02` while the claim remained `heaven_01`;
@@ -33,6 +42,31 @@ run IDs; that eligibility path now passes an isolated production-classifier test
 Native visibility tests cover distant/downed overlap, particles, late descendants,
 flat enemy roots and restoration. Full local CI: 2,725 tests. Full FPS/memory benefit
 and final visual acceptance remain to be measured; production is unchanged.
+
+## Frame-scoped pet target lookup (2026-09-06)
+
+`PetFollowController` now constructs a `FrameTargetLookup` inside each render callback.
+It traverses each requested enemy/crystal folder once and resolves all pets against that
+snapshot. There is no cross-frame model cache or new connection per target. Scope,
+identifier and parent are validated; duplicate authored IDs retain traversal-first
+semantics. Newly streamed/replaced targets are rebuilt next frame. This changes only
+presentation lookup, not server targeting, range, HP or rewards.
+
+`tools/frame_target_live_probe.luau` compares the actual production lookup with its old
+traversal on identical live visible-pet target requests, alternating order. Six one-bay
+samples (28–30 requests) took 0.036–0.108 ms indexed versus 0.306–0.406 ms traversal.
+Six eight-bay samples (37–52 requests) took 0.062–0.229 ms versus 0.608–2.612 ms. Every
+target matched; each indexed sample traversed one scope. These are matched lookup
+replays, **not** full RenderStepped/FPS measurements; the replay includes visible
+targeted pets without reproducing every formation eligibility rule. Actual fresh Play
+loaded the new controller, workers advanced, and no client script errors appeared.
+The eight-bay run still emitted server-frame warnings. Raw evidence lives alongside
+the [stress captures](MERGE_STRESS_TESTING.md) as `frame-target-one-bay.json`,
+`frame-target-eight-bay.json`, `frame-target-client-memory.json` and the passive host log.
+
+Headless tests cover one scan per scope, world isolation, duplicate IDs, invalid types,
+stale/reparented identifiers, next-frame replacement and callback-local lifetime.
+Combined local CI including the summary correction: 2,736 tests / 306 specs.
 
 ## NPC-amplified player-position reports (2026-09-06)
 

@@ -10,12 +10,14 @@ local last =
 local fixtures = Instance.new("Folder")
 fixtures.Name = "IsolatedBayPresentationSmoke"
 fixtures.Parent = game.ServerStorage
+local policy = game.ReplicatedStorage.Shared.Game.MergePresentationPolicy:Clone()
+policy.Parent = fixtures
 systems.PetAnimator:Clone().Parent = fixtures
 local visibilityModule = systems.PetDownedVisibility:Clone()
 visibilityModule.Parent = fixtures
 local classifier = Instance.new("ModuleScript")
 classifier.Source = [[
-local Policy = require(game.ReplicatedStorage.Shared.Game.MergePresentationPolicy)
+local Policy = require(script.Parent.MergePresentationPolicy)
 local cfg = require(game.ReplicatedStorage.Configs.merge_egg_prototype).distant_presentation
 local bays = {
  {id="heaven",side="heaven",column=1,x=215,z=0},
@@ -24,9 +26,16 @@ local bays = {
 local position = Vector3.new(215,0,0)
 local focus = bays[1]
 local summaries = {}
+local previousHealth, currentHealth = {}, {}
 local hidden = {}
 local Workspace = workspace
-]] .. source:sub(markFirst, markLast - 1) .. source:sub(first, last - 1) .. "\nreturn evaluate"
+]] .. source:sub(markFirst, markLast - 1) .. source:sub(first, last - 1) .. [[
+return {
+ evaluate = evaluate,
+ advance = function() previousHealth = currentHealth; currentHealth = {}; summaries = {} end,
+ hasSummary = function() return next(summaries) ~= nil end,
+}
+]]
 classifier.Parent = fixtures
 local root = Instance.new("Folder")
 root.Name = "IsolatedBayPresentationActors"
@@ -44,7 +53,8 @@ model.Parent = root
 model:SetAttribute("NpcCombatPosition", Vector3.new(-215, 0, 0))
 local stop
 local ok, result = pcall(function()
-    local evaluate = require(classifier)
+    local test = require(classifier)
+    local evaluate = test.evaluate
     evaluate(model, false, true)
     assert(model:GetAttribute("MergePresentationHidden"), "offline personal squad not classified")
     stop = require(visibilityModule).bind(root, true)
@@ -58,9 +68,24 @@ local ok, result = pcall(function()
     )
     evaluate(model, false, false)
     assert(not model:GetAttribute("MergePresentationHidden"), "non-Merge actor hidden")
+    model:SetAttribute("MergeRunId", "isolated-run")
+    model:SetAttribute("HP", 100)
+    evaluate(model, false, false)
+    assert(not test.hasSummary(), "spawn incorrectly presented as a hit")
+    test.advance()
+    evaluate(model, false, false)
+    assert(not test.hasSummary(), "undamaged marching enemy emitted a hit")
+    test.advance()
+    model:SetAttribute("HP", 90)
+    evaluate(model, false, false)
+    assert(test.hasSummary(), "real distant damage lost")
+    test.advance()
+    model:SetAttribute("HP", 80)
+    evaluate(model, true, true)
+    assert(not test.hasSummary(), "detailed fight received summary FX")
     stop()
     stop = nil
-    return "PASS: offline personal squad classification, own/non-Merge exclusions, existing direct-child visibility and restore"
+    return "PASS: actor visibility/restore; spawn and marching are silent; distant damage produces summary; detailed fight does not"
 end)
 if stop then
     stop()

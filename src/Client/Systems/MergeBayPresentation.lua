@@ -22,6 +22,7 @@ function Controller.start()
     local player = Players.LocalPlayer
     local elapsed, focusId = 0, nil
     local hidden, nextSummary = {}, {}
+    local previousHealth = {}
     local enemyRoot, releaseEnemies
 
     local function mark(model, hide)
@@ -71,6 +72,7 @@ function Controller.start()
                 mark(model, false)
             end
             focusId = nil
+            table.clear(previousHealth)
             player:SetAttribute("MergePresentationFocusBay", nil)
             return
         end
@@ -86,6 +88,7 @@ function Controller.start()
             end
         end
         local summaries = {}
+        local currentHealth = {}
         local function evaluate(model, ownPet, mergeContext)
             if not model:IsA("Model") then
                 return
@@ -107,12 +110,19 @@ function Controller.start()
                 or Policy.detailed(focus, bay, cfg.neighboring_columns)
                 or (pos - position).Magnitude <= cfg.nearby_actor_radius
             mark(model, not detailed)
-            if
-                not detailed
-                and model:GetAttribute("MergeRunId")
-                and not model:GetAttribute("Dying")
-            then
-                summaries[bay.id] = { bay = bay, position = pos }
+            if model:GetAttribute("MergeRunId") then
+                local hp = model:GetAttribute("HP")
+                currentHealth[model] = hp
+                if
+                    Policy.summaryActivity(
+                        detailed,
+                        previousHealth[model],
+                        hp,
+                        model:GetAttribute("Dying")
+                    )
+                then
+                    summaries[bay.id] = { bay = bay, position = pos }
+                end
             end
         end
         local pets = Workspace:FindFirstChild("PlayerPets")
@@ -136,6 +146,8 @@ function Controller.start()
         for _, model in ipairs(enemies and enemies:GetChildren() or {}) do
             evaluate(model, false)
         end
+        -- Replace, rather than append: departed/dead models cannot remain retained.
+        previousHealth = currentHealth
         local now = os.clock()
         for id, summary in pairs(summaries) do
             local colors = cfg.colors[summary.bay.side]

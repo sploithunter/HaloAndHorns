@@ -25,4 +25,14 @@ function Policy.detailed(focus, bay, neighboringColumns)
     return focus.side == bay.side and math.abs(focus.column - bay.column) <= neighboringColumns
 end
 
+function Policy.summaryActivity(detailed, previousHp, currentHp, dying)
+    -- Spawning/alive/marching is not a hit. Initial observation establishes a baseline.
+    return not detailed
+        and not dying
+        and type(previousHp) == "number"
+        and type(currentHp) == "number"
+        and currentHp >= 0
+        and currentHp < previousHp
+end
+
 return Policy

@@ -8406,3 +8406,8 @@ first-session cohort rates.
 
 - Replaced repeated enemy-descendant traversal with the existing authoritative registry plus identity/scope validation and compatibility fallback. No new retained cache or targeting-rule changes. Native isolated lifecycle tests pass; full local CI 2,727 tests / 305 specs.
 - Actual eight-bay 20-second capture: 25,018 lookups took 27.5 ms total, compared with the previous capture's 24,743 / 2,034.9 ms. Second capture confirmed cheap registry calls and continuing wave progress. This is function-level evidence, not a claimed whole-game FPS multiplier; enemy engagement and memory growth remain. User's optional zone-grid idea is deferred. Raw evidence and caveats in [Merge Stress Testing](MERGE_STRESS_TESTING.md). Play stopped, Studio open; PR #460 still draft, no production publish.
+
+## 2026-09-06 — Client frame lookup and premature summary effects
+
+- Added callback-local target snapshots: one folder traversal per render frame rather than per pet. One/eight-bay live-request comparisons matched every resolved target and reduced lookup time; no full FPS claim. No server damage or authority changes. Tests cover scope, lifetime and replacements.
+- User clarified premature startup explosions were effects only, before damage. Found distant summaries driven by alive-enemy count; require an observed HP decrease instead, exclude detailed fights, and discard old model snapshots. Native isolated production-classifier test passes spawn/march silence and damage-only summaries. Current Play still has the old summary code; visual confirmation awaits a fresh session. Full CI 2,736 tests / 306 specs. No publish; see [Client Performance](CLIENT_PERFORMANCE.md).
