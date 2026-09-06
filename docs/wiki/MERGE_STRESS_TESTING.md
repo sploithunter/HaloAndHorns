@@ -67,6 +67,40 @@
   obsolete default and added CI validation against actual service definitions. A fresh
   Play verified populated counters and automatic restoration. No production publish.
 
+## Enemy target lookup verification (2026-09-06)
+
+- `PetFollowService._findBreakable` now asks the existing EnemyService spawn/despawn
+  registry before scanning every enemy rig descendant. Identity and folder scope are
+  checked; authored/unregistered enemies retain the old traversal fallback. No new
+  model cache, attack-range relaxation, damage change, or spatial grid is introduced.
+- Isolated production-method tests cover changed IDs, destroyed/reparented targets,
+  unregistered fallback, unchanged HP policy and world-scoped crystals. Four alternating
+  1,000-lookup rounds measured indexed 0.500–0.547 ms versus traversal 142–162 ms.
+  This is a microbenchmark, not an FPS result. `tools/pet_target_lookup_smoke.luau`
+  destroys its fixtures and does not initialize services or access player profiles.
+- Fresh Play with the same sanitized seven-worker source reached 625–630 pet/egg
+  models in eight occupied bays. A 20.010 s default capture measured 25,018 lookups
+  totaling **0.027534 s**, versus the preceding eight-bay capture's 24,743 totaling
+  **2.034852 s** (~1.10 versus 82.24 microseconds/call). PetFollow tick inclusive
+  time was 1.490 s versus 3.482 s. Workloads/waves differ, so these are observed
+  function timings, not a controlled whole-game improvement percentage.
+- A second 20.044 s capture added nested registry instrumentation: 35,270 lookups,
+  0.050361 s total, with 35,270 registry calls totaling 0.024105 s. The extra wrapper
+  affects timing. Workers advanced from wave 60 through 63 and beyond; teardown
+  returned zero workers and no harness errors. Client census retained all 72 eggs,
+  with 438 of 630 models hidden and no hidden eggs at Heaven 1.
+- Performance is **not solved**: the first capture still spent 7.542 s inclusive in
+  enemy combat ticks (including 4.503 s engagement), and low-FPS/server-frame warnings
+  remain. Whole-Studio Stats grew 15,472→16,061 MB over ~140 s including teardown;
+  BaseParts grew 6,713→6,980 MB. Do not sum client/server counters or claim a production
+  memory budget. Play was stopped, Studio left open, no production publish.
+- Raw evidence in the durable directory above: `target-index-live-profile.json`,
+  `target-index-live-profile-2.json`, `target-index-isolated-smoke.json`,
+  `target-index-server-memory.json`, `target-index-client-memory.json`,
+  `target-index-console.json`, and passive `target-index-live-host.jsonl`.
+  Full local CI: 2,727 tests / 305 specs. The user's zone-square targeting suggestion
+  remains an optional future idea; test this exact lookup improvement first.
+
 ## Historical memory incident and restart gate (2026-09-06)
 
 - Persistent macOS evidence: `/Library/Logs/DiagnosticReports/JetsamEvent-2026-09-05-202648.ips` identifies `RobloxStudio` as the largest process. Merge PID 45162 had 5,413,905 accounted pages versus Farm PID 43412's 326,964, with 16,384-byte pages. These are memory-accounting figures, **not a claim of 88 GB physically resident on the machine**. `/Library/Logs/DiagnosticReports/ResetCounter-2026-09-06-071804.diag` records a button reset. Root allocation cause remains unproven.

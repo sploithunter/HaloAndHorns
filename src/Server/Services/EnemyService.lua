@@ -311,6 +311,18 @@ function EnemyService:_enemiesFolder()
     return folder
 end
 
+-- Read the existing spawn/despawn registry; do not create a second target cache.
+-- Callers still validate their requested world scope. HP/death policy is unchanged.
+function EnemyService:FindTargetModel(targetId)
+    local entry = self._enemies and self._enemies[targetId]
+    local model = entry and entry.model
+    local id = model and model.Parent and model:FindFirstChild("BreakableID")
+    if id and id:IsA("NumberValue") and id.Value == targetId then
+        return model
+    end
+    return nil
+end
+
 -- Set (or clear, with nil) the player whose squad this enemy is fighting. entry.aggroPlayerName
 -- stays the server SoT; AggroOwner is its replicated read-only shadow so the client EnemyHud can
 -- list only the foes engaged with ITS squad (every aggro mutation goes through here).

@@ -478,6 +478,13 @@ function PetFollowService:_findBreakable(targetType, world, id)
         if not enemies then
             return nil
         end
+        local service = self:_enemyService()
+        local indexed = service and service.FindTargetModel and service:FindTargetModel(id)
+        if indexed and indexed:IsDescendantOf(enemies) then
+            return indexed
+        end
+        -- Preserve authored/unregistered targets and partially initialized peers.
+        -- Normal spawned enemies resolve above without walking every rig descendant.
         for _, desc in ipairs(enemies:GetDescendants()) do
             if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
                 return desc.Parent
