@@ -118,9 +118,9 @@ return function()
             expect(d.lines[1]).to.equal("Lasts 12s") -- stat lines still derived
         end)
 
-        it("long cooldowns read in minutes (Luck: 5m recharge)", function()
+        it("Luck no longer advertises a timed five-minute recharge", function()
             local d = PowerDescribe.describe(powersCfg, "fortune")
-            expect(table.concat(d.lines, " "):find("Recharge 5m") ~= nil).to.equal(true)
+            expect(table.concat(d.lines, " "):find("Recharge 5m") == nil).to.equal(true)
         end)
     end)
 end

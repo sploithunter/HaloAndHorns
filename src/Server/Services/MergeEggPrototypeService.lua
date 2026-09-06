@@ -16555,7 +16555,9 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
         return false, accessReason
     end
     local now = os.clock()
-    if record.lastEggCreateAt and now - record.lastEggCreateAt < 0.2 then
+    local debounce = self._config.team.base_egg_generator.create_debounce_seconds
+    -- Floating-point subtraction must not reject a click exactly on the boundary.
+    if record.lastEggCreateAt and now - record.lastEggCreateAt + 1e-9 < debounce then
         return false, "egg_create_throttled"
     end
     if record.eggCreateInProgress == true then

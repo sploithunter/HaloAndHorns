@@ -1257,6 +1257,8 @@ return {
         },
         base_egg_generator = {
             initial_tier = 1,
+            -- Accept ordinary rapid clicking (ten purchases/second); only debounce duplicates.
+            create_debounce_seconds = 0.1,
             -- Grass costs 100. The first generator advance changes its output to Ice at 250;
             -- later creation prices double to 500, 1,000, 2,000, and so on.
             first_upgraded_egg_cost = 250,

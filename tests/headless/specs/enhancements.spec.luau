@@ -210,12 +210,11 @@ return function()
             expect((Enhancements.compatibleWith(cfg, "damage", focus, kinds))).to.equal(false)
         end)
 
-        it("Windfall (drop_rate) accepts recharge, duration AND potency", function()
-            -- Jason: Windfall has magnitude=2.0 + duration=10, so all three axes should apply,
-            -- not just recharge. Guards the drop_rate family staying in duration/potency.families.
+        it("Windfall toggle accepts focus and potency, not dead timing enhancements", function()
             local windfall = powersCfg.powers.windfall
-            expect((Enhancements.compatibleWith(cfg, "recharge", windfall, kinds))).to.equal(true)
-            expect((Enhancements.compatibleWith(cfg, "duration", windfall, kinds))).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "recharge", windfall, kinds))).to.equal(false)
+            expect((Enhancements.compatibleWith(cfg, "duration", windfall, kinds))).to.equal(false)
+            expect((Enhancements.compatibleWith(cfg, "focus", windfall, kinds))).to.equal(true)
             expect((Enhancements.compatibleWith(cfg, "potency", windfall, kinds))).to.equal(true)
         end)
 

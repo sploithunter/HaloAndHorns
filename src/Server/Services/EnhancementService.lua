@@ -130,6 +130,10 @@ function EnhancementService:Start()
                 invSvc:_updateBucketFolders(player, BUCKET)
             end)
         end
+        player:GetAttributeChangedSignal("Archetype"):Connect(function()
+            self:ConvertToggleSlots(player)
+        end)
+        self:ConvertToggleSlots(player)
     end
     Players.PlayerAdded:Connect(function(player)
         task.spawn(backfill, player)
@@ -438,6 +442,28 @@ function EnhancementService:PrepareRespecRefund(player)
         end
     end
     return { ok = true, player = player, receipts = receipts, returned = returned }
+end
+
+-- One-time in-slot compensation: no inventory transactions or acquisition counters.
+function EnhancementService:ConvertToggleSlots(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return 0
+    end
+    local progression = self._modules and self._modules.PlayerProgressionService
+    local level = progression and progression:GetEarnedLevel(player) or player:GetAttribute("Level")
+    local converted = Enhancements.convertToggleSlots(
+        self._config,
+        self._powersConfig,
+        data.Slots,
+        data.Archetype,
+        level
+    )
+    if converted > 0 then
+        self._dataService:RequestSave(player, "enhancement_toggle_conversion", { critical = true })
+        self:ReapplySlottedEffects(player)
+    end
+    return converted
 end
 
 function EnhancementService:CommitRespecRefund(transaction)
