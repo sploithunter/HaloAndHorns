@@ -97,4 +97,6 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 
 ## Maintenance Rule
 
+- [Merge Stress Testing](MERGE_STRESS_TESTING.md) — isolated eight-bay performance workload and measurement contract.
+
 When code, configs, requirements, or Studio workflow decisions change in a way a future agent would need to know, update the relevant wiki page before finishing the task.

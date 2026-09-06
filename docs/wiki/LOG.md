@@ -8358,3 +8358,9 @@ first-session cohort rates.
 - This enables observational realm comparisons, not causal A/B results or verified voice/face
   exposure. Documented same-build/fresh/manual cuts, missing-event caveats and a future randomized
   within-realm Watcher/control experiment rather than silently changing player assignment.
+
+## 2026-09-05 — Reconciled main; overnight Merge performance investigation
+
+- Merged completed Watcher/analytics work through PR #458, preserving #459 asset history. Final main `da1830ab` passed all 2,701 tests and fresh Merge Play with no client errors.
+- Audited and removed only merged feature branches and the completed clean Heaven worktree. Untracked review assets preserved in `/Users/jason/Documents/HaloAndHorns-review-archive.daPCYI`; no working assets discarded.
+- Started [eight-bay stress testing](MERGE_STRESS_TESTING.md), using isolated copies of profiles rather than spending or resetting real alternate-account progress. Production publishing is not part of this performance authorization.
