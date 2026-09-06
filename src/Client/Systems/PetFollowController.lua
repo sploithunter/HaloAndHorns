@@ -1264,7 +1264,11 @@ function PetFollowController.start()
                 end
             end
 
-            reportAccum += dt
+            -- NPC presentation shares this function, but must not advance the
+            -- owner's reporting clock once per squad (up to every-frame sends).
+            if isLocal then
+                reportAccum += dt
+            end
             if isLocal and reportAccum >= reportInterval then
                 reportAccum = 0
                 local report = {}

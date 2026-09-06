@@ -1,5 +1,26 @@
 # Client Performance
 
+## NPC-amplified player-position reports (2026-09-06)
+
+`PetFollowController.driveAnchor` serves both the local squad and every NPC squad.
+Its shared report accumulator previously advanced on **every** invocation, so NPC
+presentation accelerated the local player's position-report clock. It now advances
+only for the local squad; the configured `pet_follow.replication.interval` remains
+unchanged, as do transforms, owner validation, mining and combat authority.
+
+`tools/pet_position_report_smoke.luau` extracts and executes the actual reporting
+block in an isolated Studio ModuleScript with intercepted sends. At 500 frames ×
+0.02 seconds, zero NPC squads produced 100 reports before and after. With 9, 19,
+or 79 NPC squads, each case produced 499 before and 100 after. These are matched
+**report-call counts**, not measured packet bytes, live transport timing or FPS.
+The server currently relays each accepted report to other players, so fixing the
+sender also removes that corresponding source of relay amplification. Distance
+filtering of this separate position channel remains unimplemented.
+
+CI checks the owner-only clock integration and the report/expiry interval contract;
+the native smoke verifies the reporting block's behavior. Full CI: 2,712 tests.
+Changes remain in draft PR #460 pending the broader load-testing effort.
+
 ## Farm & Fight predictive cache (2026-09-05)
 
 `FarmAssetWarmupService` now clones from the prebuilt server catalog into each owner's

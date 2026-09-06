@@ -8390,3 +8390,8 @@ first-session cohort rates.
 - Fresh Play verified bounded enemy/squad references through many waves and replacements. Expired mining cooldowns were a fourth retention path; native expiry test preserves unexpired timing and releases expired keys. Final scene query: Merge one detached Model; no detached Models held by DropVisibility or PetFollowService.
 - Whole-Studio memory still increased through one/two/one despite these fixes, then stabilized when Play stopped; much remained allocated in Edit. These are combined server/client/editor figures, not deployment memory budgets or matched FPS gains. Studio remains open; production unchanged. Remaining allocator investigation and full-server validation continue on PR #460.
 - Bounded clone/destroy and 10,000-pivot Edit probes did not reproduce the large allocation growth; temporary models were removed and original templates preserved. This narrows only the synchronous isolated case, not live rendering/replication. Hosted CI passed on `0e9b37ca`; no additional bays or production changes during these probes.
+
+## 2026-09-06 — Stop NPC squads accelerating position reports
+
+- Found a shared accumulator advancing once per local **and NPC** squad, sending local pet positions each frame with enough squads. Advance it only for the local squad; movement, authority and configured interval are unchanged.
+- Matched native reporting-block simulation: 10 seconds / 500 frames, 0 NPC squads stays at 100 calls; 9/19/79 NPC squads fall from 499 to 100 calls. No real remotes or profiles used. This is a call-count result, not deployment bandwidth/FPS evidence. Full local CI 2,712/2,712; [Client Performance](CLIENT_PERFORMANCE.md) records scope. PR #460 remains draft; no publish.
