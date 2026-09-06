@@ -1,5 +1,39 @@
 # Client Performance
 
+## Character-local Merge bay detail (2026-09-06)
+
+`MergeBayPresentation` selects the nearest authored bay from the **character's current
+position**, with a 16-stud switching buffer. It never reads the player's claimed bay
+to choose detail. The current side's immediate left/right columns also remain detailed;
+actors within 60 studs and the viewer's personal squad remain visible. Walking across
+the mall changes the visible neighborhood without changing any claim.
+
+Other Merge pets/enemies receive a client-local `MergePresentationHidden` attribute.
+The existing lifecycle-managed visibility binding composes that with `CombatDowned`,
+hides body parts, labels and attached effects, and restores their desired state on
+re-entry. Pet rig tracks stop while hidden; NPC movement and enemy presentation skip
+hidden actors. Eggs are explicitly exempt; defenses/world props are untouched. A bounded
+per-bay impact summary uses existing enemy/bay state, not extra combat remotes. All
+settings and colors live in `merge_egg_prototype.distant_presentation`.
+
+This is **presentation culling, not model unloading or replication filtering**. Living
+actors, HP, targeting, rewards and server movement remain intact; do not claim that
+this alone reclaims replicated model memory. Ordinary pet position relays still reach
+all other players. `pet_follow.npc_presentation` additionally budgets remaining distant
+NPC formation work to 10 Hz, considering camera/player proximity. The Studio-only
+`DisableNpcPresentationBudget` script attribute is an A/B seam for that cadence only,
+not the bay visibility policy.
+
+Native eight-bay validation before the final offline-personal-squad eligibility addition:
+621 pet/objective models, 378 hidden, all 72 eggs retained, zero hidden-body visibility
+errors. Visiting Hell 2 changed focus to `hell_02` while the claim remained `heaven_01`;
+the visited side's hatchers restored and Heaven 1 hatchers hid. The viewer was returned
+to the original position. Offline personal squads carry `OfflineOwnedSquad`, not per-pet
+run IDs; that eligibility path now passes an isolated production-classifier test.
+Native visibility tests cover distant/downed overlap, particles, late descendants,
+flat enemy roots and restoration. Full local CI: 2,725 tests. Full FPS/memory benefit
+and final visual acceptance remain to be measured; production is unchanged.
+
 ## NPC-amplified player-position reports (2026-09-06)
 
 `PetFollowController.driveAnchor` serves both the local squad and every NPC squad.

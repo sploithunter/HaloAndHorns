@@ -1,8 +1,9 @@
 -- Client-only downed presentation. Healthy pets need no descendant scans or writes.
 -- Does not own lifetime, movement, HP, or a billboard's normal enabled policy.
 local Visibility = {}
+local PetAnimator = require(script.Parent.PetAnimator)
 
-function Visibility.bind(root)
+function Visibility.bind(root, directChildren)
     local records = {}
 
     local function release(record, descendant)
@@ -21,7 +22,15 @@ function Visibility.bind(root)
         local property, hidden
         if descendant:IsA("BasePart") then
             property, hidden = "LocalTransparencyModifier", 1
-        elseif descendant:IsA("BillboardGui") then
+        elseif
+            descendant:IsA("BillboardGui")
+            or descendant:IsA("SurfaceGui")
+            or descendant:IsA("ParticleEmitter")
+            or descendant:IsA("Beam")
+            or descendant:IsA("Trail")
+            or descendant:IsA("Light")
+            or descendant:IsA("Highlight")
+        then
             property, hidden = "Enabled", false
         else
             return
@@ -57,7 +66,8 @@ function Visibility.bind(root)
         if
             not model:IsA("Model")
             or not model.Parent
-            or model.Parent.Parent ~= root
+            or (directChildren and model.Parent ~= root)
+            or (not directChildren and model.Parent.Parent ~= root)
             or records[model]
         then
             return
@@ -66,11 +76,13 @@ function Visibility.bind(root)
         records[model] = record
         local function refresh()
             local downed = model:GetAttribute("CombatDowned") == true
+                or model:GetAttribute("MergePresentationHidden") == true
             if downed == record.downed then
                 return
             end
             record.downed = downed
             if downed then
+                PetAnimator.suspend(model)
                 for _, descendant in ipairs(model:GetDescendants()) do
                     hide(record, descendant)
                 end
@@ -82,6 +94,7 @@ function Visibility.bind(root)
         end
         record.connections = {
             model:GetAttributeChangedSignal("CombatDowned"):Connect(refresh),
+            model:GetAttributeChangedSignal("MergePresentationHidden"):Connect(refresh),
             model.DescendantAdded:Connect(function(descendant)
                 hide(record, descendant)
             end),
@@ -95,8 +108,12 @@ function Visibility.bind(root)
     local added = root.DescendantAdded:Connect(add)
     local removed = root.DescendantRemoving:Connect(remove)
     for _, folder in ipairs(root:GetChildren()) do
-        for _, model in ipairs(folder:GetChildren()) do
-            add(model)
+        if directChildren then
+            add(folder)
+        else
+            for _, model in ipairs(folder:GetChildren()) do
+                add(model)
+            end
         end
     end
     return function()

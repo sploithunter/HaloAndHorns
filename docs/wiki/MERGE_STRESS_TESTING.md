@@ -42,6 +42,31 @@
 - Local CI now 2,710/2,710 tests plus eight host-monitor tests. PR #460 remains draft. Next: investigate remaining native allocation/retention and obtain separated deployment-representative telemetry before increasing bay count. Roblox's [performance guidance](https://create.roblox.com/docs/performance-optimization/identify) recommends actual client measurements for accurate client memory; these shared-process Studio totals are not live-server/client budgets.
 - Bounded Edit-mode isolation did **not** reproduce the growth: 150 clone/destroy operations across the three `frostblight_lamb` variants added only ~0.38 MB transient BaseParts; 10,000 unparented pivots were flat; 10,000 pivots of one anchored, invisible Workspace clone were also effectively flat. Each clone was destroyed, the original templates were untouched, and live instance count returned to baseline. Evidence: `edit-clone-isolation.json`, `edit-pivot-isolation.json`, and `edit-workspace-pivot-isolation.json` in the durable directory above. These synchronous Edit tests exclude frame-to-frame rendering, replication, combat, and runtime listeners: they do **not** exonerate the full live movement/spawn lifecycle or identify an engine defect.
 
+## Later daytime eight-bay capture (2026-09-06)
+
+- Successfully stepped through one/two/four/eight occupied bays with passive logging
+  and bounded fixtures. The eight-bay stage reached 617–630 pet/objective models and
+  79 NPC squads and tore down normally. Raw files: `npc-budget-stages-server.json`,
+  `npc-budget-stages-client.json`, `npc-budget-host.jsonl` in the durable directory above.
+- Before bay hiding, weighted sampled client frame intervals were ~21.5 ms at two
+  bays, ~27.7 ms at four, ~61.0 ms at eight. Eight-bay Stats total grew approximately
+  15,040→15,509 MB; BaseParts 5,956→6,201 MB. This is the already-warm shared Studio
+  process, **not** matched deployment performance or an improvement over the lost
+  previous eight-bay workload. Memory pressure remained normal; memory growth persists.
+- Rejected the 12-second on/off NPC-cadence windows as an FPS comparison: camera drift
+  reached 158–221 studs. Preserve `npc-budget-ab-rejected-camera.json`, not a claimed win.
+- A later eight-bay test verified character-local bay hiding; see [Client Performance](CLIENT_PERFORMANCE.md).
+  The repaired default profiling selection produced a 20.002-second capture: inclusive
+  EnemyService combat ticks 5.599 s (147 calls), pet aggro 1.343 s, target assignment
+  1.130 s, enemy engagement 2.593 s; PetFollow ticks 3.482 s (163 calls), including
+  24,743 `_findBreakable` calls totaling 2.035 s. **Nested times must not be added.**
+  These identify follow-up targets, not script-exclusive CPU or a before/after comparison.
+  Evidence: `bay-detail-server-profile.json` and `bay-detail-*-memory.json`.
+- Harness fixes: an empty explicit selection legitimately captured no methods; the
+  default also contained nonexistent `CombatService.ResolveEnemyDamage`. Removed that
+  obsolete default and added CI validation against actual service definitions. A fresh
+  Play verified populated counters and automatic restoration. No production publish.
+
 ## Historical memory incident and restart gate (2026-09-06)
 
 - Persistent macOS evidence: `/Library/Logs/DiagnosticReports/JetsamEvent-2026-09-05-202648.ips` identifies `RobloxStudio` as the largest process. Merge PID 45162 had 5,413,905 accounted pages versus Farm PID 43412's 326,964, with 16,384-byte pages. These are memory-accounting figures, **not a claim of 88 GB physically resident on the machine**. `/Library/Logs/DiagnosticReports/ResetCounter-2026-09-06-071804.diag` records a button reset. Root allocation cause remains unproven.

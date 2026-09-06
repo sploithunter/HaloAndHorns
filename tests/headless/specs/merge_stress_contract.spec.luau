@@ -1,6 +1,22 @@
 local config = loadModule("configs/merge_offline.lua")
 return function()
     describe("isolated Merge stress contract", function()
+        it("profiles only methods actually defined by the selected services", function()
+            local source = readFile("src/Server/MergeStressHarness.lua")
+            local selection = assert(source:match("local selected = selection(.-)local merge ="))
+            local count = 0
+            for service, methods in selection:gmatch("(%w+Service)%s*=%s*{(.-)}") do
+                local implementation = readFile("src/Server/Services/" .. service .. ".lua")
+                for method in methods:gmatch('"([_%w]+)"') do
+                    expect(
+                        implementation:find("function " .. service .. ":" .. method .. "(", 1, true)
+                            ~= nil
+                    ).to.equal(true)
+                    count += 1
+                end
+            end
+            expect(count > 0).to.equal(true)
+        end)
         it("keeps the production five-bay cap separate from eight-bay Studio testing", function()
             expect(config.maximum_bays).to.equal(5)
             expect(config.studio_stress.maximum_occupied_bays).to.equal(8)

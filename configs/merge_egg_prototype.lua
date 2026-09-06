@@ -616,6 +616,23 @@ return {
         },
     },
 
+    distant_presentation = {
+        enabled = true,
+        update_seconds = 0.2,
+        neighboring_columns = 1,
+        focus_hysteresis = 16,
+        nearby_actor_radius = 60,
+        summary_interval = 2.5,
+        summary_impact = "small",
+        summary_scale = 2,
+        summary_sparks = 3,
+        summary_height = 5,
+        colors = {
+            heaven = { { 255, 225, 133 }, { 127, 225, 255 } },
+            hell = { { 255, 113, 42 }, { 255, 202, 88 } },
+        },
+    },
+
     world = {
         maps_root = "Maps",
         model_name = "MergeEggPrototype",

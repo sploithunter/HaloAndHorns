@@ -8395,3 +8395,9 @@ first-session cohort rates.
 
 - Found a shared accumulator advancing once per local **and NPC** squad, sending local pet positions each frame with enough squads. Advance it only for the local squad; movement, authority and configured interval are unchanged.
 - Matched native reporting-block simulation: 10 seconds / 500 frames, 0 NPC squads stays at 100 calls; 9/19/79 NPC squads fall from 499 to 100 calls. No real remotes or profiles used. This is a call-count result, not deployment bandwidth/FPS evidence. Full local CI 2,712/2,712; [Client Performance](CLIENT_PERFORMANCE.md) records scope. PR #460 remains draft; no publish.
+
+## 2026-09-06 — Staged eight-bay run and character-local presentation
+
+- One/two/four/eight-bay sequence completed without a crash; eight bays reached 630 pets/objectives. Memory still grows. Rejected a camera-contaminated cadence comparison; no FPS percentage claimed. Fixed an obsolete default profiler method and captured populated service timings, including expensive repeated target lookups.
+- User clarified detail should follow the character, not their claim. Added current/adjacent-bay detail, distant actor/label/effect hiding with egg/defense preservation and bounded activity summaries. This is local rendering policy, not model unloading or gameplay authority.
+- Native Hell-2 visit changed focus while claim stayed Heaven-1; all eggs remained and hidden parts were suppressed. Downed/distant composition and the separate offline-personal-squad classification pass isolated native tests. Full local CI 2,725 tests. Studio stays open with Play stopped; viewer position restored; no publish. See [Client Performance](CLIENT_PERFORMANCE.md) and [stress testing](MERGE_STRESS_TESTING.md) for evidence and remaining validation.

@@ -342,7 +342,14 @@ function EnemyMotion.start()
             return
         end
         for _, model in ipairs(models) do
-            if model:IsA("Model") and model.PrimaryPart then
+            if model:GetAttribute("MergePresentationHidden") == true then
+                state[model] = nil
+            end
+            if
+                model:IsA("Model")
+                and model.PrimaryPart
+                and model:GetAttribute("MergePresentationHidden") ~= true
+            then
                 updateLabel(model) -- difficulty-coloured name tag (every enemy, moving or not)
                 if model:GetAttribute("Dying") == true then
                     local st = state[model]

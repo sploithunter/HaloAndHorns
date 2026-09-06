@@ -38,6 +38,28 @@ local ok, result = pcall(function()
         part.LocalTransparencyModifier == 0.25 and label.Enabled,
         "revive lost normal presentation state"
     )
+    local emitter = Instance.new("ParticleEmitter")
+    emitter.Enabled = true
+    emitter.Parent = part
+    model:SetAttribute("MergePresentationHidden", true)
+    task.wait()
+    assert(
+        part.LocalTransparencyModifier == 1 and not label.Enabled and not emitter.Enabled,
+        "distant pet leaked visuals"
+    )
+    model:SetAttribute("CombatDowned", true)
+    model:SetAttribute("MergePresentationHidden", nil)
+    task.wait()
+    assert(
+        part.LocalTransparencyModifier == 1 and not emitter.Enabled,
+        "approaching revived a downed pet"
+    )
+    model:SetAttribute("CombatDowned", false)
+    task.wait()
+    assert(
+        part.LocalTransparencyModifier == 0.25 and label.Enabled and emitter.Enabled,
+        "nearby revival did not restore visuals"
+    )
     model:SetAttribute("CombatDowned", true)
     task.wait()
     model.Parent = nil
@@ -57,7 +79,7 @@ local ok, result = pcall(function()
         part.LocalTransparencyModifier == 0.25 and label.Enabled,
         "binding disposal did not restore"
     )
-    return "PASS: healthy/downed/revive, late descendants, external billboard writes, removal/reparent and disposal"
+    return "PASS: healthy/downed/distant/revive, effects, late descendants, external billboard writes, removal/reparent and disposal"
 end)
 stop()
 model:Destroy()

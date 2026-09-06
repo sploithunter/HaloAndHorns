@@ -136,7 +136,7 @@ function Harness:profile(selection)
                 "_patrolTick",
                 "_engageEnemy",
             },
-            CombatService = { "ResolvePetDamage", "ResolveEnemyDamage" },
+            CombatService = { "ResolvePetDamage" },
         }
     local merge = self.service._modules.MergeEggPrototypeService
     local services = {
