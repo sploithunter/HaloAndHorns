@@ -61,11 +61,28 @@ local function hostOf(part, hostNames, hostTag)
     return nil
 end
 
-local function findHosts(hostNames, hostTag)
+local function excludedHost(inst, prefixes)
+    while inst and inst ~= Workspace do
+        for _, prefix in ipairs(prefixes or {}) do
+            if inst.Name:sub(1, #prefix) == prefix then
+                return true
+            end
+        end
+        inst = inst.Parent
+    end
+    return false
+end
+
+local function findHosts(hostNames, hostTag, excludedPrefixes)
     local hosts = {}
     local seen = {}
     for _, desc in ipairs(Workspace:GetDescendants()) do
-        if hostNames[desc.Name] or (hostTag ~= "" and CollectionService:HasTag(desc, hostTag)) then
+        if
+            not excludedHost(desc, excludedPrefixes)
+            and (
+                hostNames[desc.Name] or (hostTag ~= "" and CollectionService:HasTag(desc, hostTag))
+            )
+        then
             if not seen[desc] then
                 seen[desc] = true
                 table.insert(hosts, desc)
@@ -142,6 +159,9 @@ local function collectMarkers(cfg)
     local loose = {}
 
     local function consider(part)
+        if excludedHost(part, cfg.excluded_host_prefixes) then
+            return
+        end
         if not part:IsA("BasePart") or not Logic.isMarkerName(part.Name, prefix) then
             return
         end
@@ -169,7 +189,7 @@ local function collectMarkers(cfg)
         consider(desc)
     end
 
-    for _, host in ipairs(findHosts(hostNames, hostTag)) do
+    for _, host in ipairs(findHosts(hostNames, hostTag, cfg.excluded_host_prefixes)) do
         local group = hosted[host]
         if not group or #group < 2 then
             hosted[host] = stampHost(host, cfg, host.Name)
