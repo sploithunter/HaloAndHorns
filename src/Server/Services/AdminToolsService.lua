@@ -771,6 +771,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- spending all reset. tutorial_completed stays false so stage 1
     -- (collect the opening piles) runs again.
     playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    playerData.GameData.MergePowerLessons = nil
     playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
     playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService

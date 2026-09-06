@@ -88,6 +88,9 @@ return {
         exit = "Merge Exit v1",
     },
     tutorial_stages = {
+        power_lesson = true,
+        slots_lesson = true,
+        enhance_lesson = true,
         combat_waves = true,
         cannon_waves = true,
         upgrade_waves = true,

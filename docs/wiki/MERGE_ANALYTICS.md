@@ -1,5 +1,11 @@
 # Merge analytics
 
+2026-09-06: the existing Merge Tutorial stage allowlist now includes `power_lesson`,
+`slots_lesson`, and `enhance_lesson` for the Wave-6/10/12 lessons. Quartermaster introduction
+is at Wave 14 and no longer requires talking. Stage events still mean **entered**, not completed;
+per-profile lesson completion receipts live in `GameData.MergePowerLessons`. No native funnel
+names or step meanings were changed and no synthetic Studio events are emitted.
+
 Updated 2026-09-05. `configs/merge_analytics.lua` owns the versioned native Roblox event contract.
 `MergeAnalyticsService` runs only in the dedicated Merge place and observes authoritative server
 outcomes. It mirrors bounded observations into the existing batched retention archive; it does not

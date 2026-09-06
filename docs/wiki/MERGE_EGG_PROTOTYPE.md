@@ -1,5 +1,47 @@
 # Merge an Egg Prototype
 
+## Wave-paced power onboarding (2026-09-06)
+
+This supersedes the older Wave-6 egg / Wave-10 mandatory-training drip described below.
+The opening egg, Wave-2 bulwark and Wave-4 cannon lessons stay. New players then receive:
+
+- Wave 6: an earned Level-2 floor, manual power selection through Powers. Recommend Magnet,
+  or Swift for Auto Collector users. Reveal the hotbar; guidance no longer covers its controls.
+- Wave 8: the optional egg improvement lesson, skipped for existing work or tutorial graduates.
+  Buy Egg → Deploy Best is the visual route. **Placement remains an intentional fallback** for
+  players who spent their coins filling the line; an existing egg can finish the lesson without
+  two new purchases, even while collecting lesson coins. The existing 600-Waycoin shortfall
+  supply remains. This is not a strict combine-only gate.
+- Wave 10: an earned Level-3 floor, manual allocation of two enhancement slots. The pointer
+  and title read Pick 2 → Pick 1 → Commit; Undo reverses those counts.
+- Wave 12: guide owned power → slot → enhancement → Apply. If no compatible, usable inventory
+  enhancement exists, grant one Natural Focus at earned level +5 (max 55), once per profile.
+- Wave 14: a timed Quartermaster introduction; no interaction, purchase, or training required.
+
+`GameData.MergePowerLessons` stores `unlocked`, per-stage `completed`, level-grant receipts and
+the granted enhancement UID. The canonical grant and its receipt share one profile before flush.
+Completion uses actual claimed levels, allocated non-inherent slots and usable slotted pieces.
+No choice/Commit is automated. Floors do not add levels to already-higher players. Farm & Fight
+or Basic graduates skip the new power lessons without fabricated course completions or rewards.
+Offline actors are excluded. Reset to Beginning clears this receipt alongside MergeDefense.
+
+`MergePowerLessonRuntime` is called from the existing per-bay tutorial lifecycle. Progression and
+EnhancementService are explicit Merge dependencies. Full-pet eligibility starts at earned Level 2;
+personal hatch inventory no longer requires Combat Training. Courses retain their optional rewards.
+
+`MergePowerLessonGuide` uses the real Powers button, staged menu counts and existing Apply flow.
+It owns/cancels its pulses and pointers, reserves space above guided list rows, and points at the
+permanent-origin review when relevant. Origin timing remains Level 5, not an automatic selection.
+Cue/action text has English, Spanish and Brazilian Portuguese config variants with English fallback;
+this is not a translation of the entire Powers menu. Existing funnel stage diagnostics accept the
+three new lesson IDs without renaming historical funnels.
+
+Verification: full headless CI plus `tests/headless/merge_power_lessons_runtime.luau` (actual
+runtime, grant/retry/isolation, menu selection/Undo and placement escape hatch). Fresh Studio Play
+rendered the Powers callouts and Pick/Undo progression using isolated client state, without
+committing picks or granting live rewards. Profile-loading timeout warnings prevented claiming a
+fresh-account end-to-end wave walkthrough. Not published as part of this change.
+
 ## Watcher encounters and early activity XP (2026-09-05)
 
 `merge_egg_prototype.watcher` reuses the authored

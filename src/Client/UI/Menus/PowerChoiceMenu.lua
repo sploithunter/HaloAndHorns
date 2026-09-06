@@ -131,6 +131,7 @@ local function pickLevelOf(id)
 end
 
 local PowerChoiceMenu = {}
+PowerChoiceMenu.lessonGuide = require(script.Parent.Parent.MergePowerLessonGuide)
 PowerChoiceMenu.__index = PowerChoiceMenu
 
 function PowerChoiceMenu.new()
@@ -865,12 +866,14 @@ function PowerChoiceMenu:_renderEnhanceStrip()
     end
     if not (powerId and self.frame and self.live) then
         self:_syncEnhanceTutorialAttrs()
+        self.lessonGuide.refresh(self)
         return
     end
     local state = callBus("enh.get", {})
     if not (state and state.ok) then
         self.enhanceFor = nil
         self:_syncEnhanceTutorialAttrs()
+        self.lessonGuide.refresh(self)
         return
     end
     local slots = (state.slots or {})[powerId] or {}
@@ -957,6 +960,7 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             hc.CornerRadius = UDim.new(1, 0)
             hc.Parent = hit
             hit.Parent = strip
+            hit:SetAttribute("TutorialGuide", "EnhanceSlot")
             if self._enhTargetSlot == i then
                 local halo = Instance.new("Frame")
                 halo.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1426,6 +1430,8 @@ function PowerChoiceMenu:_renderEnhanceStrip()
         ac.CornerRadius = UDim.new(0, 6)
         ac.Parent = applyBtn
         local cancelBtn = applyBtn:Clone()
+        cancelBtn.Name = "EnhanceCancel"
+        cancelBtn:SetAttribute("TutorialGuide", nil)
         cancelBtn.BackgroundColor3 = Color3.fromRGB(120, 70, 70)
         cancelBtn.Text = "CANCEL" -- (was "✕ CANCEL"; the glyph tofu-boxes in Gotham)
         cancelBtn.Position = UDim2.fromScale(0.97, 0.98)
@@ -1470,6 +1476,7 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             self:_renderEnhanceStrip()
         end)
     end
+    self.lessonGuide.refresh(self)
 end
 
 function PowerChoiceMenu:_statusText()
@@ -1942,7 +1949,7 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
         local wrap = Instance.new("TextButton")
         wrap.Name = "Row_" .. r.id
         wrap:SetAttribute("TutorialGuide", "Power:" .. r.id)
-        wrap.LayoutOrder = i
+        wrap.LayoutOrder = i * 2 -- reserve intervening layout orders for guided callouts
         wrap.Size = UDim2.new(0.99, 0, 0, rowPixelHeight())
         wrap.BackgroundTransparency = 1
         wrap.AutoButtonColor = false
@@ -1969,7 +1976,13 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
         end
         PowerSlotRow.create(wrap, {
             powerId = r.id,
-            name = def.display_name or r.id,
+            name = (def.display_name or r.id) .. ((Players.LocalPlayer:GetAttribute(
+                "MergePowerLesson"
+            ) == "power" and r.id == Players.LocalPlayer:GetAttribute(
+                "MergePowerRecommendation"
+            ) and self:_remainingPicks() > 0) and (" — " .. self.lessonGuide.text(
+                "recommended"
+            )) or ""),
             -- the type line is DECISION-time info (Jason: "they don't need to know
             -- what it is after they've already selected it") — owned rows drop it
             -- and give the space to the slotted-enhancement discs
@@ -2505,6 +2518,7 @@ function PowerChoiceMenu:_render()
         self.resetBtn.Size = UDim2.fromScale(0.12, 0.05)
         self.resetBtn.Position = UDim2.fromScale(0.9, 0.965)
     end
+    self.lessonGuide.refresh(self)
 end
 
 -- ---- build ---------------------------------------------------------------
@@ -2586,6 +2600,7 @@ function PowerChoiceMenu:Show(parent)
     self.frame = root
 
     local title = Instance.new("TextLabel")
+    title.Name = "PowerChoiceTitle"
     title.Size = UDim2.fromScale(0.6, 0.05)
     title.Position = UDim2.fromScale(0.2, 0.012)
     title.BackgroundTransparency = 1
@@ -2772,9 +2787,26 @@ function PowerChoiceMenu:Show(parent)
     end
     self:_render()
     root.Parent = parent
+    self._mergeLessonLayout = root:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        self.lessonGuide.refresh(self)
+    end)
+    self._mergeLessonChanged = Players.LocalPlayer
+        :GetAttributeChangedSignal("MergePowerLesson")
+        :Connect(function()
+            self.lessonGuide.refresh(self)
+        end)
 end
 
 function PowerChoiceMenu:Hide()
+    self.lessonGuide.clear(self)
+    if self._mergeLessonLayout then
+        self._mergeLessonLayout:Disconnect()
+        self._mergeLessonLayout = nil
+    end
+    if self._mergeLessonChanged then
+        self._mergeLessonChanged:Disconnect()
+        self._mergeLessonChanged = nil
+    end
     if self:_isRangeCatalog() then
         self:_persistRangeDraft()
         if not RangeLoadoutSession.consumeSwitch() then

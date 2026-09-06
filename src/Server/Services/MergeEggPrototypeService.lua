@@ -63,6 +63,7 @@ local MergeEggRealmBuilder = require(script.Parent.MergeEggRealmBuilder)
 local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
 
 local MergeEggPrototypeService = {}
+MergeEggPrototypeService._powerLessonRuntime = require(script.Parent.MergePowerLessonRuntime)
 MergeEggPrototypeService.__index = MergeEggPrototypeService
 
 local CREATE_EGG_PROMPT_NAME = "MergeEggPrototypeCreateEggPrompt"
@@ -1603,16 +1604,27 @@ function MergeEggPrototypeService:_tutorialUpgradeEggsDone(record)
     if not record then
         return false
     end
-    local createdNeed = self:_tutorialUpgradeCreateCount()
-    local created = (record.eggsCreated or 0) - (record.upgradeBeatEggsCreated or 0)
     local merged = (record.eggsMerged or 0) - (record.upgradeBeatEggsMerged or 0)
     local placed = (record.eggsPlaced or 0) - (record.upgradeBeatEggsPlaced or 0)
     local upgradedBase = (record.baseEggTier or 1) > (record.upgradeBeatBaseEggTier or 1)
-    return created >= createdNeed and (merged > 0 or upgradedBase or placed > 0)
+    -- Placement is an intentional escape hatch: do not demand another purchase
+    -- after the player has spent their coins filling the defense line.
+    return merged > 0 or upgradedBase or placed > 0
 end
 
 function MergeEggPrototypeService:_shouldStartUpgradeTutorial(record)
     if not record then
+        return false
+    end
+    local data = self._dataService and self._dataService:GetData(record.player)
+    if
+        data
+        and (
+            (data.Tutorial and data.Tutorial.done)
+            or (data.CombatTutorial and data.CombatTutorial.done)
+            or (data.GameData and data.GameData.TutorialCompleted)
+        )
+    then
         return false
     end
     local tutorial = self:_tutorialConfig()
@@ -1642,7 +1654,7 @@ function MergeEggPrototypeService:_shouldStartUpgradeTutorial(record)
     if (record.aliveEnemies or 0) > 0 or (record.pendingEnemySpawns or 0) > 0 then
         return false
     end
-    -- Optional: they already upgraded or installed since the Heal install.
+    -- Optional: they already combined, upgraded or deployed since the Heal install.
     if self:_hasUpgradedSinceCannon(record) then
         return false
     end
@@ -1680,8 +1692,8 @@ function MergeEggPrototypeService:_startUpgradeTutorial(record)
     })
 end
 
--- Wave 6 upgrade beat is done (or skipped). Unlock Waves 7–10. Do not
--- mark the whole tutorial complete or Wave 10 will never post Macros.
+-- Wave 8 upgrade beat is done (or skipped). Resume waves without completing
+-- the later power-slot, enhancement and Quartermaster lessons.
 function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat(record)
     if not record or record.tutorialActive ~= true then
         return
@@ -1759,6 +1771,11 @@ function MergeEggPrototypeService:_startQuartermasterTutorial(record)
     self:_setTutorialStep(record, "talk_quartermaster")
     self:_setWorldState("TutorialIntermission", record)
     self:_ensureBayQuartermaster(record)
+    if self:_tutorialConfig().quartermaster_introduction_only == true then
+        record.quartermasterLessonSpoken = false
+        record.quartermasterLessonUntil = os.clock()
+            + self:_quartermasterConfig().introduction_seconds
+    end
     self:_log("Info", "Merge Egg quartermaster tutorial started", {
         player = record.player.Name,
         wave = record.waveIndex,
@@ -1824,7 +1841,9 @@ function MergeEggPrototypeService:_startTutorial(record, force)
     if force ~= true and (progress and progress.tutorial_setup_completed == true) then
         record.tutorialActive = false
         record.tutorialStep = "combat_waves"
-        if self:_shouldStartWorkshopTutorial(record) then
+        if self._powerLessonRuntime.tryStart(self, record) then
+            return
+        elseif self:_shouldStartWorkshopTutorial(record) then
             self:_startWorkshopTutorial(record)
         elseif self:_shouldStartCannonTutorial(record) then
             self:_startCannonTutorial(record)
@@ -1845,6 +1864,9 @@ function MergeEggPrototypeService:_startTutorial(record, force)
 end
 
 function MergeEggPrototypeService:_updateTutorial(record, now, force)
+    if self._powerLessonRuntime.update(self, record) then
+        return
+    end
     if not (record and record.tutorialActive == true) then
         return
     end
@@ -1932,7 +1954,10 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "install_cannon" and self:_tutorialHasWorkshopCannon(record) then
         self:_releaseTutorialForCannonCombat(record)
-    elseif step == "collect_upgrade_coins" and self:_tutorialCollectedUpgradeCoins(record) then
+    elseif
+        step == "collect_upgrade_coins"
+        and (self:_tutorialUpgradeEggsDone(record) or self:_tutorialCollectedUpgradeCoins(record))
+    then
         if self:_tutorialUpgradeEggsDone(record) then
             self:_releaseTutorialForUpgradeCombat(record)
         else
@@ -1940,7 +1965,14 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
         end
     elseif step == "upgrade_eggs" and self:_tutorialUpgradeEggsDone(record) then
         self:_releaseTutorialForUpgradeCombat(record)
-    elseif step == "talk_quartermaster" and record.tutorialTalkedQuartermaster == true then
+    elseif
+        step == "talk_quartermaster"
+        and (
+            record.tutorialTalkedQuartermaster == true
+            or (record.quartermasterLessonUntil and now >= record.quartermasterLessonUntil)
+        )
+    then
+        record.quartermasterLessonUntil = nil
         self:_completeTutorial(record)
     end
 end
@@ -7453,6 +7485,14 @@ function MergeEggPrototypeService:_clearQuartermasterIntroduction(record)
 end
 
 function MergeEggPrototypeService:_stepQuartermasterIntroduction(record, now)
+    if record.quartermasterLessonUntil and not record.quartermasterLessonSpoken then
+        local folder = record.world and record.world:FindFirstChild("MergeEggQuartermaster")
+        local model = self:_findQuartermaster(folder)
+        if model then
+            self:_showQuartermasterIntroduction(record, model, self:_quartermasterConfig().greeting)
+            record.quartermasterLessonSpoken = true
+        end
+    end
     if not record.quartermasterSpeechUntil or now < record.quartermasterSpeechUntil then
         return
     end
@@ -12176,6 +12216,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing, discardP
     if not self:_isRecordActive(record) then
         return
     end
+    self._powerLessonRuntime.clear(record)
     if self._mergeAnalyticsService then
         pcall(
             self._mergeAnalyticsService.EndBay,
@@ -12886,6 +12927,9 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
     local waveCount = self:_waveCount(record)
     self:_analytics(record, "wave_cleared", record.waveIndex)
     if record.waveIndex < waveCount then
+        if self._powerLessonRuntime.tryStart(self, record) then
+            return
+        end
         if self:_shouldStartWorkshopTutorial(record) then
             self:_startWorkshopTutorial(record)
             return

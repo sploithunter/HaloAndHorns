@@ -2,6 +2,14 @@
 
 Last checked: 2026-09-05
 
+2026-09-06 Merge progression revision: Basic is now optional for Merge progression. Wave 6 grants
+an earned Level-2 floor and unlocks manual Powers-menu claims; Full pets are eligible at Level 2,
+and personal hatch inventory no longer requires a course. Wave 10 teaches two slots, Wave 12 an
+enhancement, and Wave 14 introduces the Quartermaster without a required interaction. The old
+persistent Basic reminder is disabled in Merge. All three optional courses retain their existing
+once-only capped level/token rewards. The wave lessons use separate `GameData.MergePowerLessons`
+receipts and never set `CombatTutorial.done`. See [Merge onboarding](MERGE_EGG_PROTOTYPE.md#wave-paced-power-onboarding-2026-09-06).
+
 ## Current: three independent courses
 
 `configs/combat_courses.lua` projects the canonical lesson catalog below into:

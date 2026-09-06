@@ -39,12 +39,15 @@ return function()
                 tutorial.combat_cards.upgrade_waves
             )
             expect(tutorialHud.combatCard(tutorial, 7)).to.equal(
-                tutorial.combat_cards.quartermaster_waves
+                tutorial.combat_cards.upgrade_waves
             )
             expect(tutorialHud.combatCard(tutorial, 10)).to.equal(
                 tutorial.combat_cards.quartermaster_waves
             )
-            expect(tutorialHud.combatCard(tutorial, 11)).to.equal(nil)
+            expect(tutorialHud.combatCard(tutorial, 11)).to.equal(
+                tutorial.combat_cards.quartermaster_waves
+            )
+            expect(tutorialHud.combatCard(tutorial, 15)).to.equal(nil)
         end)
 
         it("fits both flanks and the pill in one authored assembly", function()
@@ -188,13 +191,13 @@ return function()
                 local combatTutorial = readFile("src/Server/Services/CombatTutorialService.lua")
 
                 expect(config.quartermaster.services.training_label).to.equal(
-                    "COMBAT TRAINING — UNLOCK YOUR PETS"
+                    "OPTIONAL TRAINING — EARN A LEVEL"
                 )
-                expect(config.quartermaster.greeting:find("Rebirths unlock new eggs", 1, true)).to.be.ok()
-                expect(config.quartermaster.services.body:find("Finish Combat Training", 1, true)).to.be.ok()
+                expect(config.quartermaster.greeting:find("optional training", 1, true)).to.be.ok()
+                expect(config.quartermaster.services.body:find("optional training", 1, true)).to.be.ok()
                 expect(
                     config.quartermaster.services.training_body:find(
-                        "Advanced 1 and 2 are optional",
+                        "Advanced courses also",
                         1,
                         true
                     )
@@ -206,15 +209,9 @@ return function()
                 expect(mergeService:find("trainingAvailable = true", 1, true)).to.be.ok()
                 expect(mergeService:find('return false, "combat_tutorial_complete"', 1, true)).to.be.ok()
                 expect(config.quartermaster.services.training_redo_label).to.equal(nil)
-                expect(config.quartermaster.greeting_complete:find("Training complete", 1, true)).to.be.ok()
+                expect(config.quartermaster.greeting_complete:find("optional training", 1, true)).to.be.ok()
                 expect(config.quartermaster.introduction_seconds).to.equal(5)
-                expect(
-                    config.quartermaster.services.body_complete:find(
-                        "now enter your inventory",
-                        1,
-                        true
-                    )
-                ).to.be.ok()
+                expect(config.quartermaster.services.body_complete:find("yours to keep", 1, true)).to.be.ok()
                 expect(mergeService:find("(done and post.greeting_complete)", 1, true)).to.be.ok()
                 expect(mergeService:find("_showQuartermasterIntroduction", 1, true)).to.be.ok()
                 expect(mergeService:find("_clearQuartermasterIntroduction", 1, true)).to.be.ok()
@@ -484,11 +481,11 @@ return function()
             expect(config.tutorial.pause_after_cannon_wave).to.equal(4)
             expect(config.tutorial.workshop_cannon_slot).to.equal("right")
             expect(config.tutorial.workshop_cannon_family).to.equal("heal")
-            expect(config.tutorial.pause_after_upgrade_wave).to.equal(6)
+            expect(config.tutorial.pause_after_upgrade_wave).to.equal(8)
             expect(config.tutorial.upgrade_coin_target).to.equal(600)
             expect(config.tutorial.upgrade_create_count).to.equal(2)
             expect(config.tutorial.combat_cards.upgrade_waves.body).to.equal(
-                "The egg-upgrade lesson will begin after Wave 6."
+                "Earn Level 2 and choose your first utility power after Wave 6."
             )
             expect(config.tutorial.activity_feedback.through_wave).to.equal(nil)
             expect(config.tutorial.activity_feedback.default_duration_seconds).to.equal(2.5)
@@ -504,9 +501,9 @@ return function()
                 "%s UPGRADED — GREAT JOB. YOU'VE GOT THIS."
             )
             expect(config.tutorial.activity_feedback.copies.waycoins_collected).to.equal(nil)
-            expect(config.tutorial.pause_after_quartermaster_wave).to.equal(10)
+            expect(config.tutorial.pause_after_quartermaster_wave).to.equal(14)
             expect(config.quartermaster.user_id).to.equal(873359641)
-            expect(config.quartermaster.greeting:find("Finish Combat Training", 1, true)).to.be.ok()
+            expect(config.quartermaster.greeting:find("optional training", 1, true)).to.be.ok()
             expect(config.quartermaster.shop_visible_transparency).to.equal(0)
             expect(config.world.potion_shop_heaven).to.equal("HeavenPotionShop")
             expect(config.world.potion_shop_hell).to.equal("HellPotionShop")
@@ -562,15 +559,9 @@ return function()
             expect(config.tutorial.steps.collect_upgrade_coins.target).to.equal("upgrade_coins")
             expect(config.tutorial.steps.upgrade_eggs.target).to.equal("buy_egg")
             expect(config.tutorial.steps.upgrade_eggs.body).to.equal(
-                "Create a couple of eggs, then upgrade one or place one on the line. However you like."
+                "Use Deploy Best to combine matching eggs or place an egg on your line. Either keeps you moving."
             )
-            expect(
-                service:find(
-                    "created >= createdNeed and (merged > 0 or upgradedBase or placed > 0)",
-                    1,
-                    true
-                )
-            ).to.be.ok()
+            expect(service:find("return merged > 0 or upgradedBase or placed > 0", 1, true)).to.be.ok()
             expect(service:find("and placed > 0", 1, true)).to.equal(nil)
             expect(config.tutorial.steps.talk_quartermaster.target).to.equal("quartermaster")
             expect(config.opening_economy.cannon_gem.currency).to.equal("gems")
@@ -880,10 +871,10 @@ return function()
             local personalHatches = rules.personal_hatches
 
             expect(rules.default_mode).to.equal("full")
-            expect(rules.minimum_level).to.equal(10)
+            expect(rules.minimum_level).to.equal(2)
             expect(personalHatches.starting_tier).to.equal(1)
             expect(personalHatches.tiers_per_rebirth).to.equal(1)
-            expect(personalHatches.inventory_requires_combat_tutorial).to.equal(true)
+            expect(personalHatches.inventory_requires_combat_tutorial).to.equal(false)
             expect(personalHatches.unlock_area_by_egg.aurora_egg).to.equal("Heaven_1_Ice")
             expect(personalHatches.unlock_area_by_egg.hell3_desert_egg).to.equal("Hell_3_Desert")
             expect(service:find("function MergeEggPrototypeService:_awardFullModeHatch", 1, true)).to.be.ok()

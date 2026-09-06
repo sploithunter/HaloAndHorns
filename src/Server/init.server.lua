@@ -1042,6 +1042,9 @@ if isFeatureEnabled("map_binding") then
         "CombatTutorialService",
         "AchievementBannerService",
     }
+    table.insert(mergeEggPrototypeDeps, "EnhancementService")
+    mergeEggPrototypeDeps =
+        appendIfEnabled(mergeEggPrototypeDeps, "player_progression", "PlayerProgressionService")
     if RunService:IsStudio() then
         table.insert(mergeEggPrototypeDeps, "AutomationService")
     end

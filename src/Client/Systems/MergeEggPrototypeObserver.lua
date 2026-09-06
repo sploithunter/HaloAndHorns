@@ -393,6 +393,21 @@ local function layoutTutorialCardOverHotbar(card)
     card.frame.AnchorPoint = pillFrame.AnchorPoint
     card.frame.Position = pillFrame.Position
     card.frame.Size = pillFrame.Size
+    local lessons = CONFIG.tutorial.power_lessons
+    if
+        lessons
+        and lessons.enabled
+        and localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) ~= true
+    then
+        -- Once powers are introduced, keep lesson copy above the bar, never over its controls.
+        card.frame.Position = pillFrame.Position
+            - UDim2.new(
+                0,
+                0,
+                pillFrame.Size.Y.Scale * lessons.card_lift_scale,
+                pillFrame.Size.Y.Offset * lessons.card_lift_scale
+            )
+    end
     hotbarGui.DisplayOrder = assert(
         tonumber(TUTORIAL_CARD_LAYOUT.display_order),
         "tutorial.card_layout.display_order is required"
@@ -411,6 +426,12 @@ local function setTutorialHotbarCovered(world, observing)
         localPlayer:GetAttribute("CombatTutorialDone") ~= true
             and localPlayer:GetAttribute("MergeEggPlayerCombatMode") ~= "full"
     )
+    local lessons = CONFIG.tutorial.power_lessons
+    if lessons and lessons.enabled then
+        covered = observing == true
+            and tutorialRequired
+            and currentWave < lessons.hotbar_reveal_wave
+    end
     if localPlayer:GetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE) ~= covered then
         localPlayer:SetAttribute(TUTORIAL_HOTBAR_COVER_ATTRIBUTE, covered)
     end
@@ -979,8 +1000,11 @@ end
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
     local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
     if
-        localPlayer:GetAttribute("CombatTutorialDone") == true
-        or localPlayer:GetAttribute("MergeEggPlayerCombatMode") == "full"
+        not (tutorial.power_lessons and tutorial.power_lessons.enabled)
+        and (
+            localPlayer:GetAttribute("CombatTutorialDone") == true
+            or localPlayer:GetAttribute("MergeEggPlayerCombatMode") == "full"
+        )
     then
         card.frame.Visible = false
         clearTutorialEggFocus()
@@ -1010,7 +1034,12 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
                     world and world:GetAttribute("CurrentWave")
                 )
             or nil
-        if not combatSpec and observing and world then
+        if
+            not combatSpec
+            and observing
+            and world
+            and tutorial.basic_combat_reminder.enabled ~= false
+        then
             combatSpec = tutorial.basic_combat_reminder
         end
         if type(combatSpec) == "table" then
@@ -1024,6 +1053,12 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         return
     end
     local autoCollector = world:GetAttribute("MergeEggTutorialUsesAutoCollector") == true
+    if localPlayer:GetAttribute("MergePowerLesson") and _G.PowerChoiceMenuOpen then
+        card.frame.Visible = false
+        clearTutorialClickChevron()
+        clearTutorialPath()
+        return
+    end
     card.frame.Visible = true
     local workshopOrder = TUTORIAL_WORKSHOP_ORDER[step]
     local cannonOrder = TUTORIAL_CANNON_ORDER[step]
@@ -1118,17 +1153,17 @@ local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMen
         )
         local remaining = math.max(0, need - created)
         if remaining > 0 then
-            card.title.Text = remaining == 1 and "CREATE ONE MORE EGG"
-                or string.format("CREATE %d MORE EGGS", remaining)
-            card.body.Text = "Click BUY EGG. Then upgrade one or place one on the line."
+            card.title.Text = remaining == 1 and spec.create_one_title
+                or string.format(spec.create_more_title, remaining)
+            card.body.Text = spec.create_body
         else
-            card.title.Text = "UPGRADE OR PLACE ONE"
-            card.body.Text = "Merge two matching eggs, or drag one onto the line."
+            card.title.Text = spec.combine_title
+            card.body.Text = spec.combine_body
         end
     end
     local targetKind = tostring(spec.target or "none")
     if step == "upgrade_eggs" and not tutorialBuyEggCueAllowed(world) then
-        targetKind = "board_egg"
+        targetKind = "equip_best"
     end
     local menuOpen = bulwarkMenu and bulwarkMenu.isOpen and bulwarkMenu:isOpen() == true
     local cannonMenuOpen = cannonMenu and cannonMenu.isOpen and cannonMenu:isOpen() == true
