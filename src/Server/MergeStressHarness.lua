@@ -40,6 +40,7 @@ end
 
 function Harness:stop()
     self.running = false
+    self:_finishProfile("stress_stopped")
     if self.connection then
         self.connection:Disconnect()
         self.connection = nil
@@ -67,20 +68,58 @@ function Harness:status()
             })
         end
     end
-    return { running = self.running == true, workers = rows, errors = self.errors }
+    return {
+        running = self.running == true,
+        workers = rows,
+        errors = self.errors,
+        profile = self:profileStatus(),
+    }
+end
+
+function Harness:_finishProfile(reason)
+    local capture = self.capture
+    if not capture or not capture.running then
+        return
+    end
+    capture.running = false
+    capture.reason = reason
+    capture.elapsed = os.clock() - capture.started
+    if capture.connection then
+        capture.connection:Disconnect()
+        capture.connection = nil
+    end
+    for _, row in ipairs(capture.originals) do
+        if row[1][row[2]] == row[4] then
+            row[1][row[2]] = row[3]
+        end
+    end
+    table.clear(capture.originals)
+end
+
+function Harness:profileStatus()
+    local capture = self.capture
+    if not capture then
+        return { running = false }
+    end
+    return {
+        running = capture.running,
+        reason = capture.reason,
+        elapsed = capture.elapsed or (os.clock() - capture.started),
+        counters = capture.counters,
+    }
 end
 
 -- Inclusive wall time (may contain yielding work), not MicroProfiler CPU attribution.
--- Bounded and self-restoring; never enabled in live servers.
+-- Non-blocking and self-restoring; poll profileStatus instead of holding an MCP call open.
 function Harness:profile(selection)
-    assert(not self.profiling, "profile capture already running")
-    self.profiling = true
+    assert(not self.capture or not self.capture.running, "profile capture already running")
     local counters, originals = {}, {}
     local selected = selection
         or {
             PetFollowService = { "_tick", "_tickPrincipal", "_mine", "_findBreakable" },
             EnemyService = {
                 "_combatTick",
+                "_petAggroPass",
                 "_assignPetTargets",
                 "_supportPass",
                 "_regenPass",
@@ -105,6 +144,21 @@ function Harness:profile(selection)
         EnemyService = merge._enemyService,
         CombatService = merge._petFollowService and merge._petFollowService:_combatService(),
     }
+    -- Validate the whole request before wrapping anything. Bad requests cannot leave
+    -- a half-installed capture, and duplicate method names cannot nest wrappers.
+    assert(type(selected) == "table", "profile selection must be a table")
+    for serviceName, methods in pairs(selected) do
+        assert(services[serviceName], "unknown profiling service: " .. tostring(serviceName))
+        assert(type(methods) == "table", "profiling methods must be a list")
+        local seen = {}
+        for _, method in ipairs(methods) do
+            assert(type(method) == "string" and not seen[method], "invalid or duplicate method")
+            assert(type(services[serviceName][method]) == "function", "unknown method: " .. method)
+            seen[method] = true
+        end
+    end
+    self.capture =
+        { running = true, started = os.clock(), counters = counters, originals = originals }
     for serviceName, methods in pairs(selected) do
         local service = services[serviceName]
         for _, method in ipairs(methods) do
@@ -130,18 +184,19 @@ function Harness:profile(selection)
             end
         end
     end
-    task.wait(self.service._config.studio_stress.profile_seconds)
-    for _, row in ipairs(originals) do
-        if row[1][row[2]] == row[4] then
-            row[1][row[2]] = row[3]
+    self.capture.connection = RunService.Heartbeat:Connect(function()
+        if
+            os.clock() - self.capture.started >= self.service._config.studio_stress.profile_seconds
+        then
+            self:_finishProfile("completed")
         end
-    end
-    self.profiling = false
-    return counters
+    end)
+    return self:profileStatus()
 end
 
-function Harness:start(sources)
+function Harness:start(request)
     assert(not self.running, "stress already running")
+    local sources = type(request) == "table" and (request.sources or request)
     assert(type(sources) == "table" and #sources > 0, "source snapshots required")
     for _, source in ipairs(sources) do
         assert(type(source) == "table" and type(source.data) == "table", "profile data required")
@@ -149,6 +204,9 @@ function Harness:start(sources)
     end
     local service = self.service
     local cfg = service._config.studio_stress
+    local target = request.occupiedBayTarget or cfg.default_occupied_bays
+    assert(type(target) == "number" and target == math.floor(target), "integer bay target required")
+    assert(target > 0 and target <= cfg.maximum_occupied_bays, "bay target out of range")
     assert(cfg.first_fixture_user_id < 0, "fixture IDs must be negative")
     service._filling = false
     service:_status("Filling", false)
@@ -161,7 +219,7 @@ function Harness:start(sources)
         end
     end
     table.sort(empty)
-    local count = math.min(#empty, math.max(0, cfg.maximum_occupied_bays - occupied))
+    local count = math.min(#empty, math.max(0, target - occupied))
     assert(count > 0, "no empty stress bays")
     self.running = true
     self.deadline = os.clock() + cfg.duration_seconds

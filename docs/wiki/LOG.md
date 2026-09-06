@@ -8371,3 +8371,10 @@ first-session cohort rates.
 - Captured severe shared-machine slowdown (client frame mean 153ms, server 206ms in separate 20s samples); inclusive enemy-loop timing consumed 14.5s/20s. These are workload baselines, not before/after wins.
 - Staged distance-before-allegiance proximity filtering without changing targeting rules. Full CI passed 2,705 tests / 301 specs. Draft PR #460 stays unmerged pending matched Studio verification.
 - Merge Studio stopped answering controls around 02:06 UTC Sep 6. Both Studio processes were left open; native samples and fixture/capture artifacts preserved. A later CI attempt hit a transient toolchain cwd panic; a complete retry passed. Overnight goal/heartbeat remains active.
+
+## 2026-09-06 — Memory-failure recovery and guarded testing
+
+- User reported system-memory exhaustion and a hard reboot. macOS Jetsam identifies Merge Studio as the dominant accounted-memory process; reset diagnostics confirm button reset. Root allocation cause is not established. `/tmp` captures were lost; earlier raw-evidence availability claims no longer hold.
+- Paused overnight retries and restored Rojo connectivity without starting another load test. Added a read-only-by-default host footprint/pressure watchdog with explicitly authorized exact-process suspension as an optional fail-safe. Fresh Edit footprint (~6.2 GiB) failed its conservative startup gate; no signal or extra bays.
+- Reduced default stress target to two occupied bays and duration to 120 seconds. Profiling now returns immediately, validates the complete method selection, includes pet aggro, and restores wrappers on stop/completion. This also fixes the hosted architecture-check failure discovered on the previous commit.
+- Verification: full local CI 2,706 tests / 301 specs, seven Python watchdog tests, isolated Edit smoke for profiling validation/return values/cleanup. PR #460 remains draft, unmerged, and unpublished; matched runtime improvements and the full-server goal remain incomplete. See [stress testing](MERGE_STRESS_TESTING.md).

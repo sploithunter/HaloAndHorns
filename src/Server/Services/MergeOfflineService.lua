@@ -522,6 +522,7 @@ function Service:Start()
                 or action == "stress_status"
                 or action == "stress_stop"
                 or action == "stress_profile"
+                or action == "stress_profile_status"
             then
                 if not self._stressHarness then
                     self._stressHarness = require(script.Parent.Parent.MergeStressHarness).new(self)
@@ -530,6 +531,8 @@ function Service:Start()
                     return self._stressHarness:start(sourcePlayer)
                 elseif action == "stress_profile" then
                     return self._stressHarness:profile(sourcePlayer)
+                elseif action == "stress_profile_status" then
+                    return self._stressHarness:profileStatus()
                 elseif action == "stress_stop" then
                     self._stressHarness:stop()
                 end
