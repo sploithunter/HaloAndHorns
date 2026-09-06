@@ -1,5 +1,47 @@
 # Client Performance
 
+## Bounded procedural effect-part reuse (2026-09-06, feature branch)
+
+`combat_fx.part_pool` enables a shared **2,048-idle-Part** cache per execution context.
+Only private procedural primitives participate: RangedFX flashes/sparks/shards/rings/
+smoke/columns and AreaFX single-stage primitives. Multi-stage projectiles, ricochets,
+tar pits, particle hosts, sound holders, and lightning rigs retain their old lifecycle.
+No living pet, authored model, hit, effect count, appearance parameter or damage timing
+is removed. Capacity bounds idle retention, not active visuals; overflow is destroyed.
+
+`LeasePool` invalidates ownership before cleanup and requires the lease ID on release.
+Old timers therefore cannot remove a newer use of the same Part. `EffectPartPool`
+resets appearance/transform properties, cancels and destroys owned tweens, destroys
+children, clears attributes/tags, and retains idle Parts under a private unparented
+folder. Its parent marker detects destroyed idle Parts even with deferred Destroying
+signals. Idle parts intentionally appear in retention diagnostics; the cap is explicit.
+Disabling the config keeps the same effects while allocating/destroying each use.
+
+Native `tools/effect_part_pool_smoke.luau` tests property/child reset, stale delayed
+release, external destruction, cap overflow, cancellation, and disposal. Three identical
+batches of real RangedFX/AreaFX calls have matching initial visual-property signatures
+and complete normal lifetimes: disabled creates 1,077 Parts; enabled creates 359 and
+reuses 718. The first native attempt exposed deferred Destroying and informed the
+parent-marker fix; another attempted cleanup assertion ran before the unchanged grass
+particle host's two-second lifetime and was corrected to wait 2.2 seconds.
+
+Fresh one-bay Play progressed waves 72→76 with visible combat, no console script errors,
+and runtime pool counters of 2,872 created / 174,684 reused after roughly 140 seconds.
+The 90-second parenting census recorded 116,992 additions (including reuse), while
+BaseParts rose **39.254 MB**, versus **152.714 MB** in the preceding unpooled capture.
+Waves and view differ: these are observed shared-Studio counters, not a controlled
+whole-game percentage, total-memory cure, deployment budget or FPS claim. Memory still
+grows in unmigrated effects/categories. The MCP command environment has a separate module
+cache; runtime pool counters must be read through a temporary LocalScript/Bindable probe,
+not by requiring a new lazy pool in the command environment.
+
+Full local CI: 2,755 tests / 309 specs. The first combined run sampled the temporary
+offline-fill-disabled diagnostic config and failed its policy assertion; rerunning with
+the restored production config passed. Evidence: `effect-pool-native.json`,
+`effect-pool-one-{probe.luau,result.json,host.jsonl}` and `effect-pool-final-ci.log` in the
+durable [stress directory](MERGE_STRESS_TESTING.md). Eight-bay validation remains pending.
+No production publish; Studio stays open.
+
 ## Character-local Merge bay detail (2026-09-06)
 
 `MergeBayPresentation` selects the nearest authored bay from the **character's current

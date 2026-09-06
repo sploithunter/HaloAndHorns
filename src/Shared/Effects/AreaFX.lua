@@ -19,6 +19,8 @@
 local Debris = game:GetService("Debris")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local EffectPartPool = require(ReplicatedStorage.Shared.Effects.EffectPartPool)
 
 local AreaFX = {}
 
@@ -57,8 +59,17 @@ local function fxFolder()
     return f
 end
 
-local function newPart(shape, mat, color, transparency)
-    local p = Instance.new("Part")
+local leases = setmetatable({}, { __mode = "k" })
+local function newPart(shape, mat, color, transparency, unpooled)
+    local p
+    if unpooled then
+        -- Multi-stage effects retain their existing ownership until separately migrated.
+        p = Instance.new("Part")
+    else
+        local lease
+        p, lease = EffectPartPool.shared().acquire()
+        leases[p] = lease
+    end
     p.Shape = shape
     p.Material = mat
     p.Color = color
@@ -72,8 +83,10 @@ local function newPart(shape, mat, color, transparency)
 end
 
 local function tween(inst, t, props, dir)
-    TweenService:Create(inst, ti(t, dir), props):Play()
-    Debris:AddItem(inst, t + 0.15)
+    local pool, lease = EffectPartPool.shared(), leases[inst]
+    assert(lease, "single-stage effect must own a part lease")
+    pool.tween(inst, lease, inst, ti(t, dir), props):Play()
+    pool.retireAfter(inst, lease, t + 0.15)
 end
 
 -- ===== Shared primitives =====
@@ -232,7 +245,7 @@ local function ricochet(pos, c1, c2, mat, count, spread)
         local ang = (i / count) * math.pi * 2 + (math.random() - 0.5) * 0.9
         local dir = Vector3.new(math.cos(ang), 0, math.sin(ang)).Unit
         local sz = spread * (0.07 + math.random() * 0.06)
-        local chunk = newPart(Enum.PartType.Block, mat, (i % 2 == 0) and c1 or c2, 0.05)
+        local chunk = newPart(Enum.PartType.Block, mat, (i % 2 == 0) and c1 or c2, 0.05, true)
         chunk.Size = Vector3.new(sz, sz * 0.8, sz * 1.1)
         local startPos = pos
             + dir * (spread * 0.2)
@@ -505,7 +518,9 @@ local function lightningStrikes(pos, count, radius, life, color, color2, varOver
                 Transparency = 1,
                 Size = Vector3.new(0.2, 0.2, 0.2),
             })
-            TweenService:Create(lt, ti(boltLife + 0.05), { Brightness = 0 }):Play()
+            EffectPartPool.shared()
+                .tween(flash, leases[flash], lt, ti(boltLife + 0.05), { Brightness = 0 })
+                :Play()
         end)
     end
 end
@@ -553,7 +568,7 @@ end
 -- rising, glowing bubbles. Stays for `life` seconds, then stops emitting + fades out.
 local function tarPit(pos, c1, c2, radius, life)
     local pool =
-        newPart(Enum.PartType.Cylinder, Enum.Material.Glass, Color3.fromRGB(28, 20, 16), 0.15)
+        newPart(Enum.PartType.Cylinder, Enum.Material.Glass, Color3.fromRGB(28, 20, 16), 0.15, true)
     pool.Reflectance = 0.05
     pool.Size = Vector3.new(0.3, 1, 1)
     pool.CFrame = CFrame.new(pos + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.rad(90))
@@ -565,7 +580,7 @@ local function tarPit(pos, c1, c2, radius, life)
     light.Parent = pool
 
     -- Bubble emitter on a flat invisible holder so Top emits straight up.
-    local holder = newPart(Enum.PartType.Block, Enum.Material.SmoothPlastic, Color3.new(), 1)
+    local holder = newPart(Enum.PartType.Block, Enum.Material.SmoothPlastic, Color3.new(), 1, true)
     holder.Size = Vector3.new(radius * 1.6, 0.2, radius * 1.6)
     holder.CFrame = CFrame.new(pos + Vector3.new(0, 0.2, 0))
     local e = Instance.new("ParticleEmitter")
@@ -802,7 +817,7 @@ local EFFECTS = {
     end,
     -- LAVA targeted: Meteor — a ball drops from above, then real fire + shockwave erupt.
     lava_targeted = function(pos, c1, c2, mat, radius, life)
-        local meteor = newPart(Enum.PartType.Ball, mat, c1, 0)
+        local meteor = newPart(Enum.PartType.Ball, mat, c1, 0, true)
         local sz = radius * 0.5
         meteor.Size = Vector3.new(sz, sz, sz)
         meteor.CFrame = CFrame.new(pos + Vector3.new(0, radius * 2, 0))

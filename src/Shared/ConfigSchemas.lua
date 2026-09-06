@@ -50,7 +50,12 @@ local SCHEMAS = {
     leaderboards = schema({ publication = "table", surface = "table", boards = "table" }),
     combat_deaths = schema({ hold_seconds = "number", styles = "table" }),
     combat_ranks = schema({ version = "number", ranks = "table" }),
-    combat_fx = schema({ origin = "table", reskins = "table", attached = "table" }),
+    combat_fx = schema({
+        origin = "table",
+        reskins = "table",
+        attached = "table",
+        part_pool = "table",
+    }),
     challenge_runs = schema({
         rooms = "number",
         no_pet_revives = "boolean",

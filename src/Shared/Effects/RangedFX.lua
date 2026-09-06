@@ -23,6 +23,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local EnchantLightning = require(ReplicatedStorage.Shared.Effects.EnchantLightning)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+local EffectPartPool = require(ReplicatedStorage.Shared.Effects.EffectPartPool)
 
 local RangedFX = {}
 
@@ -102,7 +103,8 @@ end
 
 -- A neon flash sphere that snaps out and fades, with a quick PointLight pop.
 local function spawnFlash(pos, color, lightColor, size, life)
-    local flash = Instance.new("Part")
+    local pool = EffectPartPool.shared()
+    local flash, lease = pool.acquire()
     flash.Shape = Enum.PartType.Ball
     flash.Material = Enum.Material.Neon
     flash.Color = color
@@ -118,24 +120,30 @@ local function spawnFlash(pos, color, lightColor, size, life)
     light.Brightness = 7
     light.Range = size * 2.5
     light.Parent = flash
-    TweenService
-        :Create(flash, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    pool.tween(
+        flash,
+        lease,
+        flash,
+        TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
             Size = Vector3.new(size, size, size),
             Transparency = 1,
-        })
+        }
+    )
         :Play()
-    TweenService:Create(light, TweenInfo.new(life * 0.9), { Brightness = 0 }):Play()
-    Debris:AddItem(flash, life + 0.1)
+    pool.tween(flash, lease, light, TweenInfo.new(life * 0.9), { Brightness = 0 }):Play()
+    pool.retireAfter(flash, lease, life + 0.1)
 end
 
 -- A radial spray of neon bits that fly outward (with upward lift), shrink + fade.
 local function spawnSparks(pos, c1, c2, count, bitSize, spread, life)
     count = math.max(0, math.floor(count))
+    local pool = EffectPartPool.shared()
     for i = 1, count do
         local ang = (i / count) * math.pi * 2 + math.random() * 0.6
         local elev = 0.2 + math.random() * 0.6
         local dir = Vector3.new(math.cos(ang), elev, math.sin(ang)).Unit
-        local bit = Instance.new("Part")
+        local bit, lease = pool.acquire()
         bit.Shape = Enum.PartType.Ball
         bit.Material = Enum.Material.Neon
         bit.Color = (i % 2 == 0) and c1 or c2
@@ -148,20 +156,26 @@ local function spawnSparks(pos, c1, c2, count, bitSize, spread, life)
         bit.Parent = fxFolder()
         local dist = spread * (0.7 + math.random() * 0.9)
         local dest = pos + dir * dist - Vector3.new(0, spread * 0.25, 0)
-        TweenService
-            :Create(bit, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        pool.tween(
+            bit,
+            lease,
+            bit,
+            TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
                 CFrame = CFrame.new(dest),
                 Size = Vector3.new(0.05, 0.05, 0.05),
                 Transparency = 1,
-            })
+            }
+        )
             :Play()
-        Debris:AddItem(bit, life + 0.1)
+        pool.retireAfter(bit, lease, life + 0.1)
     end
 end
 
 -- A flat neon disc that expands outward + fades — a ground shockwave.
 local function spawnShockwave(pos, color, diameter, life)
-    local ring = Instance.new("Part")
+    local pool = EffectPartPool.shared()
+    local ring, lease = pool.acquire()
     ring.Shape = Enum.PartType.Cylinder
     ring.Material = Enum.Material.Neon
     ring.Color = color
@@ -173,18 +187,24 @@ local function spawnShockwave(pos, color, diameter, life)
     ring.Size = Vector3.new(0.4, 1, 1) -- X = thin height; Y/Z = diameter
     ring.CFrame = CFrame.new(pos) * CFrame.Angles(0, 0, math.rad(90)) -- lay flat (X -> up)
     ring.Parent = fxFolder()
-    TweenService
-        :Create(ring, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    pool.tween(
+        ring,
+        lease,
+        ring,
+        TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
             Size = Vector3.new(0.2, diameter, diameter),
             Transparency = 1,
-        })
+        }
+    )
         :Play()
-    Debris:AddItem(ring, life + 0.1)
+    pool.retireAfter(ring, lease, life + 0.1)
 end
 
 -- A puff that swells + rises + fades — lingering smoke (gray) or dust (tan via `color`).
 local function spawnSmoke(pos, diameter, life, color)
-    local s = Instance.new("Part")
+    local pool = EffectPartPool.shared()
+    local s, lease = pool.acquire()
     s.Shape = Enum.PartType.Ball
     s.Material = Enum.Material.SmoothPlastic
     s.Color = color or Color3.fromRGB(60, 55, 50)
@@ -196,17 +216,18 @@ local function spawnSmoke(pos, diameter, life, color)
     s.Size = Vector3.new(diameter * 0.4, diameter * 0.4, diameter * 0.4)
     s.CFrame = CFrame.new(pos + Vector3.new(0, diameter * 0.2, 0))
     s.Parent = fxFolder()
-    TweenService:Create(s, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    pool.tween(s, lease, s, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Size = Vector3.new(diameter, diameter, diameter),
         Transparency = 1,
         CFrame = CFrame.new(pos + Vector3.new(0, diameter * 0.7, 0)),
     }):Play()
-    Debris:AddItem(s, life + 0.1)
+    pool.retireAfter(s, lease, life + 0.1)
 end
 
 -- A vertical neon pillar that shoots up from the hit point and thins out as it fades.
 local function spawnColumn(pos, color, height, life)
-    local col = Instance.new("Part")
+    local pool = EffectPartPool.shared()
+    local col, lease = pool.acquire()
     col.Shape = Enum.PartType.Cylinder
     col.Material = Enum.Material.Neon
     col.Color = color
@@ -219,25 +240,31 @@ local function spawnColumn(pos, color, height, life)
     col.Size = Vector3.new(1, diam, diam) -- X = length (vertical once rotated); Y/Z = diameter
     col.CFrame = CFrame.new(pos + Vector3.new(0, 0.5, 0)) * CFrame.Angles(0, 0, math.rad(90))
     col.Parent = fxFolder()
-    TweenService
-        :Create(col, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    pool.tween(
+        col,
+        lease,
+        col,
+        TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
             Size = Vector3.new(height, diam * 0.3, diam * 0.3),
             Transparency = 1,
             CFrame = CFrame.new(pos + Vector3.new(0, height * 0.5, 0))
                 * CFrame.Angles(0, 0, math.rad(90)),
-        })
+        }
+    )
         :Play()
-    Debris:AddItem(col, life + 0.1)
+    pool.retireAfter(col, lease, life + 0.1)
 end
 
 -- Pointed glass shards that fly outward + tumble + fade — an icy shatter spray.
 local function spawnShards(pos, c1, c2, count, len, spread, life)
     count = math.max(0, math.floor(count))
+    local pool = EffectPartPool.shared()
     for i = 1, count do
         local ang = (i / count) * math.pi * 2 + math.random() * 0.6
         local elev = 0.2 + math.random() * 0.7
         local dir = Vector3.new(math.cos(ang), elev, math.sin(ang)).Unit
-        local shard = Instance.new("Part")
+        local shard, lease = pool.acquire()
         shard.Material = Enum.Material.Glass
         shard.Color = (i % 2 == 0) and c1 or c2
         shard.Transparency = 0.1
@@ -251,14 +278,18 @@ local function spawnShards(pos, c1, c2, count, len, spread, life)
         shard.Parent = fxFolder()
         local dist = spread * (0.7 + math.random() * 0.9)
         local dest = pos + dir * dist - Vector3.new(0, spread * 0.2, 0)
-        TweenService
-            :Create(shard, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        pool.tween(
+            shard,
+            lease,
+            shard,
+            TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
                 CFrame = CFrame.new(dest) * CFrame.Angles(math.random() * 3, math.random() * 3, 0),
                 Size = Vector3.new(0.05, 0.05, 0.05),
                 Transparency = 1,
-            })
-            :Play()
-        Debris:AddItem(shard, life + 0.1)
+            }
+        ):Play()
+        pool.retireAfter(shard, lease, life + 0.1)
     end
 end
 
