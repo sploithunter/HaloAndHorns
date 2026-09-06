@@ -8364,3 +8364,10 @@ first-session cohort rates.
 - Merged completed Watcher/analytics work through PR #458, preserving #459 asset history. Final main `da1830ab` passed all 2,701 tests and fresh Merge Play with no client errors.
 - Audited and removed only merged feature branches and the completed clean Heaven worktree. Untracked review assets preserved in `/Users/jason/Documents/HaloAndHorns-review-archive.daPCYI`; no working assets discarded.
 - Started [eight-bay stress testing](MERGE_STRESS_TESTING.md), using isolated copies of profiles rather than spending or resetting real alternate-account progress. Production publishing is not part of this performance authorization.
+
+### Eight-bay baseline and first candidate change
+
+- Added a Studio-only negative-ID fixture harness: seven cloned level-50/wave-530 profiles plus the real viewer populate eight bays, approximately 700 pet models. No source profile acquisition or persistence; bounded 30-minute run and completion-aware teardown.
+- Captured severe shared-machine slowdown (client frame mean 153ms, server 206ms in separate 20s samples); inclusive enemy-loop timing consumed 14.5s/20s. These are workload baselines, not before/after wins.
+- Staged distance-before-allegiance proximity filtering without changing targeting rules. Full CI passed 2,705 tests / 301 specs. Draft PR #460 stays unmerged pending matched Studio verification.
+- Merge Studio stopped answering controls around 02:06 UTC Sep 6. Both Studio processes were left open; native samples and fixture/capture artifacts preserved. A later CI attempt hit a transient toolchain cwd panic; a complete retry passed. Overnight goal/heartbeat remains active.

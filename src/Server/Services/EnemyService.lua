@@ -861,8 +861,10 @@ function EnemyService:_petAggroPass(now, dt, cfg)
                             and entry.model
                             and entry.model.Parent
                             and (entry.model:GetAttribute("HP") or 0) > 0
-                            and self:_petHostileToEnemy(pet, entry, player)
                             and (entry.pos - pp).Magnitude <= seedRadius
+                            -- Most pairs belong to distant bays. Do not resolve allegiance/team
+                            -- relationships for pairs that cannot receive a proximity seed.
+                            and self:_petHostileToEnemy(pet, entry, player)
                         then
                             AggroTable.add(tbl, tid, seed)
                         end
