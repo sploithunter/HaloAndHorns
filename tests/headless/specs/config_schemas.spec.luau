@@ -2,6 +2,20 @@ local ConfigSchemas = loadModule("src/Shared/ConfigSchemas.lua")
 
 return function()
     describe("ConfigSchemas", function()
+        it("registers the host monitor JSON that Rojo exposes as a runtime config", function()
+            local cfg = {
+                sample_seconds = 0.5,
+                maximum_seconds = 180,
+                maximum_footprint_gib = 8,
+                maximum_growth_gib = 2,
+                maximum_start_footprint_gib = 6,
+                maximum_pressure_level = 1,
+                studio_executable = "/test/Studio",
+            }
+            expect(ConfigSchemas.validate("merge_stress_host", cfg)).to.equal(true)
+            cfg.sample_seconds = "invalid"
+            expect(ConfigSchemas.validate("merge_stress_host", cfg)).to.equal(false)
+        end)
         it("accepts a config matching its declared required shape", function()
             local ok = ConfigSchemas.validate("soul", {
                 delta_per_conquest = 5,

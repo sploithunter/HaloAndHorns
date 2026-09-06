@@ -29,6 +29,9 @@ local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
 local PetAttackMotion = require(ReplicatedStorage.Shared.Game.PetAttackMotion)
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
+local PetDownedVisibility = require(script.Parent.PetDownedVisibility)
+local PetPresentationBudget = require(ReplicatedStorage.Shared.Game.PetPresentationBudget)
+local FrameTargetLookup = require(ReplicatedStorage.Shared.Game.FrameTargetLookup)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
@@ -234,7 +237,7 @@ local function petSlot(pet)
     return (n and n.Value) or 0
 end
 
-local function findBreakable(targetType, world, id)
+local function findBreakable(lookup, targetType, world, id)
     local game = Workspace:FindFirstChild("Game")
     if not game then
         return nil
@@ -244,12 +247,7 @@ local function findBreakable(targetType, world, id)
         if not enemies then
             return nil
         end
-        for _, desc in ipairs(enemies:GetDescendants()) do
-            if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
-                return desc.Parent
-            end
-        end
-        return nil
+        return lookup:find(enemies, id)
     end
     local breakables = game:FindFirstChild("Breakables")
     if not breakables then
@@ -260,12 +258,7 @@ local function findBreakable(targetType, world, id)
     if not scope then
         return nil
     end
-    for _, desc in ipairs(scope:GetDescendants()) do
-        if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
-            return desc.Parent
-        end
-    end
-    return nil
+    return lookup:find(scope, id)
 end
 
 function PetFollowController.start()
@@ -273,6 +266,7 @@ function PetFollowController.start()
     if not config.service_owned then
         return -- legacy scripts own movement; controller idle
     end
+    PetDownedVisibility.watch(Workspace)
     local startClock = os.clock()
     -- Idle meander (PetMeander): per-pet stroll state + how long the PLAYER has
     -- been standing still (the gate that releases the squad to wander).
@@ -496,6 +490,9 @@ function PetFollowController.start()
         if ranged and castLockSeconds > 0 then
             castLockUntil[pet] = os.clock() + castLockSeconds
         end
+        if pet:GetAttribute("MergePresentationHidden") == true then
+            return -- distant bays use a bounded activity summary, not every projectile
+        end
         -- Same attack-FX path the enemies use (CombatHitFX): resolve the kind + fire it via RangedFX.
         -- ranged -> the per-pet by_type override or the biome element bolt; melee -> impact look.
         -- AoE SPLASH (data.splash): SKIP the per-target attack FX entirely — the fire-ring eruption
@@ -532,8 +529,6 @@ function PetFollowController.start()
     -- OTHER players' pets, server-relayed (the server never relays our own — those stay local).
     local remoteTargets = setmetatable({}, { __mode = "k" }) -- pet model -> latest relayed CFrame
     local remoteBaseCF = setmetatable({}, { __mode = "k" }) -- clean smoothed CFrame, no gait
-    local remoteDownAccum = 0 -- throttle for the remote downed-hide sweep (~4 Hz)
-    local remoteDownApplied = setmetatable({}, { __mode = "k" }) -- pet -> last applied downed bool
     Signals.PetPositionsRelay.OnClientEvent:Connect(function(list)
         if type(list) ~= "table" then
             return
@@ -547,7 +542,24 @@ function PetFollowController.start()
 
     -- per-ANCHOR meander stillness clocks (the per-model stores above are shared safely)
     local anchorStill = {}
+    local npcPresentationElapsed = {}
+    local npcPresentation = config.npc_presentation
     RunService.RenderStepped:Connect(function(dt)
+        -- Local to this callback: streamed/replaced targets rebuild next frame, and
+        -- old model references cannot accumulate across frames or bay visits.
+        local targetLookup = FrameTargetLookup.new()
+        -- Shared cleanup is once per frame, not once per each of dozens of squads.
+        for model in pairs(meanderStates) do
+            if not model.Parent then
+                meanderStates[model] = nil
+            end
+        end
+        for folder in pairs(npcPresentationElapsed) do
+            if not folder.Parent then
+                npcPresentationElapsed[folder] = nil
+                anchorStill[folder.Name] = nil
+            end
+        end
         -- Smooth OTHER players' pets toward their relayed CLEAN transforms (always, even if we
         -- have no pets of our own), then apply the same observer-local gait/rig animation used by
         -- the owner. Keep the clean base separate from the rendered pivot so cosmetic bob/tilt
@@ -564,7 +576,11 @@ function PetFollowController.start()
                     nextClean.Position.Z - clean.Position.Z
                 ).Magnitude
 
-                if PetAnimator.isRigged(pet) then
+                if pet:GetAttribute("MergePresentationHidden") == true then
+                    -- Keep the latest location for visibility re-entry, but no gait/rig work.
+                    remoteBaseCF[pet] = targetCf
+                    pet:PivotTo(targetCf * visualOrientation(pet))
+                elseif PetAnimator.isRigged(pet) then
                     PetAnimator.update(pet, dt > 0 and step / dt or 0)
                     nextClean = layerStrike(pet, nextClean)
                     pet:PivotTo(nextClean * visualOrientation(pet))
@@ -586,35 +602,6 @@ function PetFollowController.start()
             end
         end
 
-        -- Downed pets hide on EVERY client, not just their owner's (Jason live-caught: a
-        -- teammate's downed bear froze mid-world on the other screen — the owner's client
-        -- stops positioning it AND was the only one hiding it). CombatDowned replicates;
-        -- once invisible the stale pivot doesn't matter. Throttled — it's a rare state.
-        remoteDownAccum += dt
-        if remoteDownAccum >= 0.25 then
-            remoteDownAccum = 0
-            local pp = Workspace:FindFirstChild("PlayerPets")
-            for _, folder in ipairs(pp and pp:GetChildren() or {}) do
-                if folder.Name ~= localPlayer.Name then
-                    for _, m in ipairs(folder:GetChildren()) do
-                        if m:IsA("Model") then
-                            local downed = m:GetAttribute("CombatDowned") == true
-                            if remoteDownApplied[m] ~= downed then -- touch parts only on change
-                                remoteDownApplied[m] = downed
-                                for _, d in ipairs(m:GetDescendants()) do
-                                    if d:IsA("BasePart") then
-                                        d.LocalTransparencyModifier = downed and 1 or 0
-                                    elseif d:IsA("BillboardGui") then
-                                        d.Enabled = not downed
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
         -- ── drive ONE anchor's folder ─────────────────────────────────────────────
         -- Extracted so the SAME code that drives the local player's squad drives an NPC
         -- principal's (docs/CREATOR_SUMMON.md). Jason: "you should look at how the client
@@ -625,31 +612,28 @@ function PetFollowController.start()
         -- isLocal gates the position report: only the player's own pets report to the server.
         -- NPC pets are intentionally never client-authoritative; EnemyService resolves their
         -- server-side combat position through the manifested NPC character, then the real owner.
-        local function driveAnchor(anchorChar, petsFolder, attrs, anchorKey, isLocal)
+        local function driveAnchor(anchorChar, petsFolder, attrs, anchorKey, isLocal, dt)
             local char = anchorChar
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             if not hrp or not petsFolder then
                 return
             end
 
-            -- Downed pets are OUT of the fight: hide them (client-only LocalTransparencyModifier
-            -- so we never touch base Transparency) + any billboards, and skip positioning them.
+            -- Downed pets are OUT of the fight. PetDownedVisibility handles their
+            -- local visibility on state changes; this loop only skips positioning.
             -- They reappear when the player summons them (server clears CombatDowned).
             local pets = {}
             for _, m in ipairs(petsFolder:GetChildren()) do
+                if m:GetAttribute("MergePresentationHidden") == true then
+                    baseCF[m] = nil
+                end
                 if
                     m:IsA("Model")
                     and m.PrimaryPart
                     and m:GetAttribute("MergeEggObjective") ~= true
+                    and m:GetAttribute("MergePresentationHidden") ~= true
                 then
                     local downed = m:GetAttribute("CombatDowned")
-                    for _, d in ipairs(m:GetDescendants()) do
-                        if d:IsA("BasePart") then
-                            d.LocalTransparencyModifier = downed and 1 or 0
-                        elseif d:IsA("BillboardGui") then
-                            d.Enabled = not downed
-                        end
-                    end
                     -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
                     -- positioning it while the window is live (it stays visible; the hold badge
                     -- on its card says why it stopped).
@@ -987,7 +971,8 @@ function PetFollowController.start()
                 local breakable = nil
                 if not holdFormation and tid and tid.Value ~= 0 then
                     local tw = pet:FindFirstChild("TargetWorld")
-                    breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
+                    breakable =
+                        findBreakable(targetLookup, tt and tt.Value, tw and tw.Value, tid.Value)
                 end
                 local posNV = pet:FindFirstChild("PositionNumber")
                 local index = (posNV and posNV.Value > 0) and posNV.Value or slot
@@ -1293,14 +1278,11 @@ function PetFollowController.start()
 
             -- Throttled: report this player's pet positions to the server (drives the mining gate;
             -- foundation for multiplayer pet visibility). Positions are post-move (this frame).
-            -- prune meander states for despawned pets (recall/down/re-team)
-            for model in pairs(meanderStates) do
-                if not model.Parent then
-                    meanderStates[model] = nil
-                end
+            -- NPC presentation shares this function, but must not advance the
+            -- owner's reporting clock once per squad (up to every-frame sends).
+            if isLocal then
+                reportAccum += dt
             end
-
-            reportAccum += dt
             if isLocal and reportAccum >= reportInterval then
                 reportAccum = 0
                 local report = {}
@@ -1320,18 +1302,45 @@ function PetFollowController.start()
                 and Workspace.PlayerPets:FindFirstChild(localPlayer.Name),
             localPlayer,
             "player",
-            true
+            true,
+            dt
         )
         -- …and every NPC principal's squad through the SAME code: real formations, meander,
         -- speed scaling, gait — nothing bespoke. The NPC model doubles as the attribute
         -- source (its nil formation/speed attributes fall through to config defaults).
         local pp = Workspace:FindFirstChild("PlayerPets")
+        local camera = Workspace.CurrentCamera
+        local viewerRoot = localPlayer.Character
+            and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+        -- Studio-only A/B seam; never enables an override in production.
+        local bypassBudget = RunService:IsStudio()
+            and script:GetAttribute("DisableNpcPresentationBudget") == true
         if pp then
             for _, folder in ipairs(pp:GetChildren()) do
                 if folder:GetAttribute("NpcSquad") == true then
                     local npcModel = Workspace:FindFirstChild(folder.Name)
                     if npcModel then
-                        driveAnchor(npcModel, folder, npcModel, folder.Name, false)
+                        local root = npcModel:FindFirstChild("HumanoidRootPart")
+                        local radius = npcPresentation and npcPresentation.full_rate_radius
+                        local nearby = bypassBudget or not radius or not root
+                        if not nearby then
+                            nearby = (
+                                camera
+                                and (camera.CFrame.Position - root.Position).Magnitude <= radius
+                            )
+                                or (viewerRoot and (viewerRoot.Position - root.Position).Magnitude <= radius)
+                                or (not camera and not viewerRoot)
+                        end
+                        local run, elapsed, motionDt = PetPresentationBudget.step(
+                            npcPresentationElapsed[folder] or 0,
+                            dt,
+                            nearby,
+                            npcPresentation
+                        )
+                        npcPresentationElapsed[folder] = elapsed
+                        if run then
+                            driveAnchor(npcModel, folder, npcModel, folder.Name, false, motionDt)
+                        end
                     end
                 end
             end

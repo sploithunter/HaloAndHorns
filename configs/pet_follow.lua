@@ -641,5 +641,20 @@ return {
     replication = {
         interval = 0.1, -- seconds between position reports (~10 Hz)
         stale_seconds = 0.5, -- a report older than this is ignored (gate falls back to "allow")
+        observer = {
+            enabled = true,
+            nearby_radius = 240,
+            distant_interval = 1,
+        },
+    },
+
+    -- Observer-only NPC formation work: retain full-rate motion around either
+    -- the camera or player; distant bays update at the positional report cadence.
+    -- The generous radius includes pets pursuing targets away from their anchor.
+    -- No live model is hidden/unloaded and server combat simulation is unaffected.
+    npc_presentation = {
+        enabled = true,
+        full_rate_radius = 240,
+        distant_interval = 0.1,
     },
 }

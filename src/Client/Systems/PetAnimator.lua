@@ -92,6 +92,7 @@ local function ensure(model)
             local anim = Instance.new("Animation")
             anim.AnimationId = id
             local ok, track = pcall(animator.LoadAnimation, animator, anim)
+            anim:Destroy()
             if ok then
                 rig.tracks[name] = track
             end
@@ -99,6 +100,18 @@ local function ensure(model)
     end
     rigs[model] = rig
     return rig
+end
+
+function PetAnimator.suspend(model)
+    local rig = rigs[model]
+    if not rig or rig.failed then
+        return
+    end
+    for _, track in pairs(rig.tracks) do
+        track:Stop(0)
+    end
+    -- The next visible update restarts the correct locomotion state.
+    rig.state = nil
 end
 
 --- Per-frame locomotion: speed in studs/sec (horizontal). Crossfades idle<->run.
@@ -132,6 +145,9 @@ end
 
 --- One-shot attack swing, layered over locomotion. Called per real server hit.
 function PetAnimator.punch(model)
+    if model:GetAttribute("MergePresentationHidden") == true then
+        return
+    end
     local rig = ensure(model)
     if not rig then
         return

@@ -1,0 +1,9 @@
+{
+  "sample_seconds": 0.5,
+  "maximum_seconds": 180,
+  "maximum_footprint_gib": 8,
+  "maximum_growth_gib": 2,
+  "maximum_start_footprint_gib": 6,
+  "maximum_pressure_level": 1,
+  "studio_executable": "/Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio"
+}

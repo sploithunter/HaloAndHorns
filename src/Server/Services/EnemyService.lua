@@ -311,6 +311,18 @@ function EnemyService:_enemiesFolder()
     return folder
 end
 
+-- Read the existing spawn/despawn registry; do not create a second target cache.
+-- Callers still validate their requested world scope. HP/death policy is unchanged.
+function EnemyService:FindTargetModel(targetId)
+    local entry = self._enemies and self._enemies[targetId]
+    local model = entry and entry.model
+    local id = model and model.Parent and model:FindFirstChild("BreakableID")
+    if id and id:IsA("NumberValue") and id.Value == targetId then
+        return model
+    end
+    return nil
+end
+
 -- Set (or clear, with nil) the player whose squad this enemy is fighting. entry.aggroPlayerName
 -- stays the server SoT; AggroOwner is its replicated read-only shadow so the client EnemyHud can
 -- list only the foes engaged with ITS squad (every aggro mutation goes through here).
@@ -861,8 +873,10 @@ function EnemyService:_petAggroPass(now, dt, cfg)
                             and entry.model
                             and entry.model.Parent
                             and (entry.model:GetAttribute("HP") or 0) > 0
-                            and self:_petHostileToEnemy(pet, entry, player)
                             and (entry.pos - pp).Magnitude <= seedRadius
+                            -- Most pairs belong to distant bays. Do not resolve allegiance/team
+                            -- relationships for pairs that cannot receive a proximity seed.
+                            and self:_petHostileToEnemy(pet, entry, player)
                         then
                             AggroTable.add(tbl, tid, seed)
                         end
@@ -4098,7 +4112,13 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     )
     local chaseTo = Vector3.new(slot.x, targetPos.Y, slot.z)
     local route = "direct"
-    if self:_directChaseBlocked(ePos, targetPos) then
+    -- Merge is an open arena: its existing movement leash, not decorative obstacles/navmesh,
+    -- bounds pursuit. Other worlds retain scene routing. Damage/range and strip controls are
+    -- unchanged; the movement candidate below still passes through _leashToHomeArea.
+    local directArena = eng.pathfinding
+        and eng.pathfinding.merge_enabled == false
+        and model:GetAttribute("MergeEggPrototypeEnemy") == true
+    if not directArena and self:_directChaseBlocked(ePos, targetPos) then
         local waypoint, reason = self:_chasePathWaypoint(entry, ePos, chaseTo, eng)
         if not waypoint then
             self:_dropUnreachableEngagement(entry, targetId, reason)

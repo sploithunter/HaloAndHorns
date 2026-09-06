@@ -187,6 +187,16 @@ do
     end
 end
 
+-- Bay detail follows the character's current neighborhood, independently of ownership.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeBayPresentation).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeBayPresentation", { error = tostring(err) })
+    end
+end
+
 -- Auto Collector is a separate passive, inventory-free pet. The server owns its currency target
 -- and movement; this controller only smooths the authored model for each observer.
 do

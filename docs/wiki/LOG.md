@@ -8358,3 +8358,70 @@ first-session cohort rates.
 - This enables observational realm comparisons, not causal A/B results or verified voice/face
   exposure. Documented same-build/fresh/manual cuts, missing-event caveats and a future randomized
   within-realm Watcher/control experiment rather than silently changing player assignment.
+
+## 2026-09-05 — Reconciled main; overnight Merge performance investigation
+
+- Merged completed Watcher/analytics work through PR #458, preserving #459 asset history. Final main `da1830ab` passed all 2,701 tests and fresh Merge Play with no client errors.
+- Audited and removed only merged feature branches and the completed clean Heaven worktree. Untracked review assets preserved in `/Users/jason/Documents/HaloAndHorns-review-archive.daPCYI`; no working assets discarded.
+- Started [eight-bay stress testing](MERGE_STRESS_TESTING.md), using isolated copies of profiles rather than spending or resetting real alternate-account progress. Production publishing is not part of this performance authorization.
+
+### Eight-bay baseline and first candidate change
+
+- Added a Studio-only negative-ID fixture harness: seven cloned level-50/wave-530 profiles plus the real viewer populate eight bays, approximately 700 pet models. No source profile acquisition or persistence; bounded 30-minute run and completion-aware teardown.
+- Captured severe shared-machine slowdown (client frame mean 153ms, server 206ms in separate 20s samples); inclusive enemy-loop timing consumed 14.5s/20s. These are workload baselines, not before/after wins.
+- Staged distance-before-allegiance proximity filtering without changing targeting rules. Full CI passed 2,705 tests / 301 specs. Draft PR #460 stays unmerged pending matched Studio verification.
+- Merge Studio stopped answering controls around 02:06 UTC Sep 6. Both Studio processes were left open; native samples and fixture/capture artifacts preserved. A later CI attempt hit a transient toolchain cwd panic; a complete retry passed. Overnight goal/heartbeat remains active.
+
+## 2026-09-06 — Memory-failure recovery and guarded testing
+
+- User reported system-memory exhaustion and a hard reboot. macOS Jetsam identifies Merge Studio as the dominant accounted-memory process; reset diagnostics confirm button reset. Root allocation cause is not established. `/tmp` captures were lost; earlier raw-evidence availability claims no longer hold.
+- Paused overnight retries and restored Rojo connectivity without starting another load test. Added a read-only-by-default host footprint/pressure watchdog with explicitly authorized exact-process suspension as an optional fail-safe. Fresh Edit footprint (~6.2 GiB) failed its conservative startup gate; no signal or extra bays.
+- Reduced default stress target to two occupied bays and duration to 120 seconds. Profiling now returns immediately, validates the complete method selection, includes pet aggro, and restores wrappers on stop/completion. This also fixes the hosted architecture-check failure discovered on the previous commit.
+- Verification: full local CI 2,706 tests / 301 specs, seven Python watchdog tests, isolated Edit smoke for profiling validation/return values/cleanup. PR #460 remains draft, unmerged, and unpublished; matched runtime improvements and the full-server goal remain incomplete. See [stress testing](MERGE_STRESS_TESTING.md).
+
+## 2026-09-06 — Passive one/two-bay memory investigation
+
+- Honored the user's daytime no-guards override with passive host logging, one real viewer, one isolated read-only-profile fixture, then teardown. The load increase was not an immediate OOM; memory kept growing over time even after returning to one bay. Raw evidence is durable outside `/tmp`.
+- Fixed the `merge_stress_host` schema omission that prevented both sides from booting. Fresh boot is clean. Found retained pooled-drop connections, append-only enemy results, and replaced-pet modifier/history arrays; fixes preserve living models and authoritative combat. Added event-driven downed visibility with native lifecycle smoke tests.
+- Local CI 2,710 tests and eight Python tests pass. Follow-up runtime validation of the replacement-history fix is pending; no claim that total memory growth is solved, no production publish, PR #460 remains draft. See [Merge Stress Testing](MERGE_STRESS_TESTING.md).
+
+### Follow-up verification
+
+- Fresh Play verified bounded enemy/squad references through many waves and replacements. Expired mining cooldowns were a fourth retention path; native expiry test preserves unexpired timing and releases expired keys. Final scene query: Merge one detached Model; no detached Models held by DropVisibility or PetFollowService.
+- Whole-Studio memory still increased through one/two/one despite these fixes, then stabilized when Play stopped; much remained allocated in Edit. These are combined server/client/editor figures, not deployment memory budgets or matched FPS gains. Studio remains open; production unchanged. Remaining allocator investigation and full-server validation continue on PR #460.
+- Bounded clone/destroy and 10,000-pivot Edit probes did not reproduce the large allocation growth; temporary models were removed and original templates preserved. This narrows only the synchronous isolated case, not live rendering/replication. Hosted CI passed on `0e9b37ca`; no additional bays or production changes during these probes.
+
+## 2026-09-06 — Stop NPC squads accelerating position reports
+
+- Found a shared accumulator advancing once per local **and NPC** squad, sending local pet positions each frame with enough squads. Advance it only for the local squad; movement, authority and configured interval are unchanged.
+- Matched native reporting-block simulation: 10 seconds / 500 frames, 0 NPC squads stays at 100 calls; 9/19/79 NPC squads fall from 499 to 100 calls. No real remotes or profiles used. This is a call-count result, not deployment bandwidth/FPS evidence. Full local CI 2,712/2,712; [Client Performance](CLIENT_PERFORMANCE.md) records scope. PR #460 remains draft; no publish.
+
+## 2026-09-06 — Staged eight-bay run and character-local presentation
+
+- One/two/four/eight-bay sequence completed without a crash; eight bays reached 630 pets/objectives. Memory still grows. Rejected a camera-contaminated cadence comparison; no FPS percentage claimed. Fixed an obsolete default profiler method and captured populated service timings, including expensive repeated target lookups.
+- User clarified detail should follow the character, not their claim. Added current/adjacent-bay detail, distant actor/label/effect hiding with egg/defense preservation and bounded activity summaries. This is local rendering policy, not model unloading or gameplay authority.
+- Native Hell-2 visit changed focus while claim stayed Heaven-1; all eggs remained and hidden parts were suppressed. Downed/distant composition and the separate offline-personal-squad classification pass isolated native tests. Full local CI 2,725 tests. Studio stays open with Play stopped; viewer position restored; no publish. See [Client Performance](CLIENT_PERFORMANCE.md) and [stress testing](MERGE_STRESS_TESTING.md) for evidence and remaining validation.
+
+## 2026-09-06 — Verify existing-registry target lookups in eight bays
+
+- Replaced repeated enemy-descendant traversal with the existing authoritative registry plus identity/scope validation and compatibility fallback. No new retained cache or targeting-rule changes. Native isolated lifecycle tests pass; full local CI 2,727 tests / 305 specs.
+- Actual eight-bay 20-second capture: 25,018 lookups took 27.5 ms total, compared with the previous capture's 24,743 / 2,034.9 ms. Second capture confirmed cheap registry calls and continuing wave progress. This is function-level evidence, not a claimed whole-game FPS multiplier; enemy engagement and memory growth remain. User's optional zone-grid idea is deferred. Raw evidence and caveats in [Merge Stress Testing](MERGE_STRESS_TESTING.md). Play stopped, Studio open; PR #460 still draft, no production publish.
+
+## 2026-09-06 — Client frame lookup and premature summary effects
+
+- Added callback-local target snapshots: one folder traversal per render frame rather than per pet. One/eight-bay live-request comparisons matched every resolved target and reduced lookup time; no full FPS claim. No server damage or authority changes. Tests cover scope, lifetime and replacements.
+- User clarified premature startup explosions were effects only, before damage. Found distant summaries driven by alive-enemy count; require an observed HP decrease instead, exclude detailed fights, and discard old model snapshots. Native isolated production-classifier test passes spawn/march silence and damage-only summaries. Current Play still has the old summary code; visual confirmation awaits a fresh session. Full CI 2,736 tests / 306 specs. No publish; see [Client Performance](CLIENT_PERFORMANCE.md).
+
+## 2026-09-06 — Observer relay budget and startup-effect diagnosis
+
+- Added nearby/full-rate versus distant/coarse player-pet position forwarding without delaying authoritative position storage. Existing packet shape retained, extra client fields omitted, per-player state cleaned on departure. Actual-method isolated eight-viewer test: 700→160 deliveries for one-near/six-far observers, with immediate approach recovery. This does not measure production bytes or reduce NPC-worker simulation. Fresh eight-bay boot passed; full local CI 2,742 tests / 307 specs. Details and artifacts in [Client Performance](CLIENT_PERFORMANCE.md).
+- User approved a Play restart; new summary code loaded and test fixtures tore down normally. A later startup effect trace caught tower fireballs and enemy self-buff area events before melee contact (`startup-fx-source-trace.json`). User then rebirthed and confirmed early unbuffed enemies had no premature flashes: enemy buffs explain the remaining symptom, not early pet damage. The earlier summary bug was separate. Cannon identification explained other scene effects; do not label the green circle a Weakening Circle solely by appearance (debuff color is purple, healing is green). Combat timing unchanged; no publish. Studio remains open.
+
+## 2026-09-06 — Remove Merge obstacle pathfinding, retain bay bounds
+
+- Profiled synchronous enemy route computation: 74 calls / 2.655 seconds inclusive elapsed, up to 136 ms each. User chose direct Merge pursuit constrained to the bay; added config-scoped bypass of obstacle rays/navmesh, preserving existing movement leash, ground/control gates and combat authority. Other-world enemy routes remain unchanged. Pet combat already uses direct movement in both places; its wall-slot check is not navmesh.
+- Native production-block tests pass Merge/non-Merge/rollback, failure behavior, chase/march containment and held movement. Fresh eight-bay capture made zero obstacle/path calls; workers advanced 60→64/65 and stopped cleanly. Full local CI 2,745 tests / 308 specs. Uncontrolled before capture and changing waves are not a matched overall FPS comparison. Memory growth and remaining aggro/assignment costs persist; details, excluded malformed fixture attempt and evidence in [Merge Stress Testing](MERGE_STRESS_TESTING.md). No production publish; Studio open.
+
+## 2026-09-06 — Isolate effects part churn from movement
+
+- Server-only Run with one isolated worker was nearly flat in BaseParts; actual-frame Edit movement of 20 pet models made 48,020 pivots with flat BaseParts. One-bay Play instead produced 127,572 part additions in 90 s, primarily short-lived Effects parts, alongside ~153 MB BaseParts growth. Explicit Tween destruction did not fix isolated part churn. Bounded reuse completed the same 8,000 primitive animations with 400 Parts (95% fewer creations), adding ~0.45 MB versus ~9 MB without reuse. This is diagnostic evidence, not yet a production fix or deployment memory/FPS claim. Measurements, limitations and next integration requirements are in [Merge Stress Testing](MERGE_STRESS_TESTING.md). All diagnostic fixtures removed; offline config restored; Studio open in Edit; no publish.

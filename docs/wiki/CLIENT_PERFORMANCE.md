@@ -1,5 +1,131 @@
 # Client Performance
 
+## Character-local Merge bay detail (2026-09-06)
+
+`MergeBayPresentation` selects the nearest authored bay from the **character's current
+position**, with a 16-stud switching buffer. It never reads the player's claimed bay
+to choose detail. The current side's immediate left/right columns also remain detailed;
+actors within 60 studs and the viewer's personal squad remain visible. Walking across
+the mall changes the visible neighborhood without changing any claim.
+
+Other Merge pets/enemies receive a client-local `MergePresentationHidden` attribute.
+The existing lifecycle-managed visibility binding composes that with `CombatDowned`,
+hides body parts, labels and attached effects, and restores their desired state on
+re-entry. Pet rig tracks stop while hidden; NPC movement and enemy presentation skip
+hidden actors. Eggs are explicitly exempt; defenses/world props are untouched. A bounded
+per-bay impact summary uses existing enemy/bay state, not extra combat remotes. All
+settings and colors live in `merge_egg_prototype.distant_presentation`.
+
+This is **presentation culling, not model unloading or replication filtering**. Living
+actors, HP, targeting, rewards and server movement remain intact; do not claim that
+this alone reclaims replicated model memory. Ordinary pet position relays now use the
+nearby/coarse observer budget below. `pet_follow.npc_presentation` additionally budgets remaining distant
+NPC formation work to 10 Hz, considering camera/player proximity. The Studio-only
+`DisableNpcPresentationBudget` script attribute is an A/B seam for that cadence only,
+not the bay visibility policy.
+
+Summary correction: `ActiveEnemies > 0` alone previously triggered decorative impacts
+while enemies merely spawned/marched. Summaries now require an observed HP decrease
+between bounded client snapshots, and remain excluded for detailed actors. First
+observation, unchanged HP and healing are silent. Replacing the snapshot each pass
+releases departed models; this uses existing replicated HP, not new remotes. The user
+clarified that the premature symptom was effects only, not early damage; damage/report
+gating was left unchanged. Isolated production-classifier tests pass and a fresh Play
+loaded the correction. The user's remaining pre-contact flashes were subsequently
+confirmed as enemy buffs: rebirthing to early enemies without buffs removed them.
+The summary defect was real but was not the cause of that remaining symptom. Summary
+size has not been increased yet.
+
+Native eight-bay validation before the final offline-personal-squad eligibility addition:
+621 pet/objective models, 378 hidden, all 72 eggs retained, zero hidden-body visibility
+errors. Visiting Hell 2 changed focus to `hell_02` while the claim remained `heaven_01`;
+the visited side's hatchers restored and Heaven 1 hatchers hid. The viewer was returned
+to the original position. Offline personal squads carry `OfflineOwnedSquad`, not per-pet
+run IDs; that eligibility path now passes an isolated production-classifier test.
+Native visibility tests cover distant/downed overlap, particles, late descendants,
+flat enemy roots and restoration. Full local CI: 2,725 tests. Full FPS/memory benefit
+and final visual acceptance remain to be measured; production is unchanged.
+
+## Frame-scoped pet target lookup (2026-09-06)
+
+`PetFollowController` now constructs a `FrameTargetLookup` inside each render callback.
+It traverses each requested enemy/crystal folder once and resolves all pets against that
+snapshot. There is no cross-frame model cache or new connection per target. Scope,
+identifier and parent are validated; duplicate authored IDs retain traversal-first
+semantics. Newly streamed/replaced targets are rebuilt next frame. This changes only
+presentation lookup, not server targeting, range, HP or rewards.
+
+`tools/frame_target_live_probe.luau` compares the actual production lookup with its old
+traversal on identical live visible-pet target requests, alternating order. Six one-bay
+samples (28–30 requests) took 0.036–0.108 ms indexed versus 0.306–0.406 ms traversal.
+Six eight-bay samples (37–52 requests) took 0.062–0.229 ms versus 0.608–2.612 ms. Every
+target matched; each indexed sample traversed one scope. These are matched lookup
+replays, **not** full RenderStepped/FPS measurements; the replay includes visible
+targeted pets without reproducing every formation eligibility rule. Actual fresh Play
+loaded the new controller, workers advanced, and no client script errors appeared.
+The eight-bay run still emitted server-frame warnings. Raw evidence lives alongside
+the [stress captures](MERGE_STRESS_TESTING.md) as `frame-target-one-bay.json`,
+`frame-target-eight-bay.json`, `frame-target-client-memory.json` and the passive host log.
+
+Headless tests cover one scan per scope, world isolation, duplicate IDs, invalid types,
+stale/reparented identifiers, next-frame replacement and callback-local lifetime.
+Combined local CI including the summary correction: 2,736 tests / 306 specs.
+
+## Nearby/coarse player-pet position relays (2026-09-06)
+
+`pet_follow.replication.observer` retains the normal owner-report cadence for observers
+within 240 studs of the owner **or any reported pet**. Other observers get the latest
+snapshot once per second, including an immediate first snapshot. Approaching the fight
+resumes full-rate delivery on the next owner report, independent of claimed bay. The
+coarse stream avoids frozen remote pets and keeps presentation re-entry positions fresh.
+It is not model unloading or complete suppression of distant pet data.
+
+The server still stores every accepted owner report immediately for the existing combat
+position gate. Only observer forwarding is budgeted. Payloads are projected to the
+existing `{pet, cf}` contract rather than forwarding unrelated client fields. Per-owner /
+recipient timing state is removed when either player leaves. Disabling the observer
+config restores full-rate delivery. NPC-principal movement is a different channel;
+this optimization does **not** claim to reduce the seven-offline-worker simulation cost.
+
+`tools/pet_position_relay_smoke.luau` executes the actual service method with isolated
+Instances, eight synthetic viewers and intercepted sends; no real remotes or profiles.
+For 100 reports / 11 pets: all-near produces 700 deliveries / 7,700 records; one near
+observer and six distant observers produces 160 / 1,760. Moving a distant observer
+near halfway gives that observer 55 deliveries (5 coarse + 50 full-rate). A viewer
+near pets still receives full rate when their owner is far away. Latest transforms,
+unchanged server position timestamps, no owner echo, payload projection and removal
+cleanup are asserted. These are deterministic call/record counts, **not measured
+transport bytes, real eight-client network results or FPS**.
+
+Fresh Play boot and another eight-bay workload loaded these changes without client
+script errors; 654 pet/objective models, 438 hidden, all 72 eggs retained. The server
+lookup improvement persisted (27,015 lookups / 29.2 ms over 20 seconds). Enemy combat
+ticks still cost 5.008 s inclusive; memory growth remains unresolved. Full local CI:
+2,742 tests / 307 specs. Evidence: `observer-relay-native.json`,
+`observer-fresh-server-profile.json`, `observer-fresh-client-memory.json`,
+`observer-fresh-census.json` and `observer-relay-host.jsonl` in the durable stress directory.
+
+## NPC-amplified player-position reports (2026-09-06)
+
+`PetFollowController.driveAnchor` serves both the local squad and every NPC squad.
+Its shared report accumulator previously advanced on **every** invocation, so NPC
+presentation accelerated the local player's position-report clock. It now advances
+only for the local squad; the configured `pet_follow.replication.interval` remains
+unchanged, as do transforms, owner validation, mining and combat authority.
+
+`tools/pet_position_report_smoke.luau` extracts and executes the actual reporting
+block in an isolated Studio ModuleScript with intercepted sends. At 500 frames ×
+0.02 seconds, zero NPC squads produced 100 reports before and after. With 9, 19,
+or 79 NPC squads, each case produced 499 before and 100 after. These are matched
+**report-call counts**, not measured packet bytes, live transport timing or FPS.
+The server currently relays each accepted report to other players, so fixing the
+sender also removes that corresponding source of relay amplification. The later
+nearby/coarse observer budget above further reduces distant deliveries.
+
+CI checks the owner-only clock integration and the report/expiry interval contract;
+the native smoke verifies the reporting block's behavior. Full CI: 2,712 tests.
+Changes remain in draft PR #460 pending the broader load-testing effort.
+
 ## Farm & Fight predictive cache (2026-09-05)
 
 `FarmAssetWarmupService` now clones from the prebuilt server catalog into each owner's

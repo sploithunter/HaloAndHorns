@@ -277,6 +277,10 @@ function Service:_startWorker(id, bayId, profile, token, lease, fixtureAvatar)
     self._data:MigrateProfile(profile)
     local nameOk, username = pcall(Players.GetNameFromUserIdAsync, Players, fixtureAvatar or id)
     username = nameOk and username or tostring(id)
+    if fixtureAvatar then
+        -- Several isolated fixtures may use the same source snapshot/avatar.
+        username ..= " " .. tostring(id)
+    end
     if not fixtureAvatar then
         lease = self:_presenceUpdate(id, function(value)
             return Lease.renew(value, token, os.time(), self._config.lease_seconds)
@@ -513,6 +517,27 @@ function Service:Start()
         control.Name = "MergeOfflineStudioControl"
         control.Parent = ServerStorage
         control.OnInvoke = function(action, sourcePlayer)
+            if
+                action == "stress_start"
+                or action == "stress_status"
+                or action == "stress_stop"
+                or action == "stress_profile"
+                or action == "stress_profile_status"
+            then
+                if not self._stressHarness then
+                    self._stressHarness = require(script.Parent.Parent.MergeStressHarness).new(self)
+                end
+                if action == "stress_start" then
+                    return self._stressHarness:start(sourcePlayer)
+                elseif action == "stress_profile" then
+                    return self._stressHarness:profile(sourcePlayer)
+                elseif action == "stress_profile_status" then
+                    return self._stressHarness:profileStatus()
+                elseif action == "stress_stop" then
+                    self._stressHarness:stop()
+                end
+                return self._stressHarness:status()
+            end
             local id = cfg.studio_fixture_user_id
             if action == "fixture_start" then
                 assert(

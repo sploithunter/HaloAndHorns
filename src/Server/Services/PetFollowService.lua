@@ -26,6 +26,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local PetFormation = require(ReplicatedStorage.Shared.Game.PetFormation)
+local PetPositionRelayBudget = require(ReplicatedStorage.Shared.Game.PetPositionRelayBudget)
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 -- Lookup surface for Principal (injected so the module headless-specs). Level is nil here on
 -- purpose: the tick only needs identity + pet folder, and resolving every player's earned
@@ -83,6 +84,13 @@ function PetFollowService:Init()
     self._petPos = setmetatable({}, { __mode = "k" }) -- pet -> { cf, t, source? }
     self._abilityProfiles = setmetatable({}, { __mode = "k" })
     self._abilityNext = setmetatable({}, { __mode = "k" })
+    self._relayLastSent = {}
+    Players.PlayerRemoving:Connect(function(player)
+        self._relayLastSent[player] = nil
+        for _, recipients in pairs(self._relayLastSent) do
+            recipients[player] = nil
+        end
+    end)
 
     -- Owning client reports its pet positions; we use them to gate mining on distance to target.
     Signals.PetReportPositions.OnServerEvent:Connect(function(player, report)
@@ -220,7 +228,8 @@ function PetFollowService:_onPetPositions(player, report)
         local cf = type(entry) == "table" and entry.cf
         if typeof(pet) == "Instance" and pet:IsDescendantOf(folder) and typeof(cf) == "CFrame" then
             self._petPos[pet] = { cf = cf, t = now } -- for the mining gate
-            valid[#valid + 1] = entry
+            -- Relay only the wire contract, not arbitrary extra client fields.
+            valid[#valid + 1] = { pet = pet, cf = cf }
         end
     end
 
@@ -228,9 +237,39 @@ function PetFollowService:_onPetPositions(player, report)
     -- client positions its OWN pets locally and is never sent / never applies the server copy,
     -- so its own view stays smooth (no PivotTo here = no stale server transform fighting it).
     if #valid > 0 then
+        local observer = self._config.replication and self._config.replication.observer
+        local sent = self._relayLastSent[player]
+        if not sent then
+            sent = {}
+            self._relayLastSent[player] = sent
+        end
+        local ownerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         for _, other in ipairs(Players:GetPlayers()) do
             if other ~= player then
-                Signals.PetPositionsRelay:FireClient(other, valid)
+                local nearby = not observer or not observer.enabled
+                if not nearby then
+                    local root = other.Character
+                        and other.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local radius = observer.nearby_radius
+                        nearby = ownerRoot
+                            and (ownerRoot.Position - root.Position).Magnitude <= radius
+                        -- Follow physical observers/pets, not claimed bays. A helper's pets may
+                        -- be fighting away from their owner, so check the reported squad too.
+                        if not nearby then
+                            for _, entry in ipairs(valid) do
+                                if (entry.cf.Position - root.Position).Magnitude <= radius then
+                                    nearby = true
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+                if PetPositionRelayBudget.shouldSend(sent[other], now, nearby, observer) then
+                    sent[other] = now
+                    Signals.PetPositionsRelay:FireClient(other, valid)
+                end
             end
         end
     end
@@ -478,6 +517,13 @@ function PetFollowService:_findBreakable(targetType, world, id)
         if not enemies then
             return nil
         end
+        local service = self:_enemyService()
+        local indexed = service and service.FindTargetModel and service:FindTargetModel(id)
+        if indexed and indexed:IsDescendantOf(enemies) then
+            return indexed
+        end
+        -- Preserve authored/unregistered targets and partially initialized peers.
+        -- Normal spawned enemies resolve above without walking every rig descendant.
         for _, desc in ipairs(enemies:GetDescendants()) do
             if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
                 return desc.Parent
@@ -1564,6 +1610,15 @@ function PetFollowService:_tickPrincipal(principal)
 end
 
 function PetFollowService:_tick()
+    -- Expired cooldowns no longer affect damage gating. Releasing their keys
+    -- prevents retired/replaced pets from staying alive through this cache.
+    -- Keep unexpired entries even when a pet is temporarily reparented.
+    local now = os.clock()
+    for pet, readyAt in pairs(self._nextHit) do
+        if now >= readyAt then
+            self._nextHit[pet] = nil
+        end
+    end
     -- Principals, not Players: live players PLUS registered NPC principals (the Creator
     -- summon). Player principals resolve to the same Player objects with the same levels,
     -- so this is behaviour-identical for everyone who was already being ticked.

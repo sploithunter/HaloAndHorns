@@ -1,0 +1,100 @@
+local config = loadModule("configs/merge_offline.lua")
+return function()
+    describe("isolated Merge stress contract", function()
+        it("profiles only methods actually defined by the selected services", function()
+            local source = readFile("src/Server/MergeStressHarness.lua")
+            local selection = assert(source:match("local selected = selection(.-)local merge ="))
+            local count = 0
+            for service, methods in selection:gmatch("(%w+Service)%s*=%s*{(.-)}") do
+                local implementation = readFile("src/Server/Services/" .. service .. ".lua")
+                for method in methods:gmatch('"([_%w]+)"') do
+                    expect(
+                        implementation:find("function " .. service .. ":" .. method .. "(", 1, true)
+                            ~= nil
+                    ).to.equal(true)
+                    count += 1
+                end
+            end
+            expect(count > 0).to.equal(true)
+        end)
+        it("keeps the production five-bay cap separate from eight-bay Studio testing", function()
+            expect(config.maximum_bays).to.equal(5)
+            expect(config.studio_stress.maximum_occupied_bays).to.equal(8)
+            expect(config.studio_stress.first_fixture_user_id < 0).to.equal(true)
+            expect(config.studio_stress.default_occupied_bays).to.equal(2)
+            expect(config.studio_stress.duration_seconds <= 120).to.equal(true)
+        end)
+        it("uses only isolated profiles and refuses production construction", function()
+            local source = readFile("src/Server/MergeStressHarness.lua")
+            expect(source:find("assert(RunService:IsStudio()", 1, true)).to.be.ok()
+            expect(source:find("HttpService:JSONDecode(HttpService:JSONEncode(source))", 1, true)).to.be.ok()
+            expect(source:find("StartSessionAsync", 1, true)).to.equal(nil)
+            expect(source:find("GetDataStore", 1, true)).to.equal(nil)
+            expect(source:find("PublishAsync", 1, true)).to.equal(nil)
+            expect(source:find("saved:Fire(self.LastSavedData)", 1, true)).to.be.ok()
+            expect(source:find("target <= cfg.maximum_occupied_bays", 1, true)).to.be.ok()
+            expect(source:find("target - occupied", 1, true)).to.be.ok()
+        end)
+        it(
+            "releases completed-wave model history only after all enemies and spawns resolve",
+            function()
+                local source = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+                local start =
+                    assert(source:find("function MergeEggPrototypeService:_resolveEnemy(", 1, true))
+                local gate = assert(
+                    source:find(
+                        "record.aliveEnemies > 0 or (record.pendingEnemySpawns or 0) > 0",
+                        start,
+                        true
+                    )
+                )
+                local release = assert(source:find("record.enemies = {}", gate, true))
+                local transition = assert(source:find("for _, assignedTeam", gate, true))
+                expect(gate < release and release < transition).to.equal(true)
+            end
+        )
+        it(
+            "moves pet visibility out of per-frame traversal and detaches recycled drop watchers",
+            function()
+                local movement = readFile("src/Client/Systems/PetFollowController.lua")
+                expect(movement:find("PetDownedVisibility.watch(Workspace)", 1, true)).to.be.ok()
+                expect(movement:find("m:GetDescendants()", 1, true)).to.equal(nil)
+                local drops = readFile("src/Client/Systems/DropVisibility.lua")
+                expect(drops:find("folder.ChildRemoved:Connect(remove)", 1, true)).to.be.ok()
+                expect(drops:find("connection:Disconnect()", 1, true)).to.be.ok()
+                expect(drops:find("if watched[model]", 1, true)).to.be.ok()
+            end
+        )
+        it("keeps replacement model membership tied to the current squad", function()
+            local source = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            expect(source:find("record.units", 1, true)).to.equal(nil)
+            expect(source:find("team.units = units", 1, true)).to.be.ok()
+            expect(source:find("record.playerUnits = units", 1, true)).to.be.ok()
+            local follow = readFile("src/Server/Services/PetFollowService.lua")
+            expect(follow:find("if now >= readyAt then", 1, true)).to.be.ok()
+            expect(follow:find("self._nextHit[pet] = nil", 1, true)).to.be.ok()
+        end)
+        it("does not hold a profiling call open and restores wrappers on stop", function()
+            local source = readFile("src/Server/MergeStressHarness.lua")
+            expect(source:find("task.wait", 1, true)).to.equal(nil)
+            expect(source:find('self:_finishProfile("stress_stopped")', 1, true)).to.be.ok()
+            expect(source:find('self:_finishProfile("completed")', 1, true)).to.be.ok()
+            expect(source:find('"_petAggroPass"', 1, true)).to.be.ok()
+        end)
+        it("serializes fixture ticks with teardown and cleans up its heartbeat", function()
+            local source = readFile("src/Server/MergeStressHarness.lua")
+            expect(source:find("not worker.busy and not worker.stopping", 1, true)).to.be.ok()
+            expect(source:find("worker.operationFinished:Fire()", 1, true)).to.be.ok()
+            expect(source:find("self.connection:Disconnect()", 1, true)).to.be.ok()
+        end)
+        it("rejects distant proximity pairs before resolving team allegiance", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            local start = assert(source:find("function EnemyService:_petAggroPass(", 1, true))
+            local distance =
+                assert(source:find("(entry.pos - pp).Magnitude <= seedRadius", start, true))
+            local hostility =
+                assert(source:find("self:_petHostileToEnemy(pet, entry, player)", start, true))
+            expect(distance < hostility).to.equal(true)
+        end)
+    end)
+end

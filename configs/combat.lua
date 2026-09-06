@@ -465,6 +465,9 @@ return {
         -- have broad bounding boxes. The normal shared chase step follows each returned waypoint.
         pathfinding = {
             enabled = true,
+            -- Merge arenas use direct pursuit within their authored bay leash. Do not stall the
+            -- shared combat loop on navmesh requests around decorative arena geometry.
+            merge_enabled = false,
             agent_radius = 1,
             agent_height = 2,
             can_jump = true,

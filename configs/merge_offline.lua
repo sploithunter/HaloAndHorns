@@ -11,6 +11,13 @@ return {
     selection_count = 40,
     acquisition_attempts = 3,
     studio_fixture_user_id = -100001,
+    studio_stress = {
+        maximum_occupied_bays = 8,
+        default_occupied_bays = 2,
+        first_fixture_user_id = -200001,
+        duration_seconds = 120,
+        profile_seconds = 20,
+    },
     pool_sort_range = 1000000000,
     rotation_seconds = 1800,
     load_timeout_seconds = 20,
