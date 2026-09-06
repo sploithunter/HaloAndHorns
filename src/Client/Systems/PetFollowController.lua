@@ -31,6 +31,7 @@ local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
 local PetDownedVisibility = require(script.Parent.PetDownedVisibility)
 local PetPresentationBudget = require(ReplicatedStorage.Shared.Game.PetPresentationBudget)
+local FrameTargetLookup = require(ReplicatedStorage.Shared.Game.FrameTargetLookup)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
@@ -236,7 +237,7 @@ local function petSlot(pet)
     return (n and n.Value) or 0
 end
 
-local function findBreakable(targetType, world, id)
+local function findBreakable(lookup, targetType, world, id)
     local game = Workspace:FindFirstChild("Game")
     if not game then
         return nil
@@ -246,12 +247,7 @@ local function findBreakable(targetType, world, id)
         if not enemies then
             return nil
         end
-        for _, desc in ipairs(enemies:GetDescendants()) do
-            if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
-                return desc.Parent
-            end
-        end
-        return nil
+        return lookup:find(enemies, id)
     end
     local breakables = game:FindFirstChild("Breakables")
     if not breakables then
@@ -262,12 +258,7 @@ local function findBreakable(targetType, world, id)
     if not scope then
         return nil
     end
-    for _, desc in ipairs(scope:GetDescendants()) do
-        if desc.Name == "BreakableID" and desc:IsA("NumberValue") and desc.Value == id then
-            return desc.Parent
-        end
-    end
-    return nil
+    return lookup:find(scope, id)
 end
 
 function PetFollowController.start()
@@ -554,6 +545,9 @@ function PetFollowController.start()
     local npcPresentationElapsed = {}
     local npcPresentation = config.npc_presentation
     RunService.RenderStepped:Connect(function(dt)
+        -- Local to this callback: streamed/replaced targets rebuild next frame, and
+        -- old model references cannot accumulate across frames or bay visits.
+        local targetLookup = FrameTargetLookup.new()
         -- Shared cleanup is once per frame, not once per each of dozens of squads.
         for model in pairs(meanderStates) do
             if not model.Parent then
@@ -977,7 +971,8 @@ function PetFollowController.start()
                 local breakable = nil
                 if not holdFormation and tid and tid.Value ~= 0 then
                     local tw = pet:FindFirstChild("TargetWorld")
-                    breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
+                    breakable =
+                        findBreakable(targetLookup, tt and tt.Value, tw and tw.Value, tid.Value)
                 end
                 local posNV = pet:FindFirstChild("PositionNumber")
                 local index = (posNV and posNV.Value > 0) and posNV.Value or slot
