@@ -58,6 +58,28 @@ local MERGE_TIER_ART = require(script.Parent.merge_tier_art)
 
 return {
     version = 6,
+    atmosphere = {
+        enabled = true,
+        legacy_script_name = "RealmSeamAtmosphere",
+        legacy_tint_name = "RealmSeamTint",
+        -- Authored voxel-map terraces start at X = +/-90; stairs descend into the mall.
+        axis = "X",
+        center = 0,
+        mall_half_width = 90,
+        hysteresis = 3,
+        poll_seconds = 0.12,
+        layers = { heaven = "heaven_1", mall = "base", hell = "hell_2" },
+        -- Preserve the authored orange twilight in the central mall, regardless of join order.
+        mall_sky = {
+            ft = 72553765826706,
+            bk = 92241207750302,
+            lf = 138038201122541,
+            rt = 94865800916028,
+            up = 89930062014588,
+            dn = 97468777327797,
+            celestial_bodies_shown = false,
+        },
+    },
     watcher = {
         enabled = true,
         source_path = { "GeneratedMap_MergeEggVoxel", "HellFaceGateTest", "HellFace" },

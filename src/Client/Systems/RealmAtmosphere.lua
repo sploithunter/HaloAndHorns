@@ -16,8 +16,11 @@ local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local RealmTheme = require(ReplicatedStorage.Shared.Game.RealmTheme)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local MergeAtmosphereZones = require(ReplicatedStorage.Shared.Game.MergeAtmosphereZones)
 
 local TINT_NAME = "RealmTint"
 
@@ -57,6 +60,28 @@ function RealmAtmosphere.start()
     local player = Players.LocalPlayer
     if not player then
         return
+    end
+    local merge
+    if PlaceRuntime.isMerge(game.PlaceId, require(ReplicatedStorage.Configs.places)) then
+        local configured = require(ReplicatedStorage.Configs.merge_egg_prototype).atmosphere
+        merge = configured.enabled and configured or nil
+    end
+    if merge then
+        -- Retire the old Studio-authored two-side controller on older published place copies too.
+        local scripts = player:WaitForChild("PlayerScripts")
+        local function retireLegacy(child)
+            if child.Name == merge.legacy_script_name and child:IsA("LocalScript") then
+                child.Enabled = false
+            end
+        end
+        for _, child in ipairs(scripts:GetChildren()) do
+            retireLegacy(child)
+        end
+        scripts.ChildAdded:Connect(retireLegacy)
+        local legacyTint = Lighting:FindFirstChild(merge.legacy_tint_name)
+        if legacyTint then
+            legacyTint:Destroy()
+        end
     end
     local themes = loadAtmosphere()
     local maxDepth = tonumber(themes.max_depth) or 5
@@ -141,7 +166,7 @@ function RealmAtmosphere.start()
 
     local function applySky(layerId)
         local cfg = skyConfig[layerId]
-        local tx = cfg and cfg.textures
+        local tx = merge and layerId == merge.layers.mall and merge.mall_sky or cfg and cfg.textures
         if type(tx) == "table" and (tx.ft or tx.up) then
             if not sky then
                 sky = Instance.new("Sky")
@@ -261,8 +286,8 @@ function RealmAtmosphere.start()
         return RealmTheme.interpolate(baseTheme, RealmTheme.withDistanceHaze(deep, distanceHaze), t)
     end
 
-    local function refresh(announce)
-        local layerId = player:GetAttribute("CurrentLayer") or "base"
+    local function refresh(announce, spatialLayer)
+        local layerId = spatialLayer or player:GetAttribute("CurrentLayer") or "base"
         applyTheme(resolve(layerId))
         applySky(layerId)
         if announce then
@@ -270,10 +295,41 @@ function RealmAtmosphere.start()
         end
     end
 
-    refresh(false) -- silent on join
-    player:GetAttributeChangedSignal("CurrentLayer"):Connect(function()
-        refresh(true)
-    end)
+    if merge then
+        local currentZone
+        local elapsed = 0
+        local function update()
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if not root then
+                return
+            end
+            local zone = MergeAtmosphereZones.resolve(merge, root.Position[merge.axis], currentZone)
+            if zone ~= currentZone then
+                currentZone = zone
+                refresh(false, merge.layers[zone])
+                -- Local diagnostic only; never changes CurrentLayer or bay ownership.
+                player:SetAttribute("MergeAtmosphereZone", zone)
+            end
+        end
+        refresh(false, merge.layers.mall)
+        update()
+        player.CharacterAdded:Connect(function()
+            currentZone = nil
+        end)
+        RunService.Heartbeat:Connect(function(dt)
+            elapsed += dt
+            if elapsed >= merge.poll_seconds then
+                elapsed = 0
+                update()
+            end
+        end)
+    else
+        refresh(false) -- silent on join
+        player:GetAttributeChangedSignal("CurrentLayer"):Connect(function()
+            refresh(true)
+        end)
+    end
 end
 
 return RealmAtmosphere

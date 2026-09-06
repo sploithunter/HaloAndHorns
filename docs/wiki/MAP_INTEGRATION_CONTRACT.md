@@ -1,5 +1,20 @@
 # Map Integration Contract
 
+## Merge three-zone atmosphere (2026-09-06)
+
+The live voxel map has Heaven terraces at X >= 90 and Hell terraces at X <= -90; the
+sunken mall, river bridges and stairs between them use the authored orange twilight sky.
+`merge_egg_prototype.atmosphere` owns these bounds, three-stud edge hysteresis, polling and sky
+selection. Heaven reuses `layers` Heaven 1 white clouds; Hell reuses Hell 2 red clouds. The
+mall's six authored sky faces are explicit config so join order cannot overwrite the baseline.
+`RealmAtmosphere` is the only sky/realm-lighting controller in Merge and follows the character,
+not claimed bay, camera, or persisted CurrentLayer. Farm & Fight retains CurrentLayer behavior.
+
+Retire the old Studio-authored `StarterPlayerScripts.RealmSeamAtmosphere` LocalScript by disabling
+it in Edit before publishing. It hardcoded two sides and could overwrite the initial sky. The
+new client also disables that exact legacy script and removes its extra `RealmSeamTint` as a
+safety net. Do not disable other authored effects or the independent Watcher encounter dimmer.
+
 Status: current
 
 ## Summary

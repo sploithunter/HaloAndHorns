@@ -8569,3 +8569,15 @@ first-session cohort rates.
   turn later choices into a Natural-only recommendation. Slot/enhancement target behavior is unchanged.
 - Actual guide target-selection tests cover Pyromancer, stale attributes, initial recommendations,
   owned powers and pre-origin generic choices; lesson runtime checks pass without changing live picks.
+
+### 2026-09-06 — Merge Heaven / mall / Hell skies
+
+- Found the Studio-authored `RealmSeamAtmosphere` racing `RealmAtmosphere` at join and retaining
+  its two-side sky across the mall. Disabled that exact LocalScript in Edit; source remains recoverable.
+- Config-owned X terrace boundaries (+/-90), three-stud hysteresis, and character-position polling
+  now select Heaven 1 clouds, explicit authored orange mall twilight, or Hell 2 red clouds through
+  the existing RealmAtmosphere controller. Farm & Fight still uses CurrentLayer. No remotes,
+  physical trigger walls, ownership changes or progression changes.
+- Fresh Play verified Heaven → mall → Hell → mall → Heaven against all six sky faces; visual
+  captures confirmed all three looks. Character/camera restored after testing. One Sky, one realm
+  tint, no legacy tint or client script errors. Headless CI passes 2,805 tests / 317 specs.
