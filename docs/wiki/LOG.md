@@ -8429,3 +8429,11 @@ first-session cohort rates.
 ## 2026-09-06 — Integrate bounded combat-effect primitive reuse
 
 - Added lease-safe, config-bounded private effect Part reuse for RangedFX and single-stage AreaFX primitives. Native lifecycle tests and three matched real-effect batches pass visual-property parity; 359 created Parts replace 1,077 allocations across those batches. Fresh one-bay Play progressed normally; a 90-second BaseParts increase was ~39 MB versus ~153 MB previously, with changing waves/view and remaining growth explicitly not treated as a deployment/FPS claim. Full local CI 2,755/309 passed after restoring the diagnostic offline configuration. Eight-bay verification and PR reconciliation remain pending. See [Client Performance](CLIENT_PERFORMANCE.md). No publish; unrelated icon work preserved.
+
+## 2026-09-06 — Colorado yellow fist-impact icon
+
+- Keyed a ChatGPT green-screen JPEG with `normalize_icons.py --background-mode green --padding 4`. Wrote `assets/ui/colorado_icons/colorado_fist_impact_yellow.png` (1024² RGBA, transparent outside the disc). Rebuilt that folder's contact sheet. Distinct from the existing white-fist `fist_impact.png`. Not uploaded; no rbxassetid yet.
+
+## 2026-09-06 — Land verified eight-bay performance changes
+
+- PR #460 merged as `6abe9eed`; bounded effects reuse PR #462 merged as `b5cfea50`, both through passing hosted CI. Follow-up eight-bay validation retained 72 eggs with zero hidden eggs; 438 of 637 models hidden and 77,541 effect-Part reuses at capture. Fixtures and probes cleaned up; Studio open in Edit, production not published. Memory growth/frame warnings remain documented in [Client Performance](CLIENT_PERFORMANCE.md); no controlled whole-game or eight-real-client improvement claim. Reconcile the completed icon files in their own PR, preserving the original artwork and appending its existing log entry.
