@@ -4112,7 +4112,13 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     )
     local chaseTo = Vector3.new(slot.x, targetPos.Y, slot.z)
     local route = "direct"
-    if self:_directChaseBlocked(ePos, targetPos) then
+    -- Merge is an open arena: its existing movement leash, not decorative obstacles/navmesh,
+    -- bounds pursuit. Other worlds retain scene routing. Damage/range and strip controls are
+    -- unchanged; the movement candidate below still passes through _leashToHomeArea.
+    local directArena = eng.pathfinding
+        and eng.pathfinding.merge_enabled == false
+        and model:GetAttribute("MergeEggPrototypeEnemy") == true
+    if not directArena and self:_directChaseBlocked(ePos, targetPos) then
         local waypoint, reason = self:_chasePathWaypoint(entry, ePos, chaseTo, eng)
         if not waypoint then
             self:_dropUnreachableEngagement(entry, targetId, reason)

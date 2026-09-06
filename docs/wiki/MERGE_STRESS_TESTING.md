@@ -101,6 +101,52 @@
   Full local CI: 2,727 tests / 305 specs. The user's zone-square targeting suggestion
   remains an optional future idea; test this exact lookup improvement first.
 
+## Direct Merge pursuit, no navmesh (2026-09-06)
+
+- Follow-up profiling in an existing uncontrolled Play (185 pet/objective models at a later
+  census) isolated synchronous `_chasePathWaypoint`: 74 calls / 2.655 s, maximum 135.9 ms,
+  in 20 s. These are inclusive elapsed times, including `ComputeAsync` yields, **not CPU**.
+  The shared combat loop waits for these routes and suppresses re-entry while waiting.
+- User explicitly requested direct pursuit within the bay, rather than obstacle pathfinding.
+  `combat.engagement.pathfinding.merge_enabled = false` skips both the obstacle ray and navmesh
+  for server-marked `MergeEggPrototypeEnemy` actors. Other-world enemies retain existing routing.
+  Spawn marching was already directional and is unchanged. Chase still uses existing speed,
+  ground/control gates and `_leashToHomeArea`; combat range/damage/rewards are unchanged.
+  Player/NPC pet combat already uses direct movement, not navmesh, in both places; client pets
+  separately test solid geometry for their attack slot. Global removal of other-world enemy
+  routing remains a design/test question, especially for mission rooms.
+- Native `tools/merge_direct_chase_smoke.luau` executes production route/march/leash blocks
+  against isolated Instances: Merge makes no obstacle queries; other-world successful/failed
+  routes retain behavior; config rollback restores routing; chase and march clamp to the bay;
+  held marchers remain stationary. Fixtures are destroyed. The first held-march assertion failed
+  because its preceding synthetic goal had already completed; resetting that fixture goal fixed
+  the test. No gameplay fix was inferred from that fixture error.
+- Fresh Play with ordinary offline filling disabled at boot verified the new source/config.
+  A malformed stress request initially nested the snapshot wrapper as profile data, creating
+  level-one fixtures. That run was stopped and excluded. The corrected request used the existing
+  sanitized level-50/rebirth-18 source, seven negative-ID workers at wave 60, eight bays total.
+  Workers advanced to waves 64–65; normal stop returned zero workers and no harness errors.
+- Fresh 20.037 s eight-bay capture: **zero `_directChaseBlocked` / `_chasePathWaypoint` calls**;
+  8,773 `_engageEnemy` calls / 0.874 s total / 1.231 ms maximum. Full enemy combat ticks still
+  used 4.440 s inclusive over 166 calls, maximum 56.9 ms; pet aggro used 1.628 s and target
+  assignment 1.274 s nested within that total. Workloads differ from the earlier capture, so
+  do not present their ratio as a matched CPU/FPS improvement. A live boundary snapshot checked
+  55 published enemy positions against their own leash extents/inset with zero violations;
+  four models lacked the required position data and were not classified.
+- Client census: 636 pet/objective models, 438 hidden, 72 eggs, no hidden eggs. Full local CI
+  passes 2,745 tests / 308 specs. Low-FPS/server performance warnings remain, and the real viewer's
+  ProfileStore emitted an HTTP 500 during autosave. The stress harness does not acquire or write
+  source-account profiles.
+- **Memory is not solved:** over the ~140 s probe, shared Studio total grew ~19,647→20,745 MB;
+  this includes fixture loading and is not a retained-memory delta. In the populated portion,
+  BaseParts continued ~10,325→10,535 MB. Sampled client frame means ranged ~21–80 ms. Camera,
+  wave and loading differences prevent a whole-game before/after claim. Passive host pressure
+  stayed normal; no guards/signals were used. Studio remains open; no production publish.
+- Raw files in the durable directory: `direct-chase-before-detail.json`,
+  `direct-chase-before-path.json`, `direct-chase-after-profile.json`, `direct-chase-bounds.json`,
+  `direct-chase-native.json`, `direct-chase-{server,client}-memory.json`, `direct-chase-host.jsonl`
+  and `direct-chase-ci.log`. These are the MCP response envelopes, with JSON payloads in text.
+
 ## Historical memory incident and restart gate (2026-09-06)
 
 - Persistent macOS evidence: `/Library/Logs/DiagnosticReports/JetsamEvent-2026-09-05-202648.ips` identifies `RobloxStudio` as the largest process. Merge PID 45162 had 5,413,905 accounted pages versus Farm PID 43412's 326,964, with 16,384-byte pages. These are memory-accounting figures, **not a claim of 88 GB physically resident on the machine**. `/Library/Logs/DiagnosticReports/ResetCounter-2026-09-06-071804.diag` records a button reset. Root allocation cause remains unproven.

@@ -18,8 +18,8 @@ settings and colors live in `merge_egg_prototype.distant_presentation`.
 
 This is **presentation culling, not model unloading or replication filtering**. Living
 actors, HP, targeting, rewards and server movement remain intact; do not claim that
-this alone reclaims replicated model memory. Ordinary pet position relays still reach
-all other players. `pet_follow.npc_presentation` additionally budgets remaining distant
+this alone reclaims replicated model memory. Ordinary pet position relays now use the
+nearby/coarse observer budget below. `pet_follow.npc_presentation` additionally budgets remaining distant
 NPC formation work to 10 Hz, considering camera/player proximity. The Studio-only
 `DisableNpcPresentationBudget` script attribute is an A/B seam for that cadence only,
 not the bay visibility policy.
@@ -119,8 +119,8 @@ block in an isolated Studio ModuleScript with intercepted sends. At 500 frames Ã
 or 79 NPC squads, each case produced 499 before and 100 after. These are matched
 **report-call counts**, not measured packet bytes, live transport timing or FPS.
 The server currently relays each accepted report to other players, so fixing the
-sender also removes that corresponding source of relay amplification. Distance
-filtering of this separate position channel remains unimplemented.
+sender also removes that corresponding source of relay amplification. The later
+nearby/coarse observer budget above further reduces distant deliveries.
 
 CI checks the owner-only clock integration and the report/expiry interval contract;
 the native smoke verifies the reporting block's behavior. Full CI: 2,712 tests.
