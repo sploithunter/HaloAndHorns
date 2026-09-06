@@ -30,8 +30,11 @@ between bounded client snapshots, and remain excluded for detailed actors. First
 observation, unchanged HP and healing are silent. Replacing the snapshot each pass
 releases departed models; this uses existing replicated HP, not new remotes. The user
 clarified that the premature symptom was effects only, not early damage; damage/report
-gating was left unchanged. Isolated production-classifier tests pass; fresh-session
-visual confirmation is still required. Summary size has not been increased yet.
+gating was left unchanged. Isolated production-classifier tests pass and a fresh Play
+loaded the correction. The user's remaining pre-contact flashes were subsequently
+confirmed as enemy buffs: rebirthing to early enemies without buffs removed them.
+The summary defect was real but was not the cause of that remaining symptom. Summary
+size has not been increased yet.
 
 Native eight-bay validation before the final offline-personal-squad eligibility addition:
 621 pet/objective models, 378 hidden, all 72 eggs retained, zero hidden-body visibility
@@ -67,6 +70,40 @@ the [stress captures](MERGE_STRESS_TESTING.md) as `frame-target-one-bay.json`,
 Headless tests cover one scan per scope, world isolation, duplicate IDs, invalid types,
 stale/reparented identifiers, next-frame replacement and callback-local lifetime.
 Combined local CI including the summary correction: 2,736 tests / 306 specs.
+
+## Nearby/coarse player-pet position relays (2026-09-06)
+
+`pet_follow.replication.observer` retains the normal owner-report cadence for observers
+within 240 studs of the owner **or any reported pet**. Other observers get the latest
+snapshot once per second, including an immediate first snapshot. Approaching the fight
+resumes full-rate delivery on the next owner report, independent of claimed bay. The
+coarse stream avoids frozen remote pets and keeps presentation re-entry positions fresh.
+It is not model unloading or complete suppression of distant pet data.
+
+The server still stores every accepted owner report immediately for the existing combat
+position gate. Only observer forwarding is budgeted. Payloads are projected to the
+existing `{pet, cf}` contract rather than forwarding unrelated client fields. Per-owner /
+recipient timing state is removed when either player leaves. Disabling the observer
+config restores full-rate delivery. NPC-principal movement is a different channel;
+this optimization does **not** claim to reduce the seven-offline-worker simulation cost.
+
+`tools/pet_position_relay_smoke.luau` executes the actual service method with isolated
+Instances, eight synthetic viewers and intercepted sends; no real remotes or profiles.
+For 100 reports / 11 pets: all-near produces 700 deliveries / 7,700 records; one near
+observer and six distant observers produces 160 / 1,760. Moving a distant observer
+near halfway gives that observer 55 deliveries (5 coarse + 50 full-rate). A viewer
+near pets still receives full rate when their owner is far away. Latest transforms,
+unchanged server position timestamps, no owner echo, payload projection and removal
+cleanup are asserted. These are deterministic call/record counts, **not measured
+transport bytes, real eight-client network results or FPS**.
+
+Fresh Play boot and another eight-bay workload loaded these changes without client
+script errors; 654 pet/objective models, 438 hidden, all 72 eggs retained. The server
+lookup improvement persisted (27,015 lookups / 29.2 ms over 20 seconds). Enemy combat
+ticks still cost 5.008 s inclusive; memory growth remains unresolved. Full local CI:
+2,742 tests / 307 specs. Evidence: `observer-relay-native.json`,
+`observer-fresh-server-profile.json`, `observer-fresh-client-memory.json`,
+`observer-fresh-census.json` and `observer-relay-host.jsonl` in the durable stress directory.
 
 ## NPC-amplified player-position reports (2026-09-06)
 

@@ -641,6 +641,11 @@ return {
     replication = {
         interval = 0.1, -- seconds between position reports (~10 Hz)
         stale_seconds = 0.5, -- a report older than this is ignored (gate falls back to "allow")
+        observer = {
+            enabled = true,
+            nearby_radius = 240,
+            distant_interval = 1,
+        },
     },
 
     -- Observer-only NPC formation work: retain full-rate motion around either
