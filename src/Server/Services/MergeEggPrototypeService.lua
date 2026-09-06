@@ -11099,6 +11099,33 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         return false
     end
     local model = models[1]
+    if queued.upgradeFrom then
+        local previous = queued.upgradeFrom
+        if
+            not self:_isRecordActive(record)
+            or previous.Parent ~= team.folder
+            or previous:GetAttribute("CombatDowned")
+            or squad[queued.slot] ~= queued.upgradeDefinition
+            or team.eggTier ~= queued.upgradeTier
+        then
+            model:Destroy()
+            return false
+        end
+        -- Keep its place in the melee and its damage fraction: upgrading is not a free heal.
+        local position = previous:GetAttribute("NpcCombatPosition")
+        local pose = typeof(position) == "Vector3" and CFrame.new(position) or previous:GetPivot()
+        model:PivotTo(pose)
+        model:SetAttribute("NpcCombatPosition", pose.Position)
+        local oldPower, newPower = previous:FindFirstChild("Power"), model:FindFirstChild("Power")
+        if oldPower and newPower and oldPower.Value > 0 then
+            model:SetAttribute(
+                "CombatDamageTaken",
+                (previous:GetAttribute("CombatDamageTaken") or 0) * newPower.Value / oldPower.Value
+            )
+        end
+        previous:Destroy()
+        record.strongerPetsReplaced = (record.strongerPetsReplaced or 0) + 1
+    end
     squad[queued.slot] = definition
     team.units[#team.units + 1] = model
     self:_recordEggRoll(record, team, definition)
@@ -11117,7 +11144,10 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         variant = definition.variant,
         huge = definition.huge == true,
         waitSeconds = waitSeconds,
-        queueDepth = self:_replacementQueueDepth(record) - 1,
+        queueDepth = math.max(
+            0,
+            self:_replacementQueueDepth(record) - (queued.upgradeFrom and 0 or 1)
+        ),
     })
     return true
 end
@@ -11148,6 +11178,9 @@ function MergeEggPrototypeService:_processReplacementQueues(record, now)
             else
                 team.nextReplacementAt = now + hatchSeconds
             end
+        end
+        if eggInstalled and now >= (team.eggProductionLockedUntil or 0) then
+            require(script.Parent.MergeDefenseRefreshRuntime).step(self, record, team, now)
         end
     end
 end
@@ -17858,6 +17891,9 @@ function MergeEggPrototypeService:_advanceHatcherEgg(player, request, trustedAut
     end
     record.maximumEggTier = math.max(record.maximumEggTier or 0, resultTier)
     self:_applyTeamEggTierModifiers(team, resultTier, record)
+    if wasInitialized and resultTier > tierBefore then
+        require(script.Parent.MergeDefenseRefreshRuntime).schedule(self, team)
+    end
     for _, queued in ipairs(team.replacementQueue or {}) do
         queued.definition = nil
     end

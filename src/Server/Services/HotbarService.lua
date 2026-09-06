@@ -21,6 +21,7 @@ HotbarService.__index = HotbarService
 
 function HotbarService:Init()
     self._challengeBinds = {}
+    self._potionBindSeen = setmetatable({}, { __mode = "k" })
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
@@ -328,6 +329,13 @@ function HotbarService:GetState(player)
         -- Publish-only. Never assign this table to data.Hotbar — a blank overlay
         -- would stick forever because HotbarInitialized blocks re-seed.
         hotbar = HotbarLogic.applyChallengeOverlay(nil, self._challengeBinds[player])
+    elseif self._potionService and self._potionService.GetState then
+        local potions = self._potionService:GetState(player)
+        local seen = self._potionBindSeen[player] or {}
+        self._potionBindSeen[player] = seen
+        if HotbarLogic.reconcilePotions(hotbar, potions.potions, seen, self._config) > 0 then
+            self._dataService:RequestSave(player, "hotbar_owned_potions", { critical = false })
+        end
     end
     return { ok = true, hotbar = hotbar, slot_count = self._config.slot_count }
 end

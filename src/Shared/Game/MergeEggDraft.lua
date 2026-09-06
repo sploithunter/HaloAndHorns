@@ -19,7 +19,7 @@ end
 
 local function roleCounts(roster)
     local counts = {}
-    for _, member in ipairs(roster or {}) do
+    for _, member in pairs(roster or {}) do
         local memberRole = role(member)
         counts[memberRole] = (counts[memberRole] or 0) + 1
     end
@@ -141,6 +141,37 @@ function MergeEggDraft.composePlayerRoster(candidates, slotCount)
         reserve[#reserve + 1] = candidates[index]
     end
     return squad, reserve
+end
+
+-- Upgrade the weakest eligible defender, never reroll an incumbent just because it survived.
+-- Preserve the last tank/support and never trade a Huge away for an ordinary pet.
+function MergeEggDraft.selectUpgrade(candidates, roster, minimumRatio)
+    local counts = roleCounts(roster)
+    local chosen, chosenSlot, incumbentPower
+    for slot, incumbent in pairs(roster or {}) do
+        local currentPower = power(incumbent)
+        for _, candidate in ipairs(candidates or {}) do
+            local currentRole, nextRole = role(incumbent), role(candidate)
+            local protectedRole = (currentRole == "tank" or currentRole == "support")
+                and (counts[currentRole] or 0) <= 1
+                and nextRole ~= currentRole
+            if
+                not protectedRole
+                and not (incumbent.huge == true and candidate.huge ~= true)
+                and power(candidate) > currentPower
+                and (currentPower == 0 or power(candidate) / currentPower >= minimumRatio)
+                and (
+                    not chosenSlot
+                    or currentPower < incumbentPower
+                    or (currentPower == incumbentPower and slot < chosenSlot)
+                    or (slot == chosenSlot and power(candidate) > power(chosen))
+                )
+            then
+                chosen, chosenSlot, incumbentPower = candidate, slot, currentPower
+            end
+        end
+    end
+    return chosen, chosenSlot
 end
 
 function MergeEggDraft.selectPlayerReplacement(candidates, desiredRole, fallbackMode)

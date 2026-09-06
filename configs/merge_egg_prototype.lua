@@ -2035,6 +2035,11 @@ return {
     reinforcement = {
         enabled = true,
         hatch_seconds = 4,
+        stronger_refresh = {
+            enabled = true,
+            attempts_per_slot = 1,
+            minimum_power_ratio = 1.1,
+        },
         -- Any real combat damage to an installed egg interrupts that hatcher's production. Each
         -- later hit refreshes the window, so a hatcher under sustained rear-line pressure cannot
         -- manufacture its way out until defenders peel the attackers away.

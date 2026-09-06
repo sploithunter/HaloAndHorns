@@ -221,6 +221,39 @@ function HotbarLogic.potionAutoBindSlot(hotbar, potionId, config)
     return nil
 end
 
+-- Repair owned potions on state/load even if acquisition bypassed PotionService (e.g. a trade).
+-- Remember observed kinds for this session so an intentional Edit removal still sticks. A full
+-- row leaves the kind pending; never displace an authored power, token or another potion.
+function HotbarLogic.reconcilePotions(hotbar, potions, seen, config)
+    local changed = 0
+    local ordered = table.clone(potions or {})
+    table.sort(ordered, function(a, b)
+        return a.id < b.id
+    end)
+    for _, potion in ipairs(ordered) do
+        if (tonumber(potion.count) or 0) > 0 and not seen[potion.id] then
+            local slot = HotbarLogic.potionAutoBindSlot(hotbar, potion.id, config)
+            if slot then
+                hotbar[tostring(slot)] = { type = "potion", target = potion.id }
+                changed += 1
+                seen[potion.id] = true
+            else
+                for _, bind in pairs(hotbar) do
+                    if
+                        type(bind) == "table"
+                        and bind.type == "potion"
+                        and bind.target == potion.id
+                    then
+                        seen[potion.id] = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+    return changed
+end
+
 -- Tokens prefer the top row from LEFT to right. This keeps the authored Rally
 -- button at slot 11, then places Future Call at slot 12 on an untouched bar.
 -- Paid tokens spill into the bottom row rather than remaining invisible when
