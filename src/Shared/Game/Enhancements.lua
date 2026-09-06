@@ -192,6 +192,41 @@ function Enhancements.canSlotAtLevel(cfg, enhLevel, playerLevel)
     return enhLevel <= playerLevel + window
 end
 
+-- Compensation for a timed power becoming a toggle. Wait for a chosen origin rather
+-- than assigning unusable gear; source type changing makes the conversion idempotent.
+function Enhancements.convertToggleSlots(cfg, powersCfg, slotsByPower, origin, playerLevel)
+    local conversion = powersCfg.toggle_conversion
+    if not conversion or not Enhancements.isKnownOrigin(cfg, origin) then
+        return 0
+    end
+    playerLevel = tonumber(playerLevel)
+    if not playerLevel or playerLevel < 1 then
+        return 0
+    end
+    local levels = cfg.drops.levels
+    local level = math.min(levels.max, math.floor(playerLevel + levels.scaling.window))
+    local converted = 0
+    for powerId, slots in pairs(slotsByPower or {}) do
+        local power = powersCfg.powers[powerId]
+        local kind = power and powersCfg.effect_kinds[power.effect]
+        if conversion.powers[powerId] and kind and kind.passive and type(slots) == "table" then
+            for _, slot in ipairs(slots) do
+                local rec = type(slot) == "table" and slot.enh
+                local replacement = type(rec) == "table" and conversion.replacements[rec.type]
+                if
+                    replacement
+                    and Enhancements.isValid(cfg, rec)
+                    and Enhancements.compatibleWith(cfg, replacement, power, powersCfg.effect_kinds)
+                then
+                    slot.enh = { type = replacement, origins = { origin }, level = level }
+                    converted += 1
+                end
+            end
+        end
+    end
+    return converted
+end
+
 -- Proc entries slotted on a power: { { type, chance, bonus, trigger }, ... }. Same
 -- level-window rule as aggregate — a dead (out-of-window) proc contributes nothing.
 function Enhancements.procs(cfg, slots, playerLevel)

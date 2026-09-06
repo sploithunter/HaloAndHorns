@@ -3187,7 +3187,19 @@ local function createManagementBoardSurface(host)
         priceLabel.Parent = pricePill
 
         local action = card.action
+        local lastCreateClickAt
         button.Activated:Connect(function()
+            if action.action == "create" then
+                local now = os.clock()
+                if
+                    lastCreateClickAt
+                    and now - lastCreateClickAt + 1e-9
+                        < CONFIG.team.base_egg_generator.create_debounce_seconds
+                then
+                    return
+                end
+                lastCreateClickAt = now
+            end
             if card.id ~= "rebirth" then
                 Signals.MergeEggPrototypeBoardAction:FireServer(action)
                 return
@@ -4405,6 +4417,9 @@ function MergeEggPrototypeObserver.start()
         local tutorialEggUpgrade = success and result.tutorialEggUpgrade == true
         local value = type(result.value) == "table" and result.value or {}
         if not success then
+            if action == "create" and result.reason == "egg_create_throttled" then
+                return -- Duplicate click, not an actionable gameplay failure.
+            end
             enqueueFeedback(
                 string.format("failure:%s:%s", action, tostring(result.reason or "action_refused")),
                 boardActionFailureCopy(result),

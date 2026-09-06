@@ -24,6 +24,13 @@ return {
     -- (15 powers x 6 = 90 capacity vs ~68 slots ever granted) so every slot is a real build choice.
     selection_levels = { 2, 4, 6, 8, 10, 12, 15, 18, 22, 26, 30, 36, 40, 44, 46 },
 
+    -- Replace obsolete timing pieces in-place with best-usable single-origin gear.
+    -- Slot capacity and all other pieces remain untouched; no resale/refund loss.
+    toggle_conversion = {
+        powers = { prospector = true, windfall = true, fortune = true },
+        replacements = { duration = "potency", recharge = "focus" },
+    },
+
     -- Families whose effect reaches an ENEMY through the pets (offensive / control / debuff /
     -- pet-amplified damage). These can't be cast unless the squad is actually engaged with an
     -- enemy (no firing a meteor into empty space). Friendly families (heal/buff/absorb/
@@ -196,20 +203,19 @@ return {
 
         -- ===== GENERIC pool (farming / luck / utility) — magnitude = FRACTION (+0.5 = +50%),
         -- summed per axis via BuffStack (docs Part E). White disc (no element origin). =====
-        coin_yield = { family = "coin_yield", magnitude = 0.5, duration = 30 }, -- Prospector
+        coin_yield = { family = "coin_yield", magnitude = 0.5, passive = true }, -- Prospector
         -- Windfall (Jason): +200% DROP-TABLE chance (loot — enhancement cogs + premium
         -- gems), NOT coins. drop_rate axis, consumed by DropService + BreakableSpawner.
-        windfall = { family = "drop_rate", magnitude = 2.0, duration = 10 },
-        luck = { family = "luck", magnitude = 0.5, duration = 60 }, -- Fortune
+        windfall = { family = "drop_rate", magnitude = 2.0, passive = true },
+        luck = { family = "luck", magnitude = 0.5, passive = true }, -- Fortune / Luck
         -- Huge Fortune (marquee): magnitude = HUGE jackpot ATTEMPTS multiplier
         -- (EggService hugeLuckBoost reroll model: 1 = one attempt, 3 = three) —
         -- NOT generic hatch luck (Jason: "increases your huge chances, not just
         -- another luck"). 3x attempts for 30s on a 120s cd = time your hatches.
         luck_huge = { family = "huge_luck", magnitude = 3.0, duration = 30 },
         -- PASSIVE (always-on by ownership): owning the power applies the buff permanently — no cast,
-        -- no timer. Re-applied on pick + spawn/join (PowerService:_applyOwnedPassives). Only families
-        -- with a SOLE-OCCUPANT axis are passive today; coin_yield (Prospector) + luck (Fortune) share
-        -- their axis with Windfall / Huge Fortune bursts and need additive BuffStack (#169) first.
+        -- no timer. Re-applied on pick + spawn/join (PowerService:_applyOwnedPassives).
+        -- Power channels remain distinct from potion/aura channels; BuffStack combines them.
         move_speed = { family = "move_speed", magnitude = 0.4, passive = true }, -- Swift: always-on speed
         recharge = { family = "recharge", magnitude = 0.5, duration = 120 }, -- Hasten: TIMED self-buff (cast → 120s +50% recharge), perma'd by slotting recharge (no longer an always-on toggle)
         xp_boost = { family = "xp", magnitude = 0.5, passive = true }, -- XP Surge: always-on XP
@@ -493,31 +499,34 @@ return {
         prospector = {
             generic = true,
             display_name = "Prospector",
-            focus_cost = 20,
-            cooldown_seconds = 40,
+            focus_cost = 0,
+            focus_upkeep = 0.15,
+            cooldown_seconds = 0,
             effect = "coin_yield",
             unlock_level = 2,
-            subtitle = "Timed — 30s yield boost",
+            subtitle = "Always-On",
         },
         windfall = {
             generic = true,
             display_name = "Windfall",
-            focus_cost = 30,
-            cooldown_seconds = 60,
+            focus_cost = 0,
+            focus_upkeep = 0.15,
+            cooldown_seconds = 0,
             effect = "windfall",
             unlock_level = 6,
-            subtitle = "Timed — 10s drop boost",
+            subtitle = "Always-On",
         },
         -- (Mother Lode cut: "+mining damage" was redundant — damage buffs/debuffs already speed up
         --  crystal mining, and support pets cover yield. No distinct mechanic, so no power.)
         fortune = {
             generic = true,
             display_name = "Luck",
-            focus_cost = 20,
-            cooldown_seconds = 300, -- balance: 5 min recharge for a 1 min luck window
+            focus_cost = 0,
+            focus_upkeep = 0.1,
+            cooldown_seconds = 0,
             effect = "luck",
             unlock_level = 8,
-            subtitle = "Player-Targeted Special",
+            subtitle = "Always-On",
         },
         huge_fortune = {
             generic = true,

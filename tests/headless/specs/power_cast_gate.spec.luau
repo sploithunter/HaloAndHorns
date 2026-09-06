@@ -74,11 +74,13 @@ return function()
             expect(powers.effect_kinds.aoe_blind.family).to.equal("blind")
         end)
 
-        it("does not advertise timed Prospector and Windfall as Always-On", function()
-            expect(powers.powers.prospector.subtitle).never.to.equal("Always-On")
-            expect(powers.powers.windfall.subtitle).never.to.equal("Always-On")
-            expect(powers.effect_kinds.coin_yield.duration > 0).to.equal(true)
-            expect(powers.effect_kinds.windfall.duration > 0).to.equal(true)
+        it("advertises utility toggles consistently with their runtime kinds", function()
+            for _, id in ipairs({ "prospector", "windfall", "fortune" }) do
+                local def = powers.powers[id]
+                expect(def.subtitle).to.equal("Always-On")
+                expect(powers.effect_kinds[def.effect].passive).to.equal(true)
+                expect(powers.effect_kinds[def.effect].duration).never.to.be.ok()
+            end
         end)
 
         it("wires the pure gate into the authoritative cast path", function()

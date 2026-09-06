@@ -8456,3 +8456,20 @@ first-session cohort rates.
   harness cover actual service movement/grants, duplicate attempts, ownership, entitlement,
   radius and currency. No live profiles, Studio state or publishing modified. See
   [Decisions](DECISIONS.md#magnet-enchant-scales-the-complete-player-pickup-radius-2026-08-06-revised-2026-08-27).
+
+## 2026-09-06 — Utility toggles, in-slot compensation, and faster egg clicking
+
+- Prospector/Windfall/Luck now follow the existing player-toggle path. All six unenhanced
+  utilities consume 2.4 focus/s against 2.5/s base regeneration; potion channels remain separate.
+  Converted powers' installed duration/recharge pieces become potency/focus single-origin pieces
+  in-place at the highest usable level (+5, capped at 55), with origin selection deferred safely.
+  No inventory refunds or repeat grants. See [Decisions](DECISIONS.md#utility-toggle-retention-slice-2026-09-06).
+- Merge egg creation replaces the hardcoded 0.2-second gate with a config-owned 0.1-second
+  debounce; Buy Egg filters duplicate clicks and duplicate-result toasts are silent. Actual
+  purchase-method tests cover ten clicks/second, coin accounting, capacity, distance, invalidated
+  boards, and reentrant transaction refusal. No live profile mutations or publish.
+- This is the first retention slice (issue #468 / draft PR #469); World Travel, origin timing,
+  training progression gates and early-wave power-choice lessons are not changed here.
+- Verification: full `mise run ci` passed (2,774 tests / 313 specs); isolated actual-service
+  toggle/conversion and egg-purchase harnesses passed, including full Luau chunk compilation.
+  Wiki consistency and whitespace checks passed. Fresh Studio Play for this slice is not claimed.

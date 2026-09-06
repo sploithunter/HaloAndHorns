@@ -525,6 +525,23 @@ in-memory server state. Endurance stays the pet resource; Focus is the player's.
 (the only type that wants passives, `families="*"`) reduces upkeep/cost, read in `PowerService` not
 `PowerStats`.
 
+## Utility-toggle retention slice (2026-09-06)
+
+Prospector, Windfall and Luck now use the same ownership-applied, player-switchable toggle path as
+Swift, Magnet and XP Surge. Their magnitudes stay unchanged (+50% coin yield, +200% drop chance,
++50% ordinary hatch luck). Huge Fortune and Hasten remain timed casts. Unenhanced upkeep is
+Swift 0.75 + Magnet 0.5 + XP Surge 0.75 + Prospector 0.15 + Windfall 0.15 + Luck 0.1 = 2.4 focus/s,
+against base recovery 2.5/s. Focus slotting lowers drain through the existing division formula.
+The player-owned badges allow on/off; potion/aura channels remain independent. Converted powers
+convert installed duration → potency and recharge → focus in their existing slots on join.
+Replacements are single-origin matching the player's origin, at player level + the configured
+usable window (currently +5, capped at 55). Slot capacity/inherent markers and other pieces stay
+unchanged. No inventory refund, resale loss or acquisition counters. Without a chosen origin,
+pieces stay intact until origin selection triggers conversion; changed types prevent repeats.
+This first slice does **not** change World Travel, origin selection, combat-training requirements,
+training level rewards, or Merge's tutorial phases. Those retention-flow changes are tracked in
+issue #468 pending the World Travel semantics/origin discussion. No publish.
+
 ## Hasten Is a Timed Perma-Click, Not a Toggle (2026-06-26)
 
 Hasten is the keystone of the perma-build chase, so it must be a TIMED click reachable by the recharge

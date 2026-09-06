@@ -783,6 +783,13 @@ against isolated instances without touching live profiles.
 
 ## Literal merge-board timing probe (2026-08-26)
 
+- **2026-09-06 click update:** base-egg creation uses
+  `team.base_egg_generator.create_debounce_seconds = 0.1` (ten clicks/second), replacing the old
+  hardcoded 0.2-second service gate. Buy Egg debounces locally; server duplicates are ignored by
+  the feedback UI. Ownership, station proximity, board capacity, affordability and the in-flight
+  economy transaction guard remain server-authoritative. Boundary comparisons tolerate only
+  floating-point roundoff, not an extra gameplay grace period.
+
 - The early board is now a literal 4×4 floor grid. A green rear-wall button creates one base Earth
   Egg for 100 Waycoins, and dragging one equal egg onto another produces the next configured tier.
   Dragging a board egg onto an empty deployment pad installs it unchanged; dragging onto an occupied

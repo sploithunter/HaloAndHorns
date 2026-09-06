@@ -69,16 +69,16 @@ return {
     resonance = "Boost crystals so they break faster and pay more currency; after Level 5, more XP too.",
 
     -- Generic (white) — farming / luck / utility, any archetype
-    prospector = "+crystal yield for a duration.",
-    windfall = "A burst of bonus crystals / doubled pickups.",
-    fortune = "+luck: better egg-hatch odds for a while.",
+    prospector = "Toggle on for more coins from crystals; uses a little focus while active.",
+    windfall = "Toggle on for more loot drops; uses a little focus while active.",
+    fortune = "Toggle on for better egg-hatch odds; uses a little focus while active.",
     huge_fortune = "Triples your HUGE jackpot attempts for a short window — time your hatches.",
     swift = "Toggle: +move speed for you and your pets.",
     hasten = "Toggle: powers recharge faster.",
     revive = "Instantly re-summons a downed pet, ignoring the clock.",
     recall = "Teleports you to your saved / last-egg spot.",
     world_travel = "Teleports you to a world / zone hub.",
-    xp_surge = "+XP gain for a duration.",
+    xp_surge = "Toggle on for more XP; uses focus while active.",
     magnet = "Widens the radius that auto-collects crystals/ore.",
     heal = "Mends one selected pet. Long recharge — save it for a real hit.",
 }

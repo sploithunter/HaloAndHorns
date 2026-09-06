@@ -115,6 +115,7 @@ return {
             requires_radius = true,
         },
         duration = {
+            excludes_passive = true, -- Toggles have no expiry to extend.
             symbol = "hourglass",
             axis = "duration",
             families = {
@@ -135,7 +136,7 @@ return {
                 blind = true, -- Sandstorm: extend the blind window
                 luck = true,
                 -- rage is a TOGGLE (no duration to extend) — dropped (was a no-op slot)
-                drop_rate = true, -- Windfall: extend the loot-chance window (it has duration=10)
+                drop_rate = true, -- Timed loot buffs only; passive Windfall is excluded above.
                 -- SUMMON capstones (Gaia's Colossus / Genie of the Dunes): kind.duration is the
                 -- guardian's lifetime AND its standing-buff window, and the cast hands the EFFECTIVE
                 -- (enhancement-scaled) duration to SummonService — so a duration enhancement gives a

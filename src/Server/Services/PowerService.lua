@@ -179,12 +179,14 @@ function PowerService:BindPeerServices(services)
 end
 
 -- Families whose `passive = true` powers apply permanently by OWNERSHIP. Each maps to its single
--- axis attribute (sole-occupant — no overwrite). Shared-axis families (coin_yield/luck) wait for
--- additive BuffStack (#169).
+-- power-source attribute. Potion and aura channels stay separate and add through BuffStack.
 -- recharge (Hasten) is NO LONGER here — it's a TIMED click now, applied via _setAxisBuff with a
 -- duration, not stamped permanently by ownership. Leaving it would let _applyOwnedPassives' reset loop
 -- wipe an ACTIVE Hasten on respawn/respec, and would keep the recharge enhancement excluded from it.
 local PASSIVE_ATTR = {
+    coin_yield = "CoinYieldPower",
+    drop_rate = "DropRateBuff",
+    luck = "LuckBuff",
     magnet = "MagnetBuff",
     move_speed = "MoveSpeedBuff",
     pet_damage_toggle = "OverheatDamageBuff",

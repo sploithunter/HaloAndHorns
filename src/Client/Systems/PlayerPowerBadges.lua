@@ -73,9 +73,9 @@ local BUFFS = {
     },
     { attr = "OverheatDamageBuff", label = "HEAT", toggleable = true }, -- Pyromancer Overheat
     { attr = "CritBuff", label = "CRIT" }, -- Critical Strike
-    { attr = "CoinYieldPower", label = "CRYS" }, -- Prospector (coin_yield axis) — "Crystals" display
-    { attr = "DropRateBuff", label = "DROP" }, -- Windfall (drop_rate axis — +loot-table chance)
-    { attr = "LuckBuff", label = "LUCK" }, -- Fortune / Huge Fortune (purple clover)
+    { attr = "CoinYieldPower", label = "CRYS", toggleable = true }, -- Prospector
+    { attr = "DropRateBuff", label = "DROP", toggleable = true }, -- Windfall
+    { attr = "LuckBuff", label = "LUCK", toggleable = true }, -- Luck (not Huge Fortune)
     { attr = "LuckBuffPotion", label = "LUCK" }, -- Fortune potion (own source; adds to the power)
     -- bunny support aura: GREEN clover (earth disc + clover_lucky — composed from
     -- existing assets, Jason's spec). Fixed badge: no PowerId to resolve.
