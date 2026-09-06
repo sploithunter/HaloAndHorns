@@ -8524,3 +8524,9 @@ first-session cohort rates.
   Ordinary manual power/slot choices are unchanged. Tests cover reset/incomplete/graduate
   eligibility, no-write preflight, real offline rejection/release, target retention, and retries.
   No publication, server shutdown, or account reset accompanies this patch.
+
+## 2026-09-06 — Watcher caption clearance
+
+- Lowered the common Heaven/Hell apparition caption offset from -8 to -11 studs so speech
+  clears the face's chin instead of overlapping it. Theme colors, audio mix and animation are
+  unchanged; the offset remains config-owned. No authored model changes or publication.

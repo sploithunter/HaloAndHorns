@@ -111,7 +111,7 @@ return {
         dialogue = {
             width = 340,
             height = 160,
-            offset_y = -8,
+            offset_y = -11,
             max_distance = 200,
             font = "GothamBold",
             text_size = 18,
