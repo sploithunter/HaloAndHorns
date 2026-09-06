@@ -35,6 +35,9 @@ personal hatch inventory no longer requires Combat Training. Courses retain thei
 `MergePowerLessonGuide` uses the real Powers button, staged menu counts and existing Apply flow.
 It owns/cancels its pulses and pointers, reserves space above guided list rows, and points at the
 permanent-origin review when relevant. Origin timing remains Level 5, not an automatic selection.
+After an origin is chosen, generic power-choice guidance gives Natural and origin columns equal
+pulsing pointers. The Magnet-only recommendation applies only to the initial pre-origin power
+lesson and an unowned power; stale recommendation attributes cannot steer later ascensions.
 Cue/action text has English, Spanish and Brazilian Portuguese config variants with English fallback;
 this is not a translation of the entire Powers menu. Existing funnel stage diagnostics accept the
 three new lesson IDs without renaming historical funnels.

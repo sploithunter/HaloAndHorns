@@ -1976,13 +1976,19 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
         end
         PowerSlotRow.create(wrap, {
             powerId = r.id,
-            name = (def.display_name or r.id) .. ((Players.LocalPlayer:GetAttribute(
-                "MergePowerLesson"
-            ) == "power" and r.id == Players.LocalPlayer:GetAttribute(
-                "MergePowerRecommendation"
-            ) and self:_remainingPicks() > 0) and (" — " .. self.lessonGuide.text(
-                "recommended"
-            )) or ""),
+            name = (def.display_name or r.id)
+                .. (
+                    (
+                            Players.LocalPlayer:GetAttribute("MergePowerLesson")
+                                == "power"
+                            and not self.archetype
+                            and r.state ~= "owned"
+                            and r.id == Players.LocalPlayer:GetAttribute("MergePowerRecommendation")
+                            and self:_remainingPicks() > 0
+                        )
+                        and (" — " .. self.lessonGuide.text("recommended"))
+                    or ""
+                ),
             -- the type line is DECISION-time info (Jason: "they don't need to know
             -- what it is after they've already selected it") — owned rows drop it
             -- and give the space to the slotted-enhancement discs

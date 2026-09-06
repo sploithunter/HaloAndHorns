@@ -129,6 +129,21 @@ function Guide.clear(menu)
     menu._mergeGuide = nil
 end
 
+function Guide.powerTargets(menu, stage, recommendation)
+    -- A first-power recommendation is a lesson, not a restriction on later ascensions.
+    if stage == "power" and not menu.archetype and recommendation then
+        local row = menu.frame:FindFirstChild("Row_" .. recommendation, true)
+        if row and not menu.owned[recommendation] then
+            return { row }, true
+        end
+    end
+    local targets = { menu.naturalCol }
+    if menu.archetype and menu.originCol then
+        table.insert(targets, menu.originCol)
+    end
+    return targets, false
+end
+
 function Guide.refresh(menu)
     Guide.clear(menu)
     local player = Players.LocalPlayer
@@ -189,6 +204,7 @@ function Guide.refresh(menu)
         pulse(title, { TextTransparency = cfg.guide.text_fade })
     end
     local target
+    local powerTargets, isRecommendation
     if action == "commit" then
         target = menu.commitBtn
     elseif action == "origin" then
@@ -196,12 +212,8 @@ function Guide.refresh(menu)
     elseif action == "origin_review" then
         target = menu.frame:FindFirstChild("LockIn", true)
     elseif action == "power" then
-        target = menu.frame:FindFirstChild(
-            "Row_" .. tostring(player:GetAttribute("MergePowerRecommendation")),
-            true
-        )
-        -- Ordinary ascensions need a visible entry point too; a recommendation is optional.
-        target = target or menu.naturalCol
+        powerTargets, isRecommendation =
+            Guide.powerTargets(menu, stage, player:GetAttribute("MergePowerRecommendation"))
     elseif action == "slots" or action == "owned" then
         local preferred = player:GetAttribute("MergePowerLessonTarget")
         if
@@ -257,7 +269,7 @@ function Guide.refresh(menu)
             end
         end
     end
-    if target then
+    for _, target in ipairs(powerTargets or (target and { target } or {})) do
         if target.Name:match("^Row_") then
             -- Reserve a row-sized callout in the list instead of covering another choice.
             -- Height follows the menu's existing minimum-touch-target row sizing.
@@ -306,12 +318,7 @@ function Guide.refresh(menu)
             cue.Font = Enum.Font.GothamBlack
             cue.TextScaled = true
             cue.ZIndex = cfg.guide.menu_cue_z_index
-            cue.Text = (
-                action == "power"
-                    and player:GetAttribute("MergePowerRecommendation")
-                    and Guide.text("recommended")
-                or text
-            ) .. "\n▼"
+            cue.Text = (isRecommendation and Guide.text("recommended") or text) .. "\n▼"
             cue.Parent = menu.frame
             state.objects[#state.objects + 1] = cue
             pulse(cue, {
