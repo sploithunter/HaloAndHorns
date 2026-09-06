@@ -8493,3 +8493,22 @@ first-session cohort rates.
   isolated client state. Profile-loading timeout warnings mean no full fresh-account walkthrough
   is claimed. No live reward grants, account reset, or publishing. Work is in PR #470, stacked
   on the utility-toggle slice. See [Merge onboarding](MERGE_EGG_PROTOTYPE.md#wave-paced-power-onboarding-2026-09-06).
+
+## 2026-09-06 — Main reconciliation and fresh Play verification
+
+- Merged the green PR stack #465 (Hell lightning), #467 (Auto Dog consumables), #469
+  (utility toggles), and #470 (wave power lessons) through GitHub in dependency order.
+  Integrated main `18433cad` passed local and GitHub CI: 2,781 tests across 314 specs.
+  The four isolated actual-runtime harnesses for Auto Dog, toggles, egg creation, and power
+  lessons also passed. Subsequent automated commits only refreshed build metadata.
+- Fresh Merge Play was launched from the clean primary main checkout served by Rojo on 34872.
+  The canonical server audit confirmed an active player bay, deployed eggs and a running
+  encounter. The normal client runtime reported all five Hell gates, 18 inner strikes and
+  four sky strikes. No script errors or profile timeout warnings appeared in this smoke run;
+  existing monetization-placeholder and authored candle-normalization warnings remain.
+  This is a boot/runtime smoke check, not a full fresh-account tutorial walkthrough.
+- Removed five fully merged local feature branches, four remote feature branches, and the
+  redundant clean Auto Dog worktree. Its sole ignored file was a rebuildable `game.rbxl`;
+  all source commits remain reachable from main. No stashes or untracked work were discarded.
+  Studio-owned endpoint edits remain outside Git and must be saved with the authored place.
+  No Roblox publication or additional player-data reset was performed during reconciliation.

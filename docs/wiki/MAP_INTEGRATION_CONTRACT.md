@@ -363,6 +363,11 @@ routes on Gates 4/5 after moving the test viewer. This is not a full fresh-Play 
 the existing Rojo reconnect blocker remains. Save the Studio-owned map edits before closing;
 neither map nor game has been published by this task.
 
+Verification follow-up (2026-09-06): the Rojo blocker above was cleared. Fresh Play from clean
+integrated main `18433cad` detected all five gates in the normal client runtime and recorded
+18 inner and four sky strikes, with no script errors. Edit inspection confirmed sixteen anchored
+endpoints on every gate. The save/publish caveat for Studio-owned map content still applies.
+
 - [Foundation & Requirements K8](../FOUNDATION_AND_REQUIREMENTS.md)
 - [Implementation Plan Phase 1](../IMPLEMENTATION_PLAN.md)
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
