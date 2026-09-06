@@ -35,21 +35,17 @@ return function()
             function()
                 expect(Lessons.offlineEligible(nil)).to.equal(false)
                 expect(Lessons.offlineEligible({ GameData = {} })).to.equal(false)
-                expect(
-                    Lessons.offlineEligible({
-                        GameData = {
-                            MergeDefense = { tutorial_setup_completed = true },
-                            MergePowerLessons = {
-                                completed = { power = true, slots = true, enhance = true },
-                            },
+                expect(Lessons.offlineEligible({
+                    GameData = {
+                        MergeDefense = { tutorial_setup_completed = true },
+                        MergePowerLessons = {
+                            completed = { power = true, slots = true, enhance = true },
                         },
-                    })
-                ).to.equal(false)
-                expect(
-                    Lessons.offlineEligible({
-                        GameData = { MergeDefense = { tutorial_completed = true } },
-                    })
-                ).to.equal(true)
+                    },
+                })).to.equal(false)
+                expect(Lessons.offlineEligible({
+                    GameData = { MergeDefense = { tutorial_completed = true } },
+                })).to.equal(true)
                 expect(Lessons.offlineEligible({ GameData = { MergeDefense = { rebirths = 1 } } })).to.equal(
                     true
                 )
