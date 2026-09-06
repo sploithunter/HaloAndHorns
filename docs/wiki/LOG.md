@@ -8557,3 +8557,7 @@ first-session cohort rates.
 - Isolated Studio exercised actual replacement and defeat methods: successful/failed/stale swaps,
   finite budget, missing-slot priority, retained damage/position, trained/untrained drops, origin and
   duplicate-death rejection. No real profile or native analytics changes during verification.
+- CI passes 2,800 tests / 316 specs. The isolated actual HotbarService also restored four owned
+  potion bindings, preserved an existing power, avoided repeat writes, and kept a training overlay
+  out of saved data. Live read-only inspection found four retained potion stacks and no enhancement
+  entries on the untrained test player, confirming that inventory possession and binding are distinct.

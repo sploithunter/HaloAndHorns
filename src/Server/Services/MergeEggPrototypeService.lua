@@ -11144,7 +11144,10 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         variant = definition.variant,
         huge = definition.huge == true,
         waitSeconds = waitSeconds,
-        queueDepth = self:_replacementQueueDepth(record) - 1,
+        queueDepth = math.max(
+            0,
+            self:_replacementQueueDepth(record) - (queued.upgradeFrom and 0 or 1)
+        ),
     })
     return true
 end
