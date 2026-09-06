@@ -16,6 +16,9 @@
 ]]
 
 return {
+    -- Reuse private procedural effect primitives; never discard active visuals to fit this cap.
+    -- Only idle parts are bounded. Disabling restores allocate/destroy after each effect.
+    part_pool = { enabled = true, maximum_idle = 2048 },
     -- Combat element origin (CombatOrigin.resolve). Canonical elements = the four biomes:
     -- grass / lava / ice / desert. Hybrid + configurable:
     --   unify_to_player = false -> each pet fights as its OWN biome origin (collection variety)

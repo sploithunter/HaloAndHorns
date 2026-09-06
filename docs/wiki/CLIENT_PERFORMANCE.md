@@ -1,5 +1,81 @@
 # Client Performance
 
+## Bounded procedural effect-part reuse (2026-09-06, feature branch)
+
+`combat_fx.part_pool` enables a shared **2,048-idle-Part** cache per execution context.
+Only private procedural primitives participate: RangedFX flashes/sparks/shards/rings/
+smoke/columns and AreaFX single-stage primitives. Multi-stage projectiles, ricochets,
+tar pits, particle hosts, sound holders, and lightning rigs retain their old lifecycle.
+No living pet, authored model, hit, effect count, appearance parameter or damage timing
+is removed. Capacity bounds idle retention, not active visuals; overflow is destroyed.
+
+`LeasePool` invalidates ownership before cleanup and requires the lease ID on release.
+Old timers therefore cannot remove a newer use of the same Part. `EffectPartPool`
+resets appearance/transform properties, cancels and destroys owned tweens, destroys
+children, clears attributes/tags, and retains idle Parts under a private unparented
+folder. Its parent marker detects destroyed idle Parts even with deferred Destroying
+signals. Idle parts intentionally appear in retention diagnostics; the cap is explicit.
+Disabling the config keeps the same effects while allocating/destroying each use.
+
+Native `tools/effect_part_pool_smoke.luau` tests property/child reset, stale delayed
+release, external destruction, cap overflow, cancellation, and disposal. Three identical
+batches of real RangedFX/AreaFX calls have matching initial visual-property signatures
+and complete normal lifetimes: disabled creates 1,077 Parts; enabled creates 359 and
+reuses 718. The first native attempt exposed deferred Destroying and informed the
+parent-marker fix; another attempted cleanup assertion ran before the unchanged grass
+particle host's two-second lifetime and was corrected to wait 2.2 seconds.
+
+Fresh one-bay Play progressed waves 72→76 with visible combat, no console script errors,
+and runtime pool counters of 2,872 created / 174,684 reused after roughly 140 seconds.
+The 90-second parenting census recorded 116,992 additions (including reuse), while
+BaseParts rose **39.254 MB**, versus **152.714 MB** in the preceding unpooled capture.
+Waves and view differ: these are observed shared-Studio counters, not a controlled
+whole-game percentage, total-memory cure, deployment budget or FPS claim. Memory still
+grows in unmigrated effects/categories. The MCP command environment has a separate module
+cache; runtime pool counters must be read through a temporary LocalScript/Bindable probe,
+not by requiring a new lazy pool in the command environment.
+
+Full local CI: 2,755 tests / 309 specs. The first combined run sampled the temporary
+offline-fill-disabled diagnostic config and failed its policy assertion; rerunning with
+the restored production config passed. Evidence: `effect-pool-native.json`,
+`effect-pool-one-{probe.luau,result.json,host.jsonl}` and `effect-pool-final-ci.log` in the
+durable [stress directory](MERGE_STRESS_TESTING.md).
+
+The subsequent eight-bay run used seven isolated level-50 fixtures plus the viewer,
+635–639 pet/objective models and 79 NPC squads. Fixtures advanced wave 60→65/66;
+the 120-second cap removed all workers and status reported no harness errors. Across
+the 115.9-second populated capture, BaseParts rose **11,521.0→11,578.5 MB** and shared
+Studio total **21,618.9→22,021.5 MB**. Weighted client frame interval was **29.43 ms**.
+These are warm-process observations with changing combat/view, not a matched FPS gain.
+One-bay samples continued after worker teardown and still show growth; no OOM-cure
+claim. Both probes were explicitly stopped/destroyed, and Play stopped with Studio open.
+Raw `effect-pool-eight-{server,client}-memory.json` and `effect-pool-eight-host.jsonl`
+are preserved in the stress directory. No eight-bay pool-counter or visual-parity
+claim comes from those memory probes.
+
+Hosted CI caught two new-module issues omitted from the earlier local architecture
+scan: that scanner uses `git ls-files --cached`, so untracked source was absent.
+The expiration callback is now explicitly classified as an animation lifetime;
+enabled pools require the configured capacity instead of a numeric tuning fallback.
+The tracked-source full CI and native smoke rerun pass (2,755/309; identical visual
+signatures, 359 created versus 1,077). Artifacts: `effect-pool-tracked-ci.log` and
+`effect-pool-native-retest.json`. Both hosted fast gates passed for `5478db22`.
+
+A second fresh eight-bay verification loaded the corrected source. The runtime pool
+reported **2,985 created / 77,541 reused / 1,500 active / 879 idle**, within the
+2,048-idle cap. Census retained **72 eggs, zero hidden eggs**, with 438 of 637
+pet/objective models hidden. Captured combat view showed normal pets, effects and
+defenses; this visual inspection supplements, not replaces, the native parity tests.
+A 20.058 s profile recorded enemy combat ticks 4.316 s inclusive, nested pet aggro
+1.632 s, target assignment 1.239 s, engagement 0.818 s, and PetFollow ticks 1.461 s.
+29,789 target lookups totaled 0.0294 s. Do not add nested counters or label elapsed
+instrumentation script-exclusive CPU. Low-FPS/frame warnings remain; no script error
+was identified in this capture. Stop confirmed zero synthetic workers/errors; diagnostic
+script/bindable removed, Play stopped, production config restored. Raw
+`effect-pool-eight-visual-{profile,census,console}.json` and passive host JSONL are in
+the same directory; native capture ID `EffectPool_EightBay_Combat`.
+No production publish; Studio stays open.
+
 ## Character-local Merge bay detail (2026-09-06)
 
 `MergeBayPresentation` selects the nearest authored bay from the **character's current
