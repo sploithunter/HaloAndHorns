@@ -24,8 +24,12 @@ combat training, transit, prologue and Scriptable-camera ceremonies suppress it.
 taunts include an explicit Basic Combat Training hint so sarcastic advice cannot obscure how to
 unlock pets. Nine user-supplied ElevenLabs Hell clips now map one-to-one to those text variants
 in `watcher.voice`; source MP3s and upload provenance live in `assets/audio/voices/hell_watcher`.
-Only the local Hell client preloads this small clip set. Voice uses the existing Effects/master
-bus, follows the apparition spatially, and is destroyed with it on interruption. Loading failures
+Only the local Hell client preloads this small clip set. Voice follows the apparition spatially
+and is destroyed with it on interruption. Its separate `WatcherVoice` bus mirrors the user's
+Effects/master volume preference. While speech plays, private three-band EQ effects attenuate
+background Effects by 24 dB and Music by 28 dB; the voice bus is not attenuated. Duck-in is 0.15s,
+restore is 0.6s. These effects never write bus volumes or saved settings, so slider changes during
+speech survive cleanup; only the Watcher's own EQ effects are removed. Loading failures
 retain the text-only encounter; a clip cannot start after the configured two-second deadline.
 Loaded clips extend the encounter through the measured spoken duration plus its exit fade,
 bounded at thirteen seconds. No Heaven voice clips are supplied yet.

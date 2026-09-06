@@ -10,7 +10,7 @@ local ContentProvider = game:GetService("ContentProvider")
 local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local Director = require(ReplicatedStorage.Shared.Game.MergeWatcherDirector)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
-local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+local WatcherAudio = require(script.Parent.MergeWatcherAudio)
 
 local Watcher = {}
 local started = false
@@ -33,6 +33,7 @@ function Watcher.start()
         return
     end
     local player = Players.LocalPlayer
+    local audio = WatcherAudio.new(cfg.voice)
     local director = Director.new()
     local random = Random.new()
     local world, bayId, apparition
@@ -59,6 +60,7 @@ function Watcher.start()
     end
 
     local function clear()
+        audio:setSpeaking(false)
         if apparition then
             if apparition.atmosphere then
                 apparition.atmosphere:Destroy()
@@ -193,7 +195,7 @@ function Watcher.start()
                 voice.Volume = cfg.voice.volume
                 voice.RollOffMinDistance = cfg.voice.rolloff_min_distance
                 voice.RollOffMaxDistance = cfg.voice.rolloff_max_distance
-                SoundGroups.assign(voice, cfg.voice.bus)
+                voice.SoundGroup = audio.group
                 voice.Parent = face
             end
         end
@@ -220,6 +222,7 @@ function Watcher.start()
     end
 
     RunService.Heartbeat:Connect(function(dt)
+        audio:step(dt)
         local now = os.clock()
         local root = rootPart()
         local eligible = player:GetAttribute("InMergeEggPrototype") == true
@@ -272,6 +275,7 @@ function Watcher.start()
                 current.voice:Play()
             end
         end
+        audio:setSpeaking(current.voice ~= nil and current.voice.IsPlaying)
         if
             age >= current.duration
             or (current.face.Position - root.Position).Magnitude > cfg.teleport_distance

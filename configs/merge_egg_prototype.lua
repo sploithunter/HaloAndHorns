@@ -111,6 +111,12 @@ return {
             enabled = true,
             volume = 0.8,
             bus = "effects",
+            group_name = "WatcherVoice",
+            ducking = {
+                fade_in_seconds = 0.15,
+                fade_out_seconds = 0.6,
+                gains_db = { effects = -24, music = -28 },
+            },
             start_seconds = 0.75,
             load_deadline_seconds = 2,
             tail_seconds = 0.35,

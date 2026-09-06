@@ -8293,3 +8293,15 @@ first-session cohort rates.
 - Merge Play verification: all nine clips returned AssetFetchStatus.Success and IsLoaded=true,
   with lengths matching local ffprobe measurements. Arrival speech was playing with the matching
   subtitle and Effects SoundGroup; voice/face/lighting effect cleaned up after the encounter.
+
+## 2026-09-05 — Watcher voice foreground mix
+
+- User found combat/music too loud under speech. Added private Effects -24 dB / Music -28 dB
+  attenuation with a 0.15s attack and 0.6s release. Speech moves to a separate WatcherVoice group
+  that follows the Effects/master preference without receiving the background EQ attenuation.
+- No saved preferences or shared bus volumes are overwritten. Missing/muted voice does not keep
+  the background ducked; completion and interruption restore the normal mix. Envelope unit tests
+  cover attack/release, long frames and interrupted transitions.
+- Full CI: 2,699 tests passing. Merge replay confirmed voice on WatcherVoice, Effects -24 dB,
+  Music -28 dB and unchanged user bus volumes; both EQ effects disappeared after speech. Voice
+  followed a temporary Effects-volume change and its restoration without any settings save.

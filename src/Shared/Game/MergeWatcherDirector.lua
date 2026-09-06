@@ -5,6 +5,12 @@ function Director.new()
     return { seen = {}, count = 0, nextAt = 0, reminders = 0, reminderAt = 0 }
 end
 
+function Director.duckAmount(amount, speaking, dt, config)
+    local duration = speaking and config.fade_in_seconds or config.fade_out_seconds
+    local direction = speaking and 1 or -1
+    return math.clamp(amount + direction * math.max(0, dt) / duration, 0, 1)
+end
+
 function Director.duration(config, clip, startedAt)
     if not clip then
         return config.duration_seconds

@@ -13,6 +13,15 @@ end
 
 return function()
     describe("Merge Watcher director", function()
+        it("ducks quickly, restores smoothly, clamps long frames and reverses cleanly", function()
+            local duck = { fade_in_seconds = 0.15, fade_out_seconds = 0.6 }
+            expect(Director.duckAmount(0, true, 0.075, duck)).to.equal(0.5)
+            expect(Director.duckAmount(0.5, true, 1, duck)).to.equal(1)
+            expect(Director.duckAmount(1, false, 0.3, duck)).to.equal(0.5)
+            expect(Director.duckAmount(0.5, false, 1, duck)).to.equal(0)
+            expect(Director.duckAmount(0.5, true, 0.075, duck)).to.equal(1)
+            expect(Director.duckAmount(0.5, true, -1, duck)).to.equal(0.5)
+        end)
         it(
             "extends for spoken clips with room to finish and fade, but bounds late audio",
             function()
