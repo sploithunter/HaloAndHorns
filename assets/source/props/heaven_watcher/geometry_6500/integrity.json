@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/geometry_6500/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 3414,
+    "edges": 9563,
+    "faces": 6150,
+    "triangles": 6150,
+    "face_components": 17,
+    "boundary_edges": 678,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 1,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 3414,
+      "raw_vertices": 18370,
+      "welded_coincident_vertices": 14956,
+      "inspection_weld_distance": 5.2848206883254734e-08,
+      "edges": 9563,
+      "faces": 6150,
+      "triangles": 6150,
+      "face_components": 17,
+      "bounds_diagonal": 0.5284820688325473,
+      "boundary_edges": 678,
+      "boundary_components": [
+        {
+          "edge_count": 281,
+          "vertex_count": 281,
+          "closed_loop": true,
+          "perimeter": 4.430663277162239,
+          "perimeter_to_mesh_diagonal": 8.383753278422244
+        },
+        {
+          "edge_count": 48,
+          "vertex_count": 48,
+          "closed_loop": true,
+          "perimeter": 0.40166064631193876,
+          "perimeter_to_mesh_diagonal": 0.7600270094295428
+        },
+        {
+          "edge_count": 30,
+          "vertex_count": 30,
+          "closed_loop": true,
+          "perimeter": 0.39488084288313985,
+          "perimeter_to_mesh_diagonal": 0.7471981854662701
+        },
+        {
+          "edge_count": 44,
+          "vertex_count": 44,
+          "closed_loop": true,
+          "perimeter": 0.3520980712492019,
+          "perimeter_to_mesh_diagonal": 0.6662441206889201
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 0.3179733697324991,
+          "perimeter_to_mesh_diagonal": 0.601672958242318
+        },
+        {
+          "edge_count": 18,
+          "vertex_count": 18,
+          "closed_loop": true,
+          "perimeter": 0.2964975917711854,
+          "perimeter_to_mesh_diagonal": 0.5610362380433619
+        },
+        {
+          "edge_count": 19,
+          "vertex_count": 19,
+          "closed_loop": true,
+          "perimeter": 0.2961374060250819,
+          "perimeter_to_mesh_diagonal": 0.5603546903289821
+        },
+        {
+          "edge_count": 34,
+          "vertex_count": 34,
+          "closed_loop": true,
+          "perimeter": 0.2938006827607751,
+          "perimeter_to_mesh_diagonal": 0.5559331150246983
+        },
+        {
+          "edge_count": 36,
+          "vertex_count": 36,
+          "closed_loop": true,
+          "perimeter": 0.29236765834502876,
+          "perimeter_to_mesh_diagonal": 0.5532215293337931
+        },
+        {
+          "edge_count": 19,
+          "vertex_count": 19,
+          "closed_loop": true,
+          "perimeter": 0.2920559875201434,
+          "perimeter_to_mesh_diagonal": 0.5526317821252003
+        },
+        {
+          "edge_count": 20,
+          "vertex_count": 20,
+          "closed_loop": true,
+          "perimeter": 0.28597190231084824,
+          "perimeter_to_mesh_diagonal": 0.5411194043774835
+        },
+        {
+          "edge_count": 20,
+          "vertex_count": 20,
+          "closed_loop": true,
+          "perimeter": 0.2834537820890546,
+          "perimeter_to_mesh_diagonal": 0.5363545876120701
+        },
+        {
+          "edge_count": 19,
+          "vertex_count": 19,
+          "closed_loop": true,
+          "perimeter": 0.2778657916933298,
+          "perimeter_to_mesh_diagonal": 0.5257809263181893
+        },
+        {
+          "edge_count": 16,
+          "vertex_count": 16,
+          "closed_loop": true,
+          "perimeter": 0.22207794431596994,
+          "perimeter_to_mesh_diagonal": 0.42021850392493953
+        },
+        {
+          "edge_count": 16,
+          "vertex_count": 16,
+          "closed_loop": true,
+          "perimeter": 0.22143152728676796,
+          "perimeter_to_mesh_diagonal": 0.41899534600279853
+        },
+        {
+          "edge_count": 18,
+          "vertex_count": 18,
+          "closed_loop": true,
+          "perimeter": 0.09972506249323487,
+          "perimeter_to_mesh_diagonal": 0.18870093873484542
+        },
+        {
+          "edge_count": 18,
+          "vertex_count": 18,
+          "closed_loop": true,
+          "perimeter": 0.09872310189530253,
+          "perimeter_to_mesh_diagonal": 0.1868050170810687
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 1,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 678 exceed allowed 0",
+    "wire/3+-face edges 1 exceed allowed 0"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/geometry_4000/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/repaired/model.glb",
+  "raw_vertices": 12022,
+  "weld_distance": 5.376759124814453e-08,
+  "initial_cleanup": {
+    "boundary_edges_found": 175,
+    "fill_faces_added": 8,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 39,
+    "fill_faces_added": 3,
+    "duplicate_faces_removed": 30,
+    "nonmanifold_faces_removed": 6,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 1
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 39,
+    "fill_faces_added": 3,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 5,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.0,
+  "triangles_after_fill": 4176,
+  "decimation_ratio": 1.0,
+  "final_triangles": 4172,
+  "max_triangles": 4500
+}

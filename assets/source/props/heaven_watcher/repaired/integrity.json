@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-heaven-watcher/assets/source/props/heaven_watcher/repaired/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 2103,
+    "edges": 6230,
+    "faces": 4144,
+    "triangles": 4144,
+    "face_components": 9,
+    "boundary_edges": 33,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 4,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 2103,
+      "raw_vertices": 12353,
+      "welded_coincident_vertices": 10250,
+      "inspection_weld_distance": 5.3767590801851406e-08,
+      "edges": 6230,
+      "faces": 4144,
+      "triangles": 4144,
+      "face_components": 9,
+      "bounds_diagonal": 0.5376759080185141,
+      "boundary_edges": 33,
+      "boundary_components": [
+        {
+          "edge_count": 19,
+          "vertex_count": 19,
+          "closed_loop": true,
+          "perimeter": 0.21323331212624907,
+          "perimeter_to_mesh_diagonal": 0.3965833487166524
+        },
+        {
+          "edge_count": 6,
+          "vertex_count": 7,
+          "closed_loop": false,
+          "perimeter": 0.08378843124955893,
+          "perimeter_to_mesh_diagonal": 0.15583445343188745
+        },
+        {
+          "edge_count": 6,
+          "vertex_count": 7,
+          "closed_loop": false,
+          "perimeter": 0.06986962351948023,
+          "perimeter_to_mesh_diagonal": 0.1299474692421487
+        },
+        {
+          "edge_count": 2,
+          "vertex_count": 3,
+          "closed_loop": false,
+          "perimeter": 0.05559302307665348,
+          "perimeter_to_mesh_diagonal": 0.10339504197152762
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 4,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 33 exceed allowed 0",
+    "wire/3+-face edges 4 exceed allowed 0"
+  ]
+}
