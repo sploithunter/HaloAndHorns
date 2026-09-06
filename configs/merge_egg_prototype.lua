@@ -2064,6 +2064,11 @@ return {
         full_mode = {
             default_mode = "full",
             minimum_level = 2,
+            starter_grant = {
+                egg_id = "grass_egg",
+                count = 4,
+                first_hatch_luck = 50,
+            },
             notices = {
                 full_intro = {
                     title = "FULL COMBAT ACTIVE",
@@ -2072,7 +2077,7 @@ return {
                 },
                 full_unlock_choice = {
                     title = "FULL COMBAT UNLOCKED",
-                    body = "You can now manage your real pets and powers in Merge Defense. Would you like to stay in automatic Simple Mode or switch to Full Mode?",
+                    body = "Manage your own pets and powers! Your first switch to Full gives you four Earth Egg pets with super starter luck. Stay in automatic Simple Mode or switch to Full?",
                     primary_label = "SWITCH TO FULL",
                     secondary_label = "STAY SIMPLE",
                 },

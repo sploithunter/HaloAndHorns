@@ -9,7 +9,7 @@ function Funnel.controlRealm(autoplay, realm)
     return (autoplay == true and "autoplay" or "manual") .. ":" .. Funnel.realm(realm)
 end
 
-function Funnel.new(config, cohort)
+function Funnel.new(config, cohort, onboarding)
     local state = {
         cohort = cohort,
         funnels = {},
@@ -20,7 +20,11 @@ function Funnel.new(config, cohort)
         autoActions = 0,
     }
     for key, definition in pairs(config.funnels) do
-        if definition.enabled ~= false and (not definition.fresh_only or cohort == "fresh") then
+        if
+            definition.enabled ~= false
+            and (not definition.fresh_only or cohort == "fresh")
+            and (not definition.onboarding_only or onboarding == true)
+        then
             state.funnels[key] = { observed = {}, reached = 0 }
         end
     end
@@ -54,6 +58,9 @@ function Funnel.wave(state, config, wave)
     state.lastWave = wave
     state.clears = math.min(state.clears + 1, config.wave_thresholds[#config.wave_thresholds])
     local events = { "wave_cleared" }
+    if wave <= config.early_wave_limit and wave % 1 == 0 then
+        table.insert(events, "wave_resolved_" .. wave)
+    end
     for _, threshold in ipairs(config.wave_thresholds) do
         if state.clears >= threshold then
             table.insert(events, "clears_" .. threshold)
@@ -93,7 +100,7 @@ function Funnel.validate(config)
             return false, "Missing analytics catalog: " .. key
         end
     end
-    for _, key in ipairs({ "milestone", "failure", "exit", "tutorial" }) do
+    for _, key in ipairs({ "milestone", "failure", "exit", "tutorial", "wave" }) do
         local name = config.custom[key]
         if type(name) ~= "string" or #name == 0 or #name > 50 then
             return false, "Invalid custom event name"
@@ -106,32 +113,47 @@ function Funnel.validate(config)
         "entry_timeout_seconds",
         "trace_limit",
         "leave_flush_limit",
+        "early_wave_limit",
     }) do
         local value = config[key]
         if type(value) ~= "number" or value ~= value or value <= 0 or value == math.huge then
             return false, "Invalid Merge analytics limit: " .. key
         end
     end
+    if config.early_wave_limit % 1 ~= 0 or config.early_wave_limit > 100 then
+        return false, "Early wave limit must be an integer at most 100"
+    end
     local names, count = {}, 0
     for _, definition in pairs(config.funnels) do
-        count += 1
+        if definition.enabled ~= false then
+            count += 1
+        end
         if type(definition.name) ~= "string" or #definition.name > 50 or names[definition.name] then
             return false, "Invalid or duplicate funnel name"
         end
         names[definition.name] = true
-        if type(definition.steps) ~= "table" or #definition.steps == 0 then
+        if
+            type(definition.steps) ~= "table"
+            or #definition.steps == 0
+            or #definition.steps > 100
+        then
             return false, "Empty funnel"
         end
         local events = {}
         for _, step in ipairs(definition.steps) do
-            if type(step[1]) ~= "string" or type(step[2]) ~= "string" or events[step[1]] then
+            if
+                type(step[1]) ~= "string"
+                or type(step[2]) ~= "string"
+                or #step[2] == 0
+                or events[step[1]]
+            then
                 return false, "Invalid or duplicate funnel step"
             end
             events[step[1]] = true
         end
     end
-    if count > 7 then
-        return false, "Seven Merge funnels plus three existing funnels use Roblox's ten tabs"
+    if count > 6 then
+        return false, "Six Merge funnels plus Homeworld and three courses use Roblox's ten tabs"
     end
     for _, key in ipairs({ "wave_thresholds", "autoplay_thresholds" }) do
         local previous = 0

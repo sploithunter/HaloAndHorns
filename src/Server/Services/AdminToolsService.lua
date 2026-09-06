@@ -772,6 +772,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- (collect the opening piles) runs again.
     playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
     playerData.GameData.MergePowerLessons = nil
+    playerData.GameData.MergeFullStarterPets = nil
     playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
     playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService

@@ -102,10 +102,14 @@ function Runtime.update(service, record)
         if not service:_isRecordActive(record) then
             return
         end
-        if completed(service, record, stage, data) or Lessons.graduate(data) then
+        local satisfied = completed(service, record, stage, data)
+        if satisfied or Lessons.graduate(data) then
             state.targetPower = Lessons.target(cfg, data.Powers, state.targetPower)
             state.completed[stage.id] = true
             save(service, record)
+            if satisfied then
+                service:_analytics(record, stage.id .. "_lesson_completed")
+            end
             Runtime.clear(record)
             record.tutorialActive = false
             record.tutorialStep = "quartermaster_waves"
@@ -190,6 +194,7 @@ function Runtime.tryStart(service, record)
             if completed(service, record, stage, data) then
                 state.completed[stage.id] = true
                 save(service, record)
+                service:_analytics(record, stage.id .. "_lesson_completed")
             else
                 record.powerLessonId = stage.id
                 record.nextWaveAt = nil

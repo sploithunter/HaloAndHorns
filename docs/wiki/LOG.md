@@ -8530,3 +8530,17 @@ first-session cohort rates.
 - Lowered the common Heaven/Hell apparition caption offset from -8 to -11 studs so speech
   clears the face's chin instead of overlapping it. Theme colors, audio mix and animation are
   unchanged; the offset remains config-owned. No authored model changes or publication.
+
+## 2026-09-06 — Merge onboarding v2 and Full-mode welcome pets
+
+- Replaced short activation with a 33-step fresh, unfinished onboarding path through Wave 20;
+  added actual power/slot/enhancement/Quartermaster completion, bounded early-wave starts/resolutions,
+  and wave-aware exit diagnostics. Optional egg fallback, Full mode, and combat courses do not gate it.
+- Full mode grants four random Earth Egg pets with 50x first-hatch luck on every welcome roll,
+  once per saved receipt; partial retry, offline exclusion, reset guards, and empty-slot-only fill.
+- CI: 2,792 headless tests / 315 specs, lint/build/format/architecture passed. Isolated actual Studio
+  analytics service reached all 33 steps, rejected graduates/offline/stale bays, and sent zero native
+  events; actual lesson-runtime harness passed. No publish, player reset, or live analytics injection.
+- Diagnosed healing/roster stagnation: hatcher upgrades refresh stat multipliers but only expand new
+  slots; ordinary replacements queue missing slots. Healing therefore preserves old species. A future
+  refresh must compare strength and retain better/lucky incumbents; no roster replacement rule changed.

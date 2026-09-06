@@ -1053,6 +1053,7 @@ if isFeatureEnabled("map_binding") then
         ServerScriptService.Server.Services.MergeAnalyticsService,
         {
             "ConfigLoader",
+            "DataService",
             "RetentionService",
         }
     )

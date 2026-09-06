@@ -1702,6 +1702,7 @@ function MergeEggPrototypeService:_releaseTutorialForUpgradeCombat(record)
     record.tutorialStep = "quartermaster_waves"
     record.tutorialStepReadyAt = nil
     self:_markTutorialUpgradeCompleted(record)
+    self:_analytics(record, "egg_lesson_completed")
     local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_upgrade", true)
     if not playstateSaved and self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(record.player, "merge_defense_tutorial_upgrade", {
@@ -1799,6 +1800,7 @@ function MergeEggPrototypeService:_completeTutorial(record)
         progress.tutorial_completed = true
     end
     local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_complete", true)
+    self:_analytics(record, "onboarding_completed")
     if not playstateSaved and self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(record.player, "merge_defense_tutorial_complete", {
             debounceSeconds = 0,
@@ -11911,6 +11913,9 @@ function MergeEggPrototypeService:_switchPlayerCombatMode(record, requestedMode)
         return false
     end
     if mode == record.playerCombatMode then
+        if mode == "full" then
+            require(script.Parent.MergeFullStarterRuntime).start(self, record)
+        end
         return true
     end
     if mode == "full" then
@@ -11935,6 +11940,9 @@ function MergeEggPrototypeService:_switchPlayerCombatMode(record, requestedMode)
         self:_ensurePlayerEscort(record)
     end
     self:_publishPlayerReserve(record)
+    if mode == "full" then
+        require(script.Parent.MergeFullStarterRuntime).start(self, record)
+    end
     return true
 end
 
@@ -13785,7 +13793,7 @@ function MergeEggPrototypeService:_spawnNextWaveInternal(record)
     end
 
     record.waveIndex = waveIndex
-    self:_analytics(record, "wave_started")
+    self:_analytics(record, "wave_started", record.waveIndex)
     self:_recordHighestWave(record)
     record.nextWaveOverride = nil
     -- AreaMusicController treats a changed cue as a request to rotate combat music without

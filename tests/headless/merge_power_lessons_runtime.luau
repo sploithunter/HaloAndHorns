@@ -92,6 +92,9 @@ local function fixture(wave, dog)
         }
     end
     local service = {
+        _analytics = function(_, _, event)
+            counts[event] = (counts[event] or 0) + 1
+        end,
         _modules = { PlayerProgressionService = progression, EnhancementService = enh },
         _dataService = {
             GetData = function()
@@ -149,6 +152,7 @@ claim(2)
 d.Powers = { "magnet" }
 Runtime.update(s, r)
 assert(c.resumes == 1 and not r.player.attrs.MergePowerLesson)
+assert(c.power_lesson_completed == 1)
 r.waveIndex = 8
 assert(not Runtime.tryStart(s, r))
 r.waveIndex = 10
@@ -161,6 +165,7 @@ assert(r.powerLessonId == "slots")
 table.insert(d.Slots.magnet, {})
 Runtime.update(s, r)
 assert(c.resumes == 2)
+assert(c.slots_lesson_completed == 1)
 r.waveIndex = 12
 assert(Runtime.tryStart(s, r))
 assert(c.grants == 1 and inv[1].type == "focus" and #inv[1].origins == 0 and inv[1].level == 8)

@@ -34,6 +34,15 @@ variant; the following Earth Egg remains a separate normal hatch. Admin Reset to
 only this reproducible starter special and re-arms the selector while retaining all other protected
 unique/huge pets.
 
+Merge Full mode also has a separate one-time welcome batch (`GameData.MergeFullStarterPets.refs`).
+`MergeFullStarterRuntime` rolls four Earth Egg results, each with its own configured 50x
+`firstHatchLuck` snapshot, builds them through PetGrantService, then inserts through InventoryService.
+Successful insert refs and the receipt share the same profile; partial batches resume only the
+remainder. FillEmptyPetSlots preserves occupants/downed slots and leaves excess pets in inventory.
+No ordinary hatch bonus is consumed, no permanent luck is added, and no offline worker receives
+the batch. Mode toggles, bay changes, and rebirths do not re-arm it; explicit Admin Reset to Beginning
+does. Normal hatch odds/catalog/variants remain authoritative; no guaranteed Huge or species.
+
 Discriminator: an entry is a **common stack** iff its key is the configured colon-delimited stack
 key (currently `id:variant:enchant`);
 a **special** is keyed by its uid (never contains `:`). There is **no `_kind` field**, **no

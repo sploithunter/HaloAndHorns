@@ -9,6 +9,11 @@ function Smoke.run()
         local archived = {}
         local service = setmetatable({
             _modules = {
+                DataService = {
+                    GetData = function(_, player)
+                        return { GameData = {}, Tutorial = { done = player.graduate == true } }
+                    end,
+                },
                 RetentionService = {
                     RecordMergeTelemetry = function(_, player, name, context)
                         table.insert(archived, { player = player, name = name, context = context })
@@ -89,7 +94,7 @@ function Smoke.run()
         )
         a:SetAttribute("MergeAutoplayEnabled", false)
         assert(
-            service:Snapshot(a).bay.funnels.activation.reached == 5,
+            service:Snapshot(a).bay.funnels.activation.reached == 6,
             "Fresh activation incomplete"
         )
         assert(service:Snapshot(b).bay.funnels.activation.reached == 0, "Second player changed")
@@ -97,6 +102,28 @@ function Smoke.run()
         service:Observe(c, rc, "session_ready")
         service:Observe(c, rc, "wave_cleared", 308)
         assert(service:Snapshot(c).bay.clears == 1, "Restored history counted as live clears")
+        assert(service:Snapshot(c).bay.lastActivity == "wave_later", "Late exit mislabeled early")
+        local graduate = actor(-4)
+        graduate.graduate = true
+        service:BeginBay(graduate, { player = graduate, world = world("hell") }, false)
+        assert(
+            service:Snapshot(graduate).bay.funnels.activation == nil,
+            "Graduate entered onboarding"
+        )
+        for _, step in ipairs(service._config.funnels.activation.steps) do
+            local waveNumber = tonumber(step[1]:match("^wave_resolved_(%d+)$"))
+            if waveNumber then
+                service:Observe(b, rb, "wave_started", waveNumber)
+                service:Observe(b, rb, "wave_cleared", waveNumber)
+            else
+                service:Observe(b, rb, step[1])
+            end
+        end
+        assert(service:Snapshot(b).bay.funnels.activation.reached == 33, "Wave 20 path incomplete")
+        local earlyEvents = #archived
+        service:Observe(b, rb, "wave_cleared", 20)
+        service:Observe(b, rb, "wave_started", 20)
+        assert(#archived == earlyEvents, "Early-wave events repeated")
         a:SetAttribute("MergeEggBaySide", "hell") -- Incoming attribute must not relabel outgoing exit.
         service:EndBay(a, ra, "ended")
         assert(archived[#archived].context.realm == "heaven", "Exit attributed to incoming bay")
