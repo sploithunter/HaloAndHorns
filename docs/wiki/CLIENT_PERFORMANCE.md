@@ -1,5 +1,32 @@
 # Client Performance
 
+## Rhythmic arch-lightning hitch (2026-09-06)
+
+`ArchLightning.collectMarkers` formerly traversed the entire Workspace twice every two
+seconds, checking every descendant's ancestor chain against excluded gate prefixes before
+filtering for endpoints or hosts. In a focused Merge Play capture this coincided with 15
+80–88 ms frames in 30 seconds. A replay of the collector cost 69 ms at 22,115 descendants.
+
+The controller now inventories candidate endpoints/named or tagged hosts once, then maintains
+that small set with descendant and tag signals. The config-owned two-second reconciliation
+only groups those candidates, preserving streamed replacements, sampled endpoints, loose
+clusters and exclusion of the dedicated Hell-gate controller. New markers no longer trigger
+an immediate full-world scan for each descendant added.
+
+Six alternating old/new collector replays on the same live world preserved all six endpoint
+groups exactly: old 54–60 ms, indexed 0.19–0.29 ms. A fresh 30-second Play capture had no
+frames above 45 ms (maximum 32.1 ms), versus the repeating 80–88 ms baseline. Views/waves
+differ between sessions; this establishes removal of the reproduced periodic spike, not a
+general FPS or production-client guarantee. The first background-throttled capture was
+discarded for frame comparisons. Hidden BuffStatsHud and other server combat work were
+also checked; they did not account for this spike.
+
+`tools/arch_lightning_inventory_smoke.luau` executes the actual collector and inventory with
+1,000 unrelated parts, generated endpoints, streaming out/in, late tag addition/removal,
+loose endpoints, removal cleanup and excluded Hell endpoints. Native fixture checks pass.
+Raw frame captures and matched replay evidence are in
+`/Users/jason/Documents/merge-production-hitch-20260906`.
+
 ## Bounded procedural effect-part reuse (2026-09-06, feature branch)
 
 `combat_fx.part_pool` enables a shared **2,048-idle-Part** cache per execution context.

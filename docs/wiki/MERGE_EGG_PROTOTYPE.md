@@ -1,5 +1,17 @@
 # Merge an Egg Prototype
 
+## Management menu and Hell presentation (2026-09-06)
+
+`world.management_board` owns the upright nine-control menu's size and bottom height.
+Its lower edge now sits 3.5 studs above `LandStrip`'s top (previously about 6.8), just below
+the tested avatar's shoulder attachment. This is the upright menu, not the authored floor
+egg grid. Fresh Play verified the lower edge at Y=5.916 over floor Y=2.416.
+
+`quartermaster.hell_shop_light` adds one warm, shadowless fill light on the configured Hell
+tent mesh. Posting shows it; hiding the tent disables it. Repeated posting reuses the same
+attachment/light. All five Hell tents get this treatment, without lighting hidden booths.
+The Hell watcher theme overrides only voice volume to 1.56 (30% above 1.2); Heaven keeps 1.2.
+
 ## Wave-paced power onboarding (2026-09-06)
 
 This supersedes the older Wave-6 egg / Wave-10 mandatory-training drip described below.

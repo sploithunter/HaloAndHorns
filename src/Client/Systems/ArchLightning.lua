@@ -73,23 +73,59 @@ local function excludedHost(inst, prefixes)
     return false
 end
 
-local function findHosts(hostNames, hostTag, excludedPrefixes)
-    local hosts = {}
-    local seen = {}
-    for _, desc in ipairs(Workspace:GetDescendants()) do
-        if
-            not excludedHost(desc, excludedPrefixes)
-            and (
-                hostNames[desc.Name] or (hostTag ~= "" and CollectionService:HasTag(desc, hostTag))
-            )
-        then
-            if not seen[desc] then
-                seen[desc] = true
-                table.insert(hosts, desc)
-            end
+-- Register only possible endpoints/hosts. The expensive ancestor checks belong to this
+-- small inventory, never to every pet, effect, GUI and map instance every two seconds.
+local function indexCandidates(root, cfg)
+    local markers, hosts = {}, {}
+    local names = {}
+    for _, name in ipairs(cfg.host_names or {}) do
+        names[name] = true
+    end
+    local prefix = cfg.part_prefix or "lightning"
+    local tag = tostring(cfg.host_tag or "")
+    local function remember(instance)
+        if instance:IsA("BasePart") and Logic.isMarkerName(instance.Name, prefix) then
+            markers[instance] = true
+        end
+        if names[instance.Name] or (tag ~= "" and CollectionService:HasTag(instance, tag)) then
+            hosts[instance] = true
         end
     end
-    return hosts
+    local function forget(instance)
+        markers[instance] = nil
+        hosts[instance] = nil
+    end
+    local connections = {
+        root.DescendantAdded:Connect(remember),
+        root.DescendantRemoving:Connect(forget),
+    }
+    if tag ~= "" then
+        connections[#connections + 1] = CollectionService:GetInstanceAddedSignal(tag)
+            :Connect(function(instance)
+                if instance:IsDescendantOf(root) then
+                    remember(instance)
+                end
+            end)
+        connections[#connections + 1] = CollectionService:GetInstanceRemovedSignal(tag)
+            :Connect(function(instance)
+                if not names[instance.Name] then
+                    hosts[instance] = nil
+                end
+            end)
+    end
+    -- Subscribe before taking the one startup inventory, including late streamed descendants.
+    for _, instance in ipairs(root:GetDescendants()) do
+        remember(instance)
+    end
+    return markers,
+        hosts,
+        function()
+            for _, connection in ipairs(connections) do
+                connection:Disconnect()
+            end
+            table.clear(markers)
+            table.clear(hosts)
+        end
 end
 
 local function hostGroup(host)
@@ -146,7 +182,7 @@ local function stampHost(host, cfg, siteId)
     return parts
 end
 
-local function collectMarkers(cfg)
+local function collectMarkers(cfg, markers, hosts)
     local prefix = cfg.part_prefix or "lightning"
     local hostNames = {}
     for _, name in ipairs(cfg.host_names or {}) do
@@ -185,14 +221,20 @@ local function collectMarkers(cfg)
         end
     end
 
-    for _, desc in ipairs(Workspace:GetDescendants()) do
-        consider(desc)
+    for part in pairs(markers) do
+        if part:IsDescendantOf(Workspace) then
+            consider(part)
+        end
     end
 
-    for _, host in ipairs(findHosts(hostNames, hostTag, cfg.excluded_host_prefixes)) do
-        local group = hosted[host]
-        if not group or #group < 2 then
-            hosted[host] = stampHost(host, cfg, host.Name)
+    for host in pairs(hosts) do
+        if
+            host:IsDescendantOf(Workspace) and not excludedHost(host, cfg.excluded_host_prefixes)
+        then
+            local group = hosted[host]
+            if not group or #group < 2 then
+                hosted[host] = stampHost(host, cfg, host.Name)
+            end
         end
     end
 
@@ -295,27 +337,17 @@ function ArchLightning.start()
     local boltsPerPulse = math.max(1, math.floor(tonumber(cfg.bolts_per_pulse) or 1))
     local preferCross = cfg.prefer_cross ~= false
 
-    local groups = collectMarkers(cfg)
+    local markers, hosts = indexCandidates(Workspace, cfg)
+    local groups = collectMarkers(cfg, markers, hosts)
     local visualWait = 0
     local rescanWait = 0
     local nextSoundAt = 0
 
-    Workspace.DescendantAdded:Connect(function(inst)
-        if inst.Name == FOLDER_NAME then
-            return
-        end
-        if
-            inst:IsA("BasePart") and Logic.isMarkerName(inst.Name, cfg.part_prefix or "lightning")
-        then
-            groups = collectMarkers(cfg)
-        end
-    end)
-
     RunService.Heartbeat:Connect(function(dt)
         rescanWait += dt
-        if rescanWait >= 2 then
+        if rescanWait >= cfg.rescan_seconds then
             rescanWait = 0
-            groups = collectMarkers(cfg)
+            groups = collectMarkers(cfg, markers, hosts)
         end
 
         visualWait -= dt
