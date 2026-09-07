@@ -284,3 +284,24 @@
   after teardown, measure what is retained. Preserve the existing passive-observation
   policy and keep Studio open. Live category enabling may require an engine/client
   restart; publishing the diagnostic affects new server versions, not old running jobs.
+
+### First twenty minutes of the timed soak
+
+- Version 783 was published, then a fresh Play began at 16:00:57 UTC with eight bays
+  populated at approximately 16:01:45 UTC. Full samples persist outside the repo at
+  `/Users/jason/Documents/merge-memory-soak-20260907/server-memory-complete.jsonl`;
+  native Studio log lines truncate long JSON, so a temporary runtime bridge prints
+  numbered short chunks. The test remains on unchanged main while fixes use an isolated checkout.
+- Shared Studio totals grew 7,973→9,081 MB from the first populated sample to minute 20.
+  Pet/objective counts stayed 606–608, and server Lua GC fluctuated around 42–65 MB.
+  This is continued native/shared-process growth, not proof of production server Lua growth.
+- A live-server record audit found **498 destroyed tower Parts** still referenced by
+  the viewer's `record.towerShots` history. The global `_towerShots` live registry is
+  pruned each step, but the redundant per-record list only reset on encounter/stage
+  teardown. Removed this unused history; firing, landing and bay-scoped cleanup keep
+  using the existing live registry. No tuning or visual lifetimes change.
+- `mise exec -- lune run tests/headless/tower_projectile_runtime.luau` exercises the
+  actual production methods through 100 fire/land/expire cycles and two-bay teardown.
+  It fails on old main's retired references and passes with history removed. Native
+  post-soak validation and any deployed-memory benefit remain to be measured; this
+  small confirmed retention defect does not explain the whole observed growth.

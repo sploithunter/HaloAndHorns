@@ -5175,9 +5175,6 @@ function MergeEggPrototypeService:_clearTowerShots(record)
             folder:Destroy()
         end
     end
-    if record then
-        record.towerShots = {}
-    end
     local remaining = {}
     for _, flight in ipairs(self._towerShots or {}) do
         if
@@ -8753,10 +8750,6 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
     }
     self._towerShots = self._towerShots or {}
     self._towerShots[#self._towerShots + 1] = flight
-    if record then
-        record.towerShots = record.towerShots or {}
-        record.towerShots[#record.towerShots + 1] = flight
-    end
     self:_playCannonFire(cannon)
     self:_beginTowerRecoil(cannon, now)
     return true
@@ -12519,7 +12512,6 @@ function MergeEggPrototypeService:_beginInternal(player, requestedBayId, opts)
         assistUntil = player:GetAttribute("CombatAssistUntil"),
         enemies = {},
         enemyByTargetId = {},
-        towerShots = {},
         artilleryCommanderSpawning = {},
         bulwarkEngineerSpawning = {},
         towersReady = false,
