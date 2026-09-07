@@ -8,9 +8,12 @@ now **offline play**: server-owned characters work for disconnected accounts in 
 
 ## Offline production contract
 
-- `configs/merge_offline.lua` enables automatic filling in live Merge **and Studio**, up to five
+- `configs/merge_offline.lua` enables automatic filling in live Merge **and Studio**, up to two
   otherwise-empty bays. One candidate is started per fill cycle (20 seconds plus service latency),
-  not five synchronous loads at boot. Farm & Fight tracks login presence but does not host workers.
+  not simultaneous loads at boot. Farm & Fight tracks login presence but does not host workers.
+- The fixed two-worker cap reduces background simulation load without reacting to transient
+  server stalls. It applies to newly started servers after publication; existing jobs keep their
+  loaded config. The explicit Studio stress harness can still fill eight total bays.
 - Eligibility is exact IDs from `internal_accounts`, excluding Colorado Plays `3200870803`, plus
   verified `offline_gaming` pass owners (`1963628754`). Existing pass owners enter the persistent
   pool on their first join to an updated server; Roblox ownership cannot be globally enumerated.

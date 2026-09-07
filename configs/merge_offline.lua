@@ -4,7 +4,7 @@ return {
     studio_enabled = true,
     excluded_user_ids = { 3200870803 }, -- Colorado Plays; other exact internal IDs may participate.
     pass = "offline_gaming",
-    maximum_bays = 5,
+    maximum_bays = 2,
     heartbeat_seconds = 15,
     lease_seconds = 90,
     fill_seconds = 20,
