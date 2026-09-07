@@ -8597,3 +8597,5 @@ first-session cohort rates.
 - Native streaming/tag/removal/exclusion smoke passes with 1,000 unrelated objects. Fresh Play
   measured menu bottom 3.5 studs above floor; voice resolution is Hell 1.56 / Heaven 1.2.
   Actual tent-posting methods verified light on/off/reuse; an isolated preview confirmed illumination.
+
+- 2026-09-07: Investigated published server/menu latency with eight occupied Merge bays. Measured fast command handlers waiting behind frame work; implemented per-pass enemy liveness reads and transition-only vendor visibility, with a fixed authoritative Powers snapshot. First bounded load retest reduced measured combat and vendor costs; fresh-source verification in progress. See [Merge Stress Testing](MERGE_STRESS_TESTING.md).

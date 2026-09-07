@@ -18,7 +18,7 @@
 
     TWO MODES (same UX, different data source):
       • LIVE (default when the GameAPICommand bus is up): the SERVER is authoritative. On open we
-        load archetype.get / power.get / augment.get / levelup.getState; the origin is LOCKED to the
+        load power.menu.get; the origin is LOCKED to the
         player's real archetype. COMMIT sends the staged beat to the bus (pick -> power.select,
         slot -> augment.place), LEVEL UP -> levelup.claim (one real level per click); admins can
         bank a level first (levelup.bank) to walk the track without grinding XP. After each call we
@@ -330,18 +330,22 @@ end
 -- up (caller falls back to local preview). Slot count per power = #data.Slots[id] (incl. the free
 -- inherent slot). pendingPower/pendingSlots come straight from the server's owed amounts.
 function PowerChoiceMenu:_loadLive()
-    local arche = callBus("archetype.get", {})
-    local lvl = callBus("levelup.getState", {})
-    local pw = callBus("power.get", {})
-    local aug = callBus("augment.get", {})
+    local snapshot = callBus("power.menu.get", {})
+    if not (snapshot and snapshot.ok) then
+        return false
+    end
+    local arche = snapshot.archetype
+    local lvl = snapshot.levelup
+    local pw = snapshot.power
+    local aug = snapshot.augmentation
     if not (arche and lvl and lvl.state and pw and aug) then
         return false
     end
     -- slotted enhancements per power: the ROWS render their slot contents too (Jason:
     -- the row circles looked empty after slotting — only the strip knew)
-    local enhState = callBus("enh.get", {})
+    local enhState = snapshot.enhancements
     self.enhSlots = (enhState and enhState.slots) or {}
-    self.upgradePreview = callBus("enhancement.shop.upgrade_all_preview", {})
+    self.upgradePreview = snapshot.upgradePreview
     local st = lvl.state
     self.archetype = arche.archetype
     if self.archetype then

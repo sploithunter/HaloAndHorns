@@ -214,3 +214,33 @@
 - Fresh Edit-mode measurement (PID 2385): 6.17 GiB footprint / 5.10 GiB resident, normal pressure. A real read-only arming attempt returned `refused_start: startup_footprint` at 6.20 GiB; no signal was sent and no load added. Evidence: `/Users/jason/Documents/merge-memory-baseline-20260906.jsonl` and `/Users/jason/Documents/merge-memory-start-check-20260906.jsonl`.
 - Same-session read-only Studio Stats, **Edit mode**: total 6,320.38 MB; `Internal` 3,508.14, `LuaHeap` 742.89, `GraphicsTexture` 134.21, `Instances` 86.94, `GraphicsTerrain` 47.94, `PhysicsParts` 28.33, `Signals` 17.73, `GraphicsMeshParts` 6.10. These selected categories are not a complete sum. This is not a running-game client measurement and does not identify which plugin/engine allocation owns `Internal` or `LuaHeap`; it does show that current Edit footprint is not predominantly textures.
 - Next: investigate retained Edit/Play memory without increasing load; verify the guard with disposable-process tests and authorized suspension behavior, then obtain a safe one-bay baseline before any escalation. Profile `_petAggroPass` specifically (now included by default) and compare distance-first filtering with matched new captures. Do not attribute unmeasured enemy-loop time conclusively.
+
+## Server response investigation (2026-09-07)
+
+- User identified Powers as the slowest published menu, with jittering pets and delayed
+  authoritative replies. Eight-bay baseline on `e3e236a0`: one viewer plus seven copies
+  of the same isolated level-50/rebirth-18 source, starting at wave 60. Staged through
+  two and four occupied bays first. This exercises eight bays, **not eight network
+  clients**; offline fixtures retain their normal 0.5-second management cadence.
+- Baseline: 607 pet/objective models at capture start. Server Heartbeat over 25 s:
+  mean 48.79 ms, p95 79.99 ms, max 149.43 ms. Ten legacy six-request Powers reads:
+  median 631 ms, range 418–1,047 ms. Each constituent server handler took less than
+  0.1 ms; response latency is dominated by scheduling/transport under load.
+- First same-process candidate: mean Heartbeat 31.55 ms, p95 60.73 ms, max 105.04 ms;
+  unchanged six-request menu median 502 ms. Inclusive combat tick average 22.49→13.44 ms;
+  pet aggro 7.60→2.85 ms. Vendor visibility calls totaled 0.796→0.004 s per 25-second
+  capture despite increasing from 3,736 to 4,887 calls. Waves/spawns evolve and Studio
+  shares client/server CPU, so these are observed runs, not production FPS guarantees.
+- Pet proximity seeding now snapshots live enemy references once per non-yielding pass,
+  preserving exact distance, hostility and threat rules. Vendor presentation applies on
+  state changes; late descendants still inherit visibility, cloned rigs install their
+  own listeners, and weak keys avoid retaining destroyed models.
+- Powers now uses a fixed `power.menu.get` composition of the six existing read handlers.
+  Original caller context is preserved; clients cannot choose commands, another player,
+  or a level override. No cached client authority or changes to mutation handlers.
+- Isolated production-method regression runner: `mise exec -- lune run
+  tests/headless/server_hotpaths_runtime.luau`. Covers vendor transitions/clones/late
+  descendants and 80-pet range/hostility/liveness/movement behavior, one HP read per enemy,
+  snapshot caller isolation/failure propagation and one-request menu hydration.
+- Raw captures and diagnostic scripts: `/Users/jason/Documents/merge-server-latency-20260907`.
+  Fresh-source repeat and final CI results will be appended after verification. No publish.

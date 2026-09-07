@@ -7240,6 +7240,14 @@ function MergeEggPrototypeService:_setVendorPosted(model, posted)
         return
     end
     posted = posted == true
+    -- Vendor presentation is a state transition, not per-frame work. Keep ownership
+    -- outside attributes so a cloned rig still installs its own descendant listener.
+    self._vendorPostedStates = self._vendorPostedStates or setmetatable({}, { __mode = "k" })
+    local previous = self._vendorPostedStates[model]
+    if previous == posted and model:GetAttribute("MergeVendorPosted") == posted then
+        return
+    end
+    self._vendorPostedStates[model] = posted
     model:SetAttribute("MergeVendorPosted", posted)
     local function apply(instance)
         local livePosted = model:GetAttribute("MergeVendorPosted") == true
@@ -7256,6 +7264,10 @@ function MergeEggPrototypeService:_setVendorPosted(model, posted)
                 instance.CanQuery = false
                 instance.CastShadow = livePosted
             end
+        elseif instance:IsA("Humanoid") then
+            instance.DisplayDistanceType = livePosted and Enum.HumanoidDisplayDistanceType.Viewer
+                or Enum.HumanoidDisplayDistanceType.None
+            instance.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
         elseif
             instance:IsA("ParticleEmitter")
             or instance:IsA("Beam")
@@ -7271,15 +7283,9 @@ function MergeEggPrototypeService:_setVendorPosted(model, posted)
     for _, descendant in ipairs(model:GetDescendants()) do
         apply(descendant)
     end
-    if model:GetAttribute("MergeVendorPostedHooked") ~= true then
+    if previous == nil then
         model:SetAttribute("MergeVendorPostedHooked", true)
         model.DescendantAdded:Connect(apply)
-    end
-    local humanoid = model:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.DisplayDistanceType = posted and Enum.HumanoidDisplayDistanceType.Viewer
-            or Enum.HumanoidDisplayDistanceType.None
-        humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
     end
 end
 

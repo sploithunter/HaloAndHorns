@@ -695,6 +695,34 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("power.menu.get", {
+        description = "Authoritative Powers menu state in one network round trip.",
+        handler = function(context)
+            -- Fixed read-only composition, with the original caller context and handler
+            -- policies. Clients cannot submit arbitrary commands or level/player overrides.
+            local snapshot = { ok = true }
+            for _, read in ipairs({
+                { "archetype", "archetype.get" },
+                { "levelup", "levelup.getState" },
+                { "power", "power.get" },
+                { "augmentation", "augment.get" },
+                { "enhancements", "enh.get" },
+                { "upgradePreview", "enhancement.shop.upgrade_all_preview" },
+            }) do
+                local envelope = bus:execute(context, read[2], {})
+                local state = envelope.ok and envelope.result
+                if type(state) ~= "table" or state.ok == false then
+                    return {
+                        ok = false,
+                        reason = type(state) == "table" and state.reason or "state_unavailable",
+                    }
+                end
+                snapshot[read[1]] = state
+            end
+            return snapshot
+        end,
+    })
+
     bus:register("settings.get", {
         description = "The player's persisted client preferences.",
         handler = function(context)
