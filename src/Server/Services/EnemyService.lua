@@ -854,6 +854,21 @@ function EnemyService:_petAggroPass(now, dt, cfg)
     local seedRadius = (cfg.base and cfg.base.seed_radius) or 60
     local decayRate = AggroModel.decayRate(cfg, "pet", 1)
     local seed = AggroModel.seedThreat(cfg, "pet", dt)
+    -- This pass does not yield or deal damage. Read liveness once, rather than crossing
+    -- the Instance boundary for every pet/enemy pair across all occupied bays.
+    local seedEnemies = {}
+    if seed > 0 then
+        for tid, entry in pairs(self._enemies) do
+            if
+                entry.pos
+                and entry.model
+                and entry.model.Parent
+                and (entry.model:GetAttribute("HP") or 0) > 0
+            then
+                seedEnemies[tid] = entry
+            end
+        end
+    end
     for _, folder in ipairs(pf:GetChildren()) do
         local player = self:_playerForPetFolder(folder)
         for _, pet in ipairs(folder:GetChildren()) do
@@ -867,13 +882,9 @@ function EnemyService:_petAggroPass(now, dt, cfg)
                 AggroTable.decay(tbl, dt, decayRate)
                 if seed > 0 then
                     local pp = self:_petPosition(pet, pfs)
-                    for tid, entry in pairs(self._enemies) do
+                    for tid, entry in pairs(seedEnemies) do
                         if
-                            entry.pos
-                            and entry.model
-                            and entry.model.Parent
-                            and (entry.model:GetAttribute("HP") or 0) > 0
-                            and (entry.pos - pp).Magnitude <= seedRadius
+                            (entry.pos - pp).Magnitude <= seedRadius
                             -- Most pairs belong to distant bays. Do not resolve allegiance/team
                             -- relationships for pairs that cannot receive a proximity seed.
                             and self:_petHostileToEnemy(pet, entry, player)
