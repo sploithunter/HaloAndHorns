@@ -1983,7 +1983,8 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
             name = (def.display_name or r.id)
                 .. (
                     (
-                            Players.LocalPlayer:GetAttribute("MergePowerLesson")
+                            self.lessonGuide.enabled()
+                            and Players.LocalPlayer:GetAttribute("MergePowerLesson")
                                 == "power"
                             and not self.archetype
                             and r.state ~= "owned"
@@ -2805,10 +2806,24 @@ function PowerChoiceMenu:Show(parent)
         :Connect(function()
             self.lessonGuide.refresh(self)
         end)
+    self._mergeGuideLevelChanged = Players.LocalPlayer:GetAttributeChangedSignal("Level"):Connect(function()
+        self.lessonGuide.refresh(self)
+    end)
+    self._mergeGuideClaimedChanged = Players.LocalPlayer:GetAttributeChangedSignal("ClaimedLevel"):Connect(function()
+        self.lessonGuide.refresh(self)
+    end)
 end
 
 function PowerChoiceMenu:Hide()
     self.lessonGuide.clear(self)
+    if self._mergeGuideLevelChanged then
+        self._mergeGuideLevelChanged:Disconnect()
+        self._mergeGuideLevelChanged = nil
+    end
+    if self._mergeGuideClaimedChanged then
+        self._mergeGuideClaimedChanged:Disconnect()
+        self._mergeGuideClaimedChanged = nil
+    end
     if self._mergeLessonLayout then
         self._mergeLessonLayout:Disconnect()
         self._mergeLessonLayout = nil

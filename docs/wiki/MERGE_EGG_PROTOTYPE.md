@@ -1781,3 +1781,12 @@ Seen potion kinds are tracked per player session so a subsequent intentional Edi
 respected. Training overlays remain publish-only and are never written into the saved hotbar.
 Enhancements are inventory gear for power slots, not drinkable hotbar items; no automatic power
 enhancement selection or spending is introduced.
+
+### Powers guide retirement (2026-09-07)
+
+The Powers entry `CLICK HERE` sign, in-menu step pointers and recommendation labels
+only teach through player level 8, configured by
+`tutorial.power_lessons.guide.maximum_player_level`. Either earned or claimed level
+above that cutoff suppresses coaching, including unclaimed higher levels and resumed
+profiles. Crossing the cutoff while the menu is open clears its active guide and
+its listeners disconnect on close. Ascension, level rewards and lesson receipts are unchanged.

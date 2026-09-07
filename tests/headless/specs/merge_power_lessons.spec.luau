@@ -5,6 +5,18 @@ local tutorial = loadModule("configs/tutorial.lua")
 
 return function()
     describe("Merge wave power lessons", function()
+        it(
+            "retires instructional pointers after player level eight, including unclaimed levels",
+            function()
+                local c = cfg.power_lessons
+                expect(Lessons.guidanceEnabled(c, 1, 1)).to.equal(true)
+                expect(Lessons.guidanceEnabled(c, 8, 8)).to.equal(true)
+                expect(Lessons.guidanceEnabled(c, 9, 8)).to.equal(false)
+                expect(Lessons.guidanceEnabled(c, 14, 13)).to.equal(false)
+                expect(Lessons.guidanceEnabled(c, nil, 9)).to.equal(false)
+                expect(Lessons.guidanceEnabled(c, 1, 9)).to.equal(false)
+            end
+        )
         it("uses the 6/8/10/12/14 cadence without mandatory combat training", function()
             local stages = cfg.power_lessons.stages
             expect(stages[1].wave).to.equal(6)

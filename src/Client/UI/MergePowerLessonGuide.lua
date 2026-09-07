@@ -9,6 +9,15 @@ local augmentation = require(ReplicatedStorage.Configs.augmentation)
 local levelTrack = require(ReplicatedStorage.Configs.level_track)
 local Guide = {}
 
+function Guide.enabled()
+    local player = Players.LocalPlayer
+    return Lessons.guidanceEnabled(
+        cfg,
+        player:GetAttribute("Level"),
+        player:GetAttribute("ClaimedLevel")
+    )
+end
+
 function Guide.text(key)
     local language = Localization.languageFor(Players.LocalPlayer:GetAttribute("TutorialLocaleId"))
     return (cfg.translations[language] or {})[key] or cfg.guide[key]
@@ -21,7 +30,8 @@ function Guide.entry(controller)
     end
     controller._entryPollAt = now + cfg.guide.entry_poll_seconds
     local player = Players.LocalPlayer
-    local wanted = player:GetAttribute("AscensionUnlocked") == true
+    local wanted = Guide.enabled()
+        and player:GetAttribute("AscensionUnlocked") == true
         and ((tonumber(player:GetAttribute("PendingTraining")) or 0) > 0 or player:GetAttribute(
             "MergePowerLesson"
         ) ~= nil)
@@ -148,7 +158,7 @@ function Guide.refresh(menu)
     Guide.clear(menu)
     local player = Players.LocalPlayer
     local stage = player:GetAttribute("MergePowerLesson")
-    if not menu.frame or not menu.live or menu:_isRangeCatalog() then
+    if not Guide.enabled() or not menu.frame or not menu.live or menu:_isRangeCatalog() then
         return
     end
     if not stage and menu.pendingPower == 0 and menu.pendingSlots == 0 then

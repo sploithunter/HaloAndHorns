@@ -2,6 +2,11 @@
 -- combat courses: learning a power here must never fabricate course completion/rewards.
 local Lessons = {}
 
+function Lessons.guidanceEnabled(cfg, level, claimedLevel)
+    return math.max(1, tonumber(level) or 1, tonumber(claimedLevel) or 1)
+        <= cfg.guide.maximum_player_level
+end
+
 function Lessons.graduate(data)
     return data
             and ((data.Tutorial and data.Tutorial.done == true) or (data.CombatTutorial and data.CombatTutorial.done == true) or (data.GameData and data.GameData.TutorialCompleted == true))
