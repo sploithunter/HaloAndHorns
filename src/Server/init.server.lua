@@ -1758,9 +1758,13 @@ task.spawn(function()
         return
     end
 
+    local memoryMonitor = require(ServerScriptService.Server.ServerMemoryMonitor).start(perfCfg.memory)
     while true do
         task.wait(perfCfg.interval_seconds or 30)
 
+        if memoryMonitor then
+            memoryMonitor:sample()
+        end
         local heartbeatTime = game:GetService("RunService").Heartbeat:Wait()
         local stats = {
             playerCount = #Players:GetPlayers(),

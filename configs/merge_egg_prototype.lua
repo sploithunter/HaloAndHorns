@@ -943,6 +943,7 @@ return {
             -- Focus fits every utility power. Natural works before an origin is chosen.
             starter_enhancement = { type = "focus", level_offset = 5 },
             guide = {
+                maximum_player_level = 8,
                 entry_poll_seconds = 0.25,
                 entry_size = { 2.1, 0.8 },
                 entry_position = { 0.5, -0.12 },

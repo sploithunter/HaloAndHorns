@@ -32,6 +32,11 @@ return {
     performance_monitor = {
         server = {
             enabled = true, -- Enable server performance monitoring
+            memory = {
+                enabled = true,
+                sample_seconds = 60,
+                history_limit = 120,
+            },
             interval_seconds = 30, -- How often to sample and report
             target_frame_time_seconds = 1 / 60, -- Ideal target (≈0.0167s, 60 FPS)
             warn_frame_time_seconds = 1 / 30, -- Warn when slower than ~30 FPS (≈0.0333s)

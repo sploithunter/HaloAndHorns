@@ -257,3 +257,30 @@
   that every source of pet jitter or live-server latency is eliminated.
 - Full local CI passed (2,805 tests/317 specs), the additional production-method runner
   passed, and wiki checks passed. Review: PR #479. Production publishing remains separate.
+
+## Deployed memory diagnostics and timed soak (2026-09-07)
+
+- Production screenshots at approximately 1h45 server age show ~4,379 MB total and
+  ~2,628 MB UntrackedMemory, with a disabled-category-counter banner. The cropped UI
+  does not independently identify the selected client/server view. This is a reason
+  to investigate, not proof of a leak. Roblox defines UntrackedMemory as allocations
+  it cannot readily attribute: https://create.roblox.com/docs/studio/optimization/memory-usage.
+- `logging.performance_monitor.server.memory` enables one numeric sample per minute,
+  bounded to 120 samples. `[ServerMemory]` lines in the **Server** console include
+  place version, job ID, server age, total MB, tracking-enabled status, available
+  engine categories, Lua VM GC KB, instance count, and shallow live pet/bay census.
+  Studio reports explicitly say `shared_studio_process`; production says `live_server`.
+- `Stats.MemoryTrackingEnabled` is read-only. If it is false or unavailable, category
+  calls are skipped and unavailable values are omitted, never emitted as zero. Raw
+  category names stay unchanged; `Internal` is not relabeled as console UntrackedMemory
+  and subtracting incomplete category totals is not presented as an engine measurement.
+- Read latest or bounded history server-side using
+  `game.ServerStorage.ServerMemoryDiagnostics:Invoke("status")` or `:Invoke("history")`.
+  This is a server-only BindableFunction, not a client remote. The sampler adds no
+  datastore writes, HTTP uploads, profile data, per-pet listeners or workspace-wide scans.
+- Planned long-run test: eight bays from isolated copies of the existing source, with
+  a Studio-only duration override for a two-hour soak, one-minute engine samples and
+  ten-minute task follow-ups. Compare trends against workload and inspect retention;
+  after teardown, measure what is retained. Preserve the existing passive-observation
+  policy and keep Studio open. Live category enabling may require an engine/client
+  restart; publishing the diagnostic affects new server versions, not old running jobs.
