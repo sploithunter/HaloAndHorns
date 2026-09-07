@@ -38,7 +38,7 @@ return function()
         it("provides a retargetable shared FillBar tween", function()
             local source = readFile("src/Client/UI/FillBar.lua")
             expect(source:find("function FillBar.setAnimated", 1, true)).to.be.ok()
-            expect(source:find("active:Cancel()", 1, true)).to.be.ok()
+            expect(source:find("record.tween:Cancel()", 1, true)).to.be.ok()
             expect(source:find("Enum.EasingStyle.Quad", 1, true)).to.be.ok()
         end)
 

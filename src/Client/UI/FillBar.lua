@@ -18,6 +18,17 @@ local TweenService = game:GetService("TweenService")
 local FillBar = {}
 local activeTweens = setmetatable({}, { __mode = "k" })
 
+local function clearTween(fill)
+    local record = activeTweens[fill]
+    if record then
+        activeTweens[fill] = nil
+        record.completed:Disconnect()
+        record.destroying:Disconnect()
+        record.tween:Cancel()
+        record.tween:Destroy()
+    end
+end
+
 local DEFAULT_BG = Color3.fromRGB(35, 35, 40)
 local DEFAULT_FILL = Color3.fromRGB(90, 200, 130)
 
@@ -81,11 +92,7 @@ function FillBar.set(root, frac, color)
     if not fill then
         return
     end
-    local active = activeTweens[fill]
-    if active then
-        active:Cancel()
-        activeTweens[fill] = nil
-    end
+    clearTween(fill)
     fill.Size = UDim2.new(math.clamp(frac or 0, 0, 1), 0, 1, 0)
     if color then
         fill.BackgroundColor3 = color
@@ -104,10 +111,7 @@ function FillBar.setAnimated(root, frac, duration, color)
         FillBar.set(root, frac, color)
         return
     end
-    local active = activeTweens[fill]
-    if active then
-        active:Cancel()
-    end
+    clearTween(fill)
     if color then
         fill.BackgroundColor3 = color
     end
@@ -116,10 +120,16 @@ function FillBar.setAnimated(root, frac, duration, color)
         TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
         { Size = UDim2.new(math.clamp(frac or 0, 0, 1), 0, 1, 0) }
     )
-    activeTweens[fill] = tween
-    tween.Completed:Connect(function()
-        if activeTweens[fill] == tween then
-            activeTweens[fill] = nil
+    local record = { tween = tween }
+    activeTweens[fill] = record
+    record.completed = tween.Completed:Connect(function()
+        if activeTweens[fill] == record then
+            clearTween(fill)
+        end
+    end)
+    record.destroying = fill.Destroying:Connect(function()
+        if activeTweens[fill] == record then
+            clearTween(fill)
         end
     end)
     tween:Play()

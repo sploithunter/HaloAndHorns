@@ -305,3 +305,14 @@
   It fails on old main's retired references and passes with history removed. Native
   post-soak validation and any deployed-memory benefit remain to be measured; this
   small confirmed retention defect does not explain the whole observed growth.
+- At minute 30, client SceneAnalysis attribution for `FillBar` grew from 157→295→447
+  detached Tweens. Its completion connection captured the Tween and was never disposed.
+  `FillBar` now explicitly disconnects completion/bar-destruction listeners and destroys
+  the Tween on completion, replacement, immediate updates, external cancellation or
+  bar destruction. Stale deferred callbacks cannot dispose a newer animation.
+  `mise exec -- lune run tests/headless/fill_bar_runtime.luau` fails on old main and passes
+  all these lifecycles with the fix. This is a client cleanup defect, separate from
+  server projectile retention. Native post-soak validation remains pending.
+- The thirty-minute effect pool read showed 2,017 created Parts and approximately
+  1.83 million reuses. CombatFX detached emitters fell 2,078→1,614 between checks,
+  so the earlier emitter count alone is not evidence of monotonic retention.
