@@ -316,3 +316,29 @@
 - The thirty-minute effect pool read showed 2,017 created Parts and approximately
   1.83 million reuses. CombatFX detached emitters fell 2,078→1,614 between checks,
   so the earlier emitter count alone is not evidence of monotonic retention.
+
+### Two-hour completion and native cleanup verification
+
+- All seven fixtures expired normally by 18:01:47 UTC, with zero workers/errors.
+  Saved 127 complete samples through 18:07:10 UTC, including more than five minutes
+  after teardown, in `merge-memory-soak-20260907/baseline-final.jsonl` outside the repo.
+  This file is frozen before isolated fix testing. Studio remains a warm shared process.
+- First populated→last loaded: Stats total **7,973→13,727 MB**, BaseParts
+  **1,811→5,991 MB**, Signals **230→994 MB**. These categories are not a sum.
+  Server Lua GC cycled rather than rising with total memory. Pet/objective count grew
+  **608→678** as combat composition changed, so later workload is not identical.
+- After teardown, live pet/objective models fell to **34** and instances from ~105k
+  to ~88k, but Stats total remained **13,812 MB** at the final post-teardown sample.
+  This does not identify the engine allocation owner or establish that live production
+  servers behave the same way. The two proven reference defects do not explain all growth.
+- Actual Powers `_loadLive()` read-only requests succeeded at both ages: ten loads
+  at 40 minutes had median **46.9 ms**, max **105.9 ms**; at 100 minutes median
+  **158.5 ms**, max **248.4 ms**. Client scheduling and changing combat workload are
+  confounders; this is not proof memory caused the slower response window.
+- After the frozen baseline, isolated native tests passed 100 projectile lifecycles
+  and two-bay teardown, plus 100 real FillBar widgets through TweenService completion,
+  replacement, immediate updates and destruction. SceneAnalysis reported **no retained
+  instances from the fixed FillBar copy**, while the unchanged original module still
+  held 1,840 Tweens. Original gameplay was not hot-patched during the baseline.
+  Play stopped and the Edit offline config was restored; fresh main verification and
+  publishing follow PR #481. Raw results, plot and sample stream remain in the artifact directory.
