@@ -244,3 +244,16 @@
   snapshot caller isolation/failure propagation and one-request menu hydration.
 - Raw captures and diagnostic scripts: `/Users/jason/Documents/merge-server-latency-20260907`.
   Fresh-source repeat and final CI results will be appended after verification. No publish.
+- Fresh Play loaded the actual changed sources and again filled eight bays with 607
+  pet/objective models. All seven fixtures advanced wave 60→64, then stopped with zero
+  workers and zero harness errors. Over 20 s, combat ticks averaged 17.00 ms and aggro
+  3.44 ms. Vendor visibility totaled 0.00327 s across 4,512 calls. Ten one-request Powers
+  loads had median 100.5 ms (59.8–174.6 ms); the composed server handler's maximum was
+  0.190 ms. The real client `PowerChoiceMenu:_loadLive()` also passed against the live
+  server in 50.8 ms, with correct claimed/next level, pending slots and enhancement data.
+- The first before/after captures had identical camera CFrames. Fresh Play reset the
+  camera, so its Heartbeat mean 35.44/p95 58.91/max 127.49 ms is a separate validation,
+  not a matched camera FPS comparison. Some long frames remain; this does not establish
+  that every source of pet jitter or live-server latency is eliminated.
+- Full local CI passed (2,805 tests/317 specs), the additional production-method runner
+  passed, and wiki checks passed. Review: PR #479. Production publishing remains separate.
