@@ -85,7 +85,7 @@ return {
         source_path = { "GeneratedMap_MergeEggVoxel", "HellFaceGateTest", "HellFace" },
         template_name = "MergeWatcherTemplate",
         themes = {
-            hell = {}, -- uses the shared infernal defaults below
+            hell = { voice = { volume = 1.56 } }, -- 30% above the shared 1.2 voice level
             heaven = {
                 source_path = { "GeneratedMap_MergeEggVoxel", "HeavenFaceGateTest", "HeavenFace" },
                 template_name = "MergeHeavenWatcherTemplate",
@@ -668,6 +668,10 @@ return {
         egg_create_control = "EggCreateControl",
         egg_base_upgrade_control = "EggBaseUpgradeControl",
         egg_merge_control = "EggMergeControl",
+        management_board = {
+            bottom_height = 3.5, -- lower edge just below a standard avatar's shoulders
+            size = { x = 14, y = 8, z = 0.6 },
+        },
         equip_best_control = "EquipBestControl",
         auto_combine_control = "AutoCombineControl",
         merge_board = "MergeBoard",
@@ -1245,6 +1249,17 @@ return {
         max_distance = 16,
         stand_front_studs = 8,
         shop_visible_transparency = 0,
+        hell_shop_light = {
+            enabled = true,
+            attachment_name = "MergePotionFill",
+            light_name = "PotionFillLight",
+            host_name = "Mesh_0.001",
+            local_position = { x = 0, y = 0, z = 0 },
+            color = { 255, 205, 153 },
+            brightness = 2,
+            range = 22,
+            shadows = false,
+        },
         introduction_seconds = 5,
         greeting = "Need a pick-me-up? Potions, enhancements and optional training—I'm your guy. Or take a breather in Farm & Fight!",
         greeting_complete = "Ready for more? Browse boosts, trade enhancements, or try optional training for a level.",

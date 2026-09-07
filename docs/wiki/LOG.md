@@ -8581,3 +8581,19 @@ first-session cohort rates.
 - Fresh Play verified Heaven → mall → Hell → mall → Heaven against all six sky faces; visual
   captures confirmed all three looks. Character/camera restored after testing. One Sky, one realm
   tint, no legacy tint or client script errors. Headless CI passes 2,805 tests / 317 specs.
+
+## 2026-09-06 — Production hitch investigation and Merge presentation polish
+
+- Claimed `game/production-hitch-and-polish`. Hell watcher voice gains a Hell-only 1.56 volume
+  override (30% above 1.2). The upright management menu lower edge moves from roughly 6.8 to
+  3.5 studs above the authored bay floor; the floor egg grid stays in place.
+- Config-owned warm fill lighting follows Hell potion-tent posting, so hidden tents emit no light.
+- Periodic hitch investigation and native verification are in progress; no production deployment.
+- Isolated the recurring hitch to ArchLightning's two Workspace traversals every two seconds.
+  Replaced them with a streaming/tag-maintained endpoint/host inventory. Six matched live replays
+  retained all six endpoint groups and reduced collector time from 54–60 ms to 0.19–0.29 ms.
+- Focused baseline: 15 repeating 80–88 ms frames over 30 seconds. Fresh fixed Play: maximum
+  32.1 ms, no frames above 45 ms. Different view/waves prohibit a general FPS claim.
+- Native streaming/tag/removal/exclusion smoke passes with 1,000 unrelated objects. Fresh Play
+  measured menu bottom 3.5 studs above floor; voice resolution is Hell 1.56 / Heaven 1.2.
+  Actual tent-posting methods verified light on/off/reuse; an isolated preview confirmed illumination.

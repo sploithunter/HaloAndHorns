@@ -51,6 +51,7 @@ return {
     -- a host's bounds if a streamed copy arrives without markers.
     arch_lightning = {
         enabled = true,
+        rescan_seconds = 2, -- reconcile the incremental endpoint/host inventory only
         part_prefix = "lightning",
         adopt_workspace_parts = true,
         host_names = {

@@ -7317,6 +7317,31 @@ function MergeEggPrototypeService:_setPotionShopPosted(shop, visible)
     if not shop then
         return
     end
+    local lightCfg = self:_quartermasterConfig().hell_shop_light
+    if shop.Name == self._config.world.potion_shop_hell and lightCfg then
+        local host = shop:FindFirstChild(lightCfg.host_name, true)
+        if host and host:IsA("BasePart") then
+            local attachment = host:FindFirstChild(lightCfg.attachment_name)
+            if not attachment then
+                attachment = Instance.new("Attachment")
+                attachment.Name = lightCfg.attachment_name
+                attachment.Parent = host
+            end
+            local position = lightCfg.local_position
+            attachment.Position = Vector3.new(position.x, position.y, position.z)
+            local light = attachment:FindFirstChild(lightCfg.light_name)
+            if not light then
+                light = Instance.new("PointLight")
+                light.Name = lightCfg.light_name
+                light.Parent = attachment
+            end
+            light.Color = rgbTriplet(lightCfg.color)
+            light.Brightness = lightCfg.brightness
+            light.Range = lightCfg.range
+            light.Shadows = lightCfg.shadows
+            light.Enabled = lightCfg.enabled == true and visible == true
+        end
+    end
     -- The booth is still the visual supply landmark, but all Merge interactions belong to the
     -- Quartermaster. PotionShopService honors this attribute even when it binds after this pass.
     shop:SetAttribute("PotionShopPromptSuppressed", true)
@@ -8981,7 +9006,11 @@ function MergeEggPrototypeService:_ensureEggBoardControls(world)
         upgradePos = mid + along * 13
         upgradePos = Vector3.new(upgradePos.X, y, upgradePos.Z)
         upgradeLook = upgradePos + inward
-        managePos = Vector3.new(mid.X, y, mid.Z)
+        local boardCfg = worldCfg.management_board
+        local floorY = land and land.Position.Y + land.Size.Y * 0.5
+            or playerSpawn.Position.Y - playerSpawn.Size.Y * 0.5
+        local managementY = floorY + boardCfg.bottom_height + boardCfg.size.y * 0.5
+        managePos = Vector3.new(mid.X, managementY, mid.Z)
         manageLook = managePos + inward
     else
         createPos = Vector3.new(base.X - 20, base.Y + 4, base.Z - 31.4)
@@ -9031,7 +9060,8 @@ function MergeEggPrototypeService:_ensureEggBoardControls(world)
                 end
             end
         end
-        managementControl.Size = Vector3.new(14, 8, 0.6)
+        local size = worldCfg.management_board.size
+        managementControl.Size = Vector3.new(size.x, size.y, size.z)
         managementControl.Material = Enum.Material.Neon
         for _, child in ipairs(managementControl:GetChildren()) do
             if child:IsA("SurfaceGui") then
