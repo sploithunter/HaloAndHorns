@@ -1,0 +1,32 @@
+{
+  "ci": {
+    "command": "mise run ci",
+    "passed": true,
+    "tests": 2842,
+    "specs": 322
+  },
+  "studio": {
+    "place_id": 84544653387905,
+    "mode": "Client",
+    "farm_voice_smoke": {
+      "passed": true,
+      "main_steps": 42
+    },
+    "merge_voice_smoke": {
+      "passed": true,
+      "main_step_side_combinations": 38
+    },
+    "locale_smoke": {
+      "passed": true,
+      "tracks": 2,
+      "language_switches": 10
+    },
+    "real_unavailable_clip_fallback": {
+      "cue": "combat_tutorial.first_fight",
+      "requested_language": "es",
+      "played_language": "en",
+      "failed_asset_cached": true
+    }
+  },
+  "non_mutating_scope": "Client fixtures only; no tutorial progress, profile resets, grants, saved preferences or server commands."
+}

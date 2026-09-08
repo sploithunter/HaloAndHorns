@@ -1,0 +1,1677 @@
+{
+  "complete": true,
+  "expected_clips": 184,
+  "validated_clips": 184,
+  "angel_clips": 54,
+  "demon_clips": 130,
+  "total_duration_seconds": 2044.006,
+  "total_bytes": 32899317,
+  "checks": [
+    "MP3 decode",
+    "SHA-256",
+    "speaker voice IDs",
+    "canonical text and cue mapping",
+    "full input alignment and timing bounds",
+    "non-silent audio",
+    "clipping below 0.1% of samples"
+  ],
+  "limitation": "Provider alignment verifies the submitted text and timing metadata; it is not an independent transcription or a listening review.",
+  "clips": [
+    {
+      "id": "BR_A01",
+      "duration_seconds": 7.058866,
+      "peak_dbfs": -7.04,
+      "rms_dbfs": -20.51,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A02",
+      "duration_seconds": 11.517098,
+      "peak_dbfs": -4.94,
+      "rms_dbfs": -20.35,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A03",
+      "duration_seconds": 8.080544,
+      "peak_dbfs": -5.58,
+      "rms_dbfs": -21.61,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A04",
+      "duration_seconds": 8.452063,
+      "peak_dbfs": -7.61,
+      "rms_dbfs": -22.15,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A05",
+      "duration_seconds": 10.727619,
+      "peak_dbfs": -6.04,
+      "rms_dbfs": -23.16,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A06",
+      "duration_seconds": 11.842177,
+      "peak_dbfs": -7.09,
+      "rms_dbfs": -22.35,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A07",
+      "duration_seconds": 8.080544,
+      "peak_dbfs": -7.54,
+      "rms_dbfs": -22.03,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A08",
+      "duration_seconds": 10.588299,
+      "peak_dbfs": -5.16,
+      "rms_dbfs": -22.38,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A09",
+      "duration_seconds": 11.052698,
+      "peak_dbfs": -5.92,
+      "rms_dbfs": -23.06,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A10",
+      "duration_seconds": 12.724535,
+      "peak_dbfs": -4.54,
+      "rms_dbfs": -21.7,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A11",
+      "duration_seconds": 7.569705,
+      "peak_dbfs": -5.34,
+      "rms_dbfs": -21.26,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A12",
+      "duration_seconds": 5.433469,
+      "peak_dbfs": -3.72,
+      "rms_dbfs": -20.6,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A13",
+      "duration_seconds": 5.526349,
+      "peak_dbfs": -2.3,
+      "rms_dbfs": -21.23,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A14",
+      "duration_seconds": 7.755465,
+      "peak_dbfs": -7.07,
+      "rms_dbfs": -21.93,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A15",
+      "duration_seconds": 5.619229,
+      "peak_dbfs": -3.68,
+      "rms_dbfs": -22.02,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A16",
+      "duration_seconds": 3.575873,
+      "peak_dbfs": -6.83,
+      "rms_dbfs": -22.01,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A17",
+      "duration_seconds": 5.665669,
+      "peak_dbfs": -4.12,
+      "rms_dbfs": -20.49,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A18",
+      "duration_seconds": 6.455147,
+      "peak_dbfs": -6.56,
+      "rms_dbfs": -23.21,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A19",
+      "duration_seconds": 3.065034,
+      "peak_dbfs": -5.54,
+      "rms_dbfs": -21.43,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A20",
+      "duration_seconds": 8.312744,
+      "peak_dbfs": -6.63,
+      "rms_dbfs": -21.49,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A21",
+      "duration_seconds": 7.244626,
+      "peak_dbfs": -4.83,
+      "rms_dbfs": -19.94,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A22",
+      "duration_seconds": 7.430385,
+      "peak_dbfs": -6.97,
+      "rms_dbfs": -22.44,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A23",
+      "duration_seconds": 8.034104,
+      "peak_dbfs": -6.33,
+      "rms_dbfs": -23.05,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A24",
+      "duration_seconds": 11.470658,
+      "peak_dbfs": -6.19,
+      "rms_dbfs": -22.28,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A25",
+      "duration_seconds": 12.724535,
+      "peak_dbfs": -3.46,
+      "rms_dbfs": -21.05,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A26",
+      "duration_seconds": 8.034104,
+      "peak_dbfs": -3.86,
+      "rms_dbfs": -22.17,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_A27",
+      "duration_seconds": 10.07746,
+      "peak_dbfs": -5.47,
+      "rms_dbfs": -20.95,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D01",
+      "duration_seconds": 17.043447,
+      "peak_dbfs": -9.38,
+      "rms_dbfs": -26.84,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D02",
+      "duration_seconds": 16.857687,
+      "peak_dbfs": -8.39,
+      "rms_dbfs": -27.51,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D03",
+      "duration_seconds": 13.699773,
+      "peak_dbfs": -10.75,
+      "rms_dbfs": -27.83,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D04",
+      "duration_seconds": 15.55737,
+      "peak_dbfs": -11.18,
+      "rms_dbfs": -28.68,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D05",
+      "duration_seconds": 8.591383,
+      "peak_dbfs": -8.91,
+      "rms_dbfs": -26.99,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D06",
+      "duration_seconds": 11.424218,
+      "peak_dbfs": -9.36,
+      "rms_dbfs": -27.72,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D07",
+      "duration_seconds": 13.746213,
+      "peak_dbfs": -9.21,
+      "rms_dbfs": -28.1,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D08",
+      "duration_seconds": 12.956735,
+      "peak_dbfs": -5.77,
+      "rms_dbfs": -26.91,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D09",
+      "duration_seconds": 13.699773,
+      "peak_dbfs": -5.67,
+      "rms_dbfs": -25.73,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D10",
+      "duration_seconds": 9.473741,
+      "peak_dbfs": -10.55,
+      "rms_dbfs": -28.56,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D11",
+      "duration_seconds": 13.096054,
+      "peak_dbfs": -8.72,
+      "rms_dbfs": -28.43,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D12",
+      "duration_seconds": 15.51093,
+      "peak_dbfs": -10.91,
+      "rms_dbfs": -28.97,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D13",
+      "duration_seconds": 13.374694,
+      "peak_dbfs": -9.14,
+      "rms_dbfs": -27.91,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D14",
+      "duration_seconds": 13.746213,
+      "peak_dbfs": -8.39,
+      "rms_dbfs": -27.21,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D15",
+      "duration_seconds": 14.117732,
+      "peak_dbfs": -7.54,
+      "rms_dbfs": -27.92,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D16",
+      "duration_seconds": 13.328254,
+      "peak_dbfs": -8.33,
+      "rms_dbfs": -27.68,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D17",
+      "duration_seconds": 11.006259,
+      "peak_dbfs": -9.48,
+      "rms_dbfs": -28.13,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D18",
+      "duration_seconds": 15.46449,
+      "peak_dbfs": -8.66,
+      "rms_dbfs": -27.75,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D19",
+      "duration_seconds": 11.284898,
+      "peak_dbfs": -8.26,
+      "rms_dbfs": -27.3,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D20",
+      "duration_seconds": 16.439728,
+      "peak_dbfs": -10.19,
+      "rms_dbfs": -28.34,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D21",
+      "duration_seconds": 11.749297,
+      "peak_dbfs": -11.24,
+      "rms_dbfs": -29.32,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D22",
+      "duration_seconds": 13.003175,
+      "peak_dbfs": -9.32,
+      "rms_dbfs": -28.9,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D23",
+      "duration_seconds": 11.377778,
+      "peak_dbfs": -10.19,
+      "rms_dbfs": -27.48,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D24",
+      "duration_seconds": 11.609977,
+      "peak_dbfs": -9.58,
+      "rms_dbfs": -28.08,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D25",
+      "duration_seconds": 16.346848,
+      "peak_dbfs": -7.81,
+      "rms_dbfs": -27.43,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D26",
+      "duration_seconds": 13.049615,
+      "peak_dbfs": -8.99,
+      "rms_dbfs": -26.85,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D27",
+      "duration_seconds": 13.374694,
+      "peak_dbfs": -8.58,
+      "rms_dbfs": -26.77,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D28",
+      "duration_seconds": 16.300408,
+      "peak_dbfs": -9.25,
+      "rms_dbfs": -27.7,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D29",
+      "duration_seconds": 11.888617,
+      "peak_dbfs": -9.68,
+      "rms_dbfs": -30.13,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D30",
+      "duration_seconds": 13.978413,
+      "peak_dbfs": -8.45,
+      "rms_dbfs": -28.71,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D31",
+      "duration_seconds": 21.037279,
+      "peak_dbfs": -9.58,
+      "rms_dbfs": -29.22,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D32",
+      "duration_seconds": 11.609977,
+      "peak_dbfs": -10.1,
+      "rms_dbfs": -28.64,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D33",
+      "duration_seconds": 15.23229,
+      "peak_dbfs": -10.07,
+      "rms_dbfs": -28.02,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D34",
+      "duration_seconds": 15.882449,
+      "peak_dbfs": -9.2,
+      "rms_dbfs": -27.03,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D35",
+      "duration_seconds": 15.836009,
+      "peak_dbfs": -8.22,
+      "rms_dbfs": -27.94,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D36",
+      "duration_seconds": 16.253968,
+      "peak_dbfs": -9.07,
+      "rms_dbfs": -26.48,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D37",
+      "duration_seconds": 13.653333,
+      "peak_dbfs": -11.47,
+      "rms_dbfs": -29.43,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D38",
+      "duration_seconds": 7.616145,
+      "peak_dbfs": -11.08,
+      "rms_dbfs": -28.53,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D39",
+      "duration_seconds": 8.777143,
+      "peak_dbfs": -10.3,
+      "rms_dbfs": -27.85,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D40",
+      "duration_seconds": 7.337506,
+      "peak_dbfs": -11.3,
+      "rms_dbfs": -27.58,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D41",
+      "duration_seconds": 5.572789,
+      "peak_dbfs": -9.19,
+      "rms_dbfs": -28.11,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D42",
+      "duration_seconds": 10.913379,
+      "peak_dbfs": -10.31,
+      "rms_dbfs": -26.55,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D43",
+      "duration_seconds": 11.702857,
+      "peak_dbfs": -9.76,
+      "rms_dbfs": -27.1,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D44",
+      "duration_seconds": 12.399456,
+      "peak_dbfs": -9.02,
+      "rms_dbfs": -28.57,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D45",
+      "duration_seconds": 9.241542,
+      "peak_dbfs": -9.87,
+      "rms_dbfs": -28.54,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D46",
+      "duration_seconds": 6.687347,
+      "peak_dbfs": -9.37,
+      "rms_dbfs": -27.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D47",
+      "duration_seconds": 7.755465,
+      "peak_dbfs": -6.68,
+      "rms_dbfs": -26.06,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D48",
+      "duration_seconds": 14.860771,
+      "peak_dbfs": -8.69,
+      "rms_dbfs": -27.09,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D49",
+      "duration_seconds": 9.659501,
+      "peak_dbfs": -9.94,
+      "rms_dbfs": -25.76,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D50",
+      "duration_seconds": 13.699773,
+      "peak_dbfs": -10.76,
+      "rms_dbfs": -28.36,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D51",
+      "duration_seconds": 13.003175,
+      "peak_dbfs": -11.16,
+      "rms_dbfs": -28.27,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D52",
+      "duration_seconds": 10.774059,
+      "peak_dbfs": -8.23,
+      "rms_dbfs": -26.89,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D53",
+      "duration_seconds": 13.188934,
+      "peak_dbfs": -9.89,
+      "rms_dbfs": -28.12,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D54",
+      "duration_seconds": 9.473741,
+      "peak_dbfs": -8.02,
+      "rms_dbfs": -25.86,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D55",
+      "duration_seconds": 10.1239,
+      "peak_dbfs": -7.32,
+      "rms_dbfs": -26.47,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D56",
+      "duration_seconds": 9.427302,
+      "peak_dbfs": -9.89,
+      "rms_dbfs": -28.37,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D57",
+      "duration_seconds": 8.359184,
+      "peak_dbfs": -9.22,
+      "rms_dbfs": -27.42,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D58",
+      "duration_seconds": 9.752381,
+      "peak_dbfs": -9.34,
+      "rms_dbfs": -27.14,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D59",
+      "duration_seconds": 7.987664,
+      "peak_dbfs": -8.48,
+      "rms_dbfs": -25.82,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D60",
+      "duration_seconds": 7.569705,
+      "peak_dbfs": -10.31,
+      "rms_dbfs": -29.98,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D61",
+      "duration_seconds": 5.804989,
+      "peak_dbfs": -11.86,
+      "rms_dbfs": -27.86,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D62",
+      "duration_seconds": 5.479909,
+      "peak_dbfs": -11.58,
+      "rms_dbfs": -28.9,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D63",
+      "duration_seconds": 5.10839,
+      "peak_dbfs": -9.87,
+      "rms_dbfs": -26.32,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D64",
+      "duration_seconds": 10.866939,
+      "peak_dbfs": -9.91,
+      "rms_dbfs": -27.98,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_D65",
+      "duration_seconds": 14.628571,
+      "peak_dbfs": -9.04,
+      "rms_dbfs": -27.75,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A01",
+      "duration_seconds": 7.662585,
+      "peak_dbfs": -4.89,
+      "rms_dbfs": -21.52,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A02",
+      "duration_seconds": 12.167256,
+      "peak_dbfs": -7.6,
+      "rms_dbfs": -23.2,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A03",
+      "duration_seconds": 9.241542,
+      "peak_dbfs": -3.51,
+      "rms_dbfs": -20.35,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A04",
+      "duration_seconds": 8.730703,
+      "peak_dbfs": -4.13,
+      "rms_dbfs": -23.46,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A05",
+      "duration_seconds": 9.473741,
+      "peak_dbfs": -3.97,
+      "rms_dbfs": -22.76,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A06",
+      "duration_seconds": 10.21678,
+      "peak_dbfs": -5.69,
+      "rms_dbfs": -22.08,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A07",
+      "duration_seconds": 8.777143,
+      "peak_dbfs": -5.27,
+      "rms_dbfs": -21.03,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A08",
+      "duration_seconds": 12.213696,
+      "peak_dbfs": -6.06,
+      "rms_dbfs": -21.61,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A09",
+      "duration_seconds": 10.17034,
+      "peak_dbfs": -3.93,
+      "rms_dbfs": -19.86,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A10",
+      "duration_seconds": 13.374694,
+      "peak_dbfs": -6.5,
+      "rms_dbfs": -22.84,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A11",
+      "duration_seconds": 9.102222,
+      "peak_dbfs": -6.39,
+      "rms_dbfs": -21.98,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A12",
+      "duration_seconds": 4.96907,
+      "peak_dbfs": -1.59,
+      "rms_dbfs": -20.57,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A13",
+      "duration_seconds": 5.804989,
+      "peak_dbfs": -5.5,
+      "rms_dbfs": -21.28,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A14",
+      "duration_seconds": 6.780227,
+      "peak_dbfs": -3.53,
+      "rms_dbfs": -19.84,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A15",
+      "duration_seconds": 5.526349,
+      "peak_dbfs": -3.24,
+      "rms_dbfs": -22.08,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A16",
+      "duration_seconds": 3.482993,
+      "peak_dbfs": -3.3,
+      "rms_dbfs": -22.2,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A17",
+      "duration_seconds": 7.383946,
+      "peak_dbfs": -4.29,
+      "rms_dbfs": -20.32,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A18",
+      "duration_seconds": 6.501587,
+      "peak_dbfs": -7.55,
+      "rms_dbfs": -22.11,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A19",
+      "duration_seconds": 2.832834,
+      "peak_dbfs": -1.93,
+      "rms_dbfs": -18.83,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A20",
+      "duration_seconds": 9.613061,
+      "peak_dbfs": -6.99,
+      "rms_dbfs": -22.99,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A21",
+      "duration_seconds": 7.383946,
+      "peak_dbfs": -5.54,
+      "rms_dbfs": -21.54,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A22",
+      "duration_seconds": 8.034104,
+      "peak_dbfs": -6.21,
+      "rms_dbfs": -23.7,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A23",
+      "duration_seconds": 7.755465,
+      "peak_dbfs": -6.46,
+      "rms_dbfs": -23.56,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A24",
+      "duration_seconds": 11.795737,
+      "peak_dbfs": -6.25,
+      "rms_dbfs": -21.31,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A25",
+      "duration_seconds": 12.492336,
+      "peak_dbfs": -2.62,
+      "rms_dbfs": -22.77,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A26",
+      "duration_seconds": 9.659501,
+      "peak_dbfs": -6.18,
+      "rms_dbfs": -22.2,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_A27",
+      "duration_seconds": 10.17034,
+      "peak_dbfs": -7.12,
+      "rms_dbfs": -24.62,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D01",
+      "duration_seconds": 17.693605,
+      "peak_dbfs": -10.35,
+      "rms_dbfs": -28.17,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D02",
+      "duration_seconds": 16.625488,
+      "peak_dbfs": -7.0,
+      "rms_dbfs": -27.97,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D03",
+      "duration_seconds": 14.489252,
+      "peak_dbfs": -7.6,
+      "rms_dbfs": -28.05,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D04",
+      "duration_seconds": 17.879365,
+      "peak_dbfs": -8.96,
+      "rms_dbfs": -28.85,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D05",
+      "duration_seconds": 9.427302,
+      "peak_dbfs": -7.75,
+      "rms_dbfs": -28.65,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D06",
+      "duration_seconds": 12.027937,
+      "peak_dbfs": -9.19,
+      "rms_dbfs": -27.75,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D07",
+      "duration_seconds": 11.517098,
+      "peak_dbfs": -10.2,
+      "rms_dbfs": -27.39,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D08",
+      "duration_seconds": 12.167256,
+      "peak_dbfs": -6.95,
+      "rms_dbfs": -27.7,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D09",
+      "duration_seconds": 13.885533,
+      "peak_dbfs": -10.58,
+      "rms_dbfs": -29.64,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D10",
+      "duration_seconds": 11.656417,
+      "peak_dbfs": -10.81,
+      "rms_dbfs": -29.07,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D11",
+      "duration_seconds": 13.328254,
+      "peak_dbfs": -10.06,
+      "rms_dbfs": -29.15,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D12",
+      "duration_seconds": 15.60381,
+      "peak_dbfs": -9.41,
+      "rms_dbfs": -28.05,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D13",
+      "duration_seconds": 14.396372,
+      "peak_dbfs": -11.21,
+      "rms_dbfs": -29.42,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D14",
+      "duration_seconds": 16.114649,
+      "peak_dbfs": -8.42,
+      "rms_dbfs": -27.21,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D15",
+      "duration_seconds": 14.953651,
+      "peak_dbfs": -9.57,
+      "rms_dbfs": -26.21,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D16",
+      "duration_seconds": 14.814331,
+      "peak_dbfs": -10.29,
+      "rms_dbfs": -27.63,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D17",
+      "duration_seconds": 12.399456,
+      "peak_dbfs": -9.09,
+      "rms_dbfs": -27.94,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D18",
+      "duration_seconds": 13.096054,
+      "peak_dbfs": -10.02,
+      "rms_dbfs": -29.64,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D19",
+      "duration_seconds": 11.192018,
+      "peak_dbfs": -9.79,
+      "rms_dbfs": -28.56,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D20",
+      "duration_seconds": 15.928889,
+      "peak_dbfs": -8.46,
+      "rms_dbfs": -27.49,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D21",
+      "duration_seconds": 13.328254,
+      "peak_dbfs": -9.47,
+      "rms_dbfs": -28.52,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D22",
+      "duration_seconds": 13.049615,
+      "peak_dbfs": -9.19,
+      "rms_dbfs": -28.54,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D23",
+      "duration_seconds": 11.563537,
+      "peak_dbfs": -10.56,
+      "rms_dbfs": -29.15,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D24",
+      "duration_seconds": 11.192018,
+      "peak_dbfs": -8.03,
+      "rms_dbfs": -25.57,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D25",
+      "duration_seconds": 18.390204,
+      "peak_dbfs": -8.37,
+      "rms_dbfs": -28.81,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D26",
+      "duration_seconds": 12.399456,
+      "peak_dbfs": -9.11,
+      "rms_dbfs": -28.51,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D27",
+      "duration_seconds": 14.582132,
+      "peak_dbfs": -8.02,
+      "rms_dbfs": -27.17,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D28",
+      "duration_seconds": 15.60381,
+      "peak_dbfs": -9.78,
+      "rms_dbfs": -26.97,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D29",
+      "duration_seconds": 11.888617,
+      "peak_dbfs": -10.65,
+      "rms_dbfs": -30.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D30",
+      "duration_seconds": 13.421134,
+      "peak_dbfs": -10.43,
+      "rms_dbfs": -28.63,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D31",
+      "duration_seconds": 17.414966,
+      "peak_dbfs": -8.79,
+      "rms_dbfs": -26.61,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D32",
+      "duration_seconds": 11.470658,
+      "peak_dbfs": -9.19,
+      "rms_dbfs": -28.05,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D33",
+      "duration_seconds": 14.210612,
+      "peak_dbfs": -8.42,
+      "rms_dbfs": -27.47,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D34",
+      "duration_seconds": 18.483084,
+      "peak_dbfs": -8.23,
+      "rms_dbfs": -27.15,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D35",
+      "duration_seconds": 16.811247,
+      "peak_dbfs": -9.1,
+      "rms_dbfs": -27.52,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D36",
+      "duration_seconds": 18.390204,
+      "peak_dbfs": -8.44,
+      "rms_dbfs": -27.21,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D37",
+      "duration_seconds": 13.606893,
+      "peak_dbfs": -9.67,
+      "rms_dbfs": -26.77,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D38",
+      "duration_seconds": 7.709025,
+      "peak_dbfs": -6.37,
+      "rms_dbfs": -27.0,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D39",
+      "duration_seconds": 9.195102,
+      "peak_dbfs": -11.46,
+      "rms_dbfs": -30.26,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D40",
+      "duration_seconds": 9.241542,
+      "peak_dbfs": -10.81,
+      "rms_dbfs": -28.51,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D41",
+      "duration_seconds": 7.476825,
+      "peak_dbfs": -11.38,
+      "rms_dbfs": -30.06,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D42",
+      "duration_seconds": 8.823583,
+      "peak_dbfs": -9.41,
+      "rms_dbfs": -27.25,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D43",
+      "duration_seconds": 14.210612,
+      "peak_dbfs": -10.68,
+      "rms_dbfs": -28.22,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D44",
+      "duration_seconds": 13.931973,
+      "peak_dbfs": -8.84,
+      "rms_dbfs": -27.14,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D45",
+      "duration_seconds": 9.009342,
+      "peak_dbfs": -10.45,
+      "rms_dbfs": -28.02,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D46",
+      "duration_seconds": 8.823583,
+      "peak_dbfs": -9.65,
+      "rms_dbfs": -28.77,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D47",
+      "duration_seconds": 8.219864,
+      "peak_dbfs": -10.56,
+      "rms_dbfs": -28.34,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D48",
+      "duration_seconds": 16.068209,
+      "peak_dbfs": -9.0,
+      "rms_dbfs": -27.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D49",
+      "duration_seconds": 8.962902,
+      "peak_dbfs": -11.3,
+      "rms_dbfs": -28.19,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D50",
+      "duration_seconds": 13.746213,
+      "peak_dbfs": -9.2,
+      "rms_dbfs": -28.37,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D51",
+      "duration_seconds": 13.606893,
+      "peak_dbfs": -10.47,
+      "rms_dbfs": -27.44,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D52",
+      "duration_seconds": 10.49542,
+      "peak_dbfs": -9.09,
+      "rms_dbfs": -27.47,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D53",
+      "duration_seconds": 13.049615,
+      "peak_dbfs": -8.09,
+      "rms_dbfs": -27.71,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D54",
+      "duration_seconds": 10.44898,
+      "peak_dbfs": -8.52,
+      "rms_dbfs": -25.48,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D55",
+      "duration_seconds": 12.445896,
+      "peak_dbfs": -8.8,
+      "rms_dbfs": -27.6,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D56",
+      "duration_seconds": 10.3561,
+      "peak_dbfs": -10.22,
+      "rms_dbfs": -27.41,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D57",
+      "duration_seconds": 7.616145,
+      "peak_dbfs": -10.29,
+      "rms_dbfs": -27.81,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D58",
+      "duration_seconds": 11.006259,
+      "peak_dbfs": -9.68,
+      "rms_dbfs": -30.03,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D59",
+      "duration_seconds": 10.634739,
+      "peak_dbfs": -11.79,
+      "rms_dbfs": -29.32,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D60",
+      "duration_seconds": 7.198186,
+      "peak_dbfs": -10.86,
+      "rms_dbfs": -28.57,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D61",
+      "duration_seconds": 6.222948,
+      "peak_dbfs": -7.8,
+      "rms_dbfs": -26.64,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D62",
+      "duration_seconds": 5.665669,
+      "peak_dbfs": -10.15,
+      "rms_dbfs": -27.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D63",
+      "duration_seconds": 5.433469,
+      "peak_dbfs": -8.22,
+      "rms_dbfs": -27.36,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D64",
+      "duration_seconds": 9.938141,
+      "peak_dbfs": -10.07,
+      "rms_dbfs": -28.97,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_D65",
+      "duration_seconds": 13.653333,
+      "peak_dbfs": -12.02,
+      "rms_dbfs": -30.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    }
+  ]
+}

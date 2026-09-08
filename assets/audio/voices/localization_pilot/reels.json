@@ -1,0 +1,54 @@
+{
+  "normalization": "Listening reels only; original clips and gameplay gains unchanged",
+  "target_lufs": -18,
+  "reels": [
+    {
+      "file": "reels/es_angel.mp3",
+      "duration_seconds": 37.94449,
+      "sha256": "a0023dca8e5b900f3cf6becedfa4906a18182b90f9d83514d28233dabcf23b68",
+      "clips": [
+        "ES_A01",
+        "ES_A02",
+        "ES_A03"
+      ],
+      "integrated_loudness_lufs": -18.65,
+      "true_peak_dbtp": -1.93
+    },
+    {
+      "file": "reels/es_demon.mp3",
+      "duration_seconds": 58.888889,
+      "sha256": "e61c89b660bb922cb3751a676a34caff74d2d41c389a48e47ac20d44026b4575",
+      "clips": [
+        "ES_D01",
+        "ES_D02",
+        "ES_D03"
+      ],
+      "integrated_loudness_lufs": -18.73,
+      "true_peak_dbtp": -1.77
+    },
+    {
+      "file": "reels/pt-BR_angel.mp3",
+      "duration_seconds": 35.854694,
+      "sha256": "87c9c0fa1cb8ac81b871198cfe8f4dc70c58a67afa24e012819d735de5e7a41c",
+      "clips": [
+        "BR_A01",
+        "BR_A02",
+        "BR_A03"
+      ],
+      "integrated_loudness_lufs": -18.65,
+      "true_peak_dbtp": -1.89
+    },
+    {
+      "file": "reels/pt-BR_demon.mp3",
+      "duration_seconds": 54.059138,
+      "sha256": "30290d67004d02205abcb5bff90f42774c74bcfc6fa508437ef06712fb8b4354",
+      "clips": [
+        "BR_D01",
+        "BR_D02",
+        "BR_D03"
+      ],
+      "integrated_loudness_lufs": -18.66,
+      "true_peak_dbtp": -1.8
+    }
+  ]
+}
