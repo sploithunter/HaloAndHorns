@@ -387,3 +387,15 @@ After paving trim, run the configured `side_junction.bake_source` finishing repa
 The garden-ramp links reach inward to |X|16; their former |X|20 endpoints missed the
 outside diagonal edge at Z88, leaving small mirrored notches. The repair subtracts
 the existing diagonal solid, preserving a clean shared boundary with no stacked faces.
+
+## Fishing capacity revision (R10, 2026-09-08)
+
+`configs/realm_crossroads_fishing.json` and `bake_fishing.luau` supersede the small R9
+pond after the leisure pass. Heaven is now 88×112 studs with ten 10×12 platforms
+around the bank. Hell has a 56×96 pool behind the stands with eight platforms.
+Both use real Terrain water. Water color is global to the place and is left unchanged;
+the Hell setting comes from the surrounding landscape. Catches are not wired. Existing flower/quartz and
+bone/brush assets decorate spaces between stations. Perimeter flora is relocated,
+with matched side land extensions reaching |X|300 and invisible walls at |X|296.
+Terrain and old pond/boundary backups are preserved in ServerStorage. Fishing assets,
+rod interaction, catch tables and rewards remain future gameplay work.
