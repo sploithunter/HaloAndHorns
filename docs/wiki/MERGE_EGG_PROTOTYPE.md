@@ -914,7 +914,10 @@ against isolated instances without touching live profiles.
   Desktop keeps direct drag-and-drop. Touch devices use a sequential two-tap contract:
   the first tap selects a board egg and highlights compatible board/deployment destinations; the
   second tap merges with an equal board egg, deploys into an empty hatcher, or advances an
-  equal-tier deployed egg. A second tap on the same source, a tier mismatch, or any other invalid
+  equal-tier deployed egg. Touch hit tests include the owned deployed egg as well as its floor pad;
+  a near miss within configured `deployment_snap_pixels` chooses the closest empty or matching-tier
+  slot on screen. Unavailable positions and other players' eggs are excluded. A second tap on the
+  same source, a direct tier mismatch, or any other invalid
   world target clears selection without sending a mutation. Camera pans and multi-touch gestures
   are rejected by configured movement/duration thresholds. The server remains authoritative for
   distance, inventory, and live destination tier. The tutorial and result cards use viewport-width

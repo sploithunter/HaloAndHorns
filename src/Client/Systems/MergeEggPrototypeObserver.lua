@@ -29,6 +29,7 @@ local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFor
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeTutorialHud = require(ReplicatedStorage.Shared.Game.MergeTutorialHud)
 local MergeEggBoardTapPolicy = require(script.Parent.MergeEggBoardTapPolicy)
+local MergeEggDeploymentTarget = require(script.Parent.MergeEggDeploymentTarget)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -3776,25 +3777,32 @@ local function deploymentPadForTeam(teamId)
     return nil
 end
 
-local function deploymentTargetAtScreenPoint(screenPoint)
+local function deploymentTargetAtScreenPoint(screenPoint, sourceTier)
     local world = prototypeWorld()
     local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
-    local includedPads = {}
-    for _, pad in ipairs(pads and pads:GetChildren() or {}) do
-        if pad:IsA("BasePart") and pad:GetAttribute("MergeEggDeploymentAvailable") == true then
-            includedPads[#includedPads + 1] = pad
+    local objectives = {}
+    for _, folder in pairs(teamFolders()) do
+        local objective = hatcherEggObjective(folder)
+        if objective then
+            objectives[#objectives + 1] = objective
         end
     end
-    local instance = includedInstanceAtScreenPoint(screenPoint, includedPads)
-    local teamId = deploymentTeamFromInstance(instance)
-    local pad = teamId and deploymentPadForTeam(teamId) or nil
+    local pad = MergeEggDeploymentTarget.pick(
+        Workspace,
+        Workspace.CurrentCamera,
+        screenPoint,
+        pads and pads:GetChildren() or {},
+        objectives,
+        sourceTier,
+        CONFIG.team.merge_board.touch_input.deployment_snap_pixels
+    )
     if not pad then
         return nil
     end
     return {
         kind = "deployment",
         adornee = pad,
-        teamId = teamId,
+        teamId = tonumber(pad:GetAttribute("MergeEggDeploymentTeamId")),
         deployedTier = math.max(
             0,
             math.floor(tonumber(pad:GetAttribute("MergeEggDeploymentTier")) or 0)
@@ -3802,7 +3810,7 @@ local function deploymentTargetAtScreenPoint(screenPoint)
     }
 end
 
-local function tapTargetAtScreenPoint(screenPoint)
+local function tapTargetAtScreenPoint(screenPoint, sourceTier)
     local egg = boardEggAtScreenPoint(screenPoint, nil)
     if egg then
         return {
@@ -3812,7 +3820,7 @@ local function tapTargetAtScreenPoint(screenPoint)
             tier = tonumber(egg:GetAttribute("MergeEggSourceTier")),
         }
     end
-    return deploymentTargetAtScreenPoint(screenPoint)
+    return sourceTier and deploymentTargetAtScreenPoint(screenPoint, sourceTier) or nil
 end
 
 local function createCompatibleDeploymentSquares(sourceTier)
@@ -4209,7 +4217,7 @@ local function handleBoardTap(input)
     if interaction and interaction.mode ~= "tap" then
         return
     end
-    local target = tapTargetAtScreenPoint(input.Position)
+    local target = tapTargetAtScreenPoint(input.Position, interaction and interaction.sourceTier)
     local selection = interaction
             and {
                 sourceSlot = interaction.sourceSlot,

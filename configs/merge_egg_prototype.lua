@@ -1463,6 +1463,7 @@ return {
                 -- do not select, combine, deploy, or clear eggs accidentally.
                 max_movement_pixels = 24,
                 max_duration_seconds = 0.65,
+                deployment_snap_pixels = 40, -- Near taps choose the closest compatible defense slot.
             },
             empty_slot_color = { 45, 52, 64 },
             empty_slot_transparency = 0.08,
