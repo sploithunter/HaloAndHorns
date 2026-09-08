@@ -156,7 +156,7 @@ for gx,gz in L['gates']:
  line(*plan(gx,gz),*plan(gx,-5),'#E9E5DA',18*S)
 for i,((gx,gz),yaw) in enumerate(zip(L['gates'],L['gate_yaw'])):
  x,y=plan(gx,gz);col='#78A7A3' if i==0 else '#B16F61';fill='#E1EFDF' if i==0 else '#F1DEDC'
- c.setFillColor(HexColor(fill));c.setStrokeColor(HexColor(col));c.circle(x,y,26*S,fill=1,stroke=1)
+ c.setLineWidth(.8);c.setFillColor(HexColor(fill));c.setStrokeColor(HexColor(col));c.circle(x,y,26*S,fill=1,stroke=1)
  c.setFillColor(HexColor('#BED5B3' if i==0 else '#D2A497'));c.circle(x,y,10*S,fill=1,stroke=1)
  # An oriented art footprint, not a new gate design.
  c.saveState();c.translate(x,y);c.rotate(yaw)
