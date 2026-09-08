@@ -27,7 +27,9 @@ terraces raycast exactly 0/+4/-4. A half-cell occupancy adjustment was necessary
 to prevent Terrain from burying the paths 2 studs above the intended datum.
 
 The saved preview uses the actual Merge bay arches at 30%, native SurfaceAppearance,
-and 5-stud noncolliding inset faces. Spawn-to-gate distance remains 70.5 studs,
+and 5-stud noncolliding inset faces. The demon mesh is natively upright: use identity
+mesh rotation plus 180-degree facing yaw. The older source-placement matrix tilted it
+sideways/down and was removed after visual verification in the gate. Spawn-to-gate distance remains 70.5 studs,
 about 2.9 seconds at the configured Merge default speed of 24. Client-local
 proximity tint demonstrates the 26-to-10-stud Heaven/Hell lighting transition.
 Travel, dialogue, live leaderboards, and finished landscaping remain unimplemented.
