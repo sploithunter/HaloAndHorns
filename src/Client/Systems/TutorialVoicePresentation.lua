@@ -168,12 +168,6 @@ function Presentation:step(dt, age, loudness, forcePortrait)
                 or distance
         end
         local actualDistance = self.worldDistance or distance
-        local targetSize = self.head.Size
-            * (WATCHER.size / cfg.face_size)
-            * (actualDistance / distance)
-        self.worldHead.Size = self.worldInitialized
-                and self.worldHead.Size:Lerp(targetSize, 1 - math.exp(-WATCHER.follow_rate * dt))
-            or targetSize
         local position = camera.CFrame.Position
             + direction * actualDistance
             + camera.CFrame.UpVector * bob
@@ -195,7 +189,16 @@ function Presentation:step(dt, age, loudness, forcePortrait)
         else
             self.worldHead.CFrame = CFrame.lookAt(position, camera.CFrame.Position)
         end
-        self.worldHead.Transparency = 1 - opacity
+        -- Size follows the rendered distance, not the target distance. Otherwise a wall
+        -- clearing while position eases can briefly inflate the face across the screen.
+        local renderedDistance = (position - camera.CFrame.Position).Magnitude
+        if renderedDistance > 0 then
+            self.worldHead.Size = self.head.Size
+                * (WATCHER.size / cfg.face_size)
+                * (renderedDistance / distance)
+        end
+        local visibility = math.clamp(renderedDistance / cfg.minimum_world_distance, 0, 1)
+        self.worldHead.Transparency = 1 - opacity * visibility
         self.worldLight.Brightness = self.theme.light_brightness * opacity
         self.worldInitialized = true
     end
