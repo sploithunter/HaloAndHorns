@@ -282,6 +282,12 @@ local SCHEMAS = {
     }),
     tutorial_voice_assets = schema({ clips = "table" }),
     tutorial_voice_locales = schema({ recording_catalog = "string", locales = "table" }),
+    collector_voice = schema({
+        enabled = "boolean",
+        sections = "table",
+        clips = "table",
+        locales = "table",
+    }),
     tutorial_voice_lines = schema({
         version = "number",
         status = "string",
