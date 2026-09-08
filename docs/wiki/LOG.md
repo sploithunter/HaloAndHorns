@@ -8696,3 +8696,5 @@ first-session cohort rates.
   automated touch drags emit one movement event, so continuous finger scrolling needs device review.
 
 - 2026-09-08: Integrated Farm & Fight angel/demon tutorial narration and local faces, group-owned audio bindings, Voices mix, course/replay lifecycle, and conditional help. Added a separate starter-companion welcome before the egg lesson after live feedback. See [Tutorial voices](TUTORIAL_VOICE.md).
+
+- 2026-09-08: Tutorial follow-up: starter welcome now precedes the egg lesson; active lessons offer idle encouragement after 45 seconds and every 60 idle seconds thereafter. Gameplay faces follow the camera periphery using Merge motion/distance; portraits are restricted to menus. Classified the bounded face-asset retry backoff for CI.

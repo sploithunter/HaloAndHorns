@@ -4,7 +4,7 @@
   "universe_id": 10307183003,
   "environment": "Roblox Studio Client",
   "method": "ContentProvider.PreloadAsync with actual Sound instances; IsLoaded and TimeLength checked",
-  "checked": 89,
+  "checked": 92,
   "failed": 0,
   "clips": [
     {
@@ -272,6 +272,13 @@
       "asset_id": 125022773560935,
       "status": "Enum.AssetFetchStatus.Success",
       "loaded": true
+    },
+    {
+      "asset_id": 101490866774965,
+      "seconds": 11.888616780045352,
+      "status": "Enum.AssetFetchStatus.Success",
+      "loaded": true,
+      "cue": "combat_tutorial.next_task.reminder"
     },
     {
       "seconds": 14.396371882086168,
@@ -582,6 +589,20 @@
       "status": "Enum.AssetFetchStatus.Success"
     },
     {
+      "asset_id": 90573884844018,
+      "seconds": 8.080544217687075,
+      "status": "Enum.AssetFetchStatus.Success",
+      "loaded": true,
+      "cue": "tutorial.hatch_first_egg.reminder"
+    },
+    {
+      "asset_id": 115843100333341,
+      "seconds": 7.337505668934241,
+      "status": "Enum.AssetFetchStatus.Success",
+      "loaded": true,
+      "cue": "tutorial.next_task.reminder"
+    },
+    {
       "seconds": 9.613061224489796,
       "cue": "tutorial.rally_call",
       "asset_id": 100422021258758,
@@ -638,7 +659,10 @@
     "course_handoff": true,
     "replay": true,
     "portrait": true,
-    "cleanup": true
+    "cleanup": true,
+    "recurring_reminders": true,
+    "world_camera_follow": true,
+    "menu_reminder_pause": true
   },
   "limitations": "State-driven smoke checks are not a full player completion of every combat course or an independent listening review."
 }

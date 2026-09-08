@@ -6,7 +6,7 @@ local home = loadModule("configs/tutorial.lua")
 local combat = loadModule("configs/combat_tutorial.lua")
 return function()
     describe("Tutorial voice coverage and lifecycle", function()
-        it("binds all 89 approved lines to uploaded audio and a face", function()
+        it("binds all 92 approved lines to uploaded audio and a face", function()
             local count = 0
             for cue, line in pairs(Director.catalog(lines)) do
                 count += 1
@@ -14,7 +14,7 @@ return function()
                 expect(assets[cue].asset_id > 0).to.equal(true)
                 expect(assets[cue].seconds > 0).to.equal(true)
             end
-            expect(count).to.equal(89)
+            expect(count).to.equal(92)
         end)
         it("covers every current Homeworld and combat lesson", function()
             for _, step in ipairs(home.steps) do

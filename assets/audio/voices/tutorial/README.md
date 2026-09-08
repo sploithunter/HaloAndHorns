@@ -2,8 +2,8 @@
 
 English source recordings generated with ElevenLabs on 2026-09-08 from the
 approved dialogue in `configs/tutorial_voice_lines.lua`. One MP3 per stable cue ID:
-25 encouraging angel clips (`angel/A01.mp3`–`A25.mp3`) and 64 lightly mocking demon
-clips (`demon/D01.mp3`–`D64.mp3`). Optional help clips are separate from the lesson route.
+27 encouraging angel clips (`angel/A01.mp3`–`A27.mp3`) and 65 lightly mocking demon
+clips (`demon/D01.mp3`–`D65.mp3`). Optional help clips are separate from the lesson route.
 
 - Angel voice: `thfYL0Elyru2qqTtNQsE`.
 - Demon voice: `NxGA8X3YhTrnf3TRQf6Q`.
@@ -32,7 +32,7 @@ The source MP3s intentionally retain their original levels.
 `roblox_ids.json` records the group-owned Roblox uploads; `configs/tutorial_voice_assets.lua`
 binds each cue and decoded duration. TutorialNarrator plays them through the Voices mix and
 stages the approved angel/demon faces. A25 welcomes the starter choice; the revised A01 begins
-only after that choice succeeds. Source validation covers all 89 recordings. Roblox delivery
+only after that choice succeeds. Source validation covers all 92 recordings. Roblox delivery
 checks are recorded separately in `runtime_validation.json`.
 
 See [`docs/TUTORIAL_VOICE_SCRIPT.md`](../../../../docs/TUTORIAL_VOICE_SCRIPT.md) for the

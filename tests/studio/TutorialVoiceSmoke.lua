@@ -122,6 +122,60 @@ function Smoke.run()
             "Portrait geometry invalid"
         )
         assert(n.current.sound.SoundGroup == n.mixer.group, "Narration bypasses Voices mix")
+        n:cancel()
+        n:setState({ id = "hatch_first_egg", index = 1, count = 0 })
+        n:_stop()
+        n:step(config.reminder_delay_seconds - 1)
+        assert(n.current == nil, "Reminder fired early")
+        n:step(1)
+        assert(
+            n.current and n.current.cue == "tutorial.hatch_first_egg.reminder",
+            "Egg reminder missing"
+        )
+        n:_stop()
+        n:step(config.reminder_repeat_seconds - 1)
+        assert(n.current == nil, "Reminder repeated early")
+        n:step(1)
+        assert(n.current and n.current.reminder, "Recurring reminder stopped after one nudge")
+        n:setState({ id = "hatch_first_egg", index = 1, count = 1 })
+        assert(n.current == nil and n.hasReminded == false, "Progress did not reset reminders")
+        n:setState({ done = true })
+        n:_stop()
+        n:step(config.reminder_repeat_seconds * 2)
+        assert(n.current == nil, "Completed tutorial kept reminding")
+        n:setState({ id = "hatch_first_egg", index = 1, count = 0 })
+        n:_stop()
+        local wasMenuOpen = player:GetAttribute("LargeMenuOpen")
+        player:SetAttribute("LargeMenuOpen", true)
+        n:step(config.reminder_repeat_seconds * 2)
+        local remindedDuringMenu = n.current ~= nil
+        player:SetAttribute("LargeMenuOpen", wasMenuOpen)
+        assert(not remindedDuringMenu, "Reminder interrupted a menu")
+        n.presentation:show("demon")
+        n.presentation:step(0.1, 2, 100, false)
+        local face = n.presentation.worldHead
+        assert(
+            face.Parent == workspace and not n.presentation.gui.Enabled,
+            "Gameplay used a portrait"
+        )
+        local camera = workspace.CurrentCamera
+        local original = camera.CFrame
+        local before = face.Position
+        camera.CFrame = original * CFrame.Angles(0, math.rad(120), 0)
+        n.presentation:step(0.1, 2, 100, false)
+        camera.CFrame = original
+        local speed = require(configs.merge_egg_prototype).watcher.max_speed
+        assert(
+            (face.Position - before).Magnitude <= speed * 0.1 + 0.01,
+            "Camera pan snapped the face"
+        )
+        assert(
+            face.Parent == workspace and not n.presentation.gui.Enabled,
+            "Camera pan switched to portrait"
+        )
+        report.worldCameraFollow = true
+        report.menuReminderPause = true
+        report.recurringReminders = true
         report.duplicateSuppression = true
         report.courseHandoff = true
         report.replay = true

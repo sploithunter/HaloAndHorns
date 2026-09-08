@@ -1,6 +1,6 @@
 # Farm & Fight tutorial voices
 
-2026-09-08: runtime integration for 89 recorded cues (25 angel / 64 demon).
+2026-09-08: runtime integration for 92 recorded cues (27 angel / 65 demon).
 
 - `configs/tutorial_voice_lines.lua` owns English spoken copy and references the established
   Watcher volume tuning. `tutorial_voice_assets.lua` binds group-owned uploaded Sound IDs and
@@ -13,7 +13,9 @@
 - TutorialController feeds authoritative TutorialState into TutorialNarrator. Course selection,
   locked choices, leave confirmation, blocked doors, power/hotbar phases, squad preparation,
   stack counts, and losing the healer target supply conditional cues. Help waits 12 seconds;
-  each cue plays at most once per lesson. Replaced phases discard obsolete help.
+  optional help plays at most once per lesson. Replaced phases discard obsolete help.
+  Idle reminders begin after 45 seconds and repeat every 60 idle seconds. Menus and active
+  combat pause the timer; count/lesson progress resets it. Completed/left lessons never remind.
 - One current Sound and one replaceable next cue keep narration bounded. Only the current clip
   preloads. Lesson changes replace old speech; live course completion finishes before the angel's
   Basic return and Homeworld lesson. Initial completed profiles never hear completion praise.
@@ -21,9 +23,11 @@
 - CombatTutorialService pushes completion before mission teardown, including replays without
   a rank ceremony delay. Narration does not grant rewards or advance saved tutorial progress.
 - TutorialVoiceTemplates shares two sanitized MeshParts from the approved Watcher models.
-  Outside combat, the angel floats beside the player; occlusion switches to a portrait. Combat
-  always uses a portrait so room geometry cannot hide the demon. Menus use a smaller header
-  portrait, away from actions. Presentation stays local and creates no NPC or server animation.
+  Both faces stay in the world during gameplay, including combat rooms. They follow the camera
+  periphery near 45 degrees, capped by the current field of view. World size/distance and smooth
+  follow/turn tuning come from Merge; nearby walls shorten distance and scale smoothly. Only
+  menus use a header portrait drawn above their UI. Presentation stays local and creates no NPC
+  or server animation. There is no visibility-based world/portrait switching.
 - Prologue/death cancel speech; Roblox's native menu pauses it. TutorialNarrationActive suppresses
   ambient Merge Watcher and RealmHellFaces encounters. Sounds, faces, mixer effects, and the
   bus-volume connection have explicit cleanup. Voices mute also releases background ducking.
@@ -32,7 +36,7 @@
 
 ## Verification and recording provenance
 
-All 89 source MP3s are in `assets/audio/voices/tutorial/`, alongside the generation manifest,
+All 92 source MP3s are in `assets/audio/voices/tutorial/`, alongside the generation manifest,
 character timing sidecars, technical validation, uploaded IDs, and Studio delivery results.
 Both supplied ElevenLabs voice IDs are unchanged. The user approved the original A01/D01 voices;
 A25 and revised A01 follow their requested starter-choice correction. Decode, SHA-256, exact
@@ -41,7 +45,7 @@ not an independent transcription or a full listening review.
 
 `tests/headless/specs/tutorial_voice.spec.luau` checks cue coverage/selection.
 `tests/studio/TutorialVoiceSmoke.lua` exercises all 42 main lesson states, starter gating,
-duplicate suppression, replay/completion handoff, face creation, Voices routing, and cleanup
+duplicate suppression, recurring reminder timing, replay/completion handoff, face creation, Voices routing, and cleanup
 without changing progress or saved settings. Asset delivery is checked with actual Sound
 instances (`PreloadAsync({sound})` + `IsLoaded`), not raw content strings, which produced misleading
 failures. Upload completion does not imply moderation completion; check each new recording.

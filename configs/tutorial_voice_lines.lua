@@ -18,6 +18,18 @@ return {
             speaker = "angel",
             lines = {
                 {
+                    id = "A27",
+                    cue = "tutorial.next_task.reminder",
+                    usage = "reminder",
+                    text = "Take your time, little light. When you’re ready, follow the glowing guide and try the next step. I know you can do it.",
+                },
+                {
+                    id = "A26",
+                    cue = "tutorial.hatch_first_egg.reminder",
+                    usage = "reminder",
+                    text = "Your next little friend is waiting. Follow the glowing trail to the Earth Egg, and choose Hatch. I’ll be right here.",
+                },
+                {
                     id = "A25",
                     cue = "tutorial.choose_companion",
                     usage = "conditional",
@@ -90,6 +102,12 @@ return {
             title = "Demon — Basic Combat Training",
             speaker = "demon",
             lines = {
+                {
+                    id = "D65",
+                    cue = "combat_tutorial.next_task.reminder",
+                    usage = "reminder",
+                    text = "Admiring the scenery? Charming. Your next lesson is waiting. Follow the guide when you’re ready, little hero.",
+                },
                 {
                     id = "D01",
                     cue = "combat_tutorial.ready",

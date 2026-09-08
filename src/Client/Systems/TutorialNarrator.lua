@@ -78,6 +78,7 @@ function Player:_play(cue, completion)
         seconds = asset.seconds,
         completion = completion,
     }
+    self.idleSeconds = 0
     self.seen[cue] = true
     self.presentation:show(line.speaker)
     self.presentation.gui:SetAttribute("Cue", cue)
@@ -121,6 +122,12 @@ function Player:setState(state)
     local previous = self.state
     local key = Director.key(state)
     if key and key == self.identity then
+        if previous and previous.count ~= state.count then
+            self.idleSeconds, self.hasReminded = 0, false
+            if self.current and self.current.reminder then
+                self:_stop()
+            end
+        end
         self.state = state
         if state.id == "stack_brew" then
             local remaining = (tonumber(state.need) or 5) - (tonumber(state.count) or 0)
@@ -146,7 +153,7 @@ function Player:setState(state)
         end
         return
     end
-    self.stateStarted = os.clock()
+    self.idleSeconds, self.hasReminded = 0, false
     if self.current and self.current.completion then
         self.nextCue = key
         return
@@ -254,19 +261,34 @@ function Player:step(dt)
             age,
             current.sound.PlaybackLoudness,
             self.starterVisible == true
-                or self.state and self.state.courseId ~= nil
-                or player:GetAttribute("InCombatTutorial") == true
                 or player:GetAttribute("LargeMenuOpen") == true
                 or player:GetAttribute("TutorialHandoffOpen") == true
+                or player:GetAttribute("CombatTutorialPromptOpen") == true
         )
     elseif self.identity then
         local now = os.clock()
         if self.helpCue and not self.seen[self.helpCue] and now >= self.helpAt then
             self:_play(self.helpCue)
-        elseif now - (self.stateStarted or now) >= self.config.reminder_delay_seconds then
-            local reminder = self.config.reminders[self.identity]
-            if reminder and not self.seen[reminder] then
-                self:_play(reminder)
+        elseif
+            not GuiService.MenuIsOpen
+            and player:GetAttribute("LargeMenuOpen") ~= true
+            and player:GetAttribute("TutorialHandoffOpen") ~= true
+            and player:GetAttribute("StarterPetChoiceOpen") ~= true
+            and player:GetAttribute("CombatTutorialPromptOpen") ~= true
+            and player:GetAttribute("InPrologue") ~= true
+            and player:GetAttribute("InCombat") ~= true
+        then
+            self.idleSeconds = (self.idleSeconds or 0) + dt
+            local delay = self.hasReminded and self.config.reminder_repeat_seconds
+                or self.config.reminder_delay_seconds
+            if self.idleSeconds >= delay then
+                local speaker = self.catalog[self.identity].speaker
+                local reminder = self.config.reminders[self.identity]
+                    or self.config.reminder_fallback[speaker]
+                if self:_play(reminder) then
+                    self.current.reminder = true
+                    self.hasReminded = true
+                end
             end
         end
     end

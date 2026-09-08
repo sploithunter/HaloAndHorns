@@ -103,6 +103,7 @@ function CombatTutorialRedoPrompt.start()
             Narrator.stopEvent()
         end
         gui.Enabled = false
+        player:SetAttribute("CombatTutorialPromptOpen", false)
     end
 
     local function answer(accepted)
@@ -160,6 +161,7 @@ function CombatTutorialRedoPrompt.start()
         yesBtn.Text = tostring(payload.yes_text or "Redo")
         noBtn.Text = tostring(payload.no_text or "Not now")
         gui.Enabled = true
+        player:SetAttribute("CombatTutorialPromptOpen", true)
         Narrator.say(
             payload.kind == "leave" and "combat_tutorial.leave_confirm" or "combat_courses.menu"
         )

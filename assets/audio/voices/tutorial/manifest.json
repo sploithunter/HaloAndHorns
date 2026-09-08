@@ -25,7 +25,7 @@
     }
   },
   "source": "configs/tutorial_voice_lines.lua",
-  "source_text_sha256": "99a9a962bc6875fc3a20b1a3cd8e9355030204b5bbca8b6593e9513e411b288c",
+  "source_text_sha256": "a6af636cb874c2a3265294f761d5f59c12f0df5ac9ba3ebf122c57eeed03806e",
   "clips": {
     "D01": {
       "cue": "combat_tutorial.ready",
@@ -1895,6 +1895,69 @@
       "channels": 1,
       "alignment_file": "angel/A01.alignment.json",
       "completed_at": "2026-09-08T16:39:24.580012+00:00"
+    },
+    "A26": {
+      "id": "A26",
+      "cue": "tutorial.hatch_first_egg.reminder",
+      "usage": "reminder",
+      "text": "Your next little friend is waiting. Follow the glowing trail to the Earth Egg, and choose Hatch. I’ll be right here.",
+      "speaker": "angel",
+      "file": "angel/A26.mp3",
+      "voice_id": "thfYL0Elyru2qqTtNQsE",
+      "seed": 2606698089,
+      "status": "complete",
+      "started_at": "2026-09-08T16:45:27.033415+00:00",
+      "request_id": "hS7CA6pse4fSa4BzCt6j",
+      "character_cost": "221",
+      "bytes": 130447,
+      "sha256": "b33a195685362fe3708778c6684babc00f931620b6ad29f06ca08eb98784c436",
+      "duration_seconds": 8.080544,
+      "sample_rate": 44100,
+      "channels": 1,
+      "alignment_file": "angel/A26.alignment.json",
+      "completed_at": "2026-09-08T16:45:29.068172+00:00"
+    },
+    "A27": {
+      "id": "A27",
+      "cue": "tutorial.next_task.reminder",
+      "usage": "reminder",
+      "text": "Take your time, little light. When you’re ready, follow the glowing guide and try the next step. I know you can do it.",
+      "speaker": "angel",
+      "file": "angel/A27.mp3",
+      "voice_id": "thfYL0Elyru2qqTtNQsE",
+      "seed": 824563780,
+      "status": "complete",
+      "started_at": "2026-09-08T16:45:29.069674+00:00",
+      "request_id": "z9g43TaUU2D93Mj6A0d2",
+      "character_cost": "225",
+      "bytes": 118326,
+      "sha256": "d221cd5c3f349538971cbf9e27218399f33610101f6754feaf5fc1997085a05c",
+      "duration_seconds": 7.337506,
+      "sample_rate": 44100,
+      "channels": 1,
+      "alignment_file": "angel/A27.alignment.json",
+      "completed_at": "2026-09-08T16:45:30.943521+00:00"
+    },
+    "D65": {
+      "id": "D65",
+      "cue": "combat_tutorial.next_task.reminder",
+      "usage": "reminder",
+      "text": "Admiring the scenery? Charming. Your next lesson is waiting. Follow the guide when you’re ready, little hero.",
+      "speaker": "demon",
+      "file": "demon/D65.mp3",
+      "voice_id": "NxGA8X3YhTrnf3TRQf6Q",
+      "seed": 657015609,
+      "status": "complete",
+      "started_at": "2026-09-08T16:45:30.946224+00:00",
+      "request_id": "FIpcxHBemX1W01YIUEn5",
+      "character_cost": "183",
+      "bytes": 191469,
+      "sha256": "3ed5851e61ae7e9704460dd219bc294133c4a6503648530f836eac099b308208",
+      "duration_seconds": 11.888617,
+      "sample_rate": 44100,
+      "channels": 1,
+      "alignment_file": "demon/D65.alignment.json",
+      "completed_at": "2026-09-08T16:45:33.305105+00:00"
     }
   }
 }

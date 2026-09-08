@@ -141,5 +141,8 @@ return {
         ["combat_tutorial.healer_hunt.lost"] = { asset_id = 128570880431394, seconds = 9.98458 },
         ["tutorial.choose_companion"] = { asset_id = 124914993058517, seconds = 11.145578 },
         ["tutorial.hatch_first_egg"] = { asset_id = 139981065146057, seconds = 5.758549 },
+        ["tutorial.hatch_first_egg.reminder"] = { asset_id = 90573884844018, seconds = 8.080544 },
+        ["tutorial.next_task.reminder"] = { asset_id = 115843100333341, seconds = 7.337506 },
+        ["combat_tutorial.next_task.reminder"] = { asset_id = 101490866774965, seconds = 11.888617 },
     },
 }

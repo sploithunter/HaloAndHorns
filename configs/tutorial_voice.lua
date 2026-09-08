@@ -14,9 +14,15 @@ return {
         tail_seconds = 0.4,
     },
     help_delay_seconds = 12,
-    reminder_delay_seconds = 25,
+    reminder_delay_seconds = 45,
+    reminder_repeat_seconds = 60,
+    reminder_fallback = {
+        angel = "tutorial.next_task.reminder",
+        demon = "combat_tutorial.next_task.reminder",
+    },
     event_cooldown_seconds = 8,
     reminders = {
+        ["tutorial.hatch_first_egg"] = "tutorial.hatch_first_egg.reminder",
         ["tutorial.farm_crystals"] = "tutorial.farm_crystals.reminder",
         ["tutorial.cast_power"] = "tutorial.cast_power.reminder",
     },
@@ -34,7 +40,7 @@ return {
     },
     presentation = {
         display_order = 140,
-        -- A small portrait beside the objective stays visible inside rooms and over teaching menus.
+        -- Portraits appear above teaching menus only; gameplay faces stay in the world.
         portrait_position = { x = 0.69, y = 0.22 },
         portrait_size = { x = 0.15, y = 0.30 },
         menu_position = { x = 0.66, y = 0.025 },
@@ -57,10 +63,12 @@ return {
         turn_degrees = 5,
         speech_turn_degrees = 2,
         loudness_scale = 500,
-        -- Outdoor apparition uses a fixed bearing; room/menu/occlusion switches to the portrait.
-        world_distance = 12,
-        world_side = 8,
-        world_height = 5,
+        -- Merge owns world size/distance and smoothing; the tutorial follows camera periphery.
+        world_angle_degrees = 45,
+        world_vertical_degrees = 8,
+        screen_edge_padding_degrees = 4,
+        wall_clearance = 1.5,
+        minimum_world_distance = 3,
         occlusion_scan_seconds = 0.15,
     },
 }

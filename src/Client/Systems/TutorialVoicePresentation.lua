@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local WATCHER = require(ReplicatedStorage.Configs.merge_egg_prototype).watcher
+local WatcherDirector = require(ReplicatedStorage.Shared.Game.MergeWatcherDirector)
 local Presentation = {}
 Presentation.__index = Presentation
 local function color(rgb)
@@ -52,7 +54,7 @@ function Presentation.new(config)
     label.TextSize = cfg.label_font_size
     label.Parent = card
     return setmetatable(
-        { config = config, gui = gui, view = view, card = card, label = label, scan = 0 },
+        { config = config, gui = gui, view = view, card = card, label = label },
         Presentation
     )
 end
@@ -65,6 +67,8 @@ function Presentation:hide()
         self.worldHead:Destroy()
     end
     self.head, self.worldHead, self.offset, self.speaker = nil, nil, nil, nil
+    self.worldInitialized, self.scan, self.worldDistance = nil, 0, nil
+    self.worldLight = nil
 end
 function Presentation:show(speaker)
     self:hide()
@@ -84,6 +88,14 @@ function Presentation:_loadFace()
     self.head.Parent = self.view
     self.worldHead = self.head:Clone()
     self.worldHead.Name = "TutorialVoiceApparition"
+    self.worldHead.Size *= WATCHER.size / cfg.face_size
+    self.theme = WatcherDirector.theme(WATCHER, self.config.faces[self.speaker].side)
+    self.worldLight = Instance.new("PointLight")
+    self.worldLight.Color = color(self.theme.light_color)
+    self.worldLight.Range = self.theme.light_range
+    self.worldLight.Brightness = 0
+    self.worldLight.Shadows = false
+    self.worldLight.Parent = self.worldHead
 end
 function Presentation:step(dt, age, loudness, forcePortrait)
     if not self.speaker then
@@ -96,6 +108,7 @@ function Presentation:step(dt, age, loudness, forcePortrait)
     local inMenu = Players.LocalPlayer:GetAttribute("StarterPetChoiceOpen") == true
         or Players.LocalPlayer:GetAttribute("LargeMenuOpen") == true
         or Players.LocalPlayer:GetAttribute("TutorialHandoffOpen") == true
+        or Players.LocalPlayer:GetAttribute("CombatTutorialPromptOpen") == true
     local position = inMenu and cfg.menu_position or cfg.portrait_position
     local size = inMenu and cfg.menu_size or cfg.portrait_size
     self.card.Position = UDim2.fromScale(position.x, position.y)
@@ -117,36 +130,74 @@ function Presentation:step(dt, age, loudness, forcePortrait)
     local player = Players.LocalPlayer
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     local camera = Workspace.CurrentCamera
-    local portrait = forcePortrait or not root or not camera
+    if not root or not camera then
+        self.gui.Enabled = false
+        self.worldHead.Parent = nil
+        return
+    end
+    local portrait = forcePortrait or inMenu
     if not portrait then
-        if not self.offset then
-            local forward = Vector3.new(camera.CFrame.LookVector.X, 0, camera.CFrame.LookVector.Z)
-            if forward.Magnitude < 0.01 then
-                forward = Vector3.new(0, 0, -1)
-            end
-            forward = forward.Unit
-            self.offset = forward * cfg.world_distance
-                + Vector3.new(forward.Z, 0, -forward.X) * cfg.world_side
-        end
-        local position = root.Position + self.offset + Vector3.yAxis * (cfg.world_height + bob)
-        self.worldHead.CFrame = CFrame.lookAt(position, root.Position) * CFrame.Angles(0, yaw, 0)
-        self.worldHead.Transparency = 1 - opacity
-        self.scan -= dt
+        local distance = math.sqrt(WATCHER.distance ^ 2 + WATCHER.side_offset ^ 2)
+        local viewport = camera.ViewportSize
+        local halfHorizontal = math.atan(
+            math.tan(math.rad(camera.FieldOfView) / 2) * viewport.X / math.max(1, viewport.Y)
+        )
+        local halfFace = math.atan(WATCHER.size / (2 * distance))
+        local angle = math.min(
+            math.rad(cfg.world_angle_degrees),
+            math.max(0, halfHorizontal - halfFace - math.rad(cfg.screen_edge_padding_degrees))
+        )
+        local direction = (
+            camera.CFrame.LookVector * math.cos(angle)
+            + camera.CFrame.RightVector * math.sin(angle)
+            + camera.CFrame.UpVector * math.tan(math.rad(cfg.world_vertical_degrees))
+        ).Unit
+        self.scan = (self.scan or 0) - dt
         if self.scan <= 0 then
             self.scan = cfg.occlusion_scan_seconds
             local params = RaycastParams.new()
             params.FilterType = Enum.RaycastFilterType.Exclude
+            params.RespectCanCollide = true
             params.FilterDescendantsInstances = { player.Character, self.worldHead }
-            local _, visible = camera:WorldToViewportPoint(position)
-            self.occluded = not visible
-                or Workspace:Raycast(
-                        camera.CFrame.Position,
-                        position - camera.CFrame.Position,
-                        params
+            local hit = Workspace:Raycast(camera.CFrame.Position, direction * distance, params)
+            self.worldDistance = hit
+                    and math.max(
+                        cfg.minimum_world_distance,
+                        hit.Distance / (1 + WATCHER.size / (2 * distance)) - cfg.wall_clearance
                     )
-                    ~= nil
+                or distance
         end
-        portrait = self.occluded == true
+        local actualDistance = self.worldDistance or distance
+        local targetSize = self.head.Size
+            * (WATCHER.size / cfg.face_size)
+            * (actualDistance / distance)
+        self.worldHead.Size = self.worldInitialized
+                and self.worldHead.Size:Lerp(targetSize, 1 - math.exp(-WATCHER.follow_rate * dt))
+            or targetSize
+        local position = camera.CFrame.Position
+            + direction * actualDistance
+            + camera.CFrame.UpVector * bob
+        local target = position
+        if self.worldInitialized then
+            local delta = target - self.worldHead.Position
+            position = self.worldHead.Position
+            if delta.Magnitude > 0 then
+                position += delta.Unit * math.min(
+                    delta.Magnitude * (1 - math.exp(-WATCHER.follow_rate * dt)),
+                    WATCHER.max_speed * dt
+                )
+            end
+            local rotation = self.worldHead.CFrame.Rotation:Lerp(
+                CFrame.lookAt(position, camera.CFrame.Position).Rotation,
+                1 - math.exp(-WATCHER.turn_rate * dt)
+            )
+            self.worldHead.CFrame = CFrame.new(position) * rotation
+        else
+            self.worldHead.CFrame = CFrame.lookAt(position, camera.CFrame.Position)
+        end
+        self.worldHead.Transparency = 1 - opacity
+        self.worldLight.Brightness = self.theme.light_brightness * opacity
+        self.worldInitialized = true
     end
     self.worldHead.Parent = not portrait and Workspace or nil
     self.gui.Enabled = portrait
