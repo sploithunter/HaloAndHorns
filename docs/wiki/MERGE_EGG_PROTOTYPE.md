@@ -97,7 +97,8 @@ retain the text-only encounter; a clip cannot start after the configured two-sec
 Loaded clips extend the encounter through the measured spoken duration plus its exit fade,
 bounded at thirteen seconds. Five supplied female Heaven clips are mapped in
 `voice.clips.heaven`, with source/provenance in `assets/audio/voices/heaven_watcher`.
-Voice volume is 1.2 (increased 50% from the first audition); background ducking is unchanged.
+Heaven voice volume is 1.2. Hell uses the theme override 2.34 (50% above its previous 1.56);
+background ducking and the user's Effects/master preferences are unchanged.
 Side switches clear the old face/audio/lighting and damage comparison without replaying old breaches.
 
 `leveling.onramp.activity_mult_by_level` now gives combat/mining raw-XP multipliers of

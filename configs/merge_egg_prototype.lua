@@ -85,7 +85,7 @@ return {
         source_path = { "GeneratedMap_MergeEggVoxel", "HellFaceGateTest", "HellFace" },
         template_name = "MergeWatcherTemplate",
         themes = {
-            hell = { voice = { volume = 1.56 } }, -- 30% above the shared 1.2 voice level
+            hell = { voice = { volume = 2.34 } }, -- 50% above the previous Hell level of 1.56
             heaven = {
                 source_path = { "GeneratedMap_MergeEggVoxel", "HeavenFaceGateTest", "HeavenFace" },
                 template_name = "MergeHeavenWatcherTemplate",
