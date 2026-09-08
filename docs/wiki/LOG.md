@@ -8702,3 +8702,8 @@ first-session cohort rates.
 - 2026-09-08: Began paired Heaven/Hell Merge tutorial narration against the current Wave 0–14 route. Includes optional multi-hatcher strategy advice; no deployment requirement changes. See [Merge voice scripts](../MERGE_TUTORIAL_VOICE_SCRIPT.md).
 
 - 2026-09-08: Implemented paired Merge Heaven/angel and Hell/demon tutorial narration (80 recordings), including optional multi-hatcher strategy advice, current wave/power route, progress-aware reminders, and owned-bay selection. Shared playback now preserves narration priority across Farm/Merge instances. Native Merge smoke covers 38 main step/side combinations; Farm regression covers 42. Caught and fixed the observer's top-level Luau register limit during real Studio startup. See TUTORIAL_VOICE.md and PR #494; asset-delivery validation remains tracked with the recordings.
+
+## 2026-09-08 — Crystal VFX lab pilot
+
+- Added a standalone Studio lab around a config-owned crystal eruption, using the same opt-in CombatFX route as the game. Live timing/shape/color editing and reversible timeline seeking use analytic geometry; a validated loopback bridge saves the Lua preset to disk. See [VFX Lab](VFX_LAB.md).
+- First full CI passed: 2,843 tests / 322 specs; save-bridge tests passed. Native visual and lifecycle verification follows before handoff.

@@ -1,0 +1,16 @@
+{
+  "name": "HaloAndHorns-VFX-Lab",
+  "servePort": 34873,
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": { "$properties": { "Gravity": 196.2 } },
+    "HttpService": { "$properties": { "HttpEnabled": true } },
+    "ReplicatedStorage": {
+      "Shared": { "$path": "../../src/Shared" },
+      "Configs": { "$path": "../../configs" },
+      "Packages": { "$path": "../../Packages" }
+    },
+    "ServerScriptService": { "VFXLabServer": { "$path": "server.server.lua" } },
+    "StarterPlayer": { "StarterPlayerScripts": { "VFXLabClient": { "$path": "client.client.lua" } } }
+  }
+}
