@@ -8747,3 +8747,5 @@ first-session cohort rates.
 - 2026-09-08 — Crossroads R4: authored voxel terrain grading (court 0, gardens/gallery +4, overlook -4, planted rim +12), stairs/ramps and retaining walls; native Merge gates at 30%; eight representative walking routes passed at speed 24. Saved isolated preview and grading diagram. Duplicate local Studio copies lock editing; reuse one instance. See [Realm Crossroads](REALM_CROSSROADS.md).
 
 - 2026-09-08 — Crossroads demon face: removed inherited tilted placement matrix and used upright mesh rotation with 180-degree yaw toward spawn. Visually verified, saved native preview, and resumed the same Studio walkthrough.
+
+- 2026-09-08 — Crossroads R5: accepted Pet Siege / SIEGE naming; Blender-derived extruded native lettering, paired heraldic crests, physical relief panels and proximity lighting in the existing preview. Two gate routes pass at speed 24; no art collisions or title GUIs; CI passes 2,842 tests. See [Realm Crossroads](REALM_CROSSROADS.md).

@@ -1,7 +1,50 @@
 # Realm Crossroads
 
-Status: R4 authored voxel terrain blockout saved and route-tested in isolated local Studio (2026-09-08).
+Status: R4 terrain plus R5 sculpted gate crests saved in the existing isolated Studio preview; first gate-art pass for visual review (2026-09-08).
 
+
+
+## R5: Pet Siege naming and architectural gate titles
+
+User accepted **Pet Siege** as the mode name, with **SIEGE** as the large gate title.
+The internal Merge place/key is unchanged. User rejected simple billboard-style labels
+and approved paired architectural crests with sculpted lettering, contrasting materials,
+and separately controllable lighting/ornaments. Blender and Meshy were authorized tools.
+
+The first built pass uses Blender 5.1.2 to sample Georgia Bold outlines, then authors
+extruded native CSG letter solids in Studio Edit. The sampled geometry is tracked in
+`configs/realm_crossroads_glyphs.json`; no font binary is redistributed. This gives exact
+spelling and editable native geometry without external asset uploads. Meshy was not needed
+for this precise typography pass. Each letter, border, ornament and light remains separate.
+
+- Farm & Fight: two-line bronze lettering in a pale stone field, gold border, halo and feathers.
+- Siege: large warm-metal lettering in a dark field, ember border, horn silhouette and crown.
+- Physical information panels: Grow / Hatch / Fight and Merge / Share / Defend, with relief
+  icons and extruded captions. Zero title/relief GUIs.
+- Crest mounting straps connect to the arch shoulders. Face key lights and crest lights use
+  restrained six-second pulses and an approach boost; static geometry never animates or
+  rebuilds at runtime. The engineering overlay is hidden for judging the arrival view.
+
+`configs/realm_crossroads_crests.json` names the font geometry and Edit-only art companion
+`tools/realm_crossroads/bake_crests.luau`. Blender generator:
+`Blender --background --factory-startup --python tools/realm_crossroads/build_crest_glyphs.py`.
+The seed preparer now embeds both bakers; require TerrainBake first, then CrestBake in Edit.
+Do not run the seed preparer over an existing saved authored preview. Crests may be rebuilt
+in the existing local preview; that replaces only `GateCrestR5` under each gate. Native
+letter templates are cached in ServerStorage. Copy edits that introduce new letters require
+regenerating the glyph config first.
+
+Verified in Play: both gate paths pass at speed 24; new art has zero colliders; 50/40 native
+solids in Farm & Fight/Siege; zero title GUIs; proximity light brightness changes; no console
+errors. Full repo CI passes 2,842 headless tests and native crest baker passes Selene.
+Saved in the same `RealmCrossroads-R4-Terrain.rbxl` local file, without opening another copy.
+`output/realm_crossroads/Gate-Crests-R5.jpg` records the arrival view. This is the first
+architectural art pass, not finished whole-island art or production routing integration.
+
+Native serialization exports over 100 KB exceed the MCP response cap. Store export text
+in temporary 50 KB StringValue chunks (a single StringValue caps at 200 KB), transfer all
+chunks, join/decompress locally, then wrap the native payload with `save_native_terrain.luau`.
+Remove the temporary export folder afterward; exclude it from its own serialization.
 
 ## R4: authored terrain and elevation walkthrough
 
