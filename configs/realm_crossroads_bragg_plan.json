@@ -53,8 +53,40 @@
       "source": "existing_backend",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "moon_blossom",
-      "display_name": "Moon Blossom Garden"
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
     },
     {
       "number": 3,
@@ -76,8 +108,40 @@
       "source": "existing_backend",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "ember_bloom",
-      "display_name": "Ember Bloom Garden"
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
     },
     {
       "number": 5,
@@ -99,8 +163,40 @@
       "source": "existing_backend",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "sunflower",
-      "display_name": "Sunburst Garden"
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
     },
     {
       "number": 7,
@@ -134,8 +230,40 @@
       "source": "existing_backend",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "moon_blossom",
-      "display_name": "Moon Blossom Garden"
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
     },
     {
       "number": 10,
@@ -157,8 +285,40 @@
       "source": "existing_backend",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "ember_bloom",
-      "display_name": "Ember Bloom Garden"
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
     },
     {
       "number": 12,
@@ -179,8 +339,40 @@
       "source": "future",
       "title_lines": [],
       "scope": "ALL REALMS",
-      "decoration": "sunflower",
-      "display_name": "Sunburst Garden"
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
     },
     {
       "number": 14,
@@ -284,27 +476,31 @@
         54,
         87,
         65
+      ],
+      "hell_stone": [
+        54,
+        43,
+        49
+      ],
+      "ember": [
+        244,
+        94,
+        35
       ]
     },
     "ring_segments": 64,
     "jet_count": 6,
     "jet_width": 0.13,
     "water_transparency": 0.3,
-    "garden_themes": {
-      "moon_blossom": {
-        "petal": "blossom_white",
-        "accent": "blossom_blue",
-        "petals": 6
-      },
-      "ember_bloom": {
-        "petal": "blossom_coral",
-        "accent": "blossom_gold",
-        "petals": 5
-      },
-      "sunflower": {
-        "petal": "blossom_gold",
-        "accent": "blossom_white",
-        "petals": 8
+    "existing_decor": {
+      "source_place": "Merge",
+      "template_folder": "CrossroadsExistingDecor",
+      "models": {
+        "field_flower_bush": 79157049690801,
+        "softglow_bloom": 86094061836178,
+        "crystal_bloom": 124705018772609,
+        "animal_skull": 72200416872370,
+        "hell_skull_lantern": 101289093060410
       }
     }
   }

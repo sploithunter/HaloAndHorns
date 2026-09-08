@@ -10,7 +10,7 @@ User accepted the R5 gate artwork and requested more Bragg capacity plus Siege-s
 rankings using existing leaderboard rules. The [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md)
 now has a +4 circular court, 116 studs across, with a low 18-stud fountain, fourteen
 2/1/3 alcoves, eight initial categories, and six reserve bays. Shared stairs/ramp landings
-avoid routing visitors through podiums. Geometry is built; production tracking remains pending. Eight podium groups have physical PREVIEW nameplates; six reserve bays at positions 2/4/6/9/11/13 alternate among the rankings, with moon-blossom, ember-bloom and sunflower gardens plus physical floral medallions. No FUTURE signage remains. A low halo-and-horns fountain anchors the center.
+avoid routing visitors through podiums. Geometry is built; production tracking remains pending. Eight podium groups have physical PREVIEW nameplates; six reserve bays at positions 2/4/6/9/11/13 alternate among the rankings, with three Heaven flower displays alternating with three Hell skull displays. These reuse Merge's field_flower_bush, softglow_bloom, crystal_bloom and horned animal_skull meshes, plus the catalog hell_skull_lantern. Improvised flowers and floral medallions were removed. No FUTURE signage remains. A low halo-and-horns fountain anchors the center.
 
 The source already saves **highest wave reached** when a wave starts. New Highest Wave
 Cleared and Total Waves Cleared require durable server-side settlement counters. User replaced
@@ -278,3 +278,5 @@ in the production game without reconciling Homeworld's forced spawn and tutorial
 
 See [Hall of Worlds](HALL_OF_WORLDS.md), [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md),
 and [Studio Workflow](STUDIO_WORKFLOW.md).
+
+Existing Bragg decor is cached in ServerStorage.CrossroadsExistingDecor, preserving the Merge mesh/textures. Model IDs, scaled heights, placements and yaw live in the Bragg config; the Edit baker loads catalog models only if the template cache is missing. All decorative mesh collisions are disabled.

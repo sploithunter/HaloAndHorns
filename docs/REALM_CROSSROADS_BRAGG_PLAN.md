@@ -1,6 +1,6 @@
 # Bragg Rotunda and Pet Siege rankings — R6 preview
 
-2026-09-08. **Geometry authored in the existing isolated Studio preview.** No production tracking, rankings, awards or winner avatars are connected. Gate artwork remains accepted. Eight groups show PREVIEW nameplates; six reserve alcoves hold floral gardens and physical botanical wall reliefs.
+2026-09-08. **Geometry authored in the existing isolated Studio preview.** No production tracking, rankings, awards or winner avatars are connected. Gate artwork remains accepted. Eight groups show PREVIEW nameplates; six reserve alcoves hold alternating Heaven flower and Hell skull displays using existing assets.
 
 ![R6 Bragg Rotunda layout](art/realm_crossroads/bragg-r6-plan.png)
 
@@ -33,7 +33,7 @@ Machine-readable art configuration: `configs/realm_crossroads_bragg_plan.json`. 
 | Total Waves Cleared | Sustained Siege play | New durable lifetime counter required |
 | Bosses Defeated — All Realms | Actual boss defeats across Farm & Fight and Pet Siege | New shared durable lifetime counter required |
 
-Reserve six bays for Range, Training Ground, the three gift-giver rankings, and a future category. These are now distributed at positions 2, 4, 6, 9, 11 and 13, between leaderboard groups. Moon-blossom, ember-bloom and sunflower gardens repeat as balanced pairs; sculpted medallions replace all FUTURE signage. Reserved board assignments remain metadata only. Their existing backend presence does not mean all six are ready for physical display. Preserve challenge round and gift scoring semantics individually.
+Reserve six bays for Range, Training Ground, the three gift-giver rankings, and a future category. These are now distributed at positions 2, 4, 6, 9, 11 and 13, between leaderboard groups. Three Heaven arrangements reuse Field Flower Bush, Softglow Bloom and Crystal Bloom; three Hell arrangements reuse Animal Skull and Skull Lantern. All improvised flower geometry and medallions were removed. No FUTURE signage remains. Reserved board assignments remain metadata only. Their existing backend presence does not mean all six are ready for physical display. Preserve challenge round and gift scoring semantics individually.
 
 Later candidates worth recording before granting a podium:
 

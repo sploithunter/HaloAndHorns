@@ -364,94 +364,61 @@ return function()
         else
             bay.TitlePlaque:Destroy()
             bay.TitleBorder:Destroy()
-            local theme = cfg.art.garden_themes[b.decoration]
-            local garden = make("Model", "FlowerGarden", bay)
+            local decor = cfg.art.existing_decor
+            local cache = game.ServerStorage:FindFirstChild(decor.template_folder)
+            if not cache then
+                cache = make("Folder", decor.template_folder, game.ServerStorage)
+            end
+            local garden = make("Model", "RealmDecor", bay)
             garden:SetAttribute("ReservedFor", b.name)
-            part(garden, "RaisedBed", { 14, 1.5, 4.6 }, base * C.new(0, 1.3, 0.2), "stone")
-            part(garden, "BedRim", { 14.4, 0.25, 5 }, base * C.new(0, 2.08, 0.2), "light_stone")
+            garden:SetAttribute("Theme", b.decoration)
+            local hell = b.decoration == "hell"
+            local stoneKey = hell and "hell_stone" or "light_stone"
+            if hell then
+                bay.RearWall.Color = color.hell_stone
+                bay.WallInset.Color = color.hell_stone
+            end
+            part(garden, "RaisedBed", { 14, 1.5, 5.4 }, base * C.new(0, 1.3, 0.2), stoneKey)
+            part(garden, "BedRim", { 14.4, 0.25, 5.8 }, base * C.new(0, 2.08, 0.2), stoneKey)
             part(
                 garden,
-                "Soil",
-                { 13.5, 0.16, 4.1 },
+                "BedSurface",
+                { 13.5, 0.16, 4.9 },
                 base * C.new(0, 2.24, 0.2),
-                "leaf_dark",
+                hell and "ink" or "leaf_dark",
                 "Ground"
             )
-            local function ball(name, size, cf, key)
-                local p = part(garden, name, size, cf, key, "SmoothPlastic", false)
-                local mesh = make("SpecialMesh", "SculptedForm", p)
-                mesh.MeshType = Enum.MeshType.Sphere
-                return p
-            end
-            -- Two staggered rows of sculpted blossoms with separate leaves and stems.
-            for row = 1, 2 do
-                for n = 1, 7 do
-                    local x = (n - 4) * 1.7 + (row - 1.5) * 0.35
-                    local z = (row - 1.5) * 1.75 + 0.2
-                    local h = 0.85 + ((n + row) % 3) * 0.3
-                    local stem = base * C.new(x, 2.3 + h / 2, z)
-                    part(garden, "Stem", { 0.12, h, 0.12 }, stem, "plant", "SmoothPlastic", false)
-                    for _, side in ipairs({ -1, 1 }) do
-                        ball(
-                            "Leaf",
-                            { 0.7, 0.18, 0.35 },
-                            base
-                                * C.new(x + side * 0.28, 2.5 + h * 0.25, z)
-                                * C.Angles(0, 0, side * 0.4),
-                            "plant"
-                        )
-                    end
-                    local flower = base * C.new(x, 2.3 + h, z) * C.Angles(0.18 * (n % 2), 0, 0.12)
-                    for k = 1, theme.petals do
-                        local angle = k * math.pi * 2 / theme.petals
-                        ball(
-                            "Petal",
-                            { 0.42, 0.18, 0.75 },
-                            flower * C.Angles(0, angle, 0) * C.new(0, 0, 0.36),
-                            n % 3 == 0 and theme.accent or theme.petal
-                        )
-                    end
-                    ball(
-                        "FlowerHeart",
-                        { 0.3, 0.22, 0.3 },
-                        flower * C.new(0, 0.07, 0),
-                        "blossom_gold"
-                    )
+            for _, spec in ipairs(b.props) do
+                local template = cache:FindFirstChild(spec.model)
+                if not template then
+                    local loaded = game:GetService("InsertService")
+                        :LoadAsset(decor.models[spec.model])
+                    loaded.Name = spec.model
+                    loaded.Parent = cache
+                    template = loaded
                 end
-            end
-            -- Large botanical wall medallion replaces placeholder text; all physical relief.
-            local relief = base * C.new(0, 9.2, -3.7)
-            for n = 1, 32 do
-                local a = n * math.pi * 2 / 32
-                local b2 = (n + 1) * math.pi * 2 / 32
-                line(
-                    garden,
-                    "MedallionRim",
-                    relief:PointToWorldSpace(V.new(math.cos(a) * 3.5, math.sin(a) * 3.5, 0)),
-                    relief:PointToWorldSpace(V.new(math.cos(b2) * 3.5, math.sin(b2) * 3.5, 0)),
-                    0.14,
-                    "trim",
-                    "Metal",
-                    false
-                )
-            end
-            for n = 1, theme.petals do
-                local a = n * math.pi * 2 / theme.petals
-                ball(
-                    "ReliefPetal",
-                    { 1.25, 3.1, 0.45 },
-                    relief * C.Angles(0, 0, a) * C.new(0, 1.55, 0.12),
-                    theme.petal
-                )
-            end
-            ball("ReliefHeart", { 1.5, 1.5, 0.65 }, relief * C.new(0, 0, 0.3), "trim")
-            for _, side in ipairs({ -1, 1 }) do
-                ball(
-                    "ReliefLeaf",
-                    { 3.2, 0.85, 0.3 },
-                    base * C.new(side * 3, 4.8, -3.8) * C.Angles(0, 0, side * 0.3),
-                    "plant"
-                )
+                local model = template:Clone()
+                model.Name = spec.model
+                model.Parent = garden
+                for _, item in ipairs(model:GetDescendants()) do
+                    if item:IsA("BasePart") then
+                        item.Anchored = true
+                        item.CanCollide = false
+                        item.CanTouch = false
+                        item.CanQuery = false
+                    elseif item:IsA("LuaSourceContainer") then
+                        item:Destroy()
+                    end
+                end
+                model:PivotTo(C.new())
+                model:ScaleTo(model:GetScale() * spec.height / model:GetExtentsSize().Y)
+                local box, size = model:GetBoundingBox()
+                local footing = C.new(box.Position.X, box.Position.Y - size.Y / 2, box.Position.Z)
+                local destination = base
+                    * C.new(unpack(spec.position))
+                    * C.Angles(0, math.rad(spec.yaw), 0)
+                model:PivotTo(destination * footing:Inverse() * model:GetPivot())
+                model:SetAttribute("SourceAsset", decor.models[spec.model])
             end
         end
     end

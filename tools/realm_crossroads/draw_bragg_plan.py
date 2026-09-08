@@ -72,8 +72,8 @@ for b in [x for x in C['bays'] if x['phase']=='initial']:
     y+=62
 text(735,711,'SIX RESERVE ALCOVES',23,strong=True)
 text(735,748,'Gardens in bays 2 / 4 / 6 / 9 / 11 / 13',18)
-text(735,779,'Moon blossoms, ember blooms and sunflowers',18)
-text(735,810,'Sculpted floral reliefs; no placeholder signs',18)
+text(735,779,'Three Heaven gardens / three Hell relic displays',18)
+text(735,810,'Existing flower, horned skull and lantern assets',18)
 text(735,865,'18-stud alcoves face inward around the fountain.',18)
 text(735,896,'Build room for 14 groups; populate 8 initially.',18)
 text(735,927,'Load nearby figures to preserve the avatar budget.',18)
