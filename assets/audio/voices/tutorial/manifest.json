@@ -25,7 +25,7 @@
     }
   },
   "source": "configs/tutorial_voice_lines.lua",
-  "source_text_sha256": "a6af636cb874c2a3265294f761d5f59c12f0df5ac9ba3ebf122c57eeed03806e",
+  "source_text_sha256": "f2b15ad3188449f1d494b6228cdb4a08a1445a74099f38b175c839a9d2243eab",
   "clips": {
     "D01": {
       "cue": "combat_tutorial.ready",
