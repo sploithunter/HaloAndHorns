@@ -94,3 +94,11 @@ and state transitions. `MergeTutorialVoiceSmoke` runs 38 main step/side combinat
 refreshes, side changes, shared priority, reminders, completion sequencing, world/menu
 presentation, and cleanup without modifying saved progress. The existing Farm smoke remains a
 regression gate (42 main steps).
+
+## Localization listening pilot — 2026-09-08
+
+[Spanish/Brazilian Portuguese pilot](../TUTORIAL_LOCALIZATION_VOICE_PILOT.md) contains one welcome,
+one instruction, and one reminder per character/language (12 recordings). Copy and generation
+settings live in `configs/voice_pilots/spanish_portuguese.json`; recordings are in
+`assets/audio/voices/localization_pilot/`. This is a listening experiment, not runtime language
+support. Keep the current English routing until the pilot is reviewed and full coverage is ready.

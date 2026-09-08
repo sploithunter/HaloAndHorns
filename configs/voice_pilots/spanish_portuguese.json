@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "status": "listening_pilot",
+  "model_id": "eleven_multilingual_v2",
+  "output_format": "mp3_44100_128",
+  "voices": {
+    "angel": "thfYL0Elyru2qqTtNQsE",
+    "demon": "NxGA8X3YhTrnf3TRQf6Q"
+  },
+  "voice_settings": {
+    "angel": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.25,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    },
+    "demon": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.3,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    }
+  },
+  "review": {
+    "target_accents": {
+      "es": "Neutral Latin American Spanish",
+      "pt-BR": "Brazilian Portuguese"
+    },
+    "engine_volume_changes": false,
+    "reel_pause_seconds": 1,
+    "reel_loudness_lufs": -18,
+    "reel_true_peak_dbtp": -1.5,
+    "notes": [
+      "Character-led adaptations, not literal UI instructions.",
+      "Waycoins remains the currency brand; listen for pronunciation.",
+      "Earth Egg uses the existing localized UI name.",
+      "The English meanings are back-translations for review.",
+      "No runtime locale routing or Roblox uploads in this pilot."
+    ]
+  },
+  "sections": [
+    {
+      "id": "es_angel",
+      "locale": "es",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "ES_A01",
+          "cue": "pilot.es.angel.welcome",
+          "source_cue": "tutorial.choose_companion",
+          "usage": "welcome",
+          "locale": "es",
+          "text": "Ahí estás, pequeña luz. Vamos a elegir a tu primer compañero. Un conejito, un osito, un perrito o un gatito... ¿quién te acompañará en esta aventura?",
+          "english_meaning": "There you are, little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty... who will join you on this adventure?"
+        },
+        {
+          "id": "ES_A02",
+          "cue": "pilot.es.angel.instruction",
+          "source_cue": "merge_tutorial.heaven.after_setup",
+          "usage": "instruction",
+          "locale": "es",
+          "text": "Tus guardianes están listos. Prueba repartir tu defensa entre más incubadoras. Dos escuadrones pequeños pueden ayudarte más que un solo huevo poderoso. Tú decides.",
+          "english_meaning": "Your guardians are ready. Try spreading your defense across more hatchers. Two small squads can help more than one powerful egg. You decide."
+        },
+        {
+          "id": "ES_A03",
+          "cue": "pilot.es.angel.reminder",
+          "source_cue": "tutorial.hatch_first_egg.reminder",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Tu próximo amiguito te está esperando. Sigue el camino brillante hasta el Huevo de Tierra y abre uno. Yo estaré aquí.",
+          "english_meaning": "Your next little friend is waiting. Follow the glowing path to the Earth Egg and open one. I’ll be right here."
+        }
+      ]
+    },
+    {
+      "id": "es_demon",
+      "locale": "es",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "ES_D01",
+          "cue": "pilot.es.demon.welcome",
+          "source_cue": "merge_tutorial.hell.collect_setup",
+          "usage": "welcome",
+          "locale": "es",
+          "text": "Así que este rinconcito del Infierno es tuyo. Recoge las Waycoins del camino brillante y luego la gema. Hasta un desastre anunciado necesita un presupuesto inicial.",
+          "english_meaning": "So this little corner of Hell is yours. Collect the Waycoins along the glowing path, then the gem. Even a disaster waiting to happen needs a starting budget."
+        },
+        {
+          "id": "ES_D02",
+          "cue": "pilot.es.demon.instruction",
+          "source_cue": "merge_tutorial.hell.after_setup",
+          "usage": "instruction",
+          "locale": "es",
+          "text": "¿Todos los huevos en una sola canasta? Qué clásico. Prueba poner un huevo en otra incubadora. Dos escuadrones pequeños pueden ayudarte más que un solo huevo poderoso. Tu defensa, tu decisión.",
+          "english_meaning": "All your eggs in one basket? How classic. Try putting an egg in another hatcher. Two small squads can help more than one powerful egg. Your defense, your decision."
+        },
+        {
+          "id": "ES_D03",
+          "cue": "pilot.es.demon.reminder",
+          "source_cue": "merge_tutorial.hell.reminder",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Tu siguiente tarea sigue esperando junto al camino brillante. Sin prisa. Los enemigos solo tienen toda la eternidad por delante.",
+          "english_meaning": "Your next task is still waiting by the glowing path. No rush. The enemies only have all eternity ahead of them."
+        }
+      ]
+    },
+    {
+      "id": "pt-BR_angel",
+      "locale": "pt-BR",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "BR_A01",
+          "cue": "pilot.pt-BR.angel.welcome",
+          "source_cue": "tutorial.choose_companion",
+          "usage": "welcome",
+          "locale": "pt-BR",
+          "text": "Aí está você, minha luzinha. Vamos escolher seu primeiro companheiro. Um coelhinho, um ursinho, um cachorrinho ou um gatinho... quem vai acompanhar você nesta aventura?",
+          "english_meaning": "There you are, my little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty... who will join you on this adventure?"
+        },
+        {
+          "id": "BR_A02",
+          "cue": "pilot.pt-BR.angel.instruction",
+          "source_cue": "merge_tutorial.heaven.after_setup",
+          "usage": "instruction",
+          "locale": "pt-BR",
+          "text": "Seus guardiões estão prontos. Experimente espalhar sua defesa por mais incubadoras. Dois esquadrões pequenos podem ajudar mais do que um único ovo poderoso. Você escolhe.",
+          "english_meaning": "Your guardians are ready. Try spreading your defense across more hatchers. Two small squads can help more than a single powerful egg. You choose."
+        },
+        {
+          "id": "BR_A03",
+          "cue": "pilot.pt-BR.angel.reminder",
+          "source_cue": "tutorial.hatch_first_egg.reminder",
+          "usage": "reminder",
+          "locale": "pt-BR",
+          "text": "Seu próximo amiguinho está esperando. Siga o caminho brilhante até o Ovo da Terra e abra um. Vou estar bem aqui.",
+          "english_meaning": "Your next little friend is waiting. Follow the glowing path to the Earth Egg and open one. I’ll be right here."
+        }
+      ]
+    },
+    {
+      "id": "pt-BR_demon",
+      "locale": "pt-BR",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "BR_D01",
+          "cue": "pilot.pt-BR.demon.welcome",
+          "source_cue": "merge_tutorial.hell.collect_setup",
+          "usage": "welcome",
+          "locale": "pt-BR",
+          "text": "Então este cantinho do Inferno é seu. Recolha as Waycoins pelo caminho brilhante e depois a gema. Até um desastre anunciado precisa de um orçamento inicial.",
+          "english_meaning": "So this little corner of Hell is yours. Collect the Waycoins along the glowing path, then the gem. Even a disaster waiting to happen needs a starting budget."
+        },
+        {
+          "id": "BR_D02",
+          "cue": "pilot.pt-BR.demon.instruction",
+          "source_cue": "merge_tutorial.hell.after_setup",
+          "usage": "instruction",
+          "locale": "pt-BR",
+          "text": "Todos os ovos na mesma cesta? Que clássico. Experimente colocar um ovo em outra incubadora. Dois esquadrões pequenos podem ajudar mais do que um único ovo poderoso. Sua defesa, sua decisão.",
+          "english_meaning": "All your eggs in one basket? How classic. Try putting an egg in another hatcher. Two small squads can help more than a single powerful egg. Your defense, your decision."
+        },
+        {
+          "id": "BR_D03",
+          "cue": "pilot.pt-BR.demon.reminder",
+          "source_cue": "merge_tutorial.hell.reminder",
+          "usage": "reminder",
+          "locale": "pt-BR",
+          "text": "Sua próxima tarefa continua esperando perto do caminho brilhante. Sem pressa. Os inimigos só têm a eternidade inteira pela frente.",
+          "english_meaning": "Your next task is still waiting near the glowing path. No rush. The enemies only have all eternity ahead of them."
+        }
+      ]
+    }
+  ]
+}
