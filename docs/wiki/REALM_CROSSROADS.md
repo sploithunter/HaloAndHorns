@@ -4,6 +4,31 @@ Status: R4 terrain, R5 sculpted gates and R6 Bragg Rotunda authored in the exist
 
 
 
+## R7: side activities — map only
+
+The hub will live inside Farm & Fight. User explicitly deferred gameplay integration.
+The two +4 garden terraces now contain a west **Coin Garden** and east **Patrol Grove**:
+
+- Coin Garden: 42×90 open drop lawn, perimeter circulation, static Hall coin examples,
+  original Hall stand and Wayfinder egg as display-only specimens under an open pergola.
+  The physical title is **Egg of the Week**; no weekly schedule, roster or price is set yet.
+- Patrol Grove: 42×102 combat footprint, low staggered cover, four invisible route markers,
+  rear encounter anchor and Heaven/Hell banner ruins. Southern gathering terrace and benches
+  keep waiting players outside the marked combat footprint. Temporary alliances remain
+  the existing gameplay system to bind later; none are simulated by the map.
+- Both retain the existing +4 garden stairs and 1:8 ramps. Both stair and ramp routes, plus the egg-pavilion approach, passed walking checks at speed 24. Existing flowers, saplings, skulls,
+  quartz and bone rocks decorate edges instead of replacing the playable floor.
+- `configs/realm_crossroads_activities.json` names `tools/realm_crossroads/bake_activities.luau`.
+  `ServerStorage.CrossroadsActivityAssets` caches original textured geometry from Farm & Fight
+  and Merge. Author after the terrain/crest/Bragg passes. Geometry is not generated in Play.
+- Markers have `IntendedBinding` metadata only, no active gameplay tags. All example assets
+  are static, noncolliding and stripped of scripts/prompts/tags. Bind Hall-style shared
+  BreakableSpawner/DropService/Magnet, existing EggStand hatch logic, bounded patrols and
+  RealmAllianceService when integrating into Farm & Fight. Do not revive Hall entry routing.
+- Patrol bounds and alliance engagement radii need an explicit integration review: current
+  realm engagement radii are much larger than this compact garden. Keep recruitment and
+  chase/leash behavior inside the activity; do not pull hub bystanders into fights.
+
 ## R6: Bragg Rotunda and Siege ranking plan
 
 User accepted the R5 gate artwork and requested more Bragg capacity plus Siege-specific

@@ -8757,3 +8757,5 @@ first-session cohort rates.
 - 2026-09-08 — Bragg visual refinement: distributed six reserve alcoves between eight ranking groups, replaced FUTURE signs/topiary with three paired flower-garden themes and sculpted botanical wall medallions. Reserved category bindings remain metadata; same local Studio preview, gate/terrain dimensions unchanged.
 
 - 2026-09-08 — Replaced improvised Bragg flower geometry with existing Merge meshes/textures: Field Flower Bush, Softglow Bloom and Crystal Bloom in three Heaven bays; Animal Skull with Skull Lantern pairs in three Hell bays. Preserved interleaved positions; visually verified skull facing and asset scale. Asset IDs/placements remain in config; native templates cached in preview.
+
+- 2026-09-08 — Crossroads R7 side areas authored: west Coin Garden with Hall coin specimens/weekly-egg pavilion, east Patrol Grove with bounded open arena, cover, banner ruins and gathering terrace. Existing mesh assets reused. User clarified map-only scope inside future Farm & Fight integration; hooks are inert metadata and no gameplay code was pulled in. See [Realm Crossroads](REALM_CROSSROADS.md).

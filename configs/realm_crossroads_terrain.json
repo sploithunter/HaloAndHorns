@@ -4,6 +4,7 @@
   "bake_source": "tools/realm_crossroads/bake_terrain.luau",
   "appearance_source": "configs/realm_crossroads.json",
   "gate_source": "configs/realm_crossroads_gate_study.json",
+  "activities_source": "configs/realm_crossroads_activities.json",
   "bragg_source": "configs/realm_crossroads_bragg_plan.json",
   "crest_source": "configs/realm_crossroads_crests.json",
   "movement_source": "configs/places.lua roles.merge.walk_speed",

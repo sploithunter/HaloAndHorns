@@ -15,6 +15,9 @@ chars.update(''.join(word for t in cfg['themes'] for word in t['captions']))
 bragg = json.loads((ROOT / 'configs/realm_crossroads_bragg_plan.json').read_text())
 chars.update(''.join(''.join(b.get('title_lines',[]))+b.get('scope','') for b in bragg['bays']))
 chars.update('BRAGG CHAMPIONS UNCLAIMED PREVIEW FUTURE 123')
+activities = ROOT / 'configs/realm_crossroads_activities.json'
+if activities.exists():
+    chars.update(''.join(json.loads(activities.read_text())['copy']))
 glyphs = {}
 for char in sorted(chars - {' '}):
     curve = bpy.data.curves.new('Glyph_' + char, 'FONT')
