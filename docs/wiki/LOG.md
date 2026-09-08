@@ -8710,3 +8710,11 @@ first-session cohort rates.
 2026-09-08 — Full tutorial voice localization (PR #495): user approved the Spanish/Brazilian Portuguese pilot. Authored all 344 localized Farm & Fight and Merge performances and reused the 12 approved MP3s exactly; all source recordings pass decode, cue/voice/text/hash/alignment and signal checks (4,001.634 seconds total). Shared playback follows TutorialLocaleId, preserves current completion/reminder flags and the next instruction across language changes, and falls back per cue to English with failed-asset caching. Existing gain/presentation and Auto/English preference are reused without new server work. Added full listening library, locale coverage/lifecycle tests and an actual-Sound delivery checker. Studio delivery checks must parent the Sound to SoundService: an unparented Sound can return from PreloadAsync without fetching.
 2026-09-08 — Localization verification: `mise run ci` passes 2,842 tests / 322 specs. Native Merge Play passes Farm voice smoke (42 main steps), Merge voice smoke (38 main step/side combinations), and locale smoke (both tracks / 10 switches). All 344 uploads have distinct group-owned IDs; first full Studio delivery check loads 306/344. All 38 remaining failures explicitly report “Asset has not been reviewed.” A real unavailable Spanish combat cue successfully falls back to its English recording and caches the failed asset. Preserve IDs while moderation completes.
 2026-09-08 — Localization delivery recheck: 339/344 clips now load (160/160 Merge; 179/184 Farm & Fight). The five remaining Farm & Fight recordings are still awaiting Roblox review; original IDs and tested English fallback are retained. The full listening page serves all 344 original local MP3s regardless of Roblox review status.
+
+## 2026-09-08 — Realm Crossroads arrival courtyard blockout
+
+- Recorded the approved voxel courtyard direction: Farm & Fight / Merge entrances beside spawn,
+  angel/demon landmarks, rear champions podium arcade, and future-mode gardens.
+- Added a config-driven offline bake for a 240 × 220-stud local Roblox walkthrough and a
+  spawn-neutral import model. No production place, profile, spawn, or travel changes.
+- See [Realm Crossroads](REALM_CROSSROADS.md) for scale, rebuild command, and integration limits.

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "root_name": "RealmCrossroads",
+  "footprint": [240, 220],
+  "walk_speed": 16,
+  "spawn": [0, 1, 82],
+  "palette": {
+    "stone": [218, 211, 192], "trim": [244, 232, 202],
+    "gold": [192, 151, 67], "rock": [107, 114, 105],
+    "grass": [111, 142, 73], "leaves": [74, 112, 63],
+    "bark": [105, 77, 48], "water": [77, 168, 177],
+    "ember": [223, 120, 63], "board": [38, 49, 54], "white": [255, 255, 255]
+  },
+  "terrain": {"cell": 20, "base_depth": 12, "rim_height": 12, "back_height": 20},
+  "paths": {"width": 20, "thickness": 0.3},
+  "spawn_disk": {"radius": 13, "segments": 32},
+  "gates": [
+    {"key": "FarmAndFight", "label": "FARM & FIGHT", "subtitle": "Collect · hatch · battle", "position": [-48, 0, 38], "yaw": 47, "color": "water", "avatar": "angel"},
+    {"key": "Merge", "label": "MERGE", "subtitle": "Merge · build · defend", "position": [48, 0, 38], "yaw": -47, "color": "ember", "avatar": "demon"}
+  ],
+  "gate_geometry": {"opening_width": 18, "opening_height": 22, "pillar_width": 6, "depth": 7, "sign_height": 6, "avatar_height": 20, "landing_depth": 22},
+  "avatars": {
+    "angel": {"source": "Merge Edit: HeavenFaceGateTest.HeavenFace; tutorial_voice.faces.angel", "mesh": "rbxassetid://108643101634541", "texture": "rbxassetid://83897218968240", "size": [11.867157, 14, 11.179547], "rotation": [1,0,0,0,1,0,0,0,1], "color": [255,255,255]},
+    "demon": {"source": "Merge Edit: HellFaceGateTest.HellFace; tutorial_voice.faces.demon", "mesh": "rbxassetid://80443336776475", "texture": "rbxassetid://87713201635638", "size": [60,58.773304,48.3461], "rotation": [0,0.7071043,-0.7071043,0,0.7071043,0.7071044,1,0,0], "color": [163,162,165]}
+  },
+  "landmark": {"position": [0,0,-12], "radius": 13, "height": 13, "halo_radius": 6, "segments": 24},
+  "gallery": {"z": -78, "width": 160, "depth": 28, "height": 30, "alcove_centers": [-60,-20,20,60], "labels": ["FARM & FIGHT · I", "FARM & FIGHT · II", "MERGE · I", "MERGE · II"], "podium_heights": [3,5,2], "podium_ranks": [2,1,3], "podium_spacing": 9},
+  "gardens": [{"position": [-87,0,-29], "label": "FUTURE REALM"}, {"position": [87,0,-29], "label": "FUTURE REALM"}],
+  "trees": [[-100,8,70],[100,8,70],[-100,8,12],[100,8,12],[-104,8,-56],[104,8,-56],[-80,0,-42],[80,0,-42]],
+  "tree_geometry": {"trunk_width": 3,"trunk_height": 10,"crown_width": 12,"crown_height": 10},
+  "lighting": {"clock_time": 14, "brightness": 2, "ambient": [150,155,166], "outdoor_ambient": [180,181,175]},
+  "preview": {"camera_position": [195,175,240], "camera_target": [0,0,-8], "reset_label": "Return to spawn", "notice": "REALM CROSSROADS · WALKABLE BLOCKOUT\n240 × 220 studs · entrances and rankings are previews"}
+}
