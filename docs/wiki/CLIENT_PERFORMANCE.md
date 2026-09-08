@@ -394,3 +394,7 @@ baseline, so these are current-state readings, not a controlled percentage perfo
 
 See [Architecture](ARCHITECTURE.md), [Merge](MERGE_EGG_PROTOTYPE.md), and
 [Studio Workflow](STUDIO_WORKFLOW.md).
+
+## 2026-09-08 — Flora ownership and rigid trees
+
+Flora sway excludes authored hatchers (`UIanchor`), `EggId`, `EggStand`/`EggDisplay` tags and Merge egg markers, including their descendants, before considering flora opt-in. Farm & Fight stands named `Grass` previously matched the plant-name fallback. `flora.sway.tree_degrees` is zero: rigid tree models remain stationary rather than tilting their trunks and roots. Small plants, cacti and explicitly typed fabric keep their configured sway. Zero-amplitude models do not enter the motion registry.

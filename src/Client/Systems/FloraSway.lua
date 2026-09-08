@@ -60,6 +60,23 @@ local function isSoftCandidate(inst: Instance): boolean
     if not inst:IsA("Model") or not inst.Parent then
         return false
     end
+    -- Farm & Fight stands are named for their biome (including "Grass"). Exclude
+    -- the authored stand before eggs spawn, plus every descendant of a hatch target.
+    -- Gameplay ownership takes precedence even over an accidental flora opt-in tag.
+    local ancestor: Instance? = inst
+    while ancestor and ancestor ~= Workspace do
+        if
+            ancestor:GetAttribute("EggId") ~= nil
+            or CollectionService:HasTag(ancestor, "EggStand")
+            or CollectionService:HasTag(ancestor, "EggDisplay")
+            or ancestor:GetAttribute("MergeEggObjective") == true
+            or ancestor:GetAttribute("MergeEggBoardEgg") == true
+            or ancestor:IsA("Model") and ancestor:FindFirstChild("UIanchor") ~= nil
+        then
+            return false
+        end
+        ancestor = ancestor.Parent
+    end
     if inst:GetAttribute("FloraSway") == false then
         return false
     end
@@ -78,17 +95,21 @@ local function remember(model: Model)
     if tracked[model] then
         return
     end
+    local amplitude = FloraSwayMath.amplitude(
+        model.Name,
+        model:GetAttribute("FloraKind") or model:GetAttribute("Kind"),
+        config
+    )
+    if amplitude <= 0 then
+        return
+    end
     local box, size = model:GetBoundingBox()
     local rest = model:GetPivot()
     tracked[model] = {
         model = model,
         rest = rest,
         origin = Vector3.new(box.Position.X, box.Position.Y - size.Y * 0.5, box.Position.Z),
-        amplitude = FloraSwayMath.amplitude(
-            model.Name,
-            model:GetAttribute("FloraKind") or model:GetAttribute("Kind"),
-            config
-        ),
+        amplitude = amplitude,
         phase = FloraSwayMath.phase(rest.Position.X, rest.Position.Z),
         active = false,
     }
