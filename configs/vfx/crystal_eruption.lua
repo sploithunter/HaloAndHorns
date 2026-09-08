@@ -1,0 +1,20 @@
+-- Saved by the VFX Lab. Art and timing are owned by this preset.
+return {
+    version = 1,
+    count = 13,
+    radius = 4.5,
+    height = 7.5,
+    width = 2,
+    lean = 28,
+    anticipation = 0.55,
+    rise = 0.3,
+    hold = 0.65,
+    fade = 0.8,
+    stagger = 0.25,
+    ring_speed = 15,
+    spark_count = 24,
+    seed = 137,
+    primary = { 152, 101, 255 },
+    accent = { 70, 221, 255 },
+    core = { 231, 215, 255 },
+}

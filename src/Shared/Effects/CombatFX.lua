@@ -981,6 +981,13 @@ function CombatFX.play(spec, ctx)
     ctx = type(ctx) == "table" and ctx or {}
     local pattern = spec.pattern
 
+    -- Opt-in authored VFX preset. Existing effects and damage routing are unchanged.
+    if spec.vfx == "crystal_eruption" and (pattern == "impact" or pattern == "st_aoe") then
+        local target = ctx.target and partOf(ctx.target)
+        local point = ctx.point or (target and target.Position)
+        return require(script.Parent.CrystalEruption).play(point, ctx.vfxPreview)
+    end
+
     if pattern == "attached" then
         return CombatFX.attach(ctx.target or ctx.caster, spec)
     end

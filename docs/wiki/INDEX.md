@@ -16,6 +16,7 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
   code:** IDs, art, and tuning live in `configs/` only. Never hardcode
   model/asset numbers in `src/`.
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
+- [Crystal VFX Lab](VFX_LAB.md) — native effect preview, live editing, config save, and CombatFX pilot.
 - [Client Performance](CLIENT_PERFORMANCE.md) — measured Merge baseline, nearby adaptive shadows,
   persisted graphics controls, and next performance targets.
 - [Merge Autoplay](MERGE_AUTOPLAY.md) — spare-bay offline workers, pass pool, account fencing,
