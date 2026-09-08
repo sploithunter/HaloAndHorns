@@ -239,6 +239,7 @@ local SCHEMAS = {
     showcase = schema({ place_ids = "table", apply = "function" }),
     soul = schema({ delta_per_conquest = "number", range = "table", bands = "table" }),
     sounds = schema({ egg_hatch_pop = "table", egg_roll_snare = "table" }),
+    audio = schema({ voices = "table", buses = "table" }),
     starter_pets = schema({
         version = "number",
         enabled = "boolean",

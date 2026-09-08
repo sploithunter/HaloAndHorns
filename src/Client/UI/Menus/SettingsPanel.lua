@@ -24,6 +24,8 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
+local VoiceVolume = require(ReplicatedStorage.Shared.Effects.VoiceVolume)
+local voiceConfig = ConfigLoader:LoadConfig("audio").voices
 local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
 local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
@@ -193,6 +195,7 @@ function SettingsPanel.new()
             masterVolume = 1.0,
             effectsVolume = 1.0,
             musicVolume = 1.0,
+            voicesVolume = voiceConfig.default_level,
             uiSoundsEnabled = true,
         },
         graphics = {
@@ -309,7 +312,8 @@ function SettingsPanel:_createSliderSetting(
     maxValue,
     layoutOrder,
     callback,
-    step
+    step,
+    endpointSnap
 )
     local theme = uiConfig.helpers.get_theme(uiConfig)
 
@@ -397,6 +401,14 @@ function SettingsPanel:_createSliderSetting(
             0,
             1
         )
+        -- Make mute/max reachable on touch without requiring a sub-pixel edge hit.
+        if endpointSnap then
+            if percent <= endpointSnap then
+                percent = 0
+            elseif percent >= 1 - endpointSnap then
+                percent = 1
+            end
+        end
         setSliderValue(minValue + (maxValue - minValue) * percent)
     end
 
@@ -657,6 +669,22 @@ function SettingsPanel:_createAudioSettings()
         end
     )
 
+    self.settings.audio.voicesVolume =
+        VoiceVolume.level(self.settings.audio.voicesVolume, voiceConfig)
+    self:_createSliderSetting(
+        voiceConfig.label,
+        self.settings.audio.voicesVolume,
+        voiceConfig.min_level,
+        voiceConfig.max_level,
+        4.5,
+        function(value)
+            self.settings.audio.voicesVolume = value
+            self:_applyAudioSettings()
+        end,
+        voiceConfig.slider_step,
+        voiceConfig.endpoint_snap_fraction
+    )
+
     self:_createToggleSetting("UI Sounds", self.settings.audio.uiSoundsEnabled, 5, function(value)
         self.settings.audio.uiSoundsEnabled = value
         self:_applyAudioSettings()
@@ -669,7 +697,7 @@ end
 
 -- Push the current audio settings onto the live SoundGroup bus volumes. Master is a
 -- multiplier across every bus (SoundService has no MasterVolume); all game sound routes
--- through these three buses, so master scales effects + music + UI together.
+-- through these buses, so master scales effects + music + voices + UI together.
 function SettingsPanel:_applyAudioSettings()
     local audio = self.settings.audio
     AudioPrefs.apply(audio)

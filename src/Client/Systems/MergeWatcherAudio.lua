@@ -15,7 +15,7 @@ function Mixer.new(config)
         group.Name = config.group_name
         group.Parent = SoundService
     end
-    -- Mirror the user's ordinary Effects/master preference, but not its ducking effect.
+    -- Mirror the configured Voices/master preference, separately from background ducking.
     group.Volume = sourceBus.Volume
     sourceBus:GetPropertyChangedSignal("Volume"):Connect(function()
         group.Volume = sourceBus.Volume

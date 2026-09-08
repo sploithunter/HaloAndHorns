@@ -144,7 +144,7 @@ return {
         voice = {
             enabled = true,
             volume = 1.2,
-            bus = "effects",
+            bus = "voices",
             group_name = "WatcherVoice",
             ducking = {
                 fade_in_seconds = 0.15,

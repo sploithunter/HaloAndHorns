@@ -13,6 +13,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+local VoiceVolume = require(ReplicatedStorage.Shared.Effects.VoiceVolume)
+local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
+local voiceConfig = ConfigLoader:LoadConfig("audio").voices
 
 local AudioPrefs = {}
 local loadedAudio = nil -- last known persisted table (nil until the bus answers)
@@ -41,6 +44,7 @@ function AudioPrefs.apply(audio)
     local master = tonumber(audio.masterVolume) or 1
     SoundGroups.setVolume("effects", (tonumber(audio.effectsVolume) or 1) * master)
     SoundGroups.setVolume("music", (tonumber(audio.musicVolume) or 1) * master)
+    SoundGroups.setVolume("voices", VoiceVolume.gain(audio.voicesVolume, voiceConfig) * master)
     SoundGroups.setVolume("ui", (audio.uiSoundsEnabled ~= false and 1 or 0) * master)
 end
 
