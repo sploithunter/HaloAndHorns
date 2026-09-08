@@ -8698,3 +8698,5 @@ first-session cohort rates.
 - 2026-09-08: Integrated Farm & Fight angel/demon tutorial narration and local faces, group-owned audio bindings, Voices mix, course/replay lifecycle, and conditional help. Added a separate starter-companion welcome before the egg lesson after live feedback. See [Tutorial voices](TUTORIAL_VOICE.md).
 
 - 2026-09-08: Tutorial follow-up: starter welcome now precedes the egg lesson; active lessons offer idle encouragement after 45 seconds and every 60 idle seconds thereafter. Gameplay faces follow the camera periphery using Merge motion/distance; portraits are restricted to menus. Classified the bounded face-asset retry backoff for CI.
+
+- 2026-09-08: Began paired Heaven/Hell Merge tutorial narration against the current Wave 0–14 route. Includes optional multi-hatcher strategy advice; no deployment requirement changes. See [Merge voice scripts](../MERGE_TUTORIAL_VOICE_SCRIPT.md).

@@ -63,3 +63,11 @@ The outer 3% of the voice slider snaps to mute/max for reliable touch endpoints.
 Master scales voices; Effects and Music remain independent. Existing angel/demon Watcher
 speech now mirrors the `voices` bus, preserving its 1.2/2.34 per-character base levels and
 background ducking. Muting voices releases ducking. Tutorial playback uses this same bus.
+
+## Merge narration — implementation in progress (2026-09-08)
+
+[Paired Heaven/Hell scripts](../MERGE_TUTORIAL_VOICE_SCRIPT.md) cover the current Wave 0–14
+onboarding, Auto Collector branches, skippable egg improvement, power menu help, and idle
+encouragement. Both scripts advise spreading defenders across hatchers without making it a gate.
+The owned bay’s replicated side selects the speaker; shared playback/presentation and Voices
+preferences are reused. Recording, delivery, and runtime validation are in progress.

@@ -13,17 +13,18 @@ local Narrator = {}
 local Player = {}
 Player.__index = Player
 local singleton
+local speakingOwners = {}
 function Narrator.new(options)
     options = options or {}
     local config = options.config or require(ReplicatedStorage.Configs.tutorial_voice)
-    local lines = require(ReplicatedStorage.Configs.tutorial_voice_lines)
+    local lines = options.lines or require(ReplicatedStorage.Configs.tutorial_voice_lines)
     local watcher = require(ReplicatedStorage.Configs.merge_egg_prototype).watcher
     local audioConfig = table.clone(watcher.voice)
     audioConfig.group_name = config.audio.group_name
     local self = setmetatable({
         config = config,
         catalog = Director.catalog(lines),
-        assets = require(ReplicatedStorage.Configs.tutorial_voice_assets).clips,
+        assets = options.assets or require(ReplicatedStorage.Configs.tutorial_voice_assets).clips,
         watcher = watcher,
         volumes = lines.playbackVolumeSource,
         mixer = Mixer.new(audioConfig),
@@ -47,7 +48,8 @@ function Player:_stop()
     self.current = nil
     self.mixer:setSpeaking(false)
     self.presentation:hide()
-    Players.LocalPlayer:SetAttribute("TutorialNarrationActive", false)
+    speakingOwners[self] = nil
+    Players.LocalPlayer:SetAttribute("TutorialNarrationActive", next(speakingOwners) ~= nil)
 end
 function Player:cancel()
     self:_stop()
@@ -82,6 +84,7 @@ function Player:_play(cue, completion)
     self.seen[cue] = true
     self.presentation:show(line.speaker)
     self.presentation.gui:SetAttribute("Cue", cue)
+    speakingOwners[self] = true
     Players.LocalPlayer:SetAttribute("TutorialNarrationActive", true)
     task.spawn(function()
         pcall(function()
@@ -89,6 +92,32 @@ function Player:_play(cue, completion)
         end)
     end)
     return true
+end
+-- External tutorial tracks share playback, queue bounds, presentation and reminders.
+function Player:updateCueProgress(progress)
+    if self.cueProgress ~= progress then
+        self.cueProgress = progress
+        self.idleSeconds, self.hasReminded = 0, false
+        if self.current and self.current.reminder then
+            self:_stop()
+        end
+    end
+end
+function Player:setCue(cue, progress, options)
+    options = options or {}
+    self.helpCue, self.nextCue = nil, nil
+    table.clear(self.seen)
+    self.identity = options.remind and cue or nil
+    self.cueProgress = progress
+    self.idleSeconds, self.hasReminded = 0, false
+    if options.finishCurrent and self.current then
+        self.nextCue = cue
+    elseif options.intro then
+        self:_play(options.intro)
+        self.nextCue = cue
+    else
+        self:_play(cue)
+    end
 end
 function Player:setStarterChoice(pending, visible)
     self.starterPending = pending == true
@@ -264,6 +293,7 @@ function Player:step(dt)
                 or player:GetAttribute("LargeMenuOpen") == true
                 or player:GetAttribute("TutorialHandoffOpen") == true
                 or player:GetAttribute("CombatTutorialPromptOpen") == true
+                or player:GetAttribute("MergeTutorialMenuOpen") == true
         )
     elseif self.identity then
         local now = os.clock()
@@ -277,6 +307,7 @@ function Player:step(dt)
                     or player:GetAttribute("TutorialHandoffOpen") == true
                     or player:GetAttribute("StarterPetChoiceOpen") == true
                     or player:GetAttribute("CombatTutorialPromptOpen") == true
+                    or player:GetAttribute("MergeTutorialMenuOpen") == true
                     or player:GetAttribute("InPrologue") == true
                     or player:GetAttribute("InCombat") == true
             )
