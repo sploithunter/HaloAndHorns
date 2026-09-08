@@ -1,0 +1,56 @@
+{
+  "name": "The Confluence",
+  "status": "uploaded_review_candidate",
+  "pipeline": [
+    "ImageGen",
+    "Meshy Smart Topology T2",
+    "Blender refinement",
+    "Assets",
+    "Roblox group upload"
+  ],
+  "concept": "assets/concepts/confluence/confluence-v1.png",
+  "source_directory": "assets/source/props/confluence",
+  "export_directory": "assets/exports/props/confluence",
+  "source_companion": "assets/source/props/confluence/refine.py",
+  "diameter_studs": 22,
+  "height_limit_studs": 8,
+  "origin": "foundation underside at court contact",
+  "placement_recommendation": [
+    0,
+    4,
+    -88
+  ],
+  "heaven_direction": "negative X, toward Heaven/Farm and Fight",
+  "hell_direction": "positive X, toward Hell/Pet Siege",
+  "creator_group": 15872767,
+  "roblox_model_id": 138190114448131,
+  "fluids": "separate mesh components; no live map integration",
+  "reference_catalog": [
+    "heaven_star_fountain",
+    "hell_infernal_fountain",
+    "animal_skull",
+    "hell_skull_lantern",
+    "crystal_bloom"
+  ],
+  "raw_upload_yaw_degrees": 180,
+  "texture_ids": {
+    "ivory": 78262010754156,
+    "obsidian": 137047839771834,
+    "gold": 118391958027803,
+    "water": 140532934422150,
+    "lava": 98610428255143
+  },
+  "native_companion": "assets/source/props/confluence/assemble_native.luau",
+  "native_output": "assets/place/Confluence.rbxm",
+  "effects": {
+    "water_speed": 0.65,
+    "lava_speed": 0.12,
+    "texture_length": 1.3,
+    "water_emission": 0.25,
+    "lava_emission": 0.65,
+    "transparency": 0.16,
+    "beam_width_angle": 0.19,
+    "segments": 12,
+    "status": "nine_native_scrolling_beams_structurally_verified"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "01a08319-dd09-77b7-935a-2ab5f37bc55d",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 5,
+  "created_at": 1788905906492,
+  "started_at": 1788905906499,
+  "finished_at": 1788905921646,
+  "expires_at": 1789165121646,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-fountain/assets/concepts/confluence/confluence-v1.png",
+    "source_sha256": "7b14bc52147fdf3e9bbdc99e2fdf55541beb460f098b37fed6021331100e1573",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 9000,
+    "should_texture": false,
+    "target_formats": [
+      "glb"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

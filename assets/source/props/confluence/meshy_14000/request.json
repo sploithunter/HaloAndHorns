@@ -1,0 +1,13 @@
+{
+  "source_image": "/Users/jason/Documents/HaloAndHorns-fountain/assets/concepts/confluence/confluence-v1.png",
+  "source_sha256": "7b14bc52147fdf3e9bbdc99e2fdf55541beb460f098b37fed6021331100e1573",
+  "model_type": "smart-topology",
+  "ai_model": "meshy-t2",
+  "target_polycount": 14000,
+  "should_texture": false,
+  "target_formats": [
+    "glb"
+  ],
+  "auto_size": true,
+  "origin_at": "bottom"
+}

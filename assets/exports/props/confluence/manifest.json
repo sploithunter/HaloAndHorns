@@ -1,0 +1,200 @@
+{
+  "footprint_studs": [
+    22,
+    22
+  ],
+  "height_studs": 7.8,
+  "origin": "foundation underside; GLB/FBX +Y up; Blender +Z up",
+  "heaven": "negative X",
+  "hell": "positive X",
+  "meshy_geometry_task": "01a0831a-7165-7132-b0fb-75790f85e721",
+  "meshy_texture_task": "01a0831b-f137-74e0-a57e-297651f7b726",
+  "mesh_parts": [
+    {
+      "name": "Confluence_Hell_RimOrnaments",
+      "triangles": 829,
+      "vertices": 2487
+    },
+    {
+      "name": "Confluence_Hell_Basin",
+      "triangles": 3690,
+      "vertices": 11070
+    },
+    {
+      "name": "Confluence_Hell_Foundation",
+      "triangles": 1782,
+      "vertices": 5346
+    },
+    {
+      "name": "Confluence_Heaven_RimOrnaments",
+      "triangles": 783,
+      "vertices": 2349
+    },
+    {
+      "name": "Confluence_Hell_Spillways",
+      "triangles": 1819,
+      "vertices": 5457
+    },
+    {
+      "name": "Confluence_Crown",
+      "triangles": 1008,
+      "vertices": 3024
+    },
+    {
+      "name": "Confluence_Heaven_Spillways",
+      "triangles": 1778,
+      "vertices": 5334
+    },
+    {
+      "name": "Confluence_Heaven_Basin",
+      "triangles": 3667,
+      "vertices": 11001
+    },
+    {
+      "name": "Confluence_Heaven_Foundation",
+      "triangles": 1600,
+      "vertices": 4800
+    },
+    {
+      "name": "Confluence_Water_Pool_2.31",
+      "triangles": 1348,
+      "vertices": 1355
+    },
+    {
+      "name": "Confluence_Lava_Pool_2.31",
+      "triangles": 1308,
+      "vertices": 1310
+    },
+    {
+      "name": "Confluence_Lava_Pool_2.88",
+      "triangles": 456,
+      "vertices": 480
+    },
+    {
+      "name": "Confluence_Water_Pool_2.88",
+      "triangles": 412,
+      "vertices": 435
+    },
+    {
+      "name": "Confluence_Lava_Pool_3.89",
+      "triangles": 18,
+      "vertices": 33
+    },
+    {
+      "name": "Confluence_Water_Pool_3.89",
+      "triangles": 2,
+      "vertices": 4
+    },
+    {
+      "name": "Confluence_Lava_Fall_15_0",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Lava_Fall_15_1",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Water_Fall_165_2",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Water_Fall_165_3",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Water_Fall_195_4",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Water_Fall_195_5",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Water_Fall_195_6",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Lava_Fall_345_7",
+      "triangles": 24,
+      "vertices": 26
+    },
+    {
+      "name": "Confluence_Lava_Fall_345_8",
+      "triangles": 24,
+      "vertices": 26
+    }
+  ],
+  "falls": [
+    {
+      "name": "Confluence_Lava_Fall_15_0",
+      "radius": 2.4700000000000006,
+      "angle_degrees": 15,
+      "top": 4.1358638191223145,
+      "bottom": 2.231359519958496
+    },
+    {
+      "name": "Confluence_Lava_Fall_15_1",
+      "radius": 7.590000000000005,
+      "angle_degrees": 15,
+      "top": 2.977417984008789,
+      "bottom": 2.194099464416504
+    },
+    {
+      "name": "Confluence_Water_Fall_165_2",
+      "radius": 2.630000000000001,
+      "angle_degrees": 165,
+      "top": 3.9262590789794922,
+      "bottom": 2.2260876083374024
+    },
+    {
+      "name": "Confluence_Water_Fall_165_3",
+      "radius": 7.590000000000005,
+      "angle_degrees": 165,
+      "top": 2.9933538818359375,
+      "bottom": 2.1856279754638672
+    },
+    {
+      "name": "Confluence_Water_Fall_195_4",
+      "radius": 2.4700000000000006,
+      "angle_degrees": 195,
+      "top": 4.130364456176758,
+      "bottom": 2.233047523498535
+    },
+    {
+      "name": "Confluence_Water_Fall_195_5",
+      "radius": 5.6700000000000035,
+      "angle_degrees": 195,
+      "top": 2.8620548629760743,
+      "bottom": 2.295474090576172
+    },
+    {
+      "name": "Confluence_Water_Fall_195_6",
+      "radius": 7.750000000000005,
+      "angle_degrees": 195,
+      "top": 2.935869255065918,
+      "bottom": 2.188573875427246
+    },
+    {
+      "name": "Confluence_Lava_Fall_345_7",
+      "radius": 2.4700000000000006,
+      "angle_degrees": 345,
+      "top": 4.146205463409424,
+      "bottom": 2.224464454650879
+    },
+    {
+      "name": "Confluence_Lava_Fall_345_8",
+      "radius": 7.590000000000005,
+      "angle_degrees": 345,
+      "top": 2.9686508560180664,
+      "bottom": 2.1739941024780274
+    }
+  ],
+  "runtime_effects": "Static fluid meshes; emissive Blender preview. No Roblox runtime script installed."
+}

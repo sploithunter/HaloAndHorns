@@ -8765,3 +8765,12 @@ first-session cohort rates.
 - 2026-09-08 — User approved symmetric widening: both side fields now 64 studs wide at X±120, inner entries unchanged. Coin area 64×90, combat area 64×102; flank terrain extended within the existing 360×320 island with original terrain backups. Arena energy boundary follows the new width; coin specimens remain removed.
 
 - 2026-09-08 — Replaced arena lightning with native tier-2 Impaler Palisade bulwarks and saved raised/retracted poses. Authored Heaven-left/Hell-right surface themes, 225 existing textured flora around the rim, and eight invisible collidable outer safety walls. Activity floors remain clear. See [Realm Crossroads](REALM_CROSSROADS.md).
+## 2026-09-08 — Standalone Confluence fountain asset started
+
+Separate fountain agent is preparing ImageGen → Meshy → Blender source and Roblox upload for the Bragg center, without map edits. Contract is `configs/confluence_fountain.json`; 22-stud footprint and 8-stud height limit. Source and provenance under `assets/source/props/confluence/`.
+
+### 2026-09-08 — Confluence fountain asset delivered separately
+
+Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure check, repaired-mesh retexture, Blender realm material correction and separate pools/falls. Uploaded the 24-part model to group 15872767; config records the Model and texture IDs. Native `assets/place/Confluence.rbxm` adds nine scrolling Beams and corrects FBX orientation. Measured 22-stud footprint / 7.8-stud height; 20,716 triangles, largest mesh 3,690. Verified upload in unparented Studio model and native file round-trip; preview model/export buffer destroyed. No map insertion or shared library rewrite. Review renders and packed Blender source accompany the asset. CI passes 2,842 tests; targeted Lua and Python checks pass. Visual Beam motion awaits placement review.
+
+- 2026-09-08 — Placed completed Confluence in the existing Bragg preview at (0,4.44,-88), replacing the original fountain retained as ServerStorage.FountainBeforeConfluence. Native orientation matches Heaven-left/Hell-right; both pedestrian side routes pass, nine scrolling Beam effects enabled.

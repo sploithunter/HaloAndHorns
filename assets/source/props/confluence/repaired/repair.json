@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/meshy_14000/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/repaired/model.glb",
+  "raw_vertices": 40395,
+  "weld_distance": 2.576649080375214e-06,
+  "initial_cleanup": {
+    "boundary_edges_found": 1687,
+    "fill_faces_added": 84,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 17,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 3
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 18,
+    "fill_faces_added": 4,
+    "duplicate_faces_removed": 6,
+    "nonmanifold_faces_removed": 6,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 16,
+    "fill_faces_added": 4,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 4,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.0,
+  "triangles_after_fill": 15076,
+  "decimation_ratio": 1.0,
+  "final_triangles": 15074,
+  "max_triangles": 16000
+}

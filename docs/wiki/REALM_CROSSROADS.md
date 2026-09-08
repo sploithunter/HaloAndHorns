@@ -330,3 +330,19 @@ See [Hall of Worlds](HALL_OF_WORLDS.md), [Map Integration Contract](MAP_INTEGRAT
 and [Studio Workflow](STUDIO_WORKFLOW.md).
 
 Existing Bragg decor is cached in ServerStorage.CrossroadsExistingDecor, preserving the Merge mesh/textures. Model IDs, scaled heights, placements and yaw live in the Bragg config; the Edit baker loads catalog models only if the template cache is missing. All decorative mesh collisions are disabled.
+
+## Standalone Confluence fountain candidate (2026-09-08)
+
+A separate agent completed the user-requested ImageGen → Meshy → Blender → Assets → Roblox
+pipeline for a circular Heaven/Hell fountain. It remains outside the map for review.
+`configs/confluence_fountain.json` owns the contract and IDs; `assets/place/Confluence.rbxm`
+is the 22-stud diameter, 7.8-stud height native assembly with 24 textured MeshParts and nine
+scrolling fluid Beams. The group-owned raw geometry Model is recorded in config. Raw FBX
+import reverses the horizontal orientation; the native companion corrects Heaven to negative X
+and Hell to positive X. Source, provenance, checks and placement limitations are documented in
+`assets/source/props/confluence/README.md`. The shared Models/MissionProps libraries and
+all open maps were left unchanged. Production placement and visual effect review are pending.
+
+The Confluence is now placed in the existing isolated Bragg map at (0,4.44,-88),
+seated on the actual court surface. Prior fountain is retained under ServerStorage.FountainBeforeConfluence.
+Both side routes passed at speed 24; native nine Beam effects are enabled for in-map review.
