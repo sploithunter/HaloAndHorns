@@ -1,0 +1,30 @@
+{
+  "id": "01a0831b-f137-74e0-a57e-297651f7b726",
+  "type": "retexture",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 10,
+  "created_at": 1788906042971,
+  "started_at": 1788906042976,
+  "finished_at": 1788906086673,
+  "expires_at": 1789165286673,
+  "task_error": null,
+  "request": {
+    "model": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/closed/model.glb",
+    "model_sha256": "5355dfc61cbc00cce8d58d3a8ce42022716db05883fd2eb81342a3326b6725f3",
+    "style_image": "/Users/jason/Documents/HaloAndHorns-fountain/assets/concepts/confluence/confluence-v1.png",
+    "style_image_sha256": "7b14bc52147fdf3e9bbdc99e2fdf55541beb460f098b37fed6021331100e1573",
+    "ai_model": "latest",
+    "enable_original_uv": false,
+    "enable_pbr": false,
+    "texture_resolution": "2k",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}
