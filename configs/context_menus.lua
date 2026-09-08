@@ -107,10 +107,11 @@ return {
                 },
                 {
                     action = "rename",
+                    enabled = false, -- No rename flow is implemented.
                     text = "✏️ Rename",
                     color = { 200, 100, 255 }, -- Purple
                     order = 3,
-                    enabled = true, -- Could be based on player permissions
+                    -- Rename remains hidden until a real save-backed flow exists.
                 },
                 {
                     action = "delete",
@@ -139,6 +140,7 @@ return {
                 },
                 {
                     action = "upgrade",
+                    enabled = false, -- No supported inventory action for this operation.
                     text = "⬆️ Upgrade",
                     color = { 255, 215, 0 }, -- Gold
                     order = 3,
@@ -146,6 +148,7 @@ return {
                 },
                 {
                     action = "sell",
+                    enabled = false, -- No supported inventory action for this operation.
                     text = "💰 Sell",
                     color = { 255, 165, 0 }, -- Orange
                     order = 4,
@@ -177,6 +180,7 @@ return {
                 },
                 {
                     action = "hatch_multiple",
+                    enabled = false, -- No supported inventory action for this operation.
                     text = "🥚 Hatch %d",
                     color = { 255, 165, 0 }, -- Orange
                     order = 3,

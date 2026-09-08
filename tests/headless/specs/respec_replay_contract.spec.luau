@@ -43,7 +43,7 @@ return function()
 
         it("exposes an admin test path and retains the ordinary altar commit path", function()
             local api = readFile("src/Server/Services/GameAPIService.lua")
-            local admin = readFile("src/Client/UI/Menus/AdminPanel.lua")
+            local admin = readFile("configs/admin_menu.lua")
             expect(api:find('bus:register("respec.begin"', 1, true)).never.to.equal(nil)
             expect(api:find('bus:register("levelup.commit"', 1, true)).never.to.equal(nil)
             expect(admin:find('action = "admin_full_respec"', 1, true)).never.to.equal(nil)

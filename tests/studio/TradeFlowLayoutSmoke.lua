@@ -206,6 +206,15 @@ function Smoke.run()
                 p.liveGui.ScreenInsets == Enum.ScreenInsets.DeviceSafeInsets,
                 "Trade reserves the top-bar strip"
             )
+            local tradeSize = win.Size
+            f.viewport.Size = UDim2.fromOffset(size.X + 20, size.Y + 20)
+            settle()
+            assert(
+                win.Size == tradeSize,
+                "Shared shell changed Trade's authored headroom on resize"
+            )
+            f.viewport.Size = UDim2.fromOffset(size.X, size.Y)
+            settle()
             local view = p._tradeView
             touch(view.confirm)
             touch(win.Body.Actions.CancelTrade)

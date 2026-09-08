@@ -27,6 +27,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CloseButton = require(script.Parent.CloseButton)
 local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 local UITheme = require(script.Parent.Parent.UITheme)
+local menuConfig = require(ReplicatedStorage.Configs.menu_ui)
 
 local PanelChrome = {}
 
@@ -95,13 +96,43 @@ function PanelChrome.build(parent, opts)
 
     local frame = Instance.new("Frame")
     frame.Name = opts.name or "Panel"
-    frame.Size = opts.size or UDim2.new(0.7, 0, 0.85, 0)
+    local camera = workspace.CurrentCamera
+    local function applySize()
+        local viewport = parent:IsA("GuiObject") and parent.AbsoluteSize
+            or (camera and camera.ViewportSize)
+        local compact = viewport
+            and (viewport.Y <= menuConfig.compact_height or viewport.X <= menuConfig.compact_width)
+        local bounds = not opts.customSizing
+            and (
+                compact and menuConfig.compact_panel or (
+                    opts.expanded and menuConfig.expanded_panel
+                )
+            )
+        frame.Size = bounds and UDim2.fromScale(bounds.width, bounds.height)
+            or opts.size
+            or UDim2.fromScale(0.7, 0.85)
+    end
+    applySize()
     frame.Position = UDim2.new(0.5, 0, 0.5, 0)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.BackgroundColor3 = COLORS.panel
     frame.BorderSizePixel = 0
     frame.ZIndex = 100
     frame.Parent = parent
+    local resized = parent:IsA("GuiObject") and parent:GetPropertyChangedSignal("AbsoluteSize")
+        or (camera and camera:GetPropertyChangedSignal("ViewportSize"))
+    local sizeConnection = not opts.customSizing and resized and resized:Connect(applySize)
+    frame.Destroying:Connect(function()
+        if sizeConnection then
+            sizeConnection:Disconnect()
+        end
+    end)
+    if not opts.customSizing then
+        local maximum = Instance.new("UISizeConstraint")
+        maximum.MaxSize =
+            Vector2.new(menuConfig.maximum_panel.width, menuConfig.maximum_panel.height)
+        maximum.Parent = frame
+    end
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 20)
@@ -122,7 +153,8 @@ function PanelChrome.build(parent, opts)
     -- Header — relative height, area-color gradient.
     local header = Instance.new("Frame")
     header.Name = "Header"
-    header.Size = UDim2.new(0.99, 0, 0.1, 0)
+    header.Size = opts.expanded and UDim2.new(0.99, 0, 0, menuConfig.header_height)
+        or UDim2.new(0.99, 0, 0.1, 0)
     header.Position = UDim2.new(0.5, 0, 0.01, 0) -- nudged down 0.01 so it sits inside the pill (Jason)
     header.AnchorPoint = Vector2.new(0.5, 0)
     header.BackgroundColor3 = headerColor
@@ -142,14 +174,14 @@ function PanelChrome.build(parent, opts)
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Size = UDim2.new(1, -180, 1, 0)
-    title.Position = UDim2.new(0, 24, 0, 0)
+    title.Size = UDim2.fromScale(0.82, 1)
+    title.Position = UDim2.fromScale(0.025, 0)
     title.BackgroundTransparency = 1
     title.Text = opts.title or "Panel"
     title.TextColor3 = COLORS.text
     title.TextScaled = true
     title.Font = Enum.Font.GothamBold
-    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextXAlignment = opts.expanded and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
     title.ZIndex = 102
     title.Parent = header
     local tc = Instance.new("UITextSizeConstraint")
@@ -160,6 +192,9 @@ function PanelChrome.build(parent, opts)
     -- ZIndexBehavior, an X nested in the header would sit below the 130 border).
     CloseButton.attach(frame, {
         zindex = 146,
+        size = UDim2.fromOffset(menuConfig.close_size, menuConfig.close_size),
+        position = UDim2.fromScale(1, 0),
+        anchor = Vector2.new(1, 0),
         onClick = opts.onClose,
     })
 
@@ -177,6 +212,8 @@ function PanelChrome.scrollPane(frame, opts)
     scroll.AnchorPoint = opts.anchor or Vector2.new(0.5, 0)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
+    scroll.Active = true
+    scroll.ScrollingDirection = Enum.ScrollingDirection.Y
     scroll.ScrollBarThickness = 6
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y

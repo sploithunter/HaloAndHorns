@@ -8680,3 +8680,17 @@ first-session cohort rates.
   bus independently of Effects/Music. Muting voices lets background ducking release.
 - Persisted voice levels normalize missing/non-finite values to 50%; legacy settings writes that
   omit the new field preserve the saved voice value. Tutorial source recordings remain unaltered.
+
+## 2026-09-08 — Settings/Admin and shared menu audit
+
+- Rebuilt Settings/Admin sizing for short landscape screens with config-owned touch controls,
+  readable scrolling, Admin category/search, selected-player cycling, and visible results.
+- Removed exposed framework placeholders and demo purchase routing; repaired event/logging dispatch,
+  real slider dragging/endpoint snap, inventory All quantities/hatch routing, and failed-open cleanup.
+- Found and fixed the EconomyService admin currency remote ignoring its authorized target; add,
+  subtract, and reset now use that target and require authorization. Added non-destructive native
+  client/server smoke coverage. See [UI Layout Policy](UI_LAYOUT_POLICY.md).
+- Verification: 2,819 headless tests; native Settings/Admin geometry at five sizes and 103 Admin
+  button routes; fake-account currency tests; trade/gift and seven shared menu-shell regressions.
+  Desktop wheel reaches the final Settings row. Emulator taps/search and slider endpoints checked;
+  automated touch drags emit one movement event, so continuous finger scrolling needs device review.
