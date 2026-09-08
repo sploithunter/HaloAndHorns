@@ -818,6 +818,7 @@ function CombatTutorialService:_onDoorLesson(player)
     local spec = self:_doorPlateForPlayer(player)
     fireGameEvent(player, "combat_tutorial_door_blocked", {
         name = spec.nudge or "Finish this first!",
+        voiceCue = spec.voiceCue,
         source = "door_button",
     })
 end
@@ -1457,6 +1458,10 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         if not (active and active.replay) then
             self:_applyCompletionReward(player, data)
         end
+    end
+    -- Send completion before mission teardown clears the active course (replays have no rank delay).
+    if progress.done then
+        self:_push(player)
     end
     if completedStep and (progress.done or progress.step ~= completedIndex) then
         fireGameEvent(player, "tutorial_step_completed", {
@@ -2517,7 +2522,17 @@ function CombatTutorialService:_doorPlateForPlayer(player)
         }
     end
     local failed = self:_firstUnlockFailure(player, self:_enterUnlockList(step))
+    local progress = data and data[self:_progressKey(player)]
+    local remaining = step and step.complete_on and tonumber(step.complete_on.count)
+    remaining = remaining and (remaining - (tonumber(progress and progress.count) or 0))
+    local voiceCue = require(ReplicatedStorage.Shared.Game.TutorialVoiceDirector).doorCue(
+        require(ReplicatedStorage.Configs.tutorial_voice),
+        failed and failed.check,
+        step and step.id,
+        remaining
+    )
     return {
+        voiceCue = voiceCue,
         pulse = false,
         text = tostring(
             (failed and failed.fail_plate) or remainingText or buttonCfg.text or "ENTER"
@@ -3302,6 +3317,7 @@ function CombatTutorialService:_push(player)
         local state = TutorialFlow.stateFor(config, data[self:_progressKey(player)])
         local active = self._activeCourses[player]
         state.courseId = self:_courseId(player)
+        state.replay = active and active.replay == true or false
         local definition = self._courseDefinitions[state.courseId]
         state.courseTitle = definition.title
         if state.done then

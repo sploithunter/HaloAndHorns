@@ -25,6 +25,8 @@ local CoreGuiStateGuard = require(script.Parent.Parent.UI.CoreGuiStateGuard)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local UpperRightHudStack = require(script.Parent.Parent.UI.UpperRightHudStack)
 local GameEvents = require(script.Parent.GameEvents)
+local Narrator = require(script.Parent.TutorialNarrator)
+local VoiceDirector = require(ReplicatedStorage.Shared.Game.TutorialVoiceDirector)
 local TutorialLanguageState = require(script.Parent.TutorialLanguageState)
 local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
@@ -354,6 +356,9 @@ showHandoffBanner = function(state)
     )
     handoffOk.Text =
         TutorialLocalization.text(localeId, baseKey .. ".handoff.ok", spec.ok_label or "Okay")
+    if not handoffGui.Enabled then
+        Narrator.say("tutorial.first_fight.handoff")
+    end
     handoffGui.Enabled = true
     Players.LocalPlayer:SetAttribute("TutorialHandoffOpen", true)
     if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" then
@@ -947,6 +952,8 @@ local function showSlotPowerGuidance(token, tutorialGuide, enhancementGuide)
             local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
             if nextPhase ~= phase or targetGone then
                 phase = nextPhase
+                local voiceKey = VoiceDirector.key(currentState)
+                Narrator.help(voiceKey and (voiceKey .. "." .. phase))
                 clearUiGuidance()
                 if phase == "open" then
                     showUiPulse(token, "PowersButton", {
@@ -1013,6 +1020,8 @@ local function showBindPowerGuidance(token, powerId)
 
             if nextPhase ~= phase then
                 phase = nextPhase
+                local voiceKey = VoiceDirector.key(currentState)
+                Narrator.help(voiceKey and (voiceKey .. "." .. phase))
                 clearUiGuidance()
                 if phase == "edit" or phase == "done" then
                     showUiPulse(token, "Edit", {
@@ -1042,6 +1051,8 @@ local function applyTankLessonCapsule(state, step, phase)
     if not (titleLabel and bodyLabel) then
         return
     end
+    local voiceKey = VoiceDirector.key(state)
+    Narrator.help(voiceKey and (voiceKey .. ".guide." .. phase))
     local localeId = TutorialLanguageState.getLocaleId()
     local entry = tankLessonGuide(step)[phase]
     if type(entry) ~= "table" then
@@ -1249,6 +1260,11 @@ local function showHealerFocusGuidance(token, state)
             end
             local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
             if want ~= showing or (want and targetGone) then
+                if showing == false and want then
+                    Narrator.help("combat_tutorial.healer_hunt.lost")
+                elseif not want then
+                    Narrator.help(nil)
+                end
                 showing = want
                 clearUiGuidance()
                 if want then
@@ -1372,6 +1388,7 @@ local function maybeShowLanguageBanner()
 end
 
 local function apply(state)
+    Narrator.setState(state)
     stepToken += 1
     clearGuidance()
     currentState = state
@@ -1511,7 +1528,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "combat-training Heal enhancement + enemy overlay (2026-09-02)"
+local BUILD = "angel/demon tutorial narration (2026-09-08)"
 
 function TutorialController.start()
     if started then
@@ -1519,6 +1536,7 @@ function TutorialController.start()
     end
     started = true
     print("[TutorialController] build:", BUILD)
+    Narrator.start()
     local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
     buildCapsule(pg)
 
@@ -1534,6 +1552,7 @@ function TutorialController.start()
     local function gatedApply(state)
         if hidesHomeTutorial(me) then
             parked = state
+            Narrator.suspend()
             clearGuidance()
             hideHandoffBanner()
             if capsule then
@@ -1550,6 +1569,7 @@ function TutorialController.start()
     end)
     local function onHomeTutorialGateChanged()
         if hidesHomeTutorial(me) then
+            Narrator.suspend()
             clearGuidance()
             if capsule then
                 syncCapsuleVisibility()
@@ -1584,6 +1604,16 @@ function TutorialController.start()
     end)
     me:GetAttributeChangedSignal("TutorialLanguageReady"):Connect(maybeShowLanguageBanner)
     me:GetAttributeChangedSignal("InCombatTutorial"):Connect(function()
+        if
+            me:GetAttribute("InCombatTutorial") ~= true
+            and type(currentState) == "table"
+            and currentState.courseId
+            and not currentState.done
+        then
+            Narrator.stopEvent()
+            Signals.TutorialStateRequest:FireServer()
+            return
+        end
         if type(currentState) == "table" and not currentState.done then
             gatedApply(currentState)
         else

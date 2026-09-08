@@ -1,11 +1,11 @@
 {
   "complete": true,
-  "expected_clips": 88,
-  "validated_clips": 88,
-  "angel_clips": 24,
-  "demon_clips": 64,
-  "total_duration_seconds": 825.609,
-  "total_bytes": 13304133,
+  "expected_clips": 92,
+  "validated_clips": 92,
+  "angel_clips": 27,
+  "demon_clips": 65,
+  "total_duration_seconds": 861.971,
+  "total_bytes": 13890286,
   "checks": [
     "MP3 decode",
     "SHA-256",
@@ -19,9 +19,9 @@
   "clips": [
     {
       "id": "A01",
-      "duration_seconds": 7.848345,
-      "peak_dbfs": -6.87,
-      "rms_dbfs": -21.84,
+      "duration_seconds": 5.758549,
+      "peak_dbfs": -6.23,
+      "rms_dbfs": -22.21,
       "clipped_sample_fraction": 0.0,
       "exact_input_alignment": true,
       "decode": "pass"
@@ -229,6 +229,33 @@
       "duration_seconds": 9.334422,
       "peak_dbfs": -5.76,
       "rms_dbfs": -22.81,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "A25",
+      "duration_seconds": 11.145578,
+      "peak_dbfs": -5.23,
+      "rms_dbfs": -22.82,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "A26",
+      "duration_seconds": 8.080544,
+      "peak_dbfs": -5.3,
+      "rms_dbfs": -21.09,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "A27",
+      "duration_seconds": 7.337506,
+      "peak_dbfs": -6.38,
+      "rms_dbfs": -19.49,
       "clipped_sample_fraction": 0.0,
       "exact_input_alignment": true,
       "decode": "pass"
@@ -805,6 +832,15 @@
       "duration_seconds": 9.98458,
       "peak_dbfs": -11.39,
       "rms_dbfs": -29.6,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "D65",
+      "duration_seconds": 11.888617,
+      "peak_dbfs": -9.67,
+      "rms_dbfs": -29.69,
       "clipped_sample_fraction": 0.0,
       "exact_input_alignment": true,
       "decode": "pass"

@@ -84,6 +84,7 @@ function Watcher.start()
     local function suppressed()
         local camera = Workspace.CurrentCamera
         return GuiService.MenuIsOpen
+            or player:GetAttribute("TutorialNarrationActive") == true
             or player:GetAttribute("InCombatTutorial") == true
             or player:GetAttribute("InPrologue") == true
             or player:GetAttribute("LargeMenuOpen") == true

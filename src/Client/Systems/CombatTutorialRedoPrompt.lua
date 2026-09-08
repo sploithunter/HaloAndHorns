@@ -11,6 +11,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local Narrator = require(script.Parent.TutorialNarrator)
 local COURSES = require(ReplicatedStorage.Configs.combat_courses)
 
 local CombatTutorialRedoPrompt = {}
@@ -98,7 +99,11 @@ function CombatTutorialRedoPrompt.start()
     local courseButtons = {}
 
     local function close()
+        if gui.Enabled then
+            Narrator.stopEvent()
+        end
         gui.Enabled = false
+        player:SetAttribute("CombatTutorialPromptOpen", false)
     end
 
     local function answer(accepted)
@@ -125,7 +130,7 @@ function CombatTutorialRedoPrompt.start()
                 button.Name = tostring(choice.id)
                 button.Text = tostring(choice.label)
                 button.Visible = true
-                button.Active = choice.enabled == true
+                button.Active = true -- Locked courses explain the prerequisite without sending a request.
                 button.AutoButtonColor = choice.enabled == true
                 button.BackgroundTransparency = choice.enabled and 0 or 0.65
                 button.AnchorPoint = Vector2.new(0.5, 0)
@@ -144,6 +149,8 @@ function CombatTutorialRedoPrompt.start()
                 button.Activated:Connect(function()
                     if choice.enabled == true then
                         answer(choice.id)
+                    else
+                        Narrator.say("combat_courses.locked")
                     end
                 end)
                 table.insert(courseButtons, button)
@@ -154,6 +161,10 @@ function CombatTutorialRedoPrompt.start()
         yesBtn.Text = tostring(payload.yes_text or "Redo")
         noBtn.Text = tostring(payload.no_text or "Not now")
         gui.Enabled = true
+        player:SetAttribute("CombatTutorialPromptOpen", true)
+        Narrator.say(
+            payload.kind == "leave" and "combat_tutorial.leave_confirm" or "combat_courses.menu"
+        )
     end)
 
     yesBtn.Activated:Connect(function()

@@ -297,6 +297,9 @@
   },
   "src/Shared/Services/UserDisplayPreferences.lua": {
    "debounce": 1
+  },
+  "src/Server/TutorialVoiceTemplates.lua": {
+   "retry_backoff": 1
   }
  },
  "version": 1

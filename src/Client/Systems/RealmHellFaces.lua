@@ -315,7 +315,10 @@ function RealmHellFaces.start()
         local inHell = player:GetAttribute("CurrentRealm") == "hell"
         local layer = tostring(player:GetAttribute("CurrentLayer") or "")
         local only = cfg.only_layer
-        local matches = inHell and (only == nil or layer == only)
+        local matches = inHell
+            and (only == nil or layer == only)
+            and player:GetAttribute("TutorialNarrationActive") ~= true
+            and player:GetAttribute("InCombatTutorial") ~= true
         if matches then
             if not session then
                 spawn()
@@ -331,6 +334,8 @@ function RealmHellFaces.start()
     -- the spawn. Watching both makes the Hell-5 gate fire regardless of publish order.
     player:GetAttributeChangedSignal("CurrentLayer"):Connect(refresh)
     player:GetAttributeChangedSignal("CurrentRealm"):Connect(refresh)
+    player:GetAttributeChangedSignal("TutorialNarrationActive"):Connect(refresh)
+    player:GetAttributeChangedSignal("InCombatTutorial"):Connect(refresh)
 end
 
 return RealmHellFaces

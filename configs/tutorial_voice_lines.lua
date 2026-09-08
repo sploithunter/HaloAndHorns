@@ -1,8 +1,8 @@
--- Recorded source audio: Roblox uploads and tutorial playback hooks are not enabled yet.
+-- Recorded performances: tutorial_voice_assets binds uploads; TutorialNarrator owns playback.
 -- Spoken copy is authored here; docs/TUTORIAL_VOICE_SCRIPT.md is the matching recording sheet.
 return {
     version = 1,
-    status = "audio_generated",
+    status = "runtime_ready",
     recordingManifest = "assets/audio/voices/tutorial/manifest.json",
     -- Playback integration must resolve the already-tuned Merge values, without another gain copy.
     playbackVolumeSource = {
@@ -18,10 +18,28 @@ return {
             speaker = "angel",
             lines = {
                 {
+                    id = "A27",
+                    cue = "tutorial.next_task.reminder",
+                    usage = "reminder",
+                    text = "Take your time, little light. When you’re ready, follow the glowing guide and try the next step. I know you can do it.",
+                },
+                {
+                    id = "A26",
+                    cue = "tutorial.hatch_first_egg.reminder",
+                    usage = "reminder",
+                    text = "Your next little friend is waiting. Follow the glowing trail to the Earth Egg, and choose Hatch. I’ll be right here.",
+                },
+                {
+                    id = "A25",
+                    cue = "tutorial.choose_companion",
+                    usage = "conditional",
+                    text = "There you are, little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty — who will join you on your adventure?",
+                },
+                {
                     id = "A01",
                     cue = "tutorial.hatch_first_egg",
                     usage = "main",
-                    text = "There you are, little light. Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.",
+                    text = "Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.",
                 },
                 {
                     id = "A02",
@@ -84,6 +102,12 @@ return {
             title = "Demon — Basic Combat Training",
             speaker = "demon",
             lines = {
+                {
+                    id = "D65",
+                    cue = "combat_tutorial.next_task.reminder",
+                    usage = "reminder",
+                    text = "Admiring the scenery? Charming. Your next lesson is waiting. Follow the guide when you’re ready, little hero.",
+                },
                 {
                     id = "D01",
                     cue = "combat_tutorial.ready",
