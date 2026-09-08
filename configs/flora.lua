@@ -43,7 +43,7 @@ return {
         radius = 80,
         update_hz = 24,
         rescan_seconds = 4,
-        tree_degrees = 1.3,
+        tree_degrees = 0, -- Rigid tree meshes stay rooted; whole-model tilt lifts their trunks.
         plant_degrees = 2.6,
         cactus_degrees = 1.8,
         banner_degrees = 4.5,

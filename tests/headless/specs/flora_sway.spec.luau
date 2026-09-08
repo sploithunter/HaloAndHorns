@@ -30,6 +30,14 @@ return function()
     end)
 
     describe("FloraSway.sample", function()
+        it("keeps rigid trees still while smaller flora retains motion", function()
+            expect(FloraSway.amplitude("oak_tree", nil, floraConfig.sway)).to.equal(0)
+            expect(FloraSway.amplitude("Flora_cloud_sapling", "tree", floraConfig.sway)).to.equal(0)
+            expect(FloraSway.amplitude("cloud_bush", "plant", floraConfig.sway) > 0).to.equal(true)
+            expect(FloraSway.amplitude("crystal_cactus", "cactus", floraConfig.sway) > 0).to.equal(
+                true
+            )
+        end)
         it("stays inside the configured amplitude", function()
             local amplitude = FloraSway.amplitude("pearl_tuft", "plant", floraConfig.sway)
             expect(amplitude > 0).to.equal(true)
