@@ -44,6 +44,12 @@ activityData.Value = serde.encode("json", activities)
 local activityBake = new("ModuleScript", "CrossroadsActivityBake", storage)
 activityBake.Source = fs.readFile(activities.bake_source)
 new("Folder", "CrossroadsActivityAssets", storage)
+local landscape = serde.decode("json", fs.readFile(cfg.landscape_source))
+local landscapeData = new("StringValue", "CrossroadsLandscapeConfig", storage)
+landscapeData.Value = serde.encode("json", landscape)
+local landscapeBake = new("ModuleScript", "CrossroadsLandscapeBake", storage)
+landscapeBake.Source = fs.readFile(landscape.bake_source)
+new("Folder", "CrossroadsLandscapeAssets", storage)
 local marker = new("Part", "RunEditBakeFirst", workspace)
 marker.Anchored = true
 marker.Size = r.Vector3.new(10, 1, 10)
@@ -52,5 +58,5 @@ player.CharacterWalkSpeed = cfg.walk_speed
 fs.writeDir("output/realm_crossroads")
 fs.writeFile("output/realm_crossroads/RealmCrossroads-R4-Terrain.rbxl", r.serializePlace(game))
 print(
-    "Created seed. In Studio Edit: require CrossroadsTerrainBake, then CrossroadsCrestBake, then CrossroadsBraggBake, then CrossroadsActivityBake."
+    "Created seed. In Studio Edit: require CrossroadsTerrainBake, then CrossroadsCrestBake, then CrossroadsBraggBake, then CrossroadsActivityBake, then CrossroadsLandscapeBake."
 )

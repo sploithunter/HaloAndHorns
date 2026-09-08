@@ -8759,3 +8759,9 @@ first-session cohort rates.
 - 2026-09-08 — Replaced improvised Bragg flower geometry with existing Merge meshes/textures: Field Flower Bush, Softglow Bloom and Crystal Bloom in three Heaven bays; Animal Skull with Skull Lantern pairs in three Hell bays. Preserved interleaved positions; visually verified skull facing and asset scale. Asset IDs/placements remain in config; native templates cached in preview.
 
 - 2026-09-08 — Crossroads R7 side areas authored: west Coin Garden with Hall coin specimens/weekly-egg pavilion, east Patrol Grove with bounded open arena, cover, banner ruins and gathering terrace. Existing mesh assets reused. User clarified map-only scope inside future Farm & Fight integration; hooks are inert metadata and no gameplay code was pulled in. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Removed coin garden specimens; added a noncolliding 7-stud energy perimeter with violet entrance spans to Patrol Grove. Recommended widening combat to roughly 64 studs within the existing island margin; coin lawn remains 42×90. No resize or runtime containment implemented.
+
+- 2026-09-08 — User approved symmetric widening: both side fields now 64 studs wide at X±120, inner entries unchanged. Coin area 64×90, combat area 64×102; flank terrain extended within the existing 360×320 island with original terrain backups. Arena energy boundary follows the new width; coin specimens remain removed.
+
+- 2026-09-08 — Replaced arena lightning with native tier-2 Impaler Palisade bulwarks and saved raised/retracted poses. Authored Heaven-left/Hell-right surface themes, 225 existing textured flora around the rim, and eight invisible collidable outer safety walls. Activity floors remain clear. See [Realm Crossroads](REALM_CROSSROADS.md).

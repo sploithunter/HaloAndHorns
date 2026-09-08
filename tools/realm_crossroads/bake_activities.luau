@@ -20,6 +20,59 @@ return function()
         p.Parent = parent
         return p
     end
+    -- Extend both raised terraces inside the existing island; retain the outside rim.
+    local grade = cfg.terrace_extension
+    for _, side in ipairs({ -1, 1 }) do
+        local lo, hi = grade.region_min, grade.region_max
+        local region = Region3.new(
+            V.new(side < 0 and -hi[1] or lo[1], lo[2], lo[3]),
+            V.new(side < 0 and -lo[1] or hi[1], hi[2], hi[3])
+        ):ExpandToGrid(4)
+        local terrain = workspace.Terrain
+        local materials, occupancy = terrain:ReadVoxels(region, 4)
+        local backupName = side < 0 and "ActivityTerrainWestBefore" or "ActivityTerrainEastBefore"
+        if not game.ServerStorage:FindFirstChild(backupName) then
+            local low = region.CFrame.Position - region.Size / 2
+            local high = low + region.Size
+            local copy = terrain:CopyRegion(
+                Region3int16.new(
+                    Vector3int16.new(low.X / 4, low.Y / 4, low.Z / 4),
+                    Vector3int16.new(high.X / 4 - 1, high.Y / 4 - 1, high.Z / 4 - 1)
+                )
+            )
+            copy.Name = backupName
+            copy.Parent = game.ServerStorage
+        end
+        local minimum = region.CFrame.Position - region.Size / 2
+        for ix = 1, #materials do
+            for iz = 1, #materials[ix][1] do
+                local x = math.abs(minimum.X + (ix - 0.5) * 4)
+                local z = minimum.Z + (iz - 0.5) * 4
+                local target = grade.floor
+                    + (grade.rim - grade.floor)
+                        * math.clamp((x - grade.flat_end) / (grade.rim_end - grade.flat_end), 0, 1)
+                local blend = math.clamp(
+                    math.min(
+                        (z - (grade.z_flat_min - grade.z_blend)) / grade.z_blend,
+                        ((grade.z_flat_max + grade.z_blend) - z) / grade.z_blend
+                    ),
+                    0,
+                    1
+                )
+                if x < grade.rim_end and blend > 0 then
+                    for iy = 1, #materials[ix] do
+                        local y = minimum.Y + (iy - 1) * 4
+                        local desired = math.clamp((target - 2 - y) / 4, 0, 1)
+                        occupancy[ix][iy][iz] = occupancy[ix][iy][iz] * (1 - blend)
+                            + desired * blend
+                        materials[ix][iy][iz] = occupancy[ix][iy][iz] > 0 and Enum.Material.Grass
+                            or Enum.Material.Air
+                    end
+                end
+            end
+        end
+        terrain:WriteVoxels(region, 4, materials, occupancy)
+    end
     local root = make("Model", cfg.root, world)
     root:SetAttribute("PreviewOnly", true)
     root:SetAttribute("GameplayConnected", false)
@@ -321,6 +374,86 @@ return function()
                 C.new(x, y + 4, z),
                 "Area bounds / patrol leash"
             )
+            local barrier = make("Model", "CombatBulwarks", group)
+            barrier:SetAttribute("VisualOnly", true)
+            barrier:SetAttribute("ContainmentEnabled", false)
+            local spec = cfg.barrier
+            local template = cache:FindFirstChild("ArenaBulwark")
+            if not template then
+                template = game:GetService("InsertService"):LoadAsset(spec.model_asset_id)
+                template.Name = "ArenaBulwark"
+                template.Parent = cache
+            end
+            local function fence(a, b, entry)
+                local distance = (b - a).Magnitude
+                local segments = math.max(1, math.ceil(distance / spec.segment_length))
+                for n = 1, segments do
+                    local at = a:Lerp(b, (n - 0.5) / segments)
+                    local model = template:Clone()
+                    model.Name = entry and "EntranceBulwark" or "PerimeterBulwark"
+                    model.Parent = barrier
+                    for _, p in ipairs(model:GetDescendants()) do
+                        if p:IsA("BasePart") then
+                            p.Anchored = true
+                            p.CanCollide = false
+                            p.CanTouch = false
+                        elseif p:IsA("LuaSourceContainer") then
+                            p:Destroy()
+                        end
+                    end
+                    model:PivotTo(C.new())
+                    local box, size = model:GetBoundingBox()
+                    model:ScaleTo(model:GetScale() * (distance / segments + 0.1) / size.X)
+                    box, size = model:GetBoundingBox()
+                    local direction = (b - a).Unit
+                    local target = C.fromMatrix(at, direction, V.yAxis, direction:Cross(V.yAxis))
+                    local deployed = target
+                        * C.new(-box.Position.X, -box.Position.Y + size.Y / 2, -box.Position.Z)
+                        * model:GetPivot()
+                    model:SetAttribute("DeployedPivot", deployed)
+                    model:SetAttribute(
+                        "RetractedPivot",
+                        deployed - V.new(0, spec.retraction_depth, 0)
+                    )
+                    model:SetAttribute("PreviewOnly", true)
+                    model:SetAttribute("Entrance", entry)
+                    model:PivotTo(
+                        entry and deployed - V.new(0, spec.retraction_depth, 0) or deployed
+                    )
+                end
+            end
+            local left, right = x - w / 2, x + w / 2
+            local rear, front = z - d / 2, z + d / 2
+            local ground = y + 0.45
+            local entryCenter = -18
+            fence(
+                V.new(left, ground, rear),
+                V.new(left, ground, entryCenter - spec.entry_width / 2),
+                false
+            )
+            fence(
+                V.new(left, ground, entryCenter - spec.entry_width / 2),
+                V.new(left, ground, entryCenter + spec.entry_width / 2),
+                true
+            )
+            fence(
+                V.new(left, ground, entryCenter + spec.entry_width / 2),
+                V.new(left, ground, front),
+                false
+            )
+            fence(V.new(right, ground, rear), V.new(right, ground, front), false)
+            fence(V.new(left, ground, rear), V.new(right, ground, rear), false)
+            fence(V.new(left, ground, front), V.new(x - spec.entry_width / 2, ground, front), false)
+            fence(
+                V.new(x - spec.entry_width / 2, ground, front),
+                V.new(x + spec.entry_width / 2, ground, front),
+                true
+            )
+            fence(
+                V.new(x + spec.entry_width / 2, ground, front),
+                V.new(right, ground, front),
+                false
+            )
             text(group, "GATHER FIGHT SHARE", 1, 36, C.new(px, py + 4, pz - 8))
         end
         -- Existing meshes make the edges a garden without consuming the activity footprint.
@@ -340,7 +473,7 @@ return function()
             )
         end
         for _, dz in ipairs({ -5, 23, 49 }) do
-            local outerX = x + (coin and -29 or 29)
+            local outerX = x + (coin and -(w / 2 + 8) or (w / 2 + 8))
             part(
                 group,
                 "EdgePlanter",

@@ -9,16 +9,16 @@
       "key": "CoinGarden",
       "name": "COIN GARDEN",
       "center": [
-        -109,
+        -120,
         4,
         18
       ],
       "field_size": [
-        42,
+        64,
         90
       ],
       "pavilion_center": [
-        -109,
+        -120,
         4,
         -61
       ],
@@ -30,16 +30,16 @@
       "key": "PatrolGrove",
       "name": "PATROL GROVE",
       "center": [
-        109,
+        120,
         4,
         8
       ],
       "field_size": [
-        42,
+        64,
         102
       ],
       "pavilion_center": [
-        109,
+        120,
         4,
         -67
       ],
@@ -91,6 +91,16 @@
       201,
       98,
       56
+    ],
+    "energy": [
+      110,
+      199,
+      245
+    ],
+    "energy_gate": [
+      205,
+      168,
+      250
     ]
   },
   "models": {
@@ -116,77 +126,72 @@
     "PATROL GROVE",
     "GATHER FIGHT SHARE"
   ],
-  "coin_examples": [
-    [
-      -12,
-      -30,
-      "WaycoinBag",
-      2.5
-    ],
-    [
-      6,
-      -23,
-      "GoldFernNugget",
-      2.8
-    ],
-    [
-      -4,
-      -6,
-      "WaycoinTrove",
-      3.1
-    ],
-    [
-      12,
-      5,
-      "WaycoinBag",
-      2.5
-    ],
-    [
-      -11,
-      16,
-      "GildedWaycache",
-      3.4
-    ],
-    [
-      3,
-      31,
-      "GoldFernNugget",
-      2.8
-    ]
-  ],
+  "coin_examples": [],
   "patrol_loop": [
     [
-      -11,
+      -21,
       -32
     ],
     [
-      11,
+      21,
       -32
     ],
     [
-      12,
+      21,
       28
     ],
     [
-      -12,
+      -21,
       28
     ]
   ],
   "cover": [
     [
-      -12,
+      -18,
       -10,
       6,
       3,
       4
     ],
     [
-      12,
+      18,
       10,
       6,
       3,
       4
     ]
   ],
-  "note": "Layout and static specimen assets only. Weekly egg roster, refresh and price are not selected by this art pass."
+  "note": "Layout and static specimen assets only. Weekly egg roster, refresh and price are not selected by this art pass.",
+  "barrier": {
+    "family": "impaler_palisade",
+    "tier": 2,
+    "model_asset_id": 98392384350392,
+    "canonical_size": [
+      10.0,
+      4.53651,
+      2.62357
+    ],
+    "segment_length": 10,
+    "entry_width": 14,
+    "retraction_depth": 5
+  },
+  "terrace_extension": {
+    "region_min": [
+      132,
+      -8,
+      -116
+    ],
+    "region_max": [
+      180,
+      24,
+      124
+    ],
+    "flat_end": 160,
+    "rim_end": 176,
+    "floor": 4,
+    "rim": 12,
+    "z_flat_min": -100,
+    "z_flat_max": 108,
+    "z_blend": 16
+  }
 }

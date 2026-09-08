@@ -4,20 +4,45 @@ Status: R4 terrain, R5 sculpted gates and R6 Bragg Rotunda authored in the exist
 
 
 
+## R8: realm landscape and outer safety boundary
+
+Heaven occupies negative X (left) and Hell positive X (right), matching the gates.
+Config-named Edit baker `bake_landscape.luau` themes terrain and structural surfaces,
+keeps the center neutral, and places 225 existing textured perimeter flora models, plus two Hell accent trees around the rim:
+pale/pink/cyan trees, flowers and quartz left; dark/coldfire/lava-eye trees, ash/brush,
+bones and spires right. Staggered canopy and understory rows leave activity floors,
+Bragg and the central overlook approach clear. Native templates are cached under
+ServerStorage.CrossroadsLandscapeAssets. Landscape bake follows the activity bake.
+
+Eight overlapping invisible collidable walls follow an inset clipped rectangle around
+the island. They extend from Y=-32 to +68, behind perimeter vegetation, preventing ordinary
+walking/jumping off the outer edge. These global safety walls are separate from the future
+combatant-only arena containment rule. Cardinal approach tests blocked at all four outer sides, including the front away from
+the overlook rail. The arena entry remains walkable in this map preview.
+
 ## R7: side activities — map only
 
 The hub will live inside Farm & Fight. User explicitly deferred gameplay integration.
 The two +4 garden terraces now contain a west **Coin Garden** and east **Patrol Grove**:
 
-- Coin Garden: 42×90 open drop lawn, perimeter circulation, static Hall coin examples,
+- Coin Garden: 64×90 open drop lawn, perimeter circulation (coin specimens removed after scale review),
   original Hall stand and Wayfinder egg as display-only specimens under an open pergola.
   The physical title is **Egg of the Week**; no weekly schedule, roster or price is set yet.
-- Patrol Grove: 42×102 combat footprint, low staggered cover, four invisible route markers,
+- Patrol Grove: 64×102 combat footprint, low staggered cover, four invisible route markers,
+  and the existing tier-2 Impaler Palisade bulwarks. Lightning was removed at user request.
+  Two 14-stud entry spans are shown retracted; each segment stores DeployedPivot/RetractedPivot
+  for later rise animation. Bulwark meshes are currently noncolliding;
+  combatant-only containment belongs to later gameplay integration,
   rear encounter anchor and Heaven/Hell banner ruins. Southern gathering terrace and benches
   keep waiting players outside the marked combat footprint. Temporary alliances remain
   the existing gameplay system to bind later; none are simulated by the map.
 - Both retain the existing +4 garden stairs and 1:8 ramps. Both stair and ramp routes, plus the egg-pavilion approach, passed walking checks at speed 24. Existing flowers, saplings, skulls,
   quartz and bone rocks decorate edges instead of replacing the playable floor.
+- Both fields are now 64 studs wide, centered at X=±120. Inner edges remain X=±88.
+  Symmetric terrain extensions keep +4 terraces through |X|=160 and rise to the +12 rim
+  by |X|=176; the island remains 360×320. Original flank terrain is backed up in
+  ServerStorage.ActivityTerrainWestBefore/EastBefore. Multiplayer squad crowding still
+  needs a live gameplay test; this is the authored space, not a capacity guarantee.
 - `configs/realm_crossroads_activities.json` names `tools/realm_crossroads/bake_activities.luau`.
   `ServerStorage.CrossroadsActivityAssets` caches original textured geometry from Farm & Fight
   and Merge. Author after the terrain/crest/Bragg passes. Geometry is not generated in Play.
