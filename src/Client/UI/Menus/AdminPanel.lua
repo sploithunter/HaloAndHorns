@@ -127,274 +127,9 @@ local AdminPanel = {}
 AdminPanel.__index = AdminPanel
 
 -- Test categories and their actions
-local TEST_CATEGORIES = {
-    economy = {
-        title = "💰 Economy Testing",
-        tests = {
-            { name = "Buy Test Item (50 coins)", action = "buy_test_item" },
-            { name = "Buy Health Potion (25 coins)", action = "buy_health_potion" },
-            { name = "Buy Wooden Sword (100 coins)", action = "buy_wooden_sword" },
-            { name = "Buy Iron Sword (500 coins)", action = "buy_iron_sword" },
-            { name = "Buy Basic Pickaxe (200 coins)", action = "buy_basic_pickaxe" },
-            { name = "Buy Premium XP Boost (10 gems)", action = "buy_premium_xp_boost" },
-            { name = "Buy Diamond Sword (25 gems)", action = "buy_diamond_sword" },
-            { name = "Buy ⚡ Speed Potion (5 gems)", action = "buy_speed_potion" },
-            { name = "Buy 📜 Trader Scroll (150 coins)", action = "buy_trader_scroll" },
-        },
-    },
-    effects = {
-        title = "⚡ Effects Testing",
-        tests = {
-            { name = "Test Effect Stacking", action = "test_effect_stacking" },
-            { name = "Start Hatch Luck Hour", action = "start_hatch_luck_hour" },
-            { name = "Start Double Rewards Hour", action = "start_double_rewards_hour" },
-            { name = "Start Crystal Rush", action = "start_crystal_rush" },
-            { name = "Start Coin Shower", action = "start_coin_shower" },
-            { name = "Show Active Global Events", action = "show_global_events" },
-            { name = "Clear Global Events", action = "clear_global_events" },
-        },
-    },
-    system = {
-        title = "🔧 System Testing",
-        tests = {
-            { name = "Test Rate Limiting", action = "test_rate_limiting" },
-            { name = "Debug: Print Current Data", action = "debug_print_data" },
-            { name = "Performance Test", action = "performance_test" },
-            { name = "Network Bridge Test", action = "network_test" },
-            { name = "Run Diagnostics", action = "run_diagnostics" },
-        },
-    },
-    currency = {
-        title = "💎 Currency Management",
-        tests = {
-            { name = "Add 1000 Coins", action = "add_coins_1000" },
-            { name = "Add 100 Gems", action = "add_gems_100" },
-            { name = "Add 50 Crystals", action = "add_crystals_50" },
-            -- Grants 100k to EACH per-biome currency (grass/ice/lava/desert) in one click.
-            -- The legacy "Add Coins" button grants the unused generic `coins`; the zone-unlock
-            -- gates + egg costs run on biome coins, so use this to test progression.
-            { name = "Add 100k Area Coins", action = "add_area_coins" },
-            { name = "Reset All Currencies", action = "reset_currencies" },
-        },
-        customInputs = {
-            {
-                label = "Adjust Coins (+ to add, - to remove):",
-                placeholder = "e.g. +1M, -500K, +2.5B, +42",
-                currency = "coins",
-                action = "adjust_coins_custom",
-            },
-            {
-                label = "Adjust Gems (+ to add, - to remove):",
-                placeholder = "e.g. +1M, -100K, +1T, +500",
-                currency = "gems",
-                action = "adjust_gems_custom",
-            },
-        },
-    },
-    developer = {
-        title = "🧰 Developer Tools",
-        tests = {
-            { name = "📋 Snapshot Target Player", action = "admin_snapshot" },
-            { name = "💾 Force Save Target Player", action = "admin_force_save" },
-            {
-                name = "🎫 Game Passes: checking…",
-                action = "toggle_creator_game_passes",
-                creatorOnly = true,
-            },
-            { name = "🗑️ Reset Pets (Target)", action = "admin_reset_pets" },
-            -- label says what the guard actually protects: ALL unique pets (per-uid
-            -- records — huges, secrets/dragons, exclusives), not just huges (Jason
-            -- almost didn't click it: "am I gonna lose my dragon?")
-            {
-                name = "🔄 Reset to Beginning (keeps ALL unique pets)",
-                action = "admin_reset_to_beginning",
-            },
-            {
-                name = "🔎 Reset to Beginning — PREVIEW",
-                action = "admin_reset_to_beginning_preview",
-            },
-            {
-                name = "♻️ Full Respec (refund enhancements)",
-                action = "admin_full_respec",
-            },
-            { name = "🐻 Grant Bear Basic", action = "grant_bear_basic" },
-            { name = "🐉 Grant Dragon Basic", action = "grant_dragon_basic" },
-            { name = "🐻 Grant Golden Bear", action = "grant_bear_golden" },
-            { name = "👤 Grant Colorado", action = "grant_colorado_basic" },
-            { name = "👑 Grant Golden Colorado", action = "grant_colorado_golden" },
-            { name = "🌈 Grant Rainbow Colorado", action = "grant_colorado_rainbow" },
-            { name = "⬆ Grant Huge Rainbow Colorado", action = "grant_colorado_huge" },
-            { name = "👑 Grant CREATOR Colorado (apex)", action = "grant_colorado_creator" },
-            { name = "👤 Grant Kade", action = "grant_kade_basic" },
-            { name = "👑 Grant Golden Kade", action = "grant_kade_golden" },
-            { name = "🌈 Grant Rainbow Kade", action = "grant_kade_rainbow" },
-            { name = "⬆ Grant Huge Rainbow Kade", action = "grant_kade_huge" },
-            { name = "🥚 Signal Seal Egg — Basic", action = "grant_beta_egg_basic" },
-            { name = "🥚 Signal Seal Egg — Golden", action = "grant_beta_egg_golden" },
-            { name = "🥚 Signal Seal Egg — Rainbow", action = "grant_beta_egg_rainbow" },
-            { name = "🥚 Signal Seal Egg — Huge", action = "grant_beta_egg_huge" },
-            { name = "🥚 Patch Phoenix Egg — Basic", action = "grant_patch_egg_basic" },
-            { name = "🥚 Patch Phoenix Egg — Golden", action = "grant_patch_egg_golden" },
-            { name = "🥚 Patch Phoenix Egg — Rainbow", action = "grant_patch_egg_rainbow" },
-            { name = "🥚 Patch Phoenix Egg — Huge", action = "grant_patch_egg_huge" },
-            { name = "🥚 Core Digger Egg — Basic", action = "grant_core_egg_basic" },
-            { name = "🥚 Core Digger Egg — Golden", action = "grant_core_egg_golden" },
-            { name = "🥚 Core Digger Egg — Rainbow", action = "grant_core_egg_rainbow" },
-            { name = "🥚 Core Digger Egg — Huge", action = "grant_core_egg_huge" },
-            { name = "🥚 Cache Bandit Egg — Basic", action = "grant_cache_egg_basic" },
-            { name = "🥚 Cache Bandit Egg — Golden", action = "grant_cache_egg_golden" },
-            { name = "🥚 Cache Bandit Egg — Rainbow", action = "grant_cache_egg_rainbow" },
-            { name = "🥚 Cache Bandit Egg — Huge", action = "grant_cache_egg_huge" },
-            { name = "🔮 Grant 3 Future Call Tokens", action = "grant_future_call_tokens" },
-            { name = "🗺️ Toggle Meadow Lock", action = "toggle_zone_meadow" },
-            { name = "🗺️ Lock Meadow", action = "lock_zone_meadow" },
-            { name = "🗺️ Unlock Meadow", action = "unlock_zone_meadow" },
-            { name = "🗺️ Bypass Unlock Meadow", action = "unlock_zone_meadow_bypass" },
-            { name = "🎲 +100 Area Enhancements", action = "grant_enhancements_100" },
-            { name = "🥚 Hatch Unlock Status", action = "hatch_entitlement_status" },
-            { name = "🥚 Unlock All Hatch Modes", action = "hatch_entitlement_unlock_all" },
-            { name = "🥚 Lock All Hatch Modes", action = "hatch_entitlement_lock_all" },
-            { name = "🥚 Reset Hatch Unlocks", action = "hatch_entitlement_reset_all" },
-            { name = "🥚 Toggle Golden Hatch", action = "hatch_entitlement_toggle_golden" },
-            { name = "🥚 Toggle Charged Hatch", action = "hatch_entitlement_toggle_charged" },
-            { name = "🥚 Set Max Hatch 99", action = "hatch_entitlement_max_99" },
-            { name = "🥚 Recent Hatch History", action = "hatch_history_recent" },
-            { name = "🥚 Simulate 25 Basic Egg", action = "hatch_simulation_basic_25" },
-        },
-        customInputs = {
-            {
-                label = "Grant Pet (pet:variant:quantity[:huge]):",
-                placeholder = "e.g. bear:basic:3, colorado:basic:1:huge",
-                action = "grant_pet_custom",
-            },
-            {
-                label = "Set Zone Lock (zoneId:toggle|lock|unlock|bypass):",
-                placeholder = "e.g. Meadow:toggle, Meadow:lock, meadow_island:bypass",
-                action = "set_zone_lock_custom",
-            },
-            {
-                label = "Set Hatch Unlock (name:mode/value):",
-                placeholder = "e.g. goldenMode:unlock, chargedMode:lock, maxHatchCount:25",
-                action = "set_hatch_entitlement_custom",
-            },
-            {
-                label = "Set Max Hatch (3-99):",
-                placeholder = "e.g. 25 (clamped to 3-99)",
-                action = "set_max_hatch_count",
-            },
-        },
-    },
-    combat = {
-        title = "⚔️ Combat (test enemies)",
-        tests = {
-            -- Earth faction (real art): melee dog · ranged crow/cat · support bunny · tank bear.
-            -- BALANCE PACKS (Jason: "level balancing on a non-trash team" —
-            -- 3 lieutenants + 5 minions at your level, per faction)
-            { name = "⚔️ Balance Pack: LAVA (3LT+5M)", action = "spawn_pack_lava" },
-            { name = "⚔️ Balance Pack: CELESTIAL (3LT+5M)", action = "spawn_pack_celestial" },
-            { name = "⚔️ Balance Pack: EARTH (3LT+5M)", action = "spawn_pack_earth" },
-            { name = "🐕 Spawn Rabid Dog (melee)", action = "spawn_enemy_rabid_dog" },
-            { name = "🐦 Spawn Murder Crow (ranged)", action = "spawn_enemy_murder_crow" },
-            { name = "🐈 Spawn Vicious Cat (ranged)", action = "spawn_enemy_vicious_cat" },
-            { name = "🐰 Spawn Jackalope (healer)", action = "spawn_enemy_rabid_bunny" },
-            { name = "🐻 Spawn Raging Bear (tank)", action = "spawn_enemy_raging_bear" },
-            -- Desert faction.
-            { name = "🦊 Spawn Sand Jackal (melee)", action = "spawn_enemy_sand_jackal" },
-            {
-                name = "🦅 Spawn Carrion Vulture (ranged)",
-                action = "spawn_enemy_carrion_vulture",
-            },
-            { name = "🪲 Spawn Golden Scarab (healer)", action = "spawn_enemy_golden_scarab" },
-            { name = "🐢 Spawn Dune Tortoise (tank)", action = "spawn_enemy_dune_tortoise" },
-            { name = "🦂 Spawn Sand Scorpion (boss)", action = "spawn_enemy_sand_scorpion" },
-            -- Ice faction.
-            { name = "🦊 Spawn Frost Fox (melee)", action = "spawn_enemy_frost_fox" },
-            { name = "🦉 Spawn Snowy Owl (ranged)", action = "spawn_enemy_snowy_owl" },
-            { name = "🦭 Spawn Aurora Seal (healer)", action = "spawn_enemy_aurora_seal" },
-            { name = "🐘 Spawn Glacial Mammoth (tank)", action = "spawn_enemy_glacial_mammoth" },
-            {
-                name = "🐲 Spawn Glacial Leviathan (boss)",
-                action = "spawn_enemy_glacial_leviathan",
-            },
-            -- Lava faction.
-            { name = "🦎 Spawn Cinder Whelp (melee)", action = "spawn_enemy_lava_imp" },
-            { name = "🦏 Spawn Ember Brute (tank)", action = "spawn_enemy_ember_brute" },
-            { name = "🦋 Spawn Ember Moth (healer)", action = "spawn_enemy_ember_acolyte" },
-            { name = "🐉 Spawn Magma Wyrm (boss)", action = "spawn_enemy_infernal_boss" },
-        },
-        customInputs = {
-            {
-                label = "Spawn Enemy (id):",
-                placeholder = "e.g. rabid_dog, murder_crow, raging_bear, ember_brute",
-                action = "spawn_enemy_custom",
-            },
-        },
-    },
-    logging = {
-        title = "📊 Logging Controls",
-        tests = {
-            { name = "Show Current Log Config", action = "show_log_config" },
-            { name = "Set All to INFO", action = "set_all_info" },
-            { name = "Set All to DEBUG", action = "set_all_debug" },
-            { name = "Set All to WARN", action = "set_all_warn" },
-            { name = "Disable Console Output", action = "disable_console" },
-            { name = "Enable Console Output", action = "enable_console" },
-            { name = "Enable Performance Logs", action = "enable_performance" },
-            { name = "Disable Performance Logs", action = "disable_performance" },
-        },
-        customInputs = {
-            {
-                label = "Set Service Log Level (service:level):",
-                placeholder = "e.g. EggPetPreviewService:debug, BaseUI:warn",
-                action = "set_service_log_level",
-            },
-        },
-    },
-    inventory = {
-        title = "🎒 Inventory Management",
-        tests = {
-            { name = "🗑️ Remove Orphaned Buckets", action = "cleanup_inventory" },
-            { name = "🔧 Fix Item Categories", action = "fix_item_categories" },
-        },
-    },
-    assets = {
-        title = "🖼️ Asset Debugging",
-        tests = {
-            { name = "🔍 View All Generated Images", action = "view_all_assets" },
-            { name = "🥚 Debug Egg ViewportFrames", action = "debug_egg_viewports" },
-            { name = "🐾 Debug Pet ViewportFrames", action = "debug_pet_viewports" },
-            { name = "📊 Asset Generation Stats", action = "asset_stats" },
-            { name = "🔄 Force Regenerate Assets", action = "force_regenerate_assets" },
-        },
-    },
-    eggHatching = {
-        title = "🥚 Egg Hatching Simulation",
-        tests = {
-            { name = "🥚 Hatch 1 Egg (Random Pet)", action = "hatch_1_egg" },
-            { name = "🥚🥚 Hatch 3 Eggs (Random Pets)", action = "hatch_3_eggs" },
-            { name = "🥚🥚🥚 Hatch 5 Eggs (Random Pets)", action = "hatch_5_eggs" },
-            { name = "🥚🥚🥚🥚 Hatch 10 Eggs (Random Pets)", action = "hatch_10_eggs" },
-            { name = "🥚🥚🥚🥚🥚 Hatch 25 Eggs (Random Pets)", action = "hatch_25_eggs" },
-            {
-                name = "🥚🥚🥚🥚🥚🥚 Hatch 42 Eggs (Random Pets)",
-                action = "hatch_42_eggs",
-            },
-            { name = "🎲 Hatch 99 Eggs (Random Pets)", action = "hatch_99_eggs" },
-        },
-        customInputs = {
-            {
-                label = "Custom Egg Count (1-99):",
-                placeholder = "e.g. 15, 50, 99",
-                action = "hatch_custom_eggs",
-            },
-            {
-                label = "Specific Pet (petType:variant):",
-                placeholder = "e.g. bear:basic, dragon:golden, kitty:rainbow",
-                action = "hatch_specific_pet",
-            },
-        },
-    },
-}
+local adminConfig = require(ReplicatedStorage.Configs.admin_menu)
+local TEST_CATEGORIES = adminConfig.categories
+local menuConfig = require(ReplicatedStorage.Configs.menu_ui)
 
 function AdminPanel.new()
     local self = setmetatable({}, AdminPanel)
@@ -406,9 +141,7 @@ function AdminPanel.new()
     self.isVisible = false
     self.frame = nil
 
-    -- Network bridges
-    self.economyBridge = nil
-    self.effectsBridge = nil
+    self._connections = {}
 
     -- Player targeting state (NEW)
     self.selectedTargetPlayerId = nil -- nil = self, number = target player ID
@@ -445,144 +178,147 @@ function AdminPanel:Hide()
         self.frame:Destroy()
         self.frame = nil
     end
+    self.scrollFrame = nil
+    self.resultLabel = nil
+    self.targetPlayerLabel = nil
+    self.creatorPassToggleButton = nil
 
     self.isVisible = false
     self.logger:info("Admin panel hidden")
 end
 
 function AdminPanel:_createUI(parent)
-    -- Shared window shell (area-themed pill + header + close X on top).
     local shell = PanelChrome.build(parent, {
         name = "AdminPanel",
-        title = "🛠️ Admin Control Panel",
-        size = UDim2.new(0.8, 0, 0.9, 0),
+        title = menuConfig.admin_title,
+        expanded = true,
         onClose = function()
             self:Hide()
         end,
     })
     self.frame = shell.frame
     self._areaKey = shell.areaKey
-
-    -- Caution band (admin warning) just under the header.
-    local warningLabel = Instance.new("TextLabel")
-    warningLabel.Name = "Warning"
-    warningLabel.AnchorPoint = Vector2.new(0.5, 0)
-    warningLabel.Size = UDim2.new(0.96, 0, 0, 26)
-    warningLabel.Position = UDim2.new(0.5, 0, 0.12, 0)
-    warningLabel.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-    warningLabel.BorderSizePixel = 0
-    warningLabel.Text = "⚠️ ADMIN TOOLS - USE WITH CAUTION ⚠️"
-    warningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    warningLabel.TextSize = 15
-    warningLabel.Font = Enum.Font.GothamBold
-    warningLabel.ZIndex = 102
-    warningLabel.Parent = self.frame
-    local warningCorner = Instance.new("UICorner")
-    warningCorner.CornerRadius = UDim.new(0, 8)
-    warningCorner.Parent = warningLabel
-
-    -- Player selection + result display (positioned relatively below the warning band).
-    self:_createPlayerSelector()
-    self:_createResultDisplay()
-
-    -- Scroll frame for test categories (bottom portion).
-    local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Name = "AdminScroll"
-    scrollFrame.AnchorPoint = Vector2.new(0.5, 0)
-    scrollFrame.Size = UDim2.new(0.96, 0, 0.62, 0)
-    scrollFrame.Position = UDim2.new(0.5, 0, 0.36, 0)
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.BorderSizePixel = 0
-    scrollFrame.ScrollBarThickness = 8
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    scrollFrame.ZIndex = 101
-    scrollFrame.Parent = self.frame
-
+    local body = Instance.new("Frame")
+    body.Name = "AdminBody"
+    body.AnchorPoint = Vector2.new(0.5, 0)
+    body.Position = UDim2.fromScale(0.5, 0.16)
+    body.Size = UDim2.fromScale(0.96, 0.82)
+    body.BackgroundTransparency = 1
+    body.ZIndex = 101
+    body.Parent = self.frame
+    self.body = body
     local layout = Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Vertical
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 12)
-    layout.Parent = scrollFrame
+    layout.Padding = UDim.new(0, menuConfig.row_gap)
+    layout.Parent = body
+    self:_createPlayerSelector()
 
-    self.scrollFrame = scrollFrame
-
-    -- Create test category sections
+    local filters = Instance.new("Frame")
+    filters.Name = "Filters"
+    filters.Size = UDim2.new(1, 0, 0, menuConfig.control_height)
+    filters.BackgroundTransparency = 1
+    filters.LayoutOrder = 2
+    filters.Parent = body
+    self.categoryIndex = self.categoryIndex or 1
+    local categoryButton = Instance.new("TextButton")
+    categoryButton.Name = "CategoryButton"
+    categoryButton.Size = UDim2.fromScale(0.45, 1)
+    categoryButton.BackgroundColor3 = shell.areaColor
+    categoryButton.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.text))
+    categoryButton.TextSize = menuConfig.control_font_size
+    categoryButton.TextWrapped = true
+    categoryButton.Font = Enum.Font.GothamBold
+    categoryButton.Parent = filters
+    self.categoryButton = categoryButton
+    local categoryButtonCorner = Instance.new("UICorner")
+    categoryButtonCorner.Parent = categoryButton
+    categoryButton.Activated:Connect(function()
+        self.categoryIndex = self.categoryIndex % #adminConfig.category_order + 1
+        self:_createTestCategories()
+    end)
+    local search = Instance.new("TextBox")
+    search.Name = "ActionSearch"
+    search.Position = UDim2.fromScale(0.47, 0)
+    search.Size = UDim2.fromScale(0.53, 1)
+    search.BackgroundColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.input))
+    search.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.text))
+    search.PlaceholderColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.muted_text))
+    search.PlaceholderText = menuConfig.admin_filter_placeholder
+    search.Text = self.searchQuery or ""
+    search.TextSize = menuConfig.control_font_size
+    search.ClearTextOnFocus = false
+    search.Font = Enum.Font.Gotham
+    search.Parent = filters
+    local searchCorner = Instance.new("UICorner")
+    searchCorner.Parent = search
+    search:GetPropertyChangedSignal("Text"):Connect(function()
+        self.searchQuery = search.Text
+        self:_createTestCategories()
+    end)
+    self:_createResultDisplay()
+    self.scrollFrame = PanelChrome.scrollPane(body, {
+        name = "AdminScroll",
+        size = UDim2.fromScale(1, 0),
+        position = UDim2.fromScale(0, 0),
+        anchor = Vector2.zero,
+        padding = menuConfig.row_gap,
+        inset = 0,
+    })
+    self.scrollFrame.LayoutOrder = 4
+    local flex = Instance.new("UIFlexItem")
+    flex.FlexMode = Enum.UIFlexMode.Fill
+    flex.Parent = self.scrollFrame
     self:_createTestCategories()
-
     if self.isCreatorPassTester then
         Signals.Admin_SetCreatorPassBenefits:FireServer({ mode = "status" })
     end
-
-    -- Load player list on panel open
     self:_refreshPlayerList()
 end
 
 function AdminPanel:_createTestCategories()
-    local layoutOrder = 1
-
-    for _, categoryData in pairs(TEST_CATEGORIES) do
-        self:_createCategorySection(categoryData.title, categoryData, layoutOrder)
-        layoutOrder = layoutOrder + 1
+    if not self.scrollFrame then
+        return
     end
-end
-
-function AdminPanel:_createCategorySection(title, categoryData, layoutOrder)
-    local theme = uiConfig.helpers.get_theme(uiConfig)
-    local tests = categoryData.tests or categoryData -- Support both old format and new format
-    local customInputs = categoryData.customInputs or {}
-    local visibleTests = {}
-    for _, test in ipairs(tests) do
-        if not test.creatorOnly or self.isCreatorPassTester then
-            table.insert(visibleTests, test)
+    self.creatorPassToggleButton = nil
+    for _, child in ipairs(self.scrollFrame:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
         end
     end
+    local key = adminConfig.category_order[self.categoryIndex or 1]
+    self.categoryButton.Text = adminConfig.category_labels[key] .. "  ›"
+    self:_createCategorySection(TEST_CATEGORIES[key].title, TEST_CATEGORIES[key], 1)
+    self.scrollFrame.CanvasPosition = Vector2.zero
+end
 
-    -- Calculate total height needed
-    local totalItems = #visibleTests + (#customInputs * 2) -- Custom inputs take 2 rows each
-    local containerHeight = totalItems * 45 + 10
-
-    -- Category header — shared area-themed section band.
-    PanelChrome.sectionHeader(self.scrollFrame, { title = title, layoutOrder = layoutOrder })
-
-    -- Tests container
-    local testsContainer = Instance.new("Frame")
-    testsContainer.Name = title .. "Tests"
-    testsContainer.Size = UDim2.new(1, 0, 0, containerHeight)
-    testsContainer.BackgroundColor3 = theme.primary.card or Color3.fromRGB(50, 50, 55)
-    testsContainer.BorderSizePixel = 0
-    testsContainer.LayoutOrder = layoutOrder + 0.5
-    testsContainer.Parent = self.scrollFrame
-
-    local testsCorner = Instance.new("UICorner")
-    testsCorner.CornerRadius = UDim.new(0, 8)
-    testsCorner.Parent = testsContainer
-
-    local testsLayout = Instance.new("UIListLayout")
-    testsLayout.FillDirection = Enum.FillDirection.Vertical
-    testsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    testsLayout.Padding = UDim.new(0, 5)
-    testsLayout.Parent = testsContainer
-
-    local testsPadding = Instance.new("UIPadding")
-    testsPadding.PaddingTop = UDim.new(0, 10)
-    testsPadding.PaddingBottom = UDim.new(0, 5)
-    testsPadding.PaddingLeft = UDim.new(0, 10)
-    testsPadding.PaddingRight = UDim.new(0, 10)
-    testsPadding.Parent = testsContainer
-
-    local currentLayoutOrder = 1
-
-    -- Create test buttons
-    for _, test in ipairs(visibleTests) do
-        self:_createTestButton(test.name, test.action, currentLayoutOrder, testsContainer)
-        currentLayoutOrder = currentLayoutOrder + 1
+function AdminPanel:_createCategorySection(_title, categoryData, _layoutOrder)
+    local query = string.lower(self.searchQuery or "")
+    local function matches(text)
+        return query == "" or string.find(string.lower(text), query, 1, true) ~= nil
     end
-
-    -- Create custom input fields
-    for _, inputConfig in ipairs(customInputs) do
-        self:_createCustomInput(inputConfig, currentLayoutOrder, testsContainer)
-        currentLayoutOrder = currentLayoutOrder + 2 -- Takes 2 layout orders (label + input)
+    local order = 0
+    for _, test in ipairs(categoryData.tests or {}) do
+        if (not test.creatorOnly or self.isCreatorPassTester) and matches(test.name) then
+            order += 1
+            self:_createTestButton(test.name, test.action, order, self.scrollFrame)
+        end
+    end
+    for _, input in ipairs(categoryData.customInputs or {}) do
+        if matches(input.label) then
+            order += 1
+            self:_createCustomInput(input, order, self.scrollFrame)
+            order += 1
+        end
+    end
+    if order == 0 then
+        local empty = Instance.new("TextLabel")
+        empty.Name = "NoMatches"
+        empty.Size = UDim2.new(1, 0, 0, menuConfig.control_height)
+        empty.BackgroundTransparency = 1
+        empty.Text = menuConfig.admin_no_matches
+        empty.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.muted_text))
+        empty.TextSize = menuConfig.control_font_size
+        empty.Parent = self.scrollFrame
     end
 end
 
@@ -591,17 +327,23 @@ function AdminPanel:_createTestButton(testName, action, layoutOrder, parent)
 
     local button = Instance.new("TextButton")
     button.Name = action .. "Button"
-    button.Size = UDim2.new(1, 0, 0, 35)
+    button.Size = UDim2.new(1, 0, 0, menuConfig.control_height)
     button.BackgroundColor3 = theme.button and theme.button.primary or Color3.fromRGB(0, 120, 180)
     button.BorderSizePixel = 0
     button.Text = testName
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 13
+    button.TextSize = menuConfig.control_font_size
+    button.TextWrapped = true
     button.Font = Enum.Font.Gotham
     button.LayoutOrder = layoutOrder
     button.Parent = parent
     if action == "toggle_creator_game_passes" then
         self.creatorPassToggleButton = button
+        if self.creatorPassBenefitsEnabled ~= nil then
+            button.Text = self.creatorPassBenefitsEnabled
+                    and adminConfig.creator_pass_labels.enabled
+                or adminConfig.creator_pass_labels.disabled
+        end
     end
 
     local buttonCorner = Instance.new("UICorner")
@@ -649,7 +391,7 @@ function AdminPanel:_createCustomInput(inputConfig, layoutOrder, parent)
     -- Input container frame
     local inputFrame = Instance.new("Frame")
     inputFrame.Name = inputConfig.action .. "InputFrame"
-    inputFrame.Size = UDim2.new(1, 0, 0, 35)
+    inputFrame.Size = UDim2.new(1, 0, 0, menuConfig.control_height)
     inputFrame.BackgroundColor3 = theme.input and theme.input.background
         or Color3.fromRGB(30, 30, 35)
     inputFrame.BorderSizePixel = 0
@@ -663,8 +405,8 @@ function AdminPanel:_createCustomInput(inputConfig, layoutOrder, parent)
     -- Text input
     local textBox = Instance.new("TextBox")
     textBox.Name = inputConfig.action .. "TextBox"
-    textBox.Size = UDim2.new(0.7, -10, 1, -6)
-    textBox.Position = UDim2.new(0, 5, 0, 3)
+    textBox.Size = UDim2.fromScale(0.7, 1)
+    textBox.Position = UDim2.fromScale(0.015, 0)
     textBox.BackgroundTransparency = 1
     textBox.Text = ""
     textBox.PlaceholderText = inputConfig.placeholder
@@ -679,8 +421,8 @@ function AdminPanel:_createCustomInput(inputConfig, layoutOrder, parent)
     -- Set button
     local setButton = Instance.new("TextButton")
     setButton.Name = inputConfig.action .. "SetButton"
-    setButton.Size = UDim2.new(0.3, -5, 1, -6)
-    setButton.Position = UDim2.new(0.7, 0, 0, 3)
+    setButton.Size = UDim2.fromScale(0.27, 1)
+    setButton.Position = UDim2.fromScale(0.73, 0)
     setButton.BackgroundColor3 = theme.button and theme.button.primary
         or Color3.fromRGB(0, 120, 180)
     setButton.BorderSizePixel = 0
@@ -708,7 +450,7 @@ function AdminPanel:_createCustomInput(inputConfig, layoutOrder, parent)
                 self:_executeCustomCurrencyAdjust(inputConfig.currency, amount)
                 textBox.Text = "" -- Clear after adjusting
             else
-                self.logger:warn("Invalid amount entered:", textBox.Text)
+                self:_showAdminResult(menuConfig.admin_invalid_amount, false)
             end
         else
             -- Other custom actions (like logging)
@@ -717,7 +459,7 @@ function AdminPanel:_createCustomInput(inputConfig, layoutOrder, parent)
                 self:_executeCustomAction(inputConfig.action, inputValue)
                 textBox.Text = "" -- Clear after executing
             else
-                self.logger:warn("Empty input provided")
+                self:_showAdminResult(menuConfig.admin_empty_input, false)
             end
         end
     end
@@ -781,7 +523,11 @@ function AdminPanel:_parseAmount(input)
     end
 
     -- Calculate final amount
-    local finalAmount = math.floor(numericValue * multiplier * sign)
+    local rawAmount = numericValue * multiplier * sign
+    if rawAmount ~= rawAmount or math.abs(rawAmount) == math.huge then
+        return nil
+    end
+    local finalAmount = math.floor(rawAmount)
 
     -- Log the parsing for debugging
     self.logger:info("💰 Amount parsed", {
@@ -800,10 +546,11 @@ end
 function AdminPanel:_executeTestAction(action, _testName)
     self.logger:info("Executing test action:", action)
 
-    -- Economy actions
-    if action:find("buy_") then
-        self:_executePurchaseAction(action)
-    elseif action:find("add_") then
+    if adminConfig.event_actions[action] then
+        self:_executeEffectAction(action)
+    elseif adminConfig.logging_actions[action] then
+        self:_executeLoggingAction(action)
+    elseif action:find("^add_") then
         self:_executeCurrencyAction(action)
     elseif action == "reset_currencies" then
         self:_resetCurrencies()
@@ -812,8 +559,7 @@ function AdminPanel:_executeTestAction(action, _testName)
     elseif action == "admin_force_save" then
         self:_requestForceSave()
     elseif action == "toggle_creator_game_passes" then
-        Signals.Admin_SetCreatorPassBenefits:FireServer({ mode = "toggle" })
-        self:_showAdminResult("Changing creator game-pass benefits...", true)
+        self:_requestCreatorPassToggle()
     elseif action == "admin_reset_pets" then
         self:_requestResetPets()
     elseif action == "admin_reset_to_beginning" then
@@ -823,58 +569,37 @@ function AdminPanel:_executeTestAction(action, _testName)
     elseif action == "admin_full_respec" then
         self:_requestFullRespec()
     elseif action == "grant_enhancements_100" then
-        task.spawn(function()
-            local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
-            if not remote then
-                self:_showAdminResult("GameAPICommand remote missing", false)
-                return
+        self:_runCommand(
+            "enh.grant",
+            { count = adminConfig.quick_grants.enhancements },
+            function(result)
+                return string.format(
+                    adminConfig.command_results.enhancements,
+                    tostring(result.granted or 0)
+                )
             end
-            local res = remote:InvokeServer("enh.grant", { count = 100 })
-            local r = type(res) == "table" and (res.result or res.data or res) or res
-            self:_showAdminResult(
-                ("Granted %s random area enhancements"):format(tostring(r and r.granted or "?")),
-                r and r.ok == true
-            )
-        end)
+        )
     elseif action == "grant_future_call_tokens" then
-        task.spawn(function()
-            local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
-            if not remote then
-                self:_showAdminResult("GameAPICommand remote missing", false)
-                return
+        self:_runCommand(
+            "futureCall.grant",
+            { count = adminConfig.quick_grants.future_call },
+            function(result)
+                return string.format(
+                    adminConfig.command_results.future_call,
+                    tostring(result.count or 0)
+                )
             end
-            local envelope = remote:InvokeServer("futureCall.grant", { count = 3 })
-            local result = type(envelope) == "table"
-                    and (envelope.result or envelope.data or envelope)
-                or nil
-            self:_showAdminResult(
-                result
-                        and result.ok
-                        and ("Granted 3 Future Call tokens (now %s)"):format(
-                            tostring(result.count or "?")
-                        )
-                    or ("Future Call grant failed: " .. tostring(result and result.reason)),
-                result and result.ok == true
-            )
-        end)
+        )
     elseif action:find("^spawn_pack_") then
-        task.spawn(function()
-            local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
-            if not remote then
-                self:_showAdminResult("GameAPICommand remote missing", false)
-                return
-            end
-            local faction = action:gsub("^spawn_pack_", "")
-            local res = remote:InvokeServer("combat.spawnPack", { faction = faction })
-            local r = type(res) == "table" and (res.result or res) or {}
-            self:_showAdminResult(
-                ("Spawned %s pack: %s up, %s failed"):format(
-                    faction,
-                    tostring(r.spawned or "?"),
-                    tostring(r.failed or "?")
-                ),
-                r.ok == true and (r.failed or 0) == 0
-            )
+        local faction = action:gsub("^spawn_pack_", "")
+        self:_runCommand("combat.spawnPack", { faction = faction }, function(result)
+            return string.format(
+                adminConfig.command_results.spawn_pack,
+                faction,
+                tostring(result.spawned or 0),
+                tostring(result.failed or 0)
+            ),
+                (result.failed or 0) == 0
         end)
     elseif action:find("^spawn_enemy_") then
         self:_executeSpawnEnemyAction(action)
@@ -899,22 +624,10 @@ function AdminPanel:_executeTestAction(action, _testName)
     -- Effects actions
     elseif action == "run_diagnostics" then
         self:_runDiagnostics()
-    elseif action:find("effect") or action:find("start_") then
-        self:_executeEffectAction(action)
 
     -- System actions
-    elseif action == "test_rate_limiting" then
-        self:_testRateLimit()
     elseif action == "debug_print_data" then
         self:_debugPrintData()
-    elseif action == "performance_test" then
-        self:_performanceTest()
-    elseif action == "network_test" then
-        self:_networkTest()
-
-    -- Logging control actions
-    elseif action:find("log") or action:find("console") or action:find("performance") then
-        self:_executeLoggingAction(action)
 
     -- Inventory management actions
     elseif action == "cleanup_inventory" then
@@ -922,83 +635,52 @@ function AdminPanel:_executeTestAction(action, _testName)
     elseif action == "fix_item_categories" then
         self:_fixItemCategories()
 
-    -- Asset debugging actions
-    elseif action == "view_all_assets" then
-        self:_viewAllAssets()
-    elseif action == "debug_egg_viewports" then
-        self:_debugEggViewports()
-    elseif action == "debug_pet_viewports" then
-        self:_debugPetViewports()
-    elseif action == "asset_stats" then
-        self:_showAssetStats()
-    elseif action == "force_regenerate_assets" then
-        self:_forceRegenerateAssets()
-
     -- Egg hatching simulation actions
     elseif action:find("hatch_") then
         self:_executeEggHatchingAction(action)
     else
-        self.logger:warn("Unknown action:", action)
+        self:_showAdminResult("Unsupported action: " .. tostring(action), false)
     end
 end
 
-function AdminPanel:_executePurchaseAction(action)
-    if not self.economyBridge then
-        self.logger:warn("Economy bridge not available")
-        return
-    end
+function AdminPanel:_requestCreatorPassToggle()
+    Signals.Admin_SetCreatorPassBenefits:FireServer({ mode = "toggle" })
+    self:_showAdminResult(adminConfig.command_results.creator_pending, true)
+end
 
-    -- Map actions to purchase data
-    local purchases = {
-        buy_test_item = { itemId = "test_item", cost = 50, currency = "coins" },
-        buy_health_potion = { itemId = "health_potion", cost = 25, currency = "coins" },
-        buy_wooden_sword = { itemId = "wooden_sword", cost = 100, currency = "coins" },
-        buy_iron_sword = { itemId = "iron_sword", cost = 500, currency = "coins" },
-        buy_basic_pickaxe = { itemId = "basic_pickaxe", cost = 200, currency = "coins" },
-        buy_premium_xp_boost = { itemId = "premium_xp_boost", cost = 10, currency = "gems" },
-        buy_diamond_sword = { itemId = "diamond_sword", cost = 25, currency = "gems" },
-        buy_speed_potion = { itemId = "speed_potion", cost = 5, currency = "gems" },
-        buy_trader_scroll = { itemId = "trader_scroll", cost = 150, currency = "coins" },
-    }
-
-    local purchaseData = purchases[action]
-    if purchaseData then
-        -- Add target player data if selected
-        local actionData = self:_getAdminActionData(purchaseData)
-
-        -- 🔍 DEBUG: Check if bridge exists and is callable
-        self.logger:info("🔍 ADMIN PANEL - About to call bridge Fire", {
-            hasBridge = self.economyBridge ~= nil,
-            bridgeType = typeof(self.economyBridge),
-            hasFireMethod = self.economyBridge and typeof(self.economyBridge.Fire) == "function",
-            item = purchaseData.itemId,
-            targetData = actionData,
-        })
-
-        if not self.economyBridge then
-            self.logger:warn("🚨 ADMIN PANEL - Economy bridge is nil!")
+function AdminPanel:_runCommand(name, args, describeResult)
+    task.spawn(function()
+        local remote = ReplicatedStorage:WaitForChild("GameAPICommand", 5)
+        if not remote then
+            self:_showAdminResult(adminConfig.command_results.unavailable, false)
             return
         end
-
-        if not self.economyBridge.Fire then
-            self.logger:warn("🚨 ADMIN PANEL - Economy bridge has no Fire method!")
+        local ok, envelope = pcall(function()
+            return remote:InvokeServer(name, args)
+        end)
+        local result = ok
+            and type(envelope) == "table"
+            and (envelope.result or envelope.data or envelope)
+        if type(result) ~= "table" or result.ok ~= true then
+            self:_showAdminResult(
+                string.format(
+                    adminConfig.command_results.failed,
+                    name,
+                    tostring(
+                        type(result) == "table" and (result.reason or result.code)
+                            or "network_error"
+                    )
+                ),
+                false
+            )
             return
         end
-
-        Signals.PurchaseItem:FireServer(actionData)
-        self.logger:info(
-            "Purchase request sent:",
-            { item = purchaseData.itemId, targetData = actionData }
-        )
-    end
+        local message, succeeded = describeResult(result)
+        self:_showAdminResult(message, succeeded ~= false)
+    end)
 end
 
 function AdminPanel:_executeCurrencyAction(action)
-    if not self.economyBridge then
-        self.logger:warn("Economy bridge not available")
-        return
-    end
-
     -- Grant a big stack to every per-biome currency at once (progression-testing helper).
     -- Each fires its own AdjustCurrency (the remote takes a single currency per call).
     if action == "add_area_coins" then
@@ -1028,11 +710,6 @@ function AdminPanel:_executeCurrencyAction(action)
 end
 
 function AdminPanel:_executeCustomCurrencyAdjust(currency, amount)
-    if not self.economyBridge then
-        self.logger:warn("Economy bridge not available")
-        return
-    end
-
     local adjustCurrencyData = {
         currency = currency,
         amount = amount,
@@ -1045,37 +722,17 @@ function AdminPanel:_executeCustomCurrencyAdjust(currency, amount)
 end
 
 function AdminPanel:_resetCurrencies()
-    if not self.economyBridge then
-        self.logger:warn("Economy bridge not available")
-        return
-    end
-
     -- Add target player data if selected
-    local actionData = self:_getAdminActionData({})
-    Signals.AdjustCurrency:FireServer({ reset = true, target = actionData.target })
+    local actionData = self:_getAdminActionData({ reset = true })
+    Signals.AdjustCurrency:FireServer(actionData)
     self.logger:info("Currency reset requested:", actionData)
 end
 
 function AdminPanel:_executeEffectAction(action)
     self.logger:info("Effect action:", action)
 
-    local eventActions = {
-        test_effect_stacking = {
-            command = "start",
-            eventId = "hatch_luck_hour",
-            durationSeconds = 300,
-        },
-        start_xp_weekend = { command = "start", eventId = "double_rewards_hour" },
-        start_speed_hour = { command = "start", eventId = "crystal_rush" },
-        start_hatch_luck_hour = { command = "start", eventId = "hatch_luck_hour" },
-        start_double_rewards_hour = { command = "start", eventId = "double_rewards_hour" },
-        start_crystal_rush = { command = "start", eventId = "crystal_rush" },
-        start_coin_shower = { command = "start", eventId = "coin_shower" },
-        show_global_events = { command = "snapshot" },
-        clear_global_events = { command = "clear" },
-    }
-
-    local command = eventActions[action]
+    local authored = adminConfig.event_actions[action]
+    local command = authored and table.clone(authored)
     if not command then
         self:_showAdminResult("Unknown event action: " .. tostring(action), false)
         return
@@ -1086,63 +743,23 @@ function AdminPanel:_executeEffectAction(action)
     self:_showAdminResult("Event command sent: " .. tostring(action), true)
 end
 
-function AdminPanel:_testRateLimit()
-    self.logger:info("Testing rate limits...")
-    -- After migrating to sleitnick/Net, the legacy NetworkBridge is no longer available.
-    -- Temporarily disable this until a Net-based rate-limit test is implemented.
-    self.logger:warn("Rate-limit test disabled pending Net migration")
-end
-
 function AdminPanel:_debugPrintData()
     local player = Players.LocalPlayer
-    print("=== DEBUG: Player Data ===")
-    print("Player:", player.Name)
-    print("UserId:", player.UserId)
-    if player:FindFirstChild("leaderstats") then
-        print("Leaderstats found:")
-        for _, stat in pairs(player.leaderstats:GetChildren()) do
-            print("  ", stat.Name, "=", stat.Value)
+    local lines = { player.Name .. " (" .. tostring(player.UserId) .. ")" }
+    local stats = player:FindFirstChild("leaderstats")
+    if stats then
+        for _, stat in ipairs(stats:GetChildren()) do
+            if stat:IsA("ValueBase") then
+                table.insert(lines, stat.Name .. ": " .. tostring(stat.Value))
+            end
         end
-    else
-        print("No leaderstats found")
     end
-    print("=== END DEBUG ===")
-end
-
-function AdminPanel:_performanceTest()
-    self.logger:info("Running performance test...")
-    local startTime = tick()
-
-    -- Create and destroy many UI elements
-    for _ = 1, 1000 do
-        local testFrame = Instance.new("Frame")
-        testFrame.Size = UDim2.new(0, 10, 0, 10)
-        testFrame.Parent = workspace
-        testFrame:Destroy()
-    end
-
-    local endTime = tick()
-    self.logger:info("Performance test completed in", endTime - startTime, "seconds")
+    self:_showAdminResult(table.concat(lines, "\n"), true)
 end
 
 function AdminPanel:_runDiagnostics()
     self.logger:info("Running diagnostics...")
     Signals.RunDiagnosticsRequest:FireServer()
-end
-
-function AdminPanel:_networkTest()
-    self.logger:info("Testing network connections...")
-    if self.economyBridge then
-        self.logger:info("Economy bridge: CONNECTED")
-    else
-        self.logger:warn("Economy bridge: NOT CONNECTED")
-    end
-
-    if self.effectsBridge then
-        self.logger:info("Effects bridge: CONNECTED")
-    else
-        self.logger:warn("Effects bridge: NOT CONNECTED")
-    end
 end
 
 function AdminPanel:_executeLoggingAction(action)
@@ -1182,6 +799,16 @@ function AdminPanel:_executeLoggingAction(action)
     else
         self.logger:warn("Unknown logging action:", action)
     end
+    local current = Logger:GetConfig()
+    self:_showAdminResult(
+        string.format(
+            menuConfig.admin_logging_result,
+            tostring(current.defaultLevel),
+            tostring(current.consoleOutput),
+            tostring(current.performanceLogs)
+        ),
+        true
+    )
 end
 
 function AdminPanel:_executeCustomAction(action, inputValue)
@@ -1196,18 +823,23 @@ function AdminPanel:_executeCustomAction(action, inputValue)
             serviceName = serviceName:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
             levelString = levelString:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
 
+            levelString = levelString:lower()
+            if not adminConfig.logging_levels[levelString] or serviceName == "" then
+                self:_showAdminResult(menuConfig.admin_invalid_log_level, false)
+                return
+            end
             local Logger = loggerResult
             Logger:SetServiceLogLevel(serviceName, levelString)
-            self.logger:info("Set service log level", {
-                service = serviceName,
-                level = levelString,
-            })
+            self:_showAdminResult(
+                string.format(
+                    menuConfig.admin_log_level_set,
+                    serviceName,
+                    Logger:GetServiceLogLevel(serviceName)
+                ),
+                true
+            )
         else
-            self.logger:warn("Invalid format. Use 'ServiceName:level' or 'ServiceName level'")
-            print("Invalid format. Examples:")
-            print("  EggPetPreviewService:debug")
-            print("  BaseUI warn")
-            print("  AssetPreloadService:info")
+            self:_showAdminResult(menuConfig.admin_invalid_log_level, false)
         end
     elseif action == "grant_pet_custom" then
         self:_executeCustomPetGrant(inputValue)
@@ -1232,27 +864,26 @@ end
 
 function AdminPanel:_initializeNetworking()
     -- Signals is required at module load, so its registry is already complete here.
-    self.economyBridge = {
-        Fire = function(_, _action, data)
-            if Signals.PurchaseItem then
-                Signals.PurchaseItem:FireServer(data)
-            end
-        end,
-    }
 
     if Signals.RunDiagnostics then
-        Signals.RunDiagnostics.OnClientEvent:Connect(function(report)
-            self:_showDiagnosticsPopup(report)
-        end)
+        table.insert(
+            self._connections,
+            Signals.RunDiagnostics.OnClientEvent:Connect(function(report)
+                self:_showDiagnosticsPopup(report)
+            end)
+        )
     end
 
     if Signals.AdminToolResult then
-        Signals.AdminToolResult.OnClientEvent:Connect(function(result)
-            self:_handleAdminToolResult(result)
-        end)
+        table.insert(
+            self._connections,
+            Signals.AdminToolResult.OnClientEvent:Connect(function(result)
+                self:_handleAdminToolResult(result)
+            end)
+        )
     end
 
-    self.logger:info("Economy bridge connected via Signals")
+    self.logger:info("Admin result signals connected")
 end
 
 -- Public interface methods
@@ -1265,113 +896,94 @@ function AdminPanel:GetFrame()
 end
 
 function AdminPanel:Destroy()
+    for _, connection in ipairs(self._connections) do
+        connection:Disconnect()
+    end
+    table.clear(self._connections)
     self:Hide()
     self.logger:info("Admin panel destroyed")
 end
 
 -- Player Selection Methods (NEW)
 function AdminPanel:_createPlayerSelector()
-    local theme = uiConfig.helpers.get_theme(uiConfig)
-
-    -- Player selector container
-    local selectorContainer = Instance.new("Frame")
-    selectorContainer.Name = "PlayerSelector"
-    selectorContainer.AnchorPoint = Vector2.new(0.5, 0)
-    selectorContainer.Size = UDim2.new(0.96, 0, 0, 40)
-    selectorContainer.Position = UDim2.new(0.5, 0, 0.18, 0)
-    selectorContainer.BackgroundColor3 = theme.primary.card or Color3.fromRGB(60, 60, 65)
-    selectorContainer.BorderSizePixel = 0
-    selectorContainer.ZIndex = 102
-    selectorContainer.Parent = self.frame
-
+    local selector = Instance.new("Frame")
+    selector.Name = "PlayerSelector"
+    selector.Size = UDim2.new(1, 0, 0, menuConfig.control_height)
+    selector.BackgroundColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.input))
+    selector.LayoutOrder = 1
+    selector.Parent = self.body
     local selectorCorner = Instance.new("UICorner")
-    selectorCorner.CornerRadius = UDim.new(0, 8)
-    selectorCorner.Parent = selectorContainer
-
-    -- Label
-    local selectorLabel = Instance.new("TextLabel")
-    selectorLabel.Name = "Label"
-    selectorLabel.Size = UDim2.new(0, 120, 1, 0)
-    selectorLabel.Position = UDim2.new(0, 10, 0, 0)
-    selectorLabel.BackgroundTransparency = 1
-    selectorLabel.Text = "🎯 Target Player:"
-    selectorLabel.TextColor3 = theme.text.primary or Color3.fromRGB(255, 255, 255)
-    selectorLabel.TextSize = 14
-    selectorLabel.Font = Enum.Font.Gotham
-    selectorLabel.TextXAlignment = Enum.TextXAlignment.Left
-    selectorLabel.Parent = selectorContainer
-
-    -- Current target display
-    self.targetPlayerLabel = Instance.new("TextLabel")
-    self.targetPlayerLabel.Name = "CurrentTarget"
-    self.targetPlayerLabel.Size = UDim2.new(0, 150, 1, 0)
-    self.targetPlayerLabel.Position = UDim2.new(0, 130, 0, 0)
-    self.targetPlayerLabel.BackgroundTransparency = 1
-    self.targetPlayerLabel.Text = "Self (You)"
-    self.targetPlayerLabel.TextColor3 = Color3.fromRGB(100, 200, 100) -- Green for self
-    self.targetPlayerLabel.TextSize = 14
-    self.targetPlayerLabel.Font = Enum.Font.GothamBold
-    self.targetPlayerLabel.TextXAlignment = Enum.TextXAlignment.Left
-    self.targetPlayerLabel.Parent = selectorContainer
-
-    -- Dropdown button
-    local dropdownButton = Instance.new("TextButton")
-    dropdownButton.Name = "DropdownButton"
-    dropdownButton.Size = UDim2.new(0, 120, 0, 30)
-    dropdownButton.Position = UDim2.new(1, -130, 0, 5)
-    dropdownButton.BackgroundColor3 = theme.primary.accent or Color3.fromRGB(0, 120, 180)
-    dropdownButton.BorderSizePixel = 0
-    dropdownButton.Text = "📝 Select Player"
-    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropdownButton.TextSize = 12
-    dropdownButton.Font = Enum.Font.Gotham
-    dropdownButton.Parent = selectorContainer
-
-    local dropdownCorner = Instance.new("UICorner")
-    dropdownCorner.CornerRadius = UDim.new(0, 6)
-    dropdownCorner.Parent = dropdownButton
-
-    dropdownButton.Activated:Connect(function()
+    selectorCorner.Parent = selector
+    local selected = self.selectedTargetPlayerId
+        and Players:GetPlayerByUserId(self.selectedTargetPlayerId)
+    if not selected then
+        self.selectedTargetPlayerId = nil
+    end
+    local label = Instance.new("TextLabel")
+    label.Name = "CurrentTarget"
+    label.Position = UDim2.fromScale(0.025, 0)
+    label.Size = UDim2.fromScale(0.6, 1)
+    label.BackgroundTransparency = 1
+    label.Text = selected and selected.Name or "Self (You)"
+    label.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.text))
+    label.TextSize = menuConfig.control_font_size
+    label.TextWrapped = true
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = selector
+    self.targetPlayerLabel = label
+    local button = Instance.new("TextButton")
+    button.Name = "DropdownButton"
+    button.Position = UDim2.fromScale(0.65, 0)
+    button.Size = UDim2.fromScale(0.35, 1)
+    button.Text = menuConfig.admin_next_player_label
+    button.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.text))
+    button.BackgroundColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.action))
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = menuConfig.control_font_size
+    button.TextWrapped = true
+    button.Parent = selector
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.Parent = button
+    button.Activated:Connect(function()
         self:_showPlayerDropdown()
     end)
-
-    self.playerDropdown = dropdownButton
+    self.playerDropdown = button
 end
 
 function AdminPanel:_createResultDisplay()
-    local theme = uiConfig.helpers.get_theme(uiConfig)
-
-    local resultContainer = Instance.new("Frame")
-    resultContainer.Name = "AdminResult"
-    resultContainer.AnchorPoint = Vector2.new(0.5, 0)
-    resultContainer.Size = UDim2.new(0.96, 0, 0, 56)
-    resultContainer.Position = UDim2.new(0.5, 0, 0.26, 0)
-    resultContainer.BackgroundColor3 = theme.primary.card or Color3.fromRGB(45, 45, 50)
-    resultContainer.BorderSizePixel = 0
-    resultContainer.ZIndex = 102
-    resultContainer.Parent = self.frame
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = resultContainer
-
-    self.resultLabel = Instance.new("TextLabel")
-    self.resultLabel.Name = "ResultText"
-    self.resultLabel.Size = UDim2.new(1, -20, 1, -10)
-    self.resultLabel.Position = UDim2.new(0, 10, 0, 5)
-    self.resultLabel.BackgroundTransparency = 1
-    self.resultLabel.Text = "Admin tools ready. Select a target, then run a developer action."
-    self.resultLabel.TextColor3 = theme.text.primary or Color3.fromRGB(255, 255, 255)
-    self.resultLabel.TextSize = 12
-    self.resultLabel.Font = Enum.Font.Gotham
-    self.resultLabel.TextXAlignment = Enum.TextXAlignment.Left
-    self.resultLabel.TextYAlignment = Enum.TextYAlignment.Top
-    self.resultLabel.TextWrapped = true
-    self.resultLabel.Parent = resultContainer
+    local result = Instance.new("ScrollingFrame")
+    result.Name = "AdminResult"
+    result.Size = UDim2.new(1, 0, 0, menuConfig.result_height)
+    result.LayoutOrder = 3
+    result.BackgroundColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.input))
+    result.BorderSizePixel = 0
+    result.Active = true
+    result.ScrollingDirection = Enum.ScrollingDirection.Y
+    result.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    result.CanvasSize = UDim2.fromScale(0, 0)
+    result.ScrollBarThickness = menuConfig.row_gap
+    result.Parent = self.body
+    local label = Instance.new("TextLabel")
+    label.Name = "ResultText"
+    label.Position = UDim2.fromScale(0.025, 0)
+    label.Size = UDim2.fromScale(0.94, 0)
+    label.AutomaticSize = Enum.AutomaticSize.Y
+    label.BackgroundTransparency = 1
+    label.Text = menuConfig.admin_result_ready
+    label.TextColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.text))
+    label.TextSize = menuConfig.control_font_size
+    label.Font = Enum.Font.Gotham
+    label.TextWrapped = true
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Top
+    label.Parent = result
+    self.resultLabel = label
 end
 
 function AdminPanel:_showAdminResult(message, success)
-    if self.resultLabel then
+    if self.resultLabel and self.resultLabel.Parent then
+        self.resultLabel.Parent.CanvasPosition = Vector2.zero
         self.resultLabel.Text = message
         self.resultLabel.TextColor3 = success == false and Color3.fromRGB(255, 120, 120)
             or Color3.fromRGB(170, 255, 170)
@@ -1385,48 +997,34 @@ function AdminPanel:_showAdminResult(message, success)
 end
 
 function AdminPanel:_refreshPlayerList()
-    -- Request updated player list from server
-    if self.economyBridge then
-        self.economyBridge:Fire("get_player_list", {})
-        self.logger:info("Requested player list from server")
-    else
-        self.logger:warn("Cannot refresh player list - economy bridge not available")
-    end
+    self.playerList = Players:GetPlayers()
+    table.sort(self.playerList, function(a, b)
+        if a == b then
+            return false
+        end
+        if a == Players.LocalPlayer then
+            return true
+        end
+        if b == Players.LocalPlayer then
+            return false
+        end
+        return a.UserId < b.UserId
+    end)
 end
 
 function AdminPanel:_showPlayerDropdown()
-    -- Simple implementation: cycle through available players
-    local players = game.Players:GetPlayers()
-    local currentIndex = 1
-
-    -- Find current selection
-    if self.selectedTargetPlayerId then
-        for i, player in ipairs(players) do
-            if player.UserId == self.selectedTargetPlayerId then
-                currentIndex = i
-                break
-            end
+    self:_refreshPlayerList()
+    local selectedId = self.selectedTargetPlayerId or Players.LocalPlayer.UserId
+    local index = 0
+    for i, player in ipairs(self.playerList) do
+        if player.UserId == selectedId then
+            index = i
+            break
         end
     end
-
-    -- Move to next player (or back to self)
-    local nextIndex = currentIndex + 1
-    if nextIndex > #players then
-        -- Back to self
-        self.selectedTargetPlayerId = nil
-        self.targetPlayerLabel.Text = "Self (You)"
-        self.targetPlayerLabel.TextColor3 = Color3.fromRGB(100, 200, 100) -- Green
-        self.logger:info("Target changed to: Self")
-    else
-        local targetPlayer = players[nextIndex]
-        self.selectedTargetPlayerId = targetPlayer.UserId
-        self.targetPlayerLabel.Text = targetPlayer.Name
-        self.targetPlayerLabel.TextColor3 = Color3.fromRGB(255, 200, 100) -- Orange for others
-        self.logger:info(
-            "Target changed to: " .. targetPlayer.Name,
-            { targetUserId = targetPlayer.UserId }
-        )
-    end
+    local target = self.playerList[index % #self.playerList + 1]
+    self.selectedTargetPlayerId = target ~= Players.LocalPlayer and target.UserId or nil
+    self.targetPlayerLabel.Text = target == Players.LocalPlayer and "Self (You)" or target.Name
 end
 
 function AdminPanel:_getAdminActionData(baseData)
@@ -1909,9 +1507,10 @@ function AdminPanel:_handleAdminToolResult(result)
         end
     elseif result.kind == "creator_pass_benefits" and result.creatorPassBenefits then
         local enabled = result.creatorPassBenefits.enabled == true
+        self.creatorPassBenefitsEnabled = enabled
         if self.creatorPassToggleButton then
-            self.creatorPassToggleButton.Text = enabled and "🎫 Game Passes: ON (tap to disable)"
-                or "🎫 Game Passes: OFF (tap to enable)"
+            self.creatorPassToggleButton.Text = enabled and adminConfig.creator_pass_labels.enabled
+                or adminConfig.creator_pass_labels.disabled
         end
     elseif result.kind == "hatch_entitlement" and result.hatchEntitlements then
         local entitlementParts = {}
@@ -1978,9 +1577,7 @@ function AdminPanel:_showDiagnosticsPopup(report)
     if report.failed > 0 then
         message ..= "\nFailures:\n" .. table.concat(report.failures, "\n")
     end
-    -- Simple Roblox alert replacement
-    self.logger:info(message)
-    print(message)
+    self:_showAdminResult(message, report.failed == 0)
 end
 
 -- 🔧 INVENTORY MANAGEMENT COMMANDS
@@ -2009,120 +1606,6 @@ end
 -- ═══════════════════════════════════════════════════════════════════════════════════
 -- ASSET DEBUGGING FUNCTIONS
 -- ═══════════════════════════════════════════════════════════════════════════════════
-
-function AdminPanel:_viewAllAssets()
-    self.logger:info("🔍 ADMIN: Opening comprehensive asset viewer")
-
-    local success, viewer = pcall(function()
-        return self:_createComprehensiveAssetViewer()
-    end)
-
-    if success and viewer then
-        self.logger:info("✅ Asset viewer opened successfully")
-    else
-        self.logger:error("❌ Failed to open asset viewer:", viewer)
-    end
-end
-
-function AdminPanel:_debugEggViewports()
-    self.logger:info("🥚 ADMIN: Opening egg ViewportFrame debugger")
-
-    local success, debugger = pcall(function()
-        local EggHatchingService = require(ReplicatedStorage.Shared.Services.EggHatchingService)
-        return EggHatchingService:DebugEggViewports()
-    end)
-
-    if success and debugger then
-        self.logger:info("✅ Egg debugger opened successfully")
-    else
-        self.logger:error("❌ Failed to open egg debugger:", debugger)
-    end
-end
-
-function AdminPanel:_debugPetViewports()
-    self.logger:info("🐾 ADMIN: Opening pet ViewportFrame debugger - Coming Soon!")
-    -- Placeholder for now
-end
-
-function AdminPanel:_showAssetStats()
-    self.logger:info("📊 ADMIN: Showing asset generation statistics")
-
-    -- Quick stats display
-    local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-    if not assetsFolder then
-        self.logger:error("Assets folder not found!")
-        return
-    end
-
-    local stats = {}
-    table.insert(stats, "📊 ASSET GENERATION STATISTICS")
-    table.insert(
-        stats,
-        "════════════════════════════════"
-    )
-
-    -- Count eggs
-    local eggsFolder = assetsFolder:FindFirstChild("Images")
-        and assetsFolder.Images:FindFirstChild("Eggs")
-    local eggCount = 0
-    if eggsFolder then
-        for _, child in pairs(eggsFolder:GetChildren()) do
-            if child:IsA("ViewportFrame") then
-                eggCount = eggCount + 1
-            end
-        end
-    end
-    table.insert(stats, "🥚 Generated Eggs: " .. eggCount)
-
-    -- Count pets
-    local petsFolder = assetsFolder:FindFirstChild("Images")
-        and assetsFolder.Images:FindFirstChild("Pets")
-    local petCount = 0
-    local variantCount = 0
-    if petsFolder then
-        for _, petTypeFolder in pairs(petsFolder:GetChildren()) do
-            if petTypeFolder:IsA("Folder") then
-                petCount = petCount + 1
-                for _, variant in pairs(petTypeFolder:GetChildren()) do
-                    if variant:IsA("ViewportFrame") then
-                        variantCount = variantCount + 1
-                    end
-                end
-            end
-        end
-    end
-    table.insert(stats, "🐾 Pet Types: " .. petCount)
-    table.insert(stats, "🎨 Pet Variants: " .. variantCount)
-    table.insert(stats, "📁 Total Generated Images: " .. (eggCount + variantCount))
-
-    self.logger:info(table.concat(stats, "\n"))
-end
-
-function AdminPanel:_createComprehensiveAssetViewer()
-    -- Placeholder - will implement the full scrollable viewer
-    self.logger:info("📋 Comprehensive asset viewer - placeholder implementation")
-    self.logger:info("Use 'Debug Egg ViewportFrames' button for now")
-    return true
-end
-
-function AdminPanel:_forceRegenerateAssets()
-    self.logger:info("🔄 ADMIN: Force regenerating all assets with updated positioning")
-
-    -- Send signal to server to trigger AssetPreloadService regeneration
-    local success = pcall(function()
-        Signals.ForceRegenerateAssets:FireServer({
-            requestedBy = Players.LocalPlayer.UserId,
-            reason = "Admin debug - fixing egg positioning",
-        })
-    end)
-
-    if success then
-        self.logger:info("✅ Asset regeneration request sent to server")
-        self.logger:info("⏱️ Check server console for regeneration progress")
-    else
-        self.logger:error("❌ Failed to send regeneration request")
-    end
-end
 
 function AdminPanel:_executeEggHatchingAction(action)
     self.logger:info("🥚 ADMIN: Executing egg hatching action:", action)

@@ -1485,6 +1485,7 @@ function TradePanel:_createTradeWindow()
     local gui = self:_ensureLiveGui()
     local shell = PanelChrome.build(gui, {
         name = "TradeWindow",
+        customSizing = true, -- Live trade owns its expanded headroom and resize proportions.
         title = "🤝 Trading",
         size = UDim2.new(0.94, 0, 0.9, 0),
         onClose = function()

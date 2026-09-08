@@ -15,6 +15,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Get shared modules
@@ -26,6 +27,7 @@ local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
 local VoiceVolume = require(ReplicatedStorage.Shared.Effects.VoiceVolume)
 local voiceConfig = ConfigLoader:LoadConfig("audio").voices
+local menuConfig = ConfigLoader:LoadConfig("menu_ui")
 local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
 local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
@@ -198,31 +200,15 @@ function SettingsPanel.new()
             voicesVolume = voiceConfig.default_level,
             uiSoundsEnabled = true,
         },
-        graphics = {
-            quality = "medium", -- low, medium, high
-            performanceMode = false,
-            reducedMotion = false,
-            -- Display method preferences
-            inventoryDisplay = "images", -- images, viewports
-            eggPreviewDisplay = "images", -- images, viewports
-            propEffects = true,
-        },
+        graphics = { propEffects = true },
         ui = {
-            scale = 1.0,
-            theme = "dark", -- dark, light
             displayTips = true,
             displayChatAnnouncements = true,
-            compactMode = false,
             hudLayout = "auto",
             hideTogglesInBattle = true,
             squadDisplayMode = "classic",
             questDisplayMode = "full",
             tutorialLanguage = "auto",
-        },
-        accessibility = {
-            highContrast = false,
-            largeText = false,
-            keyboardNavigation = true,
         },
     }
 
@@ -242,7 +228,6 @@ function SettingsPanel:Show(parent)
     end
 
     self:_createUI(parent)
-    self:_loadSettings()
 
     self.isVisible = true
     self.logger:info("Settings panel shown")
@@ -266,6 +251,7 @@ function SettingsPanel:_createUI(parent)
     -- Shared window shell (outer pill + area-themed header + close X) — one code path (Jason).
     local shell = PanelChrome.build(parent, {
         name = "SettingsPanel",
+        expanded = true,
         title = "⚙️ Settings",
         onClose = function()
             self:Hide()
@@ -278,12 +264,13 @@ function SettingsPanel:_createUI(parent)
     -- Settings list: full width, starts just under the header (content-heavy → tall pane).
     self.scrollFrame = PanelChrome.scrollPane(shell.frame, {
         name = "SettingsScroll",
-        position = UDim2.new(0.5, 0, 0.13, 0),
-        size = UDim2.new(1, 0, 0.85, 0),
-        padding = 12,
+        position = UDim2.fromScale(0.5, 0.16),
+        size = UDim2.fromScale(1, 0.82),
+        padding = menuConfig.row_gap,
     })
 
-    -- Create settings sections
+    self._settingsLayoutOrder = 0
+    -- Creation order owns grouping; unrelated sections cannot collide through numeric orders.
     self:_createAudioSettings()
     self:_createGraphicsSettings()
     self:_createUISettings()
@@ -296,12 +283,17 @@ function SettingsPanel:_createUI(parent)
     -- already cover this; no need to duplicate it inside Settings. Jason.)
 end
 
-function SettingsPanel:_createSectionHeader(title, layoutOrder)
+function SettingsPanel:_nextLayoutOrder()
+    self._settingsLayoutOrder = (self._settingsLayoutOrder or 0) + 1
+    return self._settingsLayoutOrder
+end
+
+function SettingsPanel:_createSectionHeader(title, _layoutOrder)
     -- Shared area-themed section band (PanelChrome.sectionHeader).
     PanelChrome.sectionHeader(self.scrollFrame, {
         title = title,
         color = self._areaColor,
-        layoutOrder = layoutOrder,
+        layoutOrder = self:_nextLayoutOrder(),
     })
 end
 
@@ -310,7 +302,7 @@ function SettingsPanel:_createSliderSetting(
     currentValue,
     minValue,
     maxValue,
-    layoutOrder,
+    _layoutOrder,
     callback,
     step,
     endpointSnap
@@ -319,10 +311,10 @@ function SettingsPanel:_createSliderSetting(
 
     local settingFrame = PanelChrome.entryRow(self.scrollFrame, {
         name = name .. "Setting",
-        height = 50,
+        height = menuConfig.row_height,
         corner = 8,
         bg = theme.primary.card or Color3.fromRGB(50, 50, 55),
-        layoutOrder = layoutOrder,
+        layoutOrder = self:_nextLayoutOrder(),
     })
 
     -- Label
@@ -335,21 +327,33 @@ function SettingsPanel:_createSliderSetting(
     label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextWrapped = true
     label.Parent = settingFrame
 
     -- Slider background
     local sliderBG = Instance.new("TextButton")
     sliderBG.Text = ""
     sliderBG.AutoButtonColor = false
-    sliderBG.Size = UDim2.new(0.35, 0, 0, 8)
-    sliderBG.Position = UDim2.new(0.45, 0, 0.5, -4)
-    sliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    sliderBG.Size = UDim2.new(0.35, 0, 0, menuConfig.control_height)
+    sliderBG.AnchorPoint = Vector2.new(0, 0.5)
+    sliderBG.Position = UDim2.fromScale(0.45, 0.5)
+    sliderBG.BackgroundTransparency = 1
+    sliderBG.ZIndex = 106
     sliderBG.BorderSizePixel = 0
     sliderBG.Parent = settingFrame
 
+    local track = Instance.new("Frame")
+    track.Name = "Track"
+    track.Size = UDim2.new(1, 0, 0, menuConfig.slider_track_height)
+    track.AnchorPoint = Vector2.new(0.5, 0.5)
+    track.Position = UDim2.fromScale(0.5, 0.5)
+    track.BackgroundColor3 = Color3.fromRGB(table.unpack(menuConfig.colors.input))
+    track.BorderSizePixel = 0
+    track.Parent = sliderBG
+
     local sliderCorner = Instance.new("UICorner")
     sliderCorner.CornerRadius = UDim.new(0, 4)
-    sliderCorner.Parent = sliderBG
+    sliderCorner.Parent = track
 
     -- Slider fill
     local sliderFill = Instance.new("Frame")
@@ -358,7 +362,7 @@ function SettingsPanel:_createSliderSetting(
     sliderFill.Position = UDim2.new(0, 0, 0, 0)
     sliderFill.BackgroundColor3 = theme.primary.accent or Color3.fromRGB(0, 120, 180)
     sliderFill.BorderSizePixel = 0
-    sliderFill.Parent = sliderBG
+    sliderFill.Parent = track
 
     local fillCorner = Instance.new("UICorner")
     fillCorner.CornerRadius = UDim.new(0, 4)
@@ -402,30 +406,73 @@ function SettingsPanel:_createSliderSetting(
             1
         )
         -- Make mute/max reachable on touch without requiring a sub-pixel edge hit.
-        if endpointSnap then
-            if percent <= endpointSnap then
+        local snap = endpointSnap or menuConfig.slider_endpoint_snap_fraction
+        if snap then
+            if percent <= snap then
                 percent = 0
-            elseif percent >= 1 - endpointSnap then
+            elseif percent >= 1 - snap then
                 percent = 1
             end
         end
         setSliderValue(minValue + (maxValue - minValue) * percent)
     end
 
+    local draggingInput
+    local scrollingBeforeDrag
+    local function finishDrag()
+        draggingInput = nil
+        if scrollingBeforeDrag ~= nil and self.scrollFrame then
+            self.scrollFrame.ScrollingEnabled = scrollingBeforeDrag
+        end
+        scrollingBeforeDrag = nil
+    end
     sliderBG.InputBegan:Connect(function(input)
         if
             input.UserInputType == Enum.UserInputType.MouseButton1
             or input.UserInputType == Enum.UserInputType.Touch
         then
+            if draggingInput then
+                return
+            end
+            draggingInput = input
+            scrollingBeforeDrag = self.scrollFrame.ScrollingEnabled
+            self.scrollFrame.ScrollingEnabled = false
             updateSlider(input)
         end
+    end)
+    local changed = UserInputService.InputChanged:Connect(function(input)
+        if
+            draggingInput
+            and (
+                input == draggingInput
+                or (
+                    draggingInput.UserInputType == Enum.UserInputType.MouseButton1
+                    and input.UserInputType == Enum.UserInputType.MouseMovement
+                )
+            )
+        then
+            updateSlider(input)
+        end
+    end)
+    local ended = UserInputService.InputEnded:Connect(function(input)
+        if input == draggingInput then
+            finishDrag()
+        end
+    end)
+    sliderBG.Destroying:Connect(function()
+        changed:Disconnect()
+        ended:Disconnect()
+        finishDrag()
     end)
     -- Controller-accessible fallback: each A press advances one authored step and wraps.
     sliderBG.Activated:Connect(function()
         if Players.LocalPlayer:GetAttribute("InputMode") ~= "gamepad" then
             return
         end
-        local increment = tonumber(step) or (maxValue - minValue) / 10
+        local increment = math.max(
+            tonumber(step) or 0,
+            (maxValue - minValue) * menuConfig.slider_gamepad_step_fraction
+        )
         currentValue += increment
         if currentValue > maxValue + 1e-6 then
             currentValue = minValue
@@ -434,15 +481,15 @@ function SettingsPanel:_createSliderSetting(
     end)
 end
 
-function SettingsPanel:_createToggleSetting(name, currentValue, layoutOrder, callback)
+function SettingsPanel:_createToggleSetting(name, currentValue, _layoutOrder, callback)
     local theme = uiConfig.helpers.get_theme(uiConfig)
 
     local settingFrame = PanelChrome.entryRow(self.scrollFrame, {
         name = name .. "Setting",
-        height = 50,
+        height = menuConfig.row_height,
         corner = 8,
         bg = theme.primary.card or Color3.fromRGB(50, 50, 55),
-        layoutOrder = layoutOrder,
+        layoutOrder = self:_nextLayoutOrder(),
     })
 
     local label = Instance.new("TextLabel")
@@ -454,6 +501,7 @@ function SettingsPanel:_createToggleSetting(name, currentValue, layoutOrder, cal
     label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextWrapped = true
     label.ZIndex = 2
     label.Parent = settingFrame
 
@@ -463,9 +511,9 @@ function SettingsPanel:_createToggleSetting(name, currentValue, layoutOrder, cal
     local toggle = Pill.button({
         parent = settingFrame,
         color = state and TOGGLE_ON or TOGGLE_OFF,
-        size = UDim2.fromOffset(74, 30),
-        position = UDim2.new(1, -88, 0.5, 0),
-        anchorPoint = Vector2.new(0, 0.5),
+        size = UDim2.fromOffset(74, menuConfig.control_height),
+        position = UDim2.fromScale(0.97, 0.5),
+        anchorPoint = Vector2.new(1, 0.5),
         text = state and "ON" or "OFF",
         textSize = 13,
         zIndex = 106, -- above the entry pill ring (105)
@@ -482,15 +530,15 @@ function SettingsPanel:_createToggleSetting(name, currentValue, layoutOrder, cal
     return { container = settingFrame, toggle = toggle }
 end
 
-function SettingsPanel:_createButtonSetting(name, buttonText, layoutOrder, callback)
+function SettingsPanel:_createButtonSetting(name, buttonText, _layoutOrder, callback)
     local theme = uiConfig.helpers.get_theme(uiConfig)
 
     local settingFrame = PanelChrome.entryRow(self.scrollFrame, {
         name = name .. "Setting",
-        height = 40,
+        height = menuConfig.row_height,
         corner = 8,
         bg = theme.primary.card or Color3.fromRGB(50, 50, 55),
-        layoutOrder = layoutOrder,
+        layoutOrder = self:_nextLayoutOrder(),
     })
 
     -- Label
@@ -503,15 +551,16 @@ function SettingsPanel:_createButtonSetting(name, buttonText, layoutOrder, callb
     label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextWrapped = true
     label.Parent = settingFrame
 
     -- Action button uses the shared glossy capsule path (no one-off rectangular buttons).
     local actionButton = Pill.button({
         parent = settingFrame,
         color = theme.button and theme.button.primary or Color3.fromRGB(0, 120, 180),
-        size = UDim2.new(0, 120, 0, 28),
-        position = UDim2.new(1, -135, 0.5, 0),
-        anchorPoint = Vector2.new(0, 0.5),
+        size = UDim2.new(0, 120, 0, menuConfig.control_height),
+        position = UDim2.fromScale(0.97, 0.5),
+        anchorPoint = Vector2.new(1, 0.5),
         text = buttonText,
         textSize = 12,
         zIndex = 106,
@@ -524,13 +573,13 @@ function SettingsPanel:_createButtonSetting(name, buttonText, layoutOrder, callb
     end)
 end
 
-function SettingsPanel:_createDropdownSetting(title, currentValue, options, layoutOrder, callback)
+function SettingsPanel:_createDropdownSetting(title, currentValue, options, _layoutOrder, callback)
     local container = PanelChrome.entryRow(self.scrollFrame, {
         name = title:gsub(" ", ""),
-        height = 50,
+        height = menuConfig.row_height,
         corner = 8,
         bg = Color3.fromRGB(50, 50, 55),
-        layoutOrder = layoutOrder,
+        layoutOrder = self:_nextLayoutOrder(),
     })
 
     -- Title label — left padding 15 + size 14 to match the slider/toggle/button rows (Jason: the
@@ -541,6 +590,7 @@ function SettingsPanel:_createDropdownSetting(title, currentValue, options, layo
     titleLabel.Position = UDim2.new(0, 15, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
+    titleLabel.TextWrapped = true
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextSize = 14
     titleLabel.Font = Enum.Font.Gotham
@@ -552,8 +602,9 @@ function SettingsPanel:_createDropdownSetting(title, currentValue, options, layo
     -- Dropdown button (changed from Frame to TextButton to support clicking)
     local dropdownFrame = Instance.new("TextButton")
     dropdownFrame.Name = "Dropdown"
-    dropdownFrame.Size = UDim2.new(0.5, -10, 0, 32)
-    dropdownFrame.Position = UDim2.new(0.5, 10, 0.5, -16)
+    dropdownFrame.Size = UDim2.new(0.5, 0, 0, menuConfig.control_height)
+    dropdownFrame.Position = UDim2.fromScale(0.48, 0.5)
+    dropdownFrame.AnchorPoint = Vector2.new(0, 0.5)
     dropdownFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     dropdownFrame.BorderSizePixel = 0
     dropdownFrame.Text = "" -- No text on the button itself
@@ -575,6 +626,7 @@ function SettingsPanel:_createDropdownSetting(title, currentValue, options, layo
     valueLabel.TextSize = 14
     valueLabel.Font = Enum.Font.Gotham
     valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+    valueLabel.TextWrapped = true
     valueLabel.Parent = dropdownFrame
 
     -- Arrow icon
@@ -603,17 +655,13 @@ function SettingsPanel:_createDropdownSetting(title, currentValue, options, layo
     end
 
     dropdownFrame.Activated:Connect(function()
-        currentIndex = currentIndex + 1
-        if currentIndex > #options then
-            currentIndex = 1
+        local nextIndex = currentIndex % #options + 1
+        local selectedOption = options[nextIndex]
+        if callback and callback(selectedOption.value) == false then
+            return
         end
-
-        local selectedOption = options[currentIndex]
+        currentIndex = nextIndex
         valueLabel.Text = selectedOption.display
-
-        if callback then
-            callback(selectedOption.value)
-        end
     end)
 
     return container
@@ -707,26 +755,6 @@ end
 function SettingsPanel:_createGraphicsSettings()
     self:_createSectionHeader("🎨 Graphics Settings", 6)
 
-    self:_createToggleSetting(
-        "Performance Mode",
-        self.settings.graphics.performanceMode,
-        7,
-        function(value)
-            self.settings.graphics.performanceMode = value
-            -- Apply performance optimizations
-        end
-    )
-
-    self:_createToggleSetting(
-        "Reduced Motion",
-        self.settings.graphics.reducedMotion,
-        8,
-        function(value)
-            self.settings.graphics.reducedMotion = value
-            -- Disable/reduce animations
-        end
-    )
-
     self.settings.graphics.propEffects = FloraSway.isEnabled()
     local shadowConfig = ConfigLoader:LoadConfig("client_graphics").shadows
     self:_createDropdownSetting(
@@ -747,97 +775,10 @@ function SettingsPanel:_createGraphicsSettings()
             FloraSway.setEnabled(value)
         end
     )
-
-    -- Display Method Preferences (only show if user control is allowed)
-    self:_createDisplayPreferences()
-end
-
-function SettingsPanel:_createDisplayPreferences()
-    -- Use simplified DisplayPreferences utility
-    local DisplayPreferences = require(script.Parent.Parent.Parent.Utils.DisplayPreferences)
-
-    -- Get controllable contexts
-    local controllableContexts = DisplayPreferences.GetControllableContexts()
-
-    if #controllableContexts == 0 then
-        self.logger:debug("No user-controllable display contexts available")
-        return
-    end
-
-    -- Create dropdown options
-    local displayOptions = {
-        { value = "images", display = "📷 Images (Fast)" },
-        { value = "viewports", display = "🎮 3D Models (High Quality)" },
-    }
-
-    -- Add dropdown for each controllable context
-    local layoutOrder = 9
-    for _, context in ipairs(controllableContexts) do
-        -- Get current user preference
-        local currentPref = DisplayPreferences.GetDisplayMethod(context)
-
-        -- Create friendly context name
-        local contextDisplayNames = {
-            inventory = "Inventory Display",
-            egg_preview = "Egg Preview Display",
-            shop_display = "Shop Display",
-        }
-
-        local contextTitle = contextDisplayNames[context] or (context .. " Display")
-
-        -- Create dropdown
-        self:_createDropdownSetting(
-            contextTitle,
-            currentPref,
-            displayOptions,
-            layoutOrder,
-            function(value)
-                -- Set the preference via DisplayPreferences utility
-                DisplayPreferences.SetDisplayMethod(context, value)
-
-                self.logger:info("Display preference updated", {
-                    context = context,
-                    value = value,
-                })
-
-                -- Show performance warning if switching to viewports
-                if value == "viewports" then
-                    -- Simple performance warning
-                    self:_showPerformanceWarning(
-                        "Viewports may impact performance on older devices. Switch to Images if you experience frame drops."
-                    )
-                end
-
-                -- Update local settings cache
-                if context == "inventory" then
-                    self.settings.graphics.inventoryDisplay = value
-                elseif context == "egg_preview" then
-                    self.settings.graphics.eggPreviewDisplay = value
-                end
-
-                self:_saveSettings()
-            end
-        )
-
-        layoutOrder = layoutOrder + 1
-    end
-end
-
-function SettingsPanel:_showPerformanceWarning(message)
-    -- Create a temporary warning message
-    self.logger:warn("Performance Warning: " .. message)
-
-    -- TODO: Could add a proper warning UI here
-    -- For now, just log the warning
 end
 
 function SettingsPanel:_createUISettings()
     self:_createSectionHeader("📱 UI Settings", 20)
-
-    self:_createSliderSetting("UI Scale", self.settings.ui.scale, 0.8, 1.2, 21, function(value)
-        self.settings.ui.scale = value
-        -- Apply UI scaling
-    end)
 
     self.settings.ui.displayTips = GameplayTips.isEnabled()
     self:_createToggleSetting("Display Tips", self.settings.ui.displayTips, 22, function(value)
@@ -1149,7 +1090,7 @@ function SettingsPanel:_createCombatSettings()
         32,
         function(value)
             if value == "full" and not fullEligible then
-                return
+                return false
             end
             Signals.Settings_SetMergeDefenseMode:FireServer({ mode = value })
         end
@@ -1175,17 +1116,6 @@ function SettingsPanel:_openAdminPanel()
     end
 end
 
-function SettingsPanel:_loadSettings()
-    -- Load settings from player data or local storage
-    -- For now, using defaults
-    self.logger:info("Settings loaded")
-end
-
-function SettingsPanel:_saveSettings()
-    -- Save settings to player data or local storage
-    self.logger:info("Settings saved")
-end
-
 -- Set callback for admin panel requests
 function SettingsPanel:SetAdminPanelCallback(callback)
     self.onAdminPanelRequested = callback
@@ -1209,7 +1139,6 @@ function SettingsPanel:IsAdmin()
 end
 
 function SettingsPanel:Destroy()
-    self:_saveSettings()
     self:Hide()
     self.logger:info("Settings panel destroyed")
 end

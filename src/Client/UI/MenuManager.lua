@@ -182,6 +182,8 @@ function MenuManager:_createOverlay()
     -- Menus sit ABOVE the HUD + quest tracker (PlayerBar=80, BuffStats=100) so a near-fullscreen menu
     -- doesn't fight the player bar / currency bleeding through (Jason).
     overlayGui.DisplayOrder = 120
+    -- Menu titles may share the Roblox top-bar strip; actionable content stays below the header.
+    overlayGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
     -- Panels parent DIRECTLY to the MenuOverlay ScreenGui — no wrapper Frame layer (Jason: cleaner).
     -- Show/hide is driven by the scrim's visibility; panels create/destroy their own frame on Show/Hide.
@@ -311,15 +313,14 @@ function MenuManager:OpenPanel(panelName, transitionEffect)
         return false
     end
 
-    -- Switch panels inside the same overlay without running an async close that can hide the new panel.
-    if self.currentPanel then
-        self:_hideCurrentPanelForSwitch()
-    end
-
     local panel = self.panels[panelName]
     if not panel then
         self.logger:error("Panel not found: " .. tostring(panelName))
         return false
+    end
+    -- Validate the destination before closing the current panel.
+    if self.currentPanel then
+        self:_hideCurrentPanelForSwitch()
     end
 
     self.isTransitioning = true
@@ -328,7 +329,28 @@ function MenuManager:OpenPanel(panelName, transitionEffect)
     if self._scrim then
         self._scrim.Visible = true
     end
-    panel:Show(self.overlayFrame)
+    local shown, showError = pcall(function()
+        panel:Show(self.overlayFrame)
+    end)
+    if not shown then
+        pcall(function()
+            panel:Hide()
+        end)
+        local gotFrame, failedFrame = pcall(function()
+            return panel:GetFrame()
+        end)
+        if gotFrame and typeof(failedFrame) == "Instance" and failedFrame:IsA("GuiObject") then
+            failedFrame:Destroy()
+        end
+        self.isTransitioning = false
+        if self._scrim then
+            self._scrim.Visible = false
+        end
+        self.logger:error(
+            "Could not open panel " .. tostring(panelName) .. ": " .. tostring(showError)
+        )
+        return false
+    end
 
     -- Get panel frame and animate entrance
     local panelFrame = panel:GetFrame()

@@ -277,7 +277,7 @@ return function()
         it("wires the creator-only persisted admin gate", function()
             local dataSource = readFile("src/Server/Services/DataService.lua")
             local adminSource = readFile("src/Server/Services/AdminToolsService.lua")
-            local panelSource = readFile("src/Client/UI/Menus/AdminPanel.lua")
+            local panelSource = readFile("configs/admin_menu.lua")
 
             expect(dataSource:find("CreatorGamePassesEnabled = true", 1, true)).to.be.ok()
             expect(dataSource:find("SchemaMigrations[11]", 1, true)).to.be.ok()

@@ -831,8 +831,20 @@ return function()
                 )
             ).to.be.ok()
             expect(service:find('player:SetAttribute("MergeDefenseRebirths", 0)', 1, true)).to.be.ok()
-            expect(panel:find('name = "🔄 Reset to Beginning (keeps ALL unique pets)"', 1, true)).to.be.ok()
-            expect(panel:find('action = "admin_reset_to_beginning"', 1, true)).to.be.ok()
+            expect(
+                readFile("configs/admin_menu.lua"):find(
+                    'name = "🔄 Reset to Beginning (keeps ALL unique pets)"',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(
+                readFile("configs/admin_menu.lua"):find(
+                    'action = "admin_reset_to_beginning"',
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(panel:find('elseif action == "admin_reset_to_beginning" then', 1, true)).to.be.ok()
             expect(panel:find("self:_requestResetToBeginning(false)", 1, true)).to.be.ok()
             expect(settings:find("function SettingsService:ResetMergeDefenseForBeginning", 1, true)).to.be.ok()

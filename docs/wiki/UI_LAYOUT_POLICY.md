@@ -90,3 +90,24 @@ notch/home-bar protection. The user allows their titles to run behind the top-le
 a 44px header keeps inventory controls below them, with the 44px close button inside the right edge.
 Closing the final inventory window restores `CoreUISafeInsets` for other dialogs. Config owns the bounds/header;
 native checks cover close containment, touch size, and restoration of the normal inset.
+
+Settings and Admin use the expanded `PanelChrome` shell. Shared touch sizes, compact bounds,
+slider endpoint snap zones, and Admin copy live in `configs/menu_ui.lua`; Admin categories/actions
+live in `configs/admin_menu.lua`. The menu overlay uses device-safe insets, with close controls
+inside the header. Settings rows have sequential layout orders; audio sliders support dragging,
+release their global input listeners on destruction, and suspend list scrolling during a drag.
+Admin keeps its target, category/search, and scrollable result above a flex-filled action list.
+
+The September 2026 framework audit removed exposed placeholders (Performance Mode, Reduced Motion,
+UI Scale, inventory/egg viewport choices, demo purchases, and obsolete asset viewers). Settings
+retains the functioning controls; Target Highlight is intentionally a session preference. Client
+logging and local hatch previews are labeled with their actual scope. Inventory context actions
+that still lack implementations are disabled in config. Unknown menu requests preserve the open
+panel, and failed panel construction releases the transition lock and removes partial UI.
+
+`MenuFrameworkAuditSmoke.run()` checks Settings/Admin at five viewport sizes, Admin catalog routing,
+eight-player target cycling, failed menu recovery, and inventory All/hatch routing using spies.
+`AdminCurrencyAuditSmoke.run()` checks the real server handler against fake accounts: add, subtract,
+and reset use the authorized target, malformed amounts are rejected, and missing authorization
+fails closed. No real grants or resets are needed for these tests. This is a framework audit, not
+an end-to-end destructive test of every privileged operation.

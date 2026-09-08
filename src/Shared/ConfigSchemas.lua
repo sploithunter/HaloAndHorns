@@ -240,6 +240,13 @@ local SCHEMAS = {
     soul = schema({ delta_per_conquest = "number", range = "table", bands = "table" }),
     sounds = schema({ egg_hatch_pop = "table", egg_roll_snare = "table" }),
     audio = schema({ voices = "table", buses = "table" }),
+    menu_ui = schema({ compact_panel = "table", expanded_panel = "table", colors = "table" }),
+    admin_menu = schema({
+        categories = "table",
+        category_order = "table",
+        event_actions = "table",
+        logging_actions = "table",
+    }),
     starter_pets = schema({
         version = "number",
         enabled = "boolean",

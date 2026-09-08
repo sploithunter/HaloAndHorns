@@ -8772,7 +8772,8 @@ function InventoryPanel:_addConfiguredAction(options, actionConfig, item)
             local actualQuantity = quantity
             if quantity == "all" then
                 actualQuantity = itemCount
-            elseif type(quantity) == "number" and quantity > itemCount then
+            end
+            if type(quantity) == "number" and quantity > itemCount then
                 print("⏭️ SKIPPING QUANTITY:", quantity, "- not enough items")
                 -- Skip if we don't have enough items
             else
@@ -8785,7 +8786,7 @@ function InventoryPanel:_addConfiguredAction(options, actionConfig, item)
                 -- Format text with quantity
                 local text = actionConfig.text
                 if quantity == "all" then
-                    text = string.format(text:gsub("%%d", "All (%d)"), itemCount)
+                    text = string.format(text:gsub("%%d", "All (%%d)"), itemCount)
                 else
                     text = string.format(text, quantity)
                 end
@@ -9038,11 +9039,8 @@ function InventoryPanel:_upgradeItem(item)
 end
 
 -- 🥚 HATCH ACTIONS
-function InventoryPanel:_hatchEgg(item, quantity)
-    print("🥚 HATCH EGG:", item.id, "quantity:", quantity)
-    -- TODO: Implement egg hatching from inventory
-    self.logger:info("🥚 HATCH REQUESTED", { itemId = item.id, quantity = quantity })
-    print("🚧 HATCH NOT IMPLEMENTED YET - Use egg interaction in world")
+function InventoryPanel:_hatchEgg(item, _quantity)
+    self:_hatchEggItem(item)
 end
 
 function InventoryPanel:_deleteItemQuantity(item, quantity)

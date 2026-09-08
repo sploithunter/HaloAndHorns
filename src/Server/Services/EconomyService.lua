@@ -165,41 +165,49 @@ function EconomyService:_setupNetSignals()
 
     -- Adjust currency (+/-)
     Signals.AdjustCurrency.OnServerEvent:Connect(function(player, data)
-        if type(data) ~= "table" then
-            return
-        end
-
-        local actionName = data.reset and "setCurrency" or "adjustCurrency"
-        if self._adminService and self._adminService.ValidateAdminAction then
-            local authorized, reason =
-                self._adminService:ValidateAdminAction(player, actionName, data, "client")
-            if not authorized then
-                self:_sendError(player, reason or "Not authorized")
-                return
-            end
-        end
-
-        if data.reset then
-            -- Reset all currencies for player
-            local currencies = self._dataService:GetCurrencies(player)
-            for curr, value in pairs(currencies) do
-                if value > 0 then
-                    self:RemoveCurrency(player, curr, value, "admin_reset")
-                end
-            end
-            return
-        end
-        local currency = data.currency
-        local amount = data.amount
-        if not currency or not amount then
-            return
-        end
-        if amount >= 0 then
-            self:AddCurrency(player, currency, amount, "admin_adjust")
-        else
-            self:RemoveCurrency(player, currency, -amount, "admin_adjust")
-        end
+        self:_handleAdminCurrencyRequest(player, data)
     end)
+end
+
+-- The remote must act on the authorized target, including negative adjustments and resets.
+function EconomyService:_handleAdminCurrencyRequest(player, data)
+    if type(data) ~= "table" then
+        return
+    end
+    if not self._adminService or not self._adminService.ValidateAdminAction then
+        self:_sendError(player, "Admin authorization unavailable")
+        return
+    end
+    local actionName = data.reset and "setCurrency" or "adjustCurrency"
+    local authorized, reason, targetPlayer =
+        self._adminService:ValidateAdminAction(player, actionName, data, "client")
+    if not authorized then
+        self:_sendError(player, reason or "Not authorized")
+        return
+    end
+    local target = targetPlayer or player
+    if data.reset then
+        for currency, value in pairs(self._dataService:GetCurrencies(target)) do
+            if value > 0 then
+                self:RemoveCurrency(target, currency, value, "admin_reset")
+            end
+        end
+        return
+    end
+    local currency, amount = data.currency, data.amount
+    if
+        type(currency) ~= "string"
+        or type(amount) ~= "number"
+        or amount ~= amount
+        or math.abs(amount) == math.huge
+    then
+        return
+    end
+    if amount >= 0 then
+        self:AddCurrency(target, currency, amount, "admin_adjust")
+    else
+        self:RemoveCurrency(target, currency, -amount, "admin_adjust")
+    end
 end
 
 function EconomyService:_loadEconomyConfig()
