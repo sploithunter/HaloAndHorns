@@ -1,11 +1,11 @@
 {
   "complete": true,
-  "expected_clips": 88,
-  "validated_clips": 88,
-  "angel_clips": 24,
+  "expected_clips": 89,
+  "validated_clips": 89,
+  "angel_clips": 25,
   "demon_clips": 64,
-  "total_duration_seconds": 825.609,
-  "total_bytes": 13304133,
+  "total_duration_seconds": 834.664,
+  "total_bytes": 13450044,
   "checks": [
     "MP3 decode",
     "SHA-256",
@@ -19,9 +19,9 @@
   "clips": [
     {
       "id": "A01",
-      "duration_seconds": 7.848345,
-      "peak_dbfs": -6.87,
-      "rms_dbfs": -21.84,
+      "duration_seconds": 5.758549,
+      "peak_dbfs": -6.23,
+      "rms_dbfs": -22.21,
       "clipped_sample_fraction": 0.0,
       "exact_input_alignment": true,
       "decode": "pass"
@@ -229,6 +229,15 @@
       "duration_seconds": 9.334422,
       "peak_dbfs": -5.76,
       "rms_dbfs": -22.81,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "A25",
+      "duration_seconds": 11.145578,
+      "peak_dbfs": -5.23,
+      "rms_dbfs": -22.82,
       "clipped_sample_fraction": 0.0,
       "exact_input_alignment": true,
       "decode": "pass"

@@ -266,6 +266,13 @@ local SCHEMAS = {
         max_offer_items = "number",
     }),
     tutorial = schema({ veteran_skip = "table", steps = "table", completion = "table" }),
+    tutorial_voice = schema({
+        enabled = "boolean",
+        faces = "table",
+        presentation = "table",
+        audio = "table",
+    }),
+    tutorial_voice_assets = schema({ clips = "table" }),
     tutorial_voice_lines = schema({
         version = "number",
         status = "string",

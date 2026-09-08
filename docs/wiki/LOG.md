@@ -8694,3 +8694,5 @@ first-session cohort rates.
   button routes; fake-account currency tests; trade/gift and seven shared menu-shell regressions.
   Desktop wheel reaches the final Settings row. Emulator taps/search and slider endpoints checked;
   automated touch drags emit one movement event, so continuous finger scrolling needs device review.
+
+- 2026-09-08: Integrated Farm & Fight angel/demon tutorial narration and local faces, group-owned audio bindings, Voices mix, course/replay lifecycle, and conditional help. Added a separate starter-companion welcome before the egg lesson after live feedback. See [Tutorial voices](TUTORIAL_VOICE.md).

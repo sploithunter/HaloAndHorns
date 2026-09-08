@@ -1,8 +1,8 @@
 # Farm & Fight — angel and demon recording script
 
-Draft 1 · 2026-09-08 · English · 88 clips / 1,521 spoken words
+2026-09-08 · English · 89 clips
 
-**Status:** all 88 source MP3s generated and technically validated; audio has not yet been uploaded or connected to the tutorial. The canonical spoken copy is `configs/tutorial_voice_lines.lua`. No gameplay or existing tutorial text changes are enabled by this catalog. Each clip ID below links to its recording. The user approved the A01/D01 voice samples; playback must reuse the merged Watcher volume tuning through `playbackVolumeSource` (angel 1.2, demon 2.34 at recording time).
+**Status:** all 89 source MP3s generated, technically validated, uploaded, and connected to tutorial narration. The canonical spoken copy is `configs/tutorial_voice_lines.lua`. Written guidance and progression remain unchanged. Each clip ID below links to its recording. The user approved the A01/D01 voice samples; playback must reuse the merged Watcher volume tuning through `playbackVolumeSource` (angel 1.2, demon 2.34 at recording time).
 
 ## Performance
 
@@ -15,16 +15,16 @@ Read only the quoted dialogue. IDs and cue names are production notes. One file 
 ## How these lines fit the tutorial
 
 - **Main lesson and completion lines: 46 clips.** Cover all nine Homeworld steps, all 33 combat lessons, the Homeworld conclusion, and the three course conclusions.
-- **Optional help and conditional lines: 42 clips.** Use when a player needs a nudge, requests help, encounters a blocked door, or takes a particular branch. Do not narrate every menu click or play every reminder automatically.
-- Normal route: A01–A08 → Basic D01–D14 → D34 → A24 when returning from Basic → A09 → A10. If the player chooses Later at the cave handoff, use A22 and continue to A09; do not play A24 as though they completed training.
+- **Optional help and conditional lines: 43 clips.** Use when a player needs a nudge, requests help, encounters a blocked door, or takes a particular branch. Do not narrate every menu click or play every reminder automatically.
+- Normal route: A25 while choosing a starter → A01–A08 → Basic D01–D14 → D34 → A24 when returning from Basic → A09 → A10. If the player chooses Later at the cave handoff, use A22 and continue to A09; do not play A24 as though they completed training.
 - Advanced 1 (D15–D23, then D35) and Advanced 2 (D24–D33, then D36) are optional later courses. They are not a required extension of Basic.
 - Use D51 instead of a first-completion reward line on replays. Reward lines run only after the corresponding completion/reward succeeds. Spoken copy avoids promising an extra earned level at the level cap; the existing reward UI supplies the exact level and item amounts.
 
 ## Playback and face staging notes for implementation
 
-These are integration notes, not implemented behavior. Play only the relevant current line; never queue stale lesson instructions behind new ones. Fast menu progress should skip obsolete help. Do not repeatedly interrupt the player with the same nudge. Keep written objectives, subtitles, and input cues available, including when voice is muted or unavailable. Existing tutorial translations remain authoritative; this recording pack is English only.
+Runtime behavior: Play only the relevant current line; never queue stale lesson instructions behind new ones. Fast menu progress should skip obsolete help. Do not repeatedly interrupt the player with the same nudge. Keep written objectives, subtitles, and input cues available, including when voice is muted or unavailable. Existing tutorial translations remain authoritative; this recording pack is English only.
 
-Outside combat, use the encouraging angel apparition. In a training room, place a smaller local demon face within the active room rather than beyond a wall; a portrait fallback can keep him visible when room geometry or an open menu blocks the view. Keep faces clear of enemies, health cards, doors, pillars, and actionable UI. Pause ambient Watcher taunts while tutorial dialogue owns the scene. The existing Merge Watcher deliberately suppresses itself during combat training and menus, so it cannot simply be switched on as the tutorial narrator.
+Outside combat, use the encouraging angel apparition. Combat and open menus use a local portrait so room walls cannot hide the demon. Outdoors the angel appears beside the player, with a portrait fallback for occlusion. Keep faces clear of enemies, health cards, doors, pillars, and actionable UI. Pause ambient Watcher taunts while tutorial dialogue owns the scene. The existing Merge Watcher deliberately suppresses itself during combat training and menus, so it cannot simply be switched on as the tutorial narrator.
 
 ## Recording lines
 
@@ -32,7 +32,8 @@ Outside combat, use the encouraging angel apparition. In a training room, place 
 
 | Clip | Cue | Spoken line |
 | --- | --- | --- |
-| [**A01**](../assets/audio/voices/tutorial/angel/A01.mp3) | `tutorial.hatch_first_egg` | “There you are, little light. Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.” |
+| [**A25**](../assets/audio/voices/tutorial/angel/A25.mp3) | `tutorial.choose_companion` | “There you are, little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty — who will join you on your adventure?” |
+| [**A01**](../assets/audio/voices/tutorial/angel/A01.mp3) | `tutorial.hatch_first_egg` | “Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.” |
 | [**A02**](../assets/audio/voices/tutorial/angel/A02.mp3) | `tutorial.farm_crystals` | “See those crystals? With Farm Near on, your pets will mine beside you. Help them along, and we’ll soon have coins for another friend.” |
 | [**A03**](../assets/audio/voices/tutorial/angel/A03.mp3) | `tutorial.hatch_another` | “You’ve earned another egg. Shall we see who’s waiting inside? Every new friend gives your little squad more strength.” |
 | [**A04**](../assets/audio/voices/tutorial/angel/A04.mp3) | `tutorial.build_squad` | “I’ve left a Rainbow Kitty in your inventory. Open Pets, and let’s make room for that bright little spark on your squad.” |
@@ -163,7 +164,7 @@ Outside combat, use the encouraging angel apparition. In a training room, place 
 
 ## Cue mapping and coverage
 
-Cue names are planned voice bindings, not newly installed runtime events. `tutorial.*` maps to `configs/tutorial.lua`; `combat_tutorial.*` maps to `configs/combat_tutorial.lua`; course boundaries/completions map to `configs/combat_courses.lua`.
+Cue names are stable runtime voice bindings. `tutorial.*` maps to `configs/tutorial.lua`; `combat_tutorial.*` maps to `configs/combat_tutorial.lua`; course boundaries/completions map to `configs/combat_courses.lua`.
 
 The main line supplies the opening cue for multi-part lessons: A04 also covers `build_squad.guide.open`; A05 covers `bind_power.edit`; A07 covers `slot_power.open`; D08 covers `bind_heal.edit`; D09 covers `enhance_heal.open`; D24 covers `ready_tank.guide.open`. Their additional phases have separate help recordings. The five-remaining Berserk reminder can reuse D20; D60–D63 cover four through one remaining. Do not announce every sip in a rapid sequence.
 

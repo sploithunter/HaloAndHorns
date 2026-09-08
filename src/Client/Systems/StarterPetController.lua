@@ -25,6 +25,8 @@ local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local STARTER = require(ReplicatedStorage.Configs:WaitForChild("starter_pets"))
 local PLACES = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
+local Narrator = require(script.Parent.TutorialNarrator)
+
 local StarterPetController = {}
 local started = false
 local gui
@@ -414,6 +416,8 @@ local function destroyGui()
     statusLabel = nil
     cardButtons = {}
     pending = false
+    Players.LocalPlayer:SetAttribute("StarterPetChoiceOpen", false)
+    Narrator.setStarterChoice(false, false)
 end
 
 local function show(state)
@@ -488,6 +492,8 @@ local function show(state)
     statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    Players.LocalPlayer:SetAttribute("StarterPetChoiceOpen", true)
+    Narrator.setStarterChoice(true, true)
 end
 
 local function apply(state)

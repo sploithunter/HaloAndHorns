@@ -1,37 +1,53 @@
 # Farm & Fight tutorial voices
 
-2026-09-08: 88 generated source recordings, not yet a playback feature.
+2026-09-08: runtime integration for 89 recorded cues (25 angel / 64 demon).
 
-- Angel/Heaven face: encouraging outside combat. Demon/Hell face: slightly mocking throughout
-  combat training, including room/lobby preparation. Keep the established Watcher personalities.
-- Canonical spoken copy: `configs/tutorial_voice_lines.lua` (`status = "audio_generated"`).
-  [Complete recording sheet](../TUTORIAL_VOICE_SCRIPT.md) has all 88 lines, performance notes,
-  cue mapping, optional help, and branch conditions. No audio IDs or runtime hooks are installed.
-- Coverage follows the current 9-step Homeworld path and three independent combat courses
-  (14 Basic, 9 Advanced 1, 10 Advanced 2). Advanced lessons stay optional. Do not use the historical
-  monolithic combat completion text for course exits.
-- Short help clips supplement the main performance; do not read every UI action or queue obsolete
-  instructions. Keep written/device-specific guidance and existing localization available.
-- Room staging still needs implementation/verification. Keep the demon inside the current room,
-  with a portrait fallback if geometry obscures him, and preserve visible targets/actions.
-  `MergeWatcher` currently suppresses itself during training and menus; tutorial narration needs
-  its own lifecycle and priority over ambient taunts.
+- `configs/tutorial_voice_lines.lua` owns English spoken copy and references the established
+  Watcher volume tuning. `tutorial_voice_assets.lua` binds group-owned uploaded Sound IDs and
+  decoded durations; `tutorial_voice.lua` owns presentation, delays, and face models.
+- [Recording sheet](../TUTORIAL_VOICE_SCRIPT.md) covers the starter choice, 9 Homeworld steps,
+  and 3 independent combat courses (14 Basic, 9 Advanced 1, 10 Advanced 2), plus conditional help.
+- StarterPetController opens A25's angel welcome with the companion chooser. Homeworld speech
+  waits for the authoritative successful-choice/ineligible response. Revised A01 follows closure;
+  duplicate tutorial/menu updates neither restart the welcome nor skip the choice.
+- TutorialController feeds authoritative TutorialState into TutorialNarrator. Course selection,
+  locked choices, leave confirmation, blocked doors, power/hotbar phases, squad preparation,
+  stack counts, and losing the healer target supply conditional cues. Help waits 12 seconds;
+  each cue plays at most once per lesson. Replaced phases discard obsolete help.
+- One current Sound and one replaceable next cue keep narration bounded. Only the current clip
+  preloads. Lesson changes replace old speech; live course completion finishes before the angel's
+  Basic return and Homeworld lesson. Initial completed profiles never hear completion praise.
+  Replays use their own intro/exit and do not announce first-time rewards.
+- CombatTutorialService pushes completion before mission teardown, including replays without
+  a rank ceremony delay. Narration does not grant rewards or advance saved tutorial progress.
+- TutorialVoiceTemplates shares two sanitized MeshParts from the approved Watcher models.
+  Outside combat, the angel floats beside the player; occlusion switches to a portrait. Combat
+  always uses a portrait so room geometry cannot hide the demon. Menus use a smaller header
+  portrait, away from actions. Presentation stays local and creates no NPC or server animation.
+- Prologue/death cancel speech; Roblox's native menu pauses it. TutorialNarrationActive suppresses
+  ambient Merge Watcher and RealmHellFaces encounters. Sounds, faces, mixer effects, and the
+  bus-volume connection have explicit cleanup. Voices mute also releases background ducking.
+- Written/device-specific guidance and existing localization stay authoritative. These spoken
+  recordings are English; unavailable/muted audio never blocks play.
+
+## Verification and recording provenance
+
+All 89 source MP3s are in `assets/audio/voices/tutorial/`, alongside the generation manifest,
+character timing sidecars, technical validation, uploaded IDs, and Studio delivery results.
+Both supplied ElevenLabs voice IDs are unchanged. The user approved the original A01/D01 voices;
+A25 and revised A01 follow their requested starter-choice correction. Decode, SHA-256, exact
+input/cue mapping, timing bounds, non-silence, and clipping checks pass. Provider alignment is
+not an independent transcription or a full listening review.
+
+`tests/headless/specs/tutorial_voice.spec.luau` checks cue coverage/selection.
+`tests/studio/TutorialVoiceSmoke.lua` exercises all 42 main lesson states, starter gating,
+duplicate suppression, replay/completion handoff, face creation, Voices routing, and cleanup
+without changing progress or saved settings. Asset delivery is checked with actual Sound
+instances (`PreloadAsync({sound})` + `IsLoaded`), not raw content strings, which produced misleading
+failures. Upload completion does not imply moderation completion; check each new recording.
 
 Related: [Combat Tutorial](COMBAT_TUTORIAL.md), [Tutorial Localization](TUTORIAL_LOCALIZATION.md),
 [Watcher encounters](MERGE_EGG_PROTOTYPE.md#watcher-encounters-and-early-activity-xp-2026-09-05).
-
-## Recorded source audio — 2026-09-08
-
-All 88 MP3s (24 angel / 64 demon) are in `assets/audio/voices/tutorial/`, with a
-manifest, provider character timing sidecars, and technical validation. Both supplied
-voice IDs were used unchanged; the user listened to A01/D01 and approved the voices.
-Exact copy/cue mapping, hashes, full decoding, timing bounds, non-silence, and clipping
-checks pass. Provider alignment is not independent transcription or a full listening review.
-
-The user requested the merged Watcher volume balance for tutorial playback. The catalog's
-`playbackVolumeSource` references the existing Merge values (angel 1.2 / demon 2.34 now);
-resolve those references during integration rather than baking gain into the MP3s.
-Roblox upload/permissions and face/playback lifecycle remain pending.
 
 ## Voices preference — 2026-09-08
 
@@ -42,4 +58,4 @@ profiles. `configs/audio.lua` owns the label, default, curve, and bus limits. Ga
 The outer 3% of the voice slider snaps to mute/max for reliable touch endpoints.
 Master scales voices; Effects and Music remain independent. Existing angel/demon Watcher
 speech now mirrors the `voices` bus, preserving its 1.2/2.34 per-character base levels and
-background ducking. Muting voices releases ducking. Tutorial playback must use this bus too.
+background ducking. Muting voices releases ducking. Tutorial playback uses this same bus.

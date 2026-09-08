@@ -10,6 +10,7 @@ Mixer.__index = Mixer
 function Mixer.new(config)
     local sourceBus = SoundGroups.get(config.bus)
     local group = SoundService:FindFirstChild(config.group_name)
+    local ownsGroup = group == nil
     if not group then
         group = Instance.new("SoundGroup")
         group.Name = config.group_name
@@ -17,11 +18,19 @@ function Mixer.new(config)
     end
     -- Mirror the configured Voices/master preference, separately from background ducking.
     group.Volume = sourceBus.Volume
-    sourceBus:GetPropertyChangedSignal("Volume"):Connect(function()
+    local connection = sourceBus:GetPropertyChangedSignal("Volume"):Connect(function()
         group.Volume = sourceBus.Volume
     end)
     return setmetatable(
-        { config = config, group = group, amount = 0, speaking = false, effects = {} },
+        {
+            config = config,
+            group = group,
+            amount = 0,
+            speaking = false,
+            effects = {},
+            connection = connection,
+            ownsGroup = ownsGroup,
+        },
         Mixer
     )
 end
@@ -59,4 +68,14 @@ function Mixer:step(dt)
     end
 end
 
+function Mixer:destroy()
+    self.connection:Disconnect()
+    for _, effect in pairs(self.effects) do
+        effect:Destroy()
+    end
+    table.clear(self.effects)
+    if self.ownsGroup then
+        self.group:Destroy()
+    end
+end
 return Mixer

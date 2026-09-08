@@ -58,6 +58,9 @@ function TutorialService:Init()
 end
 
 function TutorialService:Start()
+    require(script.Parent.Parent.TutorialVoiceTemplates).start(
+        self._configLoader:LoadConfig("tutorial_voice")
+    )
     -- client PULL: TutorialController fires this when it's ready to render — closes the
     -- join race where the one-shot push lands before the client connected the signal
     Signals.TutorialStateRequest.OnServerEvent:Connect(function(player)
