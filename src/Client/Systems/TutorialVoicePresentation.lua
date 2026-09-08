@@ -116,7 +116,7 @@ function Presentation:step(dt, age, loudness, forcePortrait)
     self.view.Size = UDim2.fromScale(1, inMenu and 1 or cfg.face_height)
     self.label.Visible = not inMenu
     local opacity = math.clamp(age / cfg.fade_seconds, 0, 1)
-    self.gui.Enabled = true
+    self.gui.Enabled = forcePortrait or inMenu
     if not self.head then
         return
     end

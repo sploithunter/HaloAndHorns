@@ -161,9 +161,13 @@ function Smoke.run()
         local camera = workspace.CurrentCamera
         local original = camera.CFrame
         local before = face.Position
+        local apparentSize = face.Size.Magnitude / (before - camera.CFrame.Position).Magnitude
         camera.CFrame = original * CFrame.Angles(0, math.rad(120), 0)
         n.presentation:step(0.1, 2, 100, false)
+        local apparentAfterPan = face.Size.Magnitude
+            / (face.Position - camera.CFrame.Position).Magnitude
         camera.CFrame = original
+        assert(math.abs(apparentSize - apparentAfterPan) < 0.001, "Camera pan inflated the face")
         local speed = require(configs.merge_egg_prototype).watcher.max_speed
         assert(
             (face.Position - before).Magnitude <= speed * 0.1 + 0.01,
