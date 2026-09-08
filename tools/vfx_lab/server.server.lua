@@ -6,6 +6,7 @@ end
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+Players.CharacterAutoLoads = false
 local lab = require(ReplicatedStorage.Configs.vfx.lab)
 local schema = require(ReplicatedStorage.Configs.vfx.crystal_schema)
 local timeline = require(ReplicatedStorage.Shared.Effects.CrystalTimeline)

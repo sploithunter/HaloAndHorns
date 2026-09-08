@@ -8707,3 +8707,5 @@ first-session cohort rates.
 
 - Added a standalone Studio lab around a config-owned crystal eruption, using the same opt-in CombatFX route as the game. Live timing/shape/color editing and reversible timeline seeking use analytic geometry; a validated loopback bridge saves the Lua preset to disk. See [VFX Lab](VFX_LAB.md).
 - First full CI passed: 2,843 tests / 322 specs; save-bridge tests passed. Native visual and lifecycle verification follows before handoff.
+
+- Native completion: corrected the crystal silhouette to twelve CornerWedge facets per shard, tuned and saved the 13-crystal preset through the actual UI, verified the disk preset in a fresh Play session, and passed native routing/seek/edit/rebuild/budget/cleanup checks. Slider and Reset input passed; Output was empty. Final local CI: 2,843 / 2,843 tests, 322 specs. The lab is isolated from the voice pilot and production attacks remain opt-in.

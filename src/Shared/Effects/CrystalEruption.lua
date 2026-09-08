@@ -29,16 +29,18 @@ local function part(parent, className, material)
     return p
 end
 
-local function wedgePair(a, b, frame, width, height, depth, tint, alpha)
-    local size = Vector3.new(width, height, depth / 2)
-    a.Size = size
-    b.Size = size
-    a.CFrame = frame * CFrame.new(0, height / 2, depth / 4)
-    b.CFrame = frame * CFrame.new(0, height / 2, -depth / 4) * CFrame.Angles(0, math.pi, 0)
-    a.Color = tint
-    b.Color = tint
-    a.Transparency = alpha
-    b.Transparency = alpha
+local function pyramid(wedges, first, frame, width, height, tint, alpha)
+    -- A native CornerWedge's high corner is +X/-Z. Rotate four quarters
+    -- around their shared apex to form a true four-sided crystal point.
+    for corner = 0, 3 do
+        local wedge = wedges[first + corner]
+        wedge.Size = Vector3.new(width / 2, height, width / 2)
+        wedge.CFrame = frame
+            * CFrame.Angles(0, corner * math.pi / 2, 0)
+            * CFrame.new(-width / 4, height / 2, width / 4)
+        wedge.Color = tint
+        wedge.Transparency = alpha
+    end
 end
 
 local function rebuild(self)
@@ -46,9 +48,12 @@ local function rebuild(self)
     self.crystals, self.ring, self.sparks = {}, {}, {}
     for i = 1, self.preset.count do
         local wedges = {}
-        for j = 1, 6 do
-            wedges[j] =
-                part(self.model, "WedgePart", j <= 4 and style.material or style.core_material)
+        for j = 1, 12 do
+            wedges[j] = part(
+                self.model,
+                "CornerWedgePart",
+                j <= 8 and style.material or style.core_material
+            )
             wedges[j].Name = "Crystal" .. i .. "Facet" .. j
         end
         self.crystals[i] = wedges
@@ -107,24 +112,14 @@ local function render(self)
             or style.surface_transparency + (1 - style.surface_transparency) * fade
         local lower = h * (1 - style.tip_fraction)
         local waist = frame * CFrame.new(0, lower, 0)
-        wedgePair(wedges[1], wedges[2], waist, w, h * style.tip_fraction, w, primary, alpha)
-        wedgePair(
-            wedges[3],
-            wedges[4],
-            waist * CFrame.Angles(math.pi, 0, 0),
-            w,
-            lower,
-            w,
-            primary,
-            alpha
-        )
-        wedgePair(
-            wedges[5],
-            wedges[6],
-            frame,
+        pyramid(wedges, 1, waist, w, h * style.tip_fraction, primary, alpha)
+        pyramid(wedges, 5, waist * CFrame.Angles(math.pi, 0, 0), w, lower, primary, alpha)
+        pyramid(
+            wedges,
+            9,
+            waist,
             w * style.core_width,
-            h * style.core_height,
-            w * style.core_width,
+            h * style.tip_fraction * style.core_height,
             core,
             growth == 0 and 1 or fade
         )
@@ -243,6 +238,9 @@ function CrystalEruption.play(point, preview)
         heartbeat = RunService.Heartbeat:Connect(function(dt)
             -- Iterate a copy because lifetime completion removes active handles.
             for _, effect in ipairs(table.clone(active)) do
+                if not effect.model.Parent then
+                    effect:stop()
+                end
                 if not effect.paused then
                     effect.time += dt * effect.speed
                 end
@@ -250,7 +248,9 @@ function CrystalEruption.play(point, preview)
                     effect:stop()
                 else
                     effect.time = math.min(effect.time, Timeline.duration(effect.preset))
-                    render(effect)
+                    if not effect.paused then
+                        render(effect)
+                    end
                 end
             end
         end)

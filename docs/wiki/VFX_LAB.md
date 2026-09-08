@@ -18,7 +18,7 @@ python3 scripts/vfx_lab/serve.py
 mise exec -- rojo build tools/vfx_lab/lab.project.json --output /tmp/HaloAndHorns-VFX-Lab.rbxl
 ```
 
-Open the generated place in Studio and press Play. The small loopback HTTP server is
+Open the generated place in Studio and press Play. It opens on a paused preview; Cast replays the full effect. The small loopback HTTP server is
 needed only for Save. The lab server script is Studio-only and absent from the main
 Rojo project. It validates the payload and forwards it to the fixed loopback endpoint;
 the Python bridge validates again and atomically writes only the fixed preset path.
@@ -42,13 +42,13 @@ live sync uses `mise exec -- rojo serve tools/vfx_lab/lab.project.json` on 34873
 - `configs/vfx/crystal_style.lua`: facet construction, secondary layers, active budget.
 - `configs/vfx/lab.lua`: lab appearance, arena, camera, bridge address.
 - `CrystalTimeline`: pure analytic timing and stable normalized shape variation.
-- `CrystalEruption`: six native wedge facets per crystal, segmented charge/shock ring,
+- `CrystalEruption`: twelve native corner-wedge facets per crystal, segmented charge/shock ring,
   ballistic glints, one shared heartbeat, explicit/automatic cleanup. No custom shaders,
   mesh IDs, particles, damage, or screen-wide postprocessing in the game renderer.
 - Lab-only bloom is authored in lab config; production retains its own lighting.
 
 Eight concurrent casts are retained at most; another cast retires the oldest.
-Default preset uses 186 BaseParts (19 × 6 facets + 48 ring segments + 24 glints).
+Default preset uses 228 BaseParts (13 × 12 facets + 48 ring segments + 24 glints).
 This is an authoring pilot, not a measured mobile performance budget. Test concurrent
 casts in the real scene before assigning it to rapid-fire pets/towers. Preview handles
 can persist past their end for backward seeking; normal gameplay handles auto-dispose.
@@ -65,3 +65,15 @@ The Roblox implementation is independently written; no upstream assets or shader
   validation and preservation of the previous file when a save is rejected.
 - Native Studio checks cover the rendered composition, paused edits, save/reload,
   CombatFX routing, active cap, and cleanup; record results in the session log.
+
+### Native results — 2026-09-08
+
+Verified in the isolated `HaloAndHorns-VFX-Lab.rbxl` Studio Client.
+`tools/vfx_lab/smoke.luau` passed routing, backward seeking, paused height changes,
+count rebuild, invalid input, active-cap retirement, and automatic/explicit cleanup.
+Actual UI input moved the spread slider from 4.5 to 8.5 studs and Reset restored 4.5.
+Save wrote the tuned 13-crystal / 7.5-stud preset to disk; a fresh Play session
+loaded those values. Saved cast played through the ordinary facade, and editing
+that cast correctly switched back to a preview. Studio Output was empty.
+
+![Native Studio preview](../art/crystal-vfx-lab.png)

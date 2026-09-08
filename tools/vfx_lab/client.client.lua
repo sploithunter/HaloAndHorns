@@ -82,106 +82,93 @@ local function node(className, parent, properties)
     item.Parent = parent
     return item
 end
-local panel = node(
-    "Frame",
-    gui,
-    {
-        Name = "Panel",
-        Position = UDim2.fromScale(unpack(lab.panel_position)),
-        Size = UDim2.fromScale(unpack(lab.panel_size)),
-        BackgroundColor3 = rgb(lab.panel),
-    }
-)
+local panel = node("Frame", gui, {
+    Name = "Panel",
+    Position = UDim2.fromScale(unpack(lab.panel_position)),
+    Size = UDim2.fromScale(unpack(lab.panel_size)),
+    BackgroundColor3 = rgb(lab.panel),
+})
 node("UICorner", panel, { CornerRadius = UDim.new(0, lab.corner) })
-node(
-    "UISizeConstraint",
-    panel,
-    {
-        MinSize = Vector2.new(lab.panel_min_width, 0),
-        MaxSize = Vector2.new(lab.panel_max_width, math.huge),
-    }
-)
-node(
-    "UIPadding",
-    panel,
-    {
-        PaddingTop = UDim.new(lab.padding, 0),
-        PaddingBottom = UDim.new(lab.padding, 0),
-        PaddingLeft = UDim.new(lab.padding, 0),
-        PaddingRight = UDim.new(lab.padding, 0),
-    }
-)
-node(
-    "TextLabel",
-    panel,
-    {
-        Text = lab.title,
-        TextSize = lab.title_size,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Size = UDim2.fromScale(1, 0.045),
-        BackgroundTransparency = 1,
-    }
-)
-node(
-    "TextLabel",
-    panel,
-    {
-        Text = lab.subtitle,
-        TextColor3 = rgb(lab.accent),
-        TextScaled = true,
-        Position = UDim2.fromScale(0, 0.05),
-        Size = UDim2.fromScale(1, 0.025),
-        BackgroundTransparency = 1,
-    }
-)
-node(
-    "TextLabel",
-    panel,
-    {
-        Text = lab.help,
-        TextWrapped = true,
-        TextColor3 = rgb(lab.muted),
-        Position = UDim2.fromScale(0, 0.085),
-        Size = UDim2.fromScale(1, 0.07),
-        BackgroundTransparency = 1,
-    }
-)
-local scroll = node(
-    "ScrollingFrame",
-    panel,
-    {
-        Name = "Controls",
-        BackgroundTransparency = 1,
-        Position = UDim2.fromScale(0, 0.17),
-        Size = UDim2.fromScale(1, 0.55),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        CanvasSize = UDim2.new(),
-        ScrollBarThickness = 4,
-    }
-)
+node("UISizeConstraint", panel, {
+    MinSize = Vector2.new(lab.panel_min_width, 0),
+    MaxSize = Vector2.new(lab.panel_max_width, math.huge),
+})
+node("UIPadding", panel, {
+    PaddingTop = UDim.new(lab.padding, 0),
+    PaddingBottom = UDim.new(lab.padding, 0),
+    PaddingLeft = UDim.new(lab.padding, 0),
+    PaddingRight = UDim.new(lab.padding, 0),
+})
+node("TextLabel", panel, {
+    Text = lab.title,
+    TextSize = lab.title_size,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Size = UDim2.fromScale(1, 0.045),
+    BackgroundTransparency = 1,
+})
+node("TextLabel", panel, {
+    Text = lab.subtitle,
+    TextColor3 = rgb(lab.accent),
+    TextScaled = true,
+    Position = UDim2.fromScale(0, 0.05),
+    Size = UDim2.fromScale(1, 0.025),
+    BackgroundTransparency = 1,
+})
+node("TextLabel", panel, {
+    Text = lab.help,
+    TextWrapped = true,
+    TextColor3 = rgb(lab.muted),
+    Position = UDim2.fromScale(0, 0.085),
+    Size = UDim2.fromScale(1, 0.07),
+    BackgroundTransparency = 1,
+})
+local scroll = node("ScrollingFrame", panel, {
+    Name = "Controls",
+    BackgroundTransparency = 1,
+    Position = UDim2.fromScale(0, 0.17),
+    Size = UDim2.fromScale(1, 0.55),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    CanvasSize = UDim2.new(),
+    ScrollBarThickness = 4,
+})
 node("UIListLayout", scroll, { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
-local status = node(
-    "TextLabel",
-    panel,
-    {
-        Name = "Status",
-        Text = lab.footer,
-        TextWrapped = true,
-        TextColor3 = rgb(lab.muted),
-        Position = UDim2.fromScale(0, 0.94),
-        Size = UDim2.fromScale(1, 0.06),
-        BackgroundTransparency = 1,
-    }
-)
+local status = node("TextLabel", panel, {
+    Name = "Status",
+    Text = lab.footer,
+    TextWrapped = true,
+    TextColor3 = rgb(lab.muted),
+    Position = UDim2.fromScale(0, 0.94),
+    Size = UDim2.fromScale(1, 0.06),
+    BackgroundTransparency = 1,
+})
 local current
+local pauseButton
 local slow, paused = false, false
 local refreshers = {}
 local drag
 local dirty = false
+local revision = 0
 local function changed()
+    revision += 1
     dirty = true
     if current then
-        current:update(copy(preset))
+        local ended = current.stopped
+            or (not paused and current.time >= Timeline.duration(current.preset))
+        local time = ended and lab.preview_time or current.time
+        if ended or not current:update(copy(preset)) then
+            current:stop()
+            current = CombatFX.play({ pattern = "impact", vfx = "crystal_eruption" }, {
+                point = vector(lab.target_position),
+                vfxPreview = { preset = copy(preset), persistent = true },
+            })
+            current.speed = slow and lab.slow_speed or lab.normal_speed
+            current.paused = true
+            paused = true
+            current:seek(time)
+            if pauseButton then
+                pauseButton.Text = "Resume"
+            end
+        end
     end
     for _, refresh in ipairs(refreshers) do
         refresh()
@@ -189,48 +176,32 @@ local function changed()
     status.Text = "Unsaved edits • visible immediately, including while paused."
 end
 local function slider(parent, field, order)
-    local row = node(
-        "Frame",
-        parent,
-        {
-            Name = field.key,
-            LayoutOrder = order,
-            Size = UDim2.new(1, 0, 0, lab.row_height),
-            BackgroundTransparency = 1,
-        }
-    )
-    node(
-        "TextLabel",
-        row,
-        {
-            Text = field.label,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Size = UDim2.fromScale(0.69, 0.6),
-            BackgroundTransparency = 1,
-        }
-    )
-    local input = node(
-        "TextBox",
-        row,
-        {
-            Name = "Value",
-            Size = UDim2.fromScale(0.28, 0.6),
-            Position = UDim2.fromScale(0.7, 0),
-            BackgroundColor3 = rgb(lab.field),
-            ClearTextOnFocus = false,
-        }
-    )
-    local rail = node(
-        "TextButton",
-        row,
-        {
-            Name = "Slider",
-            Text = "",
-            Size = UDim2.fromScale(0.98, 0.22),
-            Position = UDim2.fromScale(0, 0.74),
-            BackgroundColor3 = rgb(lab.field),
-        }
-    )
+    local row = node("Frame", parent, {
+        Name = field.key,
+        LayoutOrder = order,
+        Size = UDim2.new(1, 0, 0, lab.row_height),
+        BackgroundTransparency = 1,
+    })
+    node("TextLabel", row, {
+        Text = field.label,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Size = UDim2.fromScale(0.69, 0.6),
+        BackgroundTransparency = 1,
+    })
+    local input = node("TextBox", row, {
+        Name = "Value",
+        Size = UDim2.fromScale(0.28, 0.6),
+        Position = UDim2.fromScale(0.7, 0),
+        BackgroundColor3 = rgb(lab.field),
+        ClearTextOnFocus = false,
+    })
+    local rail = node("TextButton", row, {
+        Name = "Slider",
+        Text = "",
+        Size = UDim2.fromScale(0.98, 0.22),
+        Position = UDim2.fromScale(0, 0.74),
+        BackgroundColor3 = rgb(lab.field),
+    })
     local fill = node("Frame", rail, { BackgroundColor3 = rgb(lab.accent) })
     local function refresh()
         input.Text = string.format("%.3g", preset[field.key])
@@ -270,37 +241,25 @@ for i, field in ipairs(schema.numbers) do
     slider(scroll, field, i)
 end
 for i, field in ipairs(schema.colors) do
-    local row = node(
-        "Frame",
-        scroll,
-        {
-            Name = field.key,
-            LayoutOrder = #schema.numbers + i,
-            Size = UDim2.new(1, 0, 0, lab.row_height),
-            BackgroundTransparency = 1,
-        }
-    )
-    node(
-        "TextLabel",
-        row,
-        {
-            Text = field.label .. " (hex)",
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Size = UDim2.fromScale(0.65, 0.8),
-            BackgroundTransparency = 1,
-        }
-    )
-    local input = node(
-        "TextBox",
-        row,
-        {
-            Name = "Hex",
-            Size = UDim2.fromScale(0.33, 0.8),
-            Position = UDim2.fromScale(0.65, 0),
-            BackgroundColor3 = rgb(lab.field),
-            ClearTextOnFocus = false,
-        }
-    )
+    local row = node("Frame", scroll, {
+        Name = field.key,
+        LayoutOrder = #schema.numbers + i,
+        Size = UDim2.new(1, 0, 0, lab.row_height),
+        BackgroundTransparency = 1,
+    })
+    node("TextLabel", row, {
+        Text = field.label .. " (hex)",
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Size = UDim2.fromScale(0.65, 0.8),
+        BackgroundTransparency = 1,
+    })
+    local input = node("TextBox", row, {
+        Name = "Hex",
+        Size = UDim2.fromScale(0.33, 0.8),
+        Position = UDim2.fromScale(0.65, 0),
+        BackgroundColor3 = rgb(lab.field),
+        ClearTextOnFocus = false,
+    })
     local function refresh()
         input.Text = rgb(preset[field.key]):ToHex()
         input.TextColor3 = rgb(preset[field.key])
@@ -341,24 +300,16 @@ UserInputService.InputEnded:Connect(function(event)
         scroll.ScrollingEnabled = true
     end
 end)
-local controls = node(
-    "Frame",
-    panel,
-    {
-        Position = UDim2.fromScale(0, 0.81),
-        Size = UDim2.fromScale(1, 0.12),
-        BackgroundTransparency = 1,
-    }
-)
-node(
-    "UIGridLayout",
-    controls,
-    {
-        CellSize = UDim2.fromScale(0.31, 0.45),
-        CellPadding = UDim2.fromScale(0.035, 0.08),
-        SortOrder = Enum.SortOrder.LayoutOrder,
-    }
-)
+local controls = node("Frame", panel, {
+    Position = UDim2.fromScale(0, 0.81),
+    Size = UDim2.fromScale(1, 0.12),
+    BackgroundTransparency = 1,
+})
+node("UIGridLayout", controls, {
+    CellSize = UDim2.fromScale(0.31, 0.45),
+    CellPadding = UDim2.fromScale(0.035, 0.08),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+})
 local function button(text, order, callback)
     local b = node(
         "TextButton",
@@ -388,11 +339,13 @@ local function cast(useSaved)
     current.speed = slow and lab.slow_speed or lab.normal_speed
     current.paused = false
     paused = false
+    if pauseButton then
+        pauseButton.Text = "Pause"
+    end
 end
 button("Cast", 1, function()
     cast(false)
 end)
-local pauseButton
 pauseButton = button("Pause", 2, function()
     if not current or current.stopped then
         cast(false)
@@ -416,6 +369,7 @@ button("Save", 4, function()
     end
     saving = true
     local snapshot = copy(preset)
+    local savedRevision = revision
     status.Text = "Saving…"
     local ok, success, message = pcall(function()
         local remote = ReplicatedStorage:WaitForChild("VFXLabSave", lab.save_timeout)
@@ -429,8 +383,8 @@ button("Save", 4, function()
         for key, value in pairs(snapshot) do
             saved[key] = value
         end
-        dirty = false
-        status.Text = message
+        dirty = revision ~= savedRevision
+        status.Text = message .. (dirty and " • newer edits remain unsaved" or "")
     else
         status.Text = ok and tostring(message) or "Save failed. Start the local preset bridge."
     end
@@ -445,29 +399,21 @@ button("Reset", 6, function()
     cast(false)
     status.Text = "Restored the saved preset."
 end)
-local timeLabel = node(
-    "TextLabel",
-    panel,
-    {
-        Name = "Time",
-        Text = "",
-        BackgroundTransparency = 1,
-        Position = UDim2.fromScale(0, 0.735),
-        Size = UDim2.fromScale(1, 0.028),
-        TextColor3 = rgb(lab.muted),
-    }
-)
-local scrub = node(
-    "TextButton",
-    panel,
-    {
-        Name = "Timeline",
-        Text = "",
-        BackgroundColor3 = rgb(lab.field),
-        Position = UDim2.fromScale(0, 0.773),
-        Size = UDim2.fromScale(1, 0.018),
-    }
-)
+local timeLabel = node("TextLabel", panel, {
+    Name = "Time",
+    Text = "",
+    BackgroundTransparency = 1,
+    Position = UDim2.fromScale(0, 0.735),
+    Size = UDim2.fromScale(1, 0.028),
+    TextColor3 = rgb(lab.muted),
+})
+local scrub = node("TextButton", panel, {
+    Name = "Timeline",
+    Text = "",
+    BackgroundColor3 = rgb(lab.field),
+    Position = UDim2.fromScale(0, 0.773),
+    Size = UDim2.fromScale(1, 0.018),
+})
 local progress = node("Frame", scrub, { BackgroundColor3 = rgb(lab.accent) })
 scrub.InputBegan:Connect(function(event)
     if
@@ -507,6 +453,8 @@ local probe = Instance.new("BindableFunction")
 probe.Name = "Probe"
 probe.OnInvoke = function(action, value)
     if action == "seek" then
+        paused = true
+        pauseButton.Text = "Resume"
         current.paused = true
         current:seek(value)
     elseif action == "set" then
@@ -519,8 +467,15 @@ probe.OnInvoke = function(action, value)
         time = current.time,
         count = #current.model:GetChildren(),
         preset = copy(preset),
+        renderedPreset = copy(current.preset),
         stopped = current.stopped == true,
     }
 end
 probe.Parent = gui
 cast(false)
+
+-- Open on a visible paused frame; Cast replays the complete eruption.
+paused = true
+current.paused = true
+current:seek(lab.preview_time)
+pauseButton.Text = "Resume"

@@ -10,8 +10,8 @@ return {
     stage_position = { 0, -0.5, 0 },
     stage_color = { 22, 27, 41 },
     target_position = { 0, 0, 0 },
-    camera_position = { 24, 20, 28 },
-    camera_look = { -3, 3, 0 },
+    camera_position = { 21, 17, 25 },
+    camera_look = { -7, 3, 0 },
     background = { 12, 16, 25 },
     panel = { 22, 28, 42 },
     field = { 32, 41, 59 },
@@ -36,6 +36,6 @@ return {
     display_order = 100,
     slow_speed = 0.25,
     normal_speed = 1,
-    smoke_time = 1.05,
+    preview_time = 1.05,
     footer = "Save writes configs/vfx/crystal_eruption.lua through the local bridge.",
 }
