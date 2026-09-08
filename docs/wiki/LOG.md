@@ -8649,3 +8649,8 @@ first-session cohort rates.
   The standard close button now sits inside the header instead of overhanging the panel.
 - Extended native landscape/desktop layout checks to require full close-button containment in both
   the trade window and safe viewport.
+- Follow-up: the user approved extending behind Roblox's top bar. Live Trade now temporarily uses
+  device-safe insets, retains a 44px header/close target, and restores core-UI insets on close.
+- Inspected each actual-size phone dialog separately. Applied the same expanded parent and contained
+  44px close button to gifting at the user's request; small request/confirmation dialogs remain
+  readable and centered. Verified inset restoration after closing either inventory window.

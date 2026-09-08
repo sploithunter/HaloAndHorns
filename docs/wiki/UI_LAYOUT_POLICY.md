@@ -79,12 +79,14 @@ Partial stacks retain separate offered/available cards because escrow removes of
 inventory. Tapping an offered card removes one copy; remaining copies keep the existing bulk-add
 picker. The current gem offer is an explicit readout beside its editor.
 
-Trade, incoming requests, gift picking, and gift confirmation respect the screen's safe inset.
+Incoming requests respect the core UI safe inset; inventory-backed trade and gift flows use the device-safe area.
 Fixed readable chrome surrounds flexible card areas, with 44px actions and a full-width category
 selector. `TradeFlowLayoutSmoke.run()` exercises short landscape and desktop geometry plus local
 escrow presentation, mixed-category highlights, state updates, and gift confirmation without real
 inventory changes. Use `show("request")` or `show("gift")` for interactive emulator checks.
 
-Live Trade's config-owned top/bottom bounds reclaim upper safe-area margin without moving its
-uncapped lower edge. Its standard close button aligns inside the header; it must remain completely
-inside both the window and safe viewport, including short landscape phones.
+Live Trade and the gift picker temporarily use `DeviceSafeInsets` to reclaim the Roblox top-bar strip while retaining
+notch/home-bar protection. The user allows their titles to run behind the top-left Roblox controls;
+a 44px header keeps inventory controls below them, with the 44px close button inside the right edge.
+Closing the final inventory window restores `CoreUISafeInsets` for other dialogs. Config owns the bounds/header;
+native checks cover close containment, touch size, and restoration of the normal inset.
