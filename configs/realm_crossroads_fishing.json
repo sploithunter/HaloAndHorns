@@ -149,5 +149,43 @@
     ],
     "mode": "terrain_water"
   },
-  "notes": "Authored fishing layout only. Heaven independently supports ten spaced angler stations; no fishing rewards, rods, fish AI or catch code added."
+  "notes": "Authored fishing layout only. Heaven independently supports ten spaced angler stations; no fishing rewards, rods, fish AI or catch code added.",
+  "hell_mist": {
+    "bake_source": "tools/realm_crossroads/bake_pool_mist.luau",
+    "texture": "rbxasset://textures/particles/smoke_main.dds",
+    "spacing": 12,
+    "inset": 4,
+    "height": 1,
+    "rate": 4,
+    "lifetime": [
+      5,
+      8
+    ],
+    "speed": [
+      0.6,
+      1.2
+    ],
+    "size": [
+      10,
+      18,
+      23
+    ],
+    "color_start": [
+      101,
+      153,
+      48
+    ],
+    "color_end": [
+      55,
+      101,
+      37
+    ],
+    "opacity": 0.45,
+    "acceleration": [
+      0.12,
+      0.15,
+      0.06
+    ],
+    "light_emission": 0.12
+  }
 }

@@ -399,3 +399,8 @@ bone/brush assets decorate spaces between stations. Perimeter flora is relocated
 with matched side land extensions reaching |X|300 and invisible walls at |X|296.
 Terrain and old pond/boundary backups are preserved in ServerStorage. Fishing assets,
 rod interaction, catch tables and rewards remain future gameplay work.
+
+Hell water now has a local green mist layer: `hell_mist` in the fishing config and
+`bake_pool_mist.luau` author 20 noncolliding sources across the ellipse. Native particle
+emitters animate without a gameplay script. Reviewed at the fishing bank in Play;
+water reflections and fishing platforms remain visible. Run this after the fishing bake.
