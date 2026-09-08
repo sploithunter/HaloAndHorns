@@ -47,6 +47,17 @@
     },
     {
       "number": 2,
+      "name": "The Range",
+      "board_id": "range_current",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "moon_blossom",
+      "display_name": "Moon Blossom Garden"
+    },
+    {
+      "number": 3,
       "name": "Crystal Crusher",
       "board_id": "crystal_crusher",
       "phase": "initial",
@@ -58,7 +69,18 @@
       "scope": "ALL REALMS"
     },
     {
-      "number": 3,
+      "number": 4,
+      "name": "Training Ground",
+      "board_id": "training_ground_current",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "ember_bloom",
+      "display_name": "Ember Bloom Garden"
+    },
+    {
+      "number": 5,
       "name": "Enemies Defeated",
       "board_id": "enemies_defeated",
       "phase": "initial",
@@ -70,7 +92,18 @@
       "scope": "ALL REALMS"
     },
     {
-      "number": 4,
+      "number": 6,
+      "name": "Exclusives Gifted",
+      "board_id": "gift_exclusives",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "sunflower",
+      "display_name": "Sunburst Garden"
+    },
+    {
+      "number": 7,
       "name": "Team Power",
       "board_id": "team_power",
       "phase": "initial",
@@ -82,7 +115,7 @@
       "scope": "ALL REALMS"
     },
     {
-      "number": 5,
+      "number": 8,
       "name": "Eggs Hatched",
       "board_id": "eggs_hatched",
       "phase": "initial",
@@ -94,16 +127,18 @@
       "scope": "ALL REALMS"
     },
     {
-      "number": 6,
-      "name": "The Range",
-      "board_id": "range_current",
+      "number": 9,
+      "name": "Secrets Gifted",
+      "board_id": "gift_secrets",
       "phase": "reserve",
       "source": "existing_backend",
       "title_lines": [],
-      "scope": "ALL REALMS"
+      "scope": "ALL REALMS",
+      "decoration": "moon_blossom",
+      "display_name": "Moon Blossom Garden"
     },
     {
-      "number": 7,
+      "number": 10,
       "name": "Highest Wave Cleared",
       "board_id": "siege_highest_wave_cleared",
       "phase": "initial",
@@ -115,7 +150,18 @@
       "scope": "PET SIEGE"
     },
     {
-      "number": 8,
+      "number": 11,
+      "name": "Mythicals Gifted",
+      "board_id": "gift_mythicals",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "ember_bloom",
+      "display_name": "Ember Bloom Garden"
+    },
+    {
+      "number": 12,
       "name": "Total Waves Cleared",
       "board_id": "siege_waves_cleared",
       "phase": "initial",
@@ -127,7 +173,17 @@
       "scope": "PET SIEGE"
     },
     {
-      "number": 9,
+      "number": 13,
+      "name": "Future Champion",
+      "phase": "reserve",
+      "source": "future",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "sunflower",
+      "display_name": "Sunburst Garden"
+    },
+    {
+      "number": 14,
       "name": "Bosses Defeated",
       "board_id": "bosses_defeated",
       "phase": "initial",
@@ -136,50 +192,6 @@
         "BOSSES",
         "DEFEATED"
       ],
-      "scope": "ALL REALMS"
-    },
-    {
-      "number": 10,
-      "name": "Training Ground",
-      "board_id": "training_ground_current",
-      "phase": "reserve",
-      "source": "existing_backend",
-      "title_lines": [],
-      "scope": "ALL REALMS"
-    },
-    {
-      "number": 11,
-      "name": "Exclusives Gifted",
-      "board_id": "gift_exclusives",
-      "phase": "reserve",
-      "source": "existing_backend",
-      "title_lines": [],
-      "scope": "ALL REALMS"
-    },
-    {
-      "number": 12,
-      "name": "Secrets Gifted",
-      "board_id": "gift_secrets",
-      "phase": "reserve",
-      "source": "existing_backend",
-      "title_lines": [],
-      "scope": "ALL REALMS"
-    },
-    {
-      "number": 13,
-      "name": "Mythicals Gifted",
-      "board_id": "gift_mythicals",
-      "phase": "reserve",
-      "source": "existing_backend",
-      "title_lines": [],
-      "scope": "ALL REALMS"
-    },
-    {
-      "number": 14,
-      "name": "Future Champion",
-      "phase": "reserve",
-      "source": "future",
-      "title_lines": [],
       "scope": "ALL REALMS"
     }
   ],
@@ -247,11 +259,53 @@
         173,
         109,
         69
+      ],
+      "blossom_white": [
+        235,
+        227,
+        242
+      ],
+      "blossom_blue": [
+        135,
+        185,
+        232
+      ],
+      "blossom_coral": [
+        237,
+        129,
+        94
+      ],
+      "blossom_gold": [
+        245,
+        193,
+        74
+      ],
+      "leaf_dark": [
+        54,
+        87,
+        65
       ]
     },
     "ring_segments": 64,
     "jet_count": 6,
     "jet_width": 0.13,
-    "water_transparency": 0.3
+    "water_transparency": 0.3,
+    "garden_themes": {
+      "moon_blossom": {
+        "petal": "blossom_white",
+        "accent": "blossom_blue",
+        "petals": 6
+      },
+      "ember_bloom": {
+        "petal": "blossom_coral",
+        "accent": "blossom_gold",
+        "petals": 5
+      },
+      "sunflower": {
+        "petal": "blossom_gold",
+        "accent": "blossom_white",
+        "petals": 8
+      }
+    }
   }
 }

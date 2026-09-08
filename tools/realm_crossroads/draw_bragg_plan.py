@@ -71,9 +71,9 @@ for b in [x for x in C['bays'] if x['phase']=='initial']:
     text(786,y+27,'All Realms — new boss tracking' if b['source']=='new_shared_tracking' else ('Pet Siege — new tracking' if b['source']=='new_tracking' else 'Existing ranking / existing saved score'),15,fill='#677471')
     y+=62
 text(735,711,'SIX RESERVE ALCOVES',23,strong=True)
-text(735,748,'6 / 10   Range and Training Ground',18)
-text(735,779,'11–13   Three gift-giver rankings',18)
-text(735,810,'14          Future champion category',18)
+text(735,748,'Gardens in bays 2 / 4 / 6 / 9 / 11 / 13',18)
+text(735,779,'Moon blossoms, ember blooms and sunflowers',18)
+text(735,810,'Sculpted floral reliefs; no placeholder signs',18)
 text(735,865,'18-stud alcoves face inward around the fountain.',18)
 text(735,896,'Build room for 14 groups; populate 8 initially.',18)
 text(735,927,'Load nearby figures to preserve the avatar budget.',18)

@@ -251,7 +251,7 @@ return function()
         local center = origin + radial * cfg.podium_radius
         local base = C.lookAt(center, center + radial)
         local bay = make("Model", string.format("Alcove%02d", b.number), bays)
-        bay:SetAttribute("DisplayName", b.name)
+        bay:SetAttribute("DisplayName", b.display_name or b.name)
         bay:SetAttribute("BoardId", b.board_id or "")
         bay:SetAttribute("RankingsConnected", false)
         local active = b.phase == "initial"
@@ -362,21 +362,97 @@ return function()
                 text(bay, "PREVIEW", 0.25, 4.1, base * C.new(x, 0.95, 3.64), "light_stone")
             end
         else
-            local planter =
-                part(bay, "ReservePlanter", { 13, 1.7, 4 }, base * C.new(0, 1.2, 0), "stone")
-            planter:SetAttribute("ReservedFor", b.name)
-            for n = -2, 2 do
-                local p = part(
-                    bay,
-                    "Topiary",
-                    { 2.3, 2.7, 2.3 },
-                    base * C.new(n * 2.3, 3, 0),
-                    "plant",
-                    "Grass"
-                )
-                p.Shape = Enum.PartType.Ball
+            bay.TitlePlaque:Destroy()
+            bay.TitleBorder:Destroy()
+            local theme = cfg.art.garden_themes[b.decoration]
+            local garden = make("Model", "FlowerGarden", bay)
+            garden:SetAttribute("ReservedFor", b.name)
+            part(garden, "RaisedBed", { 14, 1.5, 4.6 }, base * C.new(0, 1.3, 0.2), "stone")
+            part(garden, "BedRim", { 14.4, 0.25, 5 }, base * C.new(0, 2.08, 0.2), "light_stone")
+            part(
+                garden,
+                "Soil",
+                { 13.5, 0.16, 4.1 },
+                base * C.new(0, 2.24, 0.2),
+                "leaf_dark",
+                "Ground"
+            )
+            local function ball(name, size, cf, key)
+                local p = part(garden, name, size, cf, key, "SmoothPlastic", false)
+                local mesh = make("SpecialMesh", "SculptedForm", p)
+                mesh.MeshType = Enum.MeshType.Sphere
+                return p
             end
-            text(bay, "FUTURE", 1.25, 15, base * C.new(0, 12.5, -3.5), "ink")
+            -- Two staggered rows of sculpted blossoms with separate leaves and stems.
+            for row = 1, 2 do
+                for n = 1, 7 do
+                    local x = (n - 4) * 1.7 + (row - 1.5) * 0.35
+                    local z = (row - 1.5) * 1.75 + 0.2
+                    local h = 0.85 + ((n + row) % 3) * 0.3
+                    local stem = base * C.new(x, 2.3 + h / 2, z)
+                    part(garden, "Stem", { 0.12, h, 0.12 }, stem, "plant", "SmoothPlastic", false)
+                    for _, side in ipairs({ -1, 1 }) do
+                        ball(
+                            "Leaf",
+                            { 0.7, 0.18, 0.35 },
+                            base
+                                * C.new(x + side * 0.28, 2.5 + h * 0.25, z)
+                                * C.Angles(0, 0, side * 0.4),
+                            "plant"
+                        )
+                    end
+                    local flower = base * C.new(x, 2.3 + h, z) * C.Angles(0.18 * (n % 2), 0, 0.12)
+                    for k = 1, theme.petals do
+                        local angle = k * math.pi * 2 / theme.petals
+                        ball(
+                            "Petal",
+                            { 0.42, 0.18, 0.75 },
+                            flower * C.Angles(0, angle, 0) * C.new(0, 0, 0.36),
+                            n % 3 == 0 and theme.accent or theme.petal
+                        )
+                    end
+                    ball(
+                        "FlowerHeart",
+                        { 0.3, 0.22, 0.3 },
+                        flower * C.new(0, 0.07, 0),
+                        "blossom_gold"
+                    )
+                end
+            end
+            -- Large botanical wall medallion replaces placeholder text; all physical relief.
+            local relief = base * C.new(0, 9.2, -3.7)
+            for n = 1, 32 do
+                local a = n * math.pi * 2 / 32
+                local b2 = (n + 1) * math.pi * 2 / 32
+                line(
+                    garden,
+                    "MedallionRim",
+                    relief:PointToWorldSpace(V.new(math.cos(a) * 3.5, math.sin(a) * 3.5, 0)),
+                    relief:PointToWorldSpace(V.new(math.cos(b2) * 3.5, math.sin(b2) * 3.5, 0)),
+                    0.14,
+                    "trim",
+                    "Metal",
+                    false
+                )
+            end
+            for n = 1, theme.petals do
+                local a = n * math.pi * 2 / theme.petals
+                ball(
+                    "ReliefPetal",
+                    { 1.25, 3.1, 0.45 },
+                    relief * C.Angles(0, 0, a) * C.new(0, 1.55, 0.12),
+                    theme.petal
+                )
+            end
+            ball("ReliefHeart", { 1.5, 1.5, 0.65 }, relief * C.new(0, 0, 0.3), "trim")
+            for _, side in ipairs({ -1, 1 }) do
+                ball(
+                    "ReliefLeaf",
+                    { 3.2, 0.85, 0.3 },
+                    base * C.new(side * 3, 4.8, -3.8) * C.Angles(0, 0, side * 0.3),
+                    "plant"
+                )
+            end
         end
     end
     local fountain = group("HaloAndHornsFountain")

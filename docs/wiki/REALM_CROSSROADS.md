@@ -10,7 +10,7 @@ User accepted the R5 gate artwork and requested more Bragg capacity plus Siege-s
 rankings using existing leaderboard rules. The [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md)
 now has a +4 circular court, 116 studs across, with a low 18-stud fountain, fourteen
 2/1/3 alcoves, eight initial categories, and six reserve bays. Shared stairs/ramp landings
-avoid routing visitors through podiums. Geometry is built; production tracking remains pending. Eight podium groups have physical PREVIEW nameplates; six reserve bays are planted. A low halo-and-horns fountain anchors the center.
+avoid routing visitors through podiums. Geometry is built; production tracking remains pending. Eight podium groups have physical PREVIEW nameplates; six reserve bays at positions 2/4/6/9/11/13 alternate among the rankings, with moon-blossom, ember-bloom and sunflower gardens plus physical floral medallions. No FUTURE signage remains. A low halo-and-horns fountain anchors the center.
 
 The source already saves **highest wave reached** when a wave starts. New Highest Wave
 Cleared and Total Waves Cleared require durable server-side settlement counters. User replaced
