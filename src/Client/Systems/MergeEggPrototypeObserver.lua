@@ -28,7 +28,6 @@ local QuartermasterServicesMenu =
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeTutorialHud = require(ReplicatedStorage.Shared.Game.MergeTutorialHud)
-local MergeTutorialNarrator = require(script.Parent.MergeTutorialNarrator)
 local MergeEggBoardTapPolicy = require(script.Parent.MergeEggBoardTapPolicy)
 local MergeEggDeploymentTarget = require(script.Parent.MergeEggDeploymentTarget)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
@@ -1000,6 +999,7 @@ local function tutorialBuyEggCueAllowed(world)
 end
 
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
+    local MergeTutorialNarrator = require(script.Parent.MergeTutorialNarrator)
     MergeTutorialNarrator.update(
         world,
         observing,

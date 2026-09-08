@@ -10,6 +10,7 @@ function Director.step(self, current, config)
     local previous = self.previous
     if not current.observing or current.blocked or not config.side_speakers[current.side] then
         self.previous, self.identity = nil, nil
+        self.engaged, self.completionQueued = nil, nil
         table.clear(self.heard)
         return { cancel = true }
     end
@@ -19,6 +20,7 @@ function Director.step(self, current, config)
         previous = nil
         table.clear(self.heard)
         self.identity = context
+        self.engaged, self.completionQueued = nil, nil
     end
     self.previous = current
     local function cue(suffix)
@@ -26,23 +28,29 @@ function Director.step(self, current, config)
     end
     if current.rebirths > 0 or current.completed then
         local completedNow = current.completed
-            and previous
-            and not previous.completed
-            and previous.required
+            and self.engaged
+            and not self.completionQueued
             and current.rebirths == 0
         if completedNow then
+            self.completionQueued = true
             return { cue = cue(config.completion_cue), finishCurrent = true, remind = false }
         end
         return { cancel = not previous or not previous.completed or current.rebirths > 0 }
     end
     if not current.required then
-        return { cancel = true }
+        -- Required/completed replicate separately; preserve the timed farewell during that gap.
+        return self.engaged and { quiet = true } or { cancel = true }
     end
+    self.engaged = true
     if current.active then
         local suffix = config.steps[current.step]
         if current.autoCollector and config.auto_steps[current.step] then
             suffix = config.auto_steps[current.step]
-        elseif current.step == "upgrade_eggs" and current.created >= current.createNeed then
+        elseif
+            current.step == "upgrade_eggs"
+            and current.createNeed > 0
+            and current.created >= current.createNeed
+        then
             suffix = "upgrade_eggs.deploy"
         end
         if not suffix then

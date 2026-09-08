@@ -1,2 +1,163 @@
--- Generated bindings are filled from the group-owned upload manifest.
-return { clips = {} }
+-- Group-owned ElevenLabs recordings; durations verified by decoding the source MP3s.
+return {
+    clips = {
+        ["merge_tutorial.heaven.collect_setup"] = {
+            asset_id = 136919274736347,
+            seconds = 10.913379,
+        },
+        ["merge_tutorial.heaven.collect_setup.auto"] = {
+            asset_id = 97627570192716,
+            seconds = 9.566621,
+        },
+        ["merge_tutorial.heaven.create_five"] = { asset_id = 87008143389831, seconds = 9.102222 },
+        ["merge_tutorial.heaven.deploy_best"] = { asset_id = 82967537366431, seconds = 9.98458 },
+        ["merge_tutorial.heaven.collect_workshop_coins"] = {
+            asset_id = 111020703063530,
+            seconds = 8.126984,
+        },
+        ["merge_tutorial.heaven.talk_engineer"] = {
+            asset_id = 121710019744970,
+            seconds = 10.541859,
+        },
+        ["merge_tutorial.heaven.unlock_bulwark"] = {
+            asset_id = 139221773709669,
+            seconds = 7.709025,
+        },
+        ["merge_tutorial.heaven.install_bulwark"] = {
+            asset_id = 138880244169835,
+            seconds = 9.98458,
+        },
+        ["merge_tutorial.heaven.collect_cannon_coins"] = {
+            asset_id = 130663592040200,
+            seconds = 8.359184,
+        },
+        ["merge_tutorial.heaven.collect_cannon_gem"] = {
+            asset_id = 93255524466340,
+            seconds = 6.780227,
+        },
+        ["merge_tutorial.heaven.talk_commander"] = {
+            asset_id = 130464619008384,
+            seconds = 9.891701,
+        },
+        ["merge_tutorial.heaven.unlock_cannon"] = { asset_id = 114774393731050, seconds = 9.055782 },
+        ["merge_tutorial.heaven.install_cannon"] = {
+            asset_id = 123818284163724,
+            seconds = 8.916463,
+        },
+        ["merge_tutorial.heaven.power_lesson"] = { asset_id = 91373132987564, seconds = 11.702857 },
+        ["merge_tutorial.heaven.collect_upgrade_coins"] = {
+            asset_id = 74772814048452,
+            seconds = 8.916463,
+        },
+        ["merge_tutorial.heaven.collect_upgrade_coins.auto"] = {
+            asset_id = 136901237575195,
+            seconds = 8.126984,
+        },
+        ["merge_tutorial.heaven.upgrade_eggs"] = { asset_id = 74853602806582, seconds = 10.40254 },
+        ["merge_tutorial.heaven.upgrade_eggs.deploy"] = {
+            asset_id = 95188731738077,
+            seconds = 10.03102,
+        },
+        ["merge_tutorial.heaven.slots_lesson"] = { asset_id = 75286146960234, seconds = 10.727619 },
+        ["merge_tutorial.heaven.enhance_lesson"] = { asset_id = 98623859790595, seconds = 7.709025 },
+        ["merge_tutorial.heaven.talk_quartermaster"] = {
+            asset_id = 88531935873128,
+            seconds = 13.560454,
+        },
+        ["merge_tutorial.heaven.after_setup"] = { asset_id = 75376006243815, seconds = 10.959819 },
+        ["merge_tutorial.heaven.after_bulwark"] = { asset_id = 119593607999654, seconds = 8.498503 },
+        ["merge_tutorial.heaven.after_cannon"] = { asset_id = 130293963949712, seconds = 6.687347 },
+        ["merge_tutorial.heaven.after_power"] = { asset_id = 120453420984527, seconds = 8.034104 },
+        ["merge_tutorial.heaven.after_upgrade"] = { asset_id = 103502850483480, seconds = 7.662585 },
+        ["merge_tutorial.heaven.after_slots"] = { asset_id = 130090636401450, seconds = 8.080544 },
+        ["merge_tutorial.heaven.after_enhance"] = { asset_id = 77659286927629, seconds = 8.777143 },
+        ["merge_tutorial.heaven.completion"] = { asset_id = 89686844876598, seconds = 11.470658 },
+        ["merge_tutorial.heaven.resume"] = { asset_id = 125889794927745, seconds = 8.777143 },
+        ["merge_tutorial.heaven.reminder"] = { asset_id = 128498851282653, seconds = 8.034104 },
+        ["merge_tutorial.heaven.help.power"] = { asset_id = 120751237325419, seconds = 7.569705 },
+        ["merge_tutorial.heaven.help.slots"] = { asset_id = 73953758155930, seconds = 8.312744 },
+        ["merge_tutorial.heaven.help.commit"] = { asset_id = 73135906167601, seconds = 8.173424 },
+        ["merge_tutorial.heaven.help.owned"] = { asset_id = 71799820163195, seconds = 6.919546 },
+        ["merge_tutorial.heaven.help.slot"] = { asset_id = 105311591616940, seconds = 6.548027 },
+        ["merge_tutorial.heaven.help.enhancement"] = {
+            asset_id = 122324902975278,
+            seconds = 7.105306,
+        },
+        ["merge_tutorial.heaven.help.apply"] = { asset_id = 87995432097000, seconds = 8.544943 },
+        ["merge_tutorial.heaven.help.origin"] = { asset_id = 111803409957976, seconds = 8.591383 },
+        ["merge_tutorial.heaven.help.origin_review"] = {
+            asset_id = 105226304837267,
+            seconds = 8.359184,
+        },
+        ["merge_tutorial.hell.collect_setup"] = { asset_id = 80131433888820, seconds = 16.579048 },
+        ["merge_tutorial.hell.collect_setup.auto"] = {
+            asset_id = 101473084999607,
+            seconds = 13.281814,
+        },
+        ["merge_tutorial.hell.create_five"] = { asset_id = 75170540433048, seconds = 17.229206 },
+        ["merge_tutorial.hell.deploy_best"] = { asset_id = 137808810638631, seconds = 12.817415 },
+        ["merge_tutorial.hell.collect_workshop_coins"] = {
+            asset_id = 95146149823062,
+            seconds = 9.334422,
+        },
+        ["merge_tutorial.hell.talk_engineer"] = { asset_id = 99535038259530, seconds = 10.820499 },
+        ["merge_tutorial.hell.unlock_bulwark"] = { asset_id = 87714902555504, seconds = 13.374694 },
+        ["merge_tutorial.hell.install_bulwark"] = { asset_id = 78061030050490, seconds = 13.003175 },
+        ["merge_tutorial.hell.collect_cannon_coins"] = {
+            asset_id = 100072684649467,
+            seconds = 12.120816,
+        },
+        ["merge_tutorial.hell.collect_cannon_gem"] = {
+            asset_id = 114438879785674,
+            seconds = 11.424218,
+        },
+        ["merge_tutorial.hell.talk_commander"] = { asset_id = 93457921747960, seconds = 11.702857 },
+        ["merge_tutorial.hell.unlock_cannon"] = { asset_id = 103027946386775, seconds = 12.167256 },
+        ["merge_tutorial.hell.install_cannon"] = { asset_id = 108433575382784, seconds = 11.656417 },
+        ["merge_tutorial.hell.power_lesson"] = { asset_id = 96935763355290, seconds = 16.671927 },
+        ["merge_tutorial.hell.collect_upgrade_coins"] = {
+            asset_id = 82653473023991,
+            seconds = 10.541859,
+        },
+        ["merge_tutorial.hell.collect_upgrade_coins.auto"] = {
+            asset_id = 101538622489864,
+            seconds = 10.17034,
+        },
+        ["merge_tutorial.hell.upgrade_eggs"] = { asset_id = 125980467279982, seconds = 16.579048 },
+        ["merge_tutorial.hell.upgrade_eggs.deploy"] = {
+            asset_id = 99217733158050,
+            seconds = 13.514014,
+        },
+        ["merge_tutorial.hell.slots_lesson"] = { asset_id = 107583485676830, seconds = 14.535692 },
+        ["merge_tutorial.hell.enhance_lesson"] = { asset_id = 99132389521068, seconds = 11.609977 },
+        ["merge_tutorial.hell.talk_quartermaster"] = {
+            asset_id = 93146332050937,
+            seconds = 15.51093,
+        },
+        ["merge_tutorial.hell.after_setup"] = { asset_id = 71423830255250, seconds = 16.486168 },
+        ["merge_tutorial.hell.after_bulwark"] = { asset_id = 92568159590298, seconds = 11.842177 },
+        ["merge_tutorial.hell.after_cannon"] = { asset_id = 103133496547870, seconds = 8.962902 },
+        ["merge_tutorial.hell.after_power"] = { asset_id = 122316177254880, seconds = 10.03102 },
+        ["merge_tutorial.hell.after_upgrade"] = { asset_id = 121484933063213, seconds = 10.959819 },
+        ["merge_tutorial.hell.after_slots"] = { asset_id = 104241104561538, seconds = 8.870023 },
+        ["merge_tutorial.hell.after_enhance"] = { asset_id = 79706513666795, seconds = 10.913379 },
+        ["merge_tutorial.hell.completion"] = { asset_id = 108077499399820, seconds = 17.879365 },
+        ["merge_tutorial.hell.resume"] = { asset_id = 98359565969896, seconds = 13.328254 },
+        ["merge_tutorial.hell.reminder"] = { asset_id = 126524678671611, seconds = 12.213696 },
+        ["merge_tutorial.hell.help.power"] = { asset_id = 86326315979698, seconds = 11.192018 },
+        ["merge_tutorial.hell.help.slots"] = { asset_id = 93878917989625, seconds = 13.142494 },
+        ["merge_tutorial.hell.help.commit"] = { asset_id = 74158621041272, seconds = 11.563537 },
+        ["merge_tutorial.hell.help.owned"] = { asset_id = 92507971630649, seconds = 9.334422 },
+        ["merge_tutorial.hell.help.slot"] = { asset_id = 133907508477206, seconds = 10.820499 },
+        ["merge_tutorial.hell.help.enhancement"] = {
+            asset_id = 100978694332827,
+            seconds = 12.074376,
+        },
+        ["merge_tutorial.hell.help.apply"] = { asset_id = 139966905350935, seconds = 8.730703 },
+        ["merge_tutorial.hell.help.origin"] = { asset_id = 84804020328587, seconds = 13.746213 },
+        ["merge_tutorial.hell.help.origin_review"] = {
+            asset_id = 91743177514143,
+            seconds = 13.746213,
+        },
+    },
+}

@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Director = require(ReplicatedStorage.Shared.Game.MergeTutorialVoiceDirector)
 local Narrator = require(script.Parent.TutorialNarrator)
 local config = require(ReplicatedStorage.Configs.merge_tutorial_voice)
+local transitConfig = require(ReplicatedStorage.Configs.merge_egg_prototype).gate.transit_feedback
 local Controller = {}
 Controller.__index = Controller
 local singleton
@@ -51,6 +52,8 @@ function Controller:destroy()
 end
 function Controller.update(world, observing, menuOpen)
     local player = Players.LocalPlayer
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    local modeNotice = playerGui and playerGui:FindFirstChild("MergeDefenseModeNotice")
     player:SetAttribute("MergeTutorialMenuOpen", observing == true and menuOpen == true)
     if not config.enabled then
         return
@@ -64,22 +67,27 @@ function Controller.update(world, observing, menuOpen)
     local function attr(name)
         return world and world:GetAttribute(name)
     end
+    local function count(name)
+        -- Replicated counters can be absent while a bay's initial attributes arrive.
+        return tonumber(attr(name)) or 0
+    end
     local snapshot = {
         observing = observing == true and world ~= nil and attr("ActivePlayer") == player.Name,
-        blocked = player:GetAttribute("InCombatTutorial") == true or player:GetAttribute(
-            "InPrologue"
-        ) == true or player:GetAttribute("MergePortalTransit") == true,
+        blocked = player:GetAttribute("InCombatTutorial") == true
+            or player:GetAttribute("InPrologue") == true
+            or player:GetAttribute(transitConfig.active_attribute) == true
+            or (modeNotice ~= nil and modeNotice.Enabled),
         bay = world,
         run = attr("ActiveRunId"),
         side = attr("MergeEggBaySide"),
         required = attr("MergeEggTutorialRequired") == true,
         completed = attr("MergeEggTutorialCompleted") == true,
-        rebirths = tonumber(attr("MergeDefenseRebirthCount")) or 0,
+        rebirths = count("MergeDefenseRebirthCount"),
         active = attr("MergeEggTutorialActive") == true,
         step = attr("MergeEggTutorialStep"),
         autoCollector = attr("MergeEggTutorialUsesAutoCollector") == true,
-        created = tonumber(attr("MergeEggTutorialUpgradeCreated")) or 0,
-        createNeed = tonumber(attr("MergeEggTutorialUpgradeCreateNeed")) or 0,
+        created = count("MergeEggTutorialUpgradeCreated"),
+        createNeed = count("MergeEggTutorialUpgradeCreateNeed"),
         powerHelp = player:GetAttribute("MergeTutorialPowerGuideAction"),
     }
     snapshot.progress = table.concat({

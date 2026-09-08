@@ -1,7 +1,7 @@
 -- Canonical paired performances. Both realms teach the same authoritative Merge tutorial.
 return {
     version = 1,
-    status = "script_ready",
+    status = "recorded",
     language = "en",
     playbackVolumeSource = {
         config = "merge_egg_prototype",
