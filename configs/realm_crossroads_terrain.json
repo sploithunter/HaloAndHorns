@@ -1,0 +1,42 @@
+{
+  "revision": 4,
+  "root": "RealmCrossroadsR4",
+  "bake_source": "tools/realm_crossroads/bake_terrain.luau",
+  "appearance_source": "configs/realm_crossroads.json",
+  "gate_source": "configs/realm_crossroads_gate_study.json",
+  "movement_source": "configs/places.lua roles.merge.walk_speed",
+  "voxel": {"resolution": 4, "region_min": [-184,-32,-164], "region_max": [184,48,164], "island_half": [180,160], "corner_cut": 24, "bottom": -24, "soil_depth": 8},
+  "levels": {"court": 0, "gardens": 4, "gallery": 4, "rim": 12, "overlook": -4},
+  "side_terrace": {"inner": 80, "outer": 136, "z_min": -132, "z_max": 116, "slope_end": 156},
+  "gallery_terrace": {"half_width": 96, "front": -88, "back": -132, "slope_end": -148},
+  "overlook": {"half_width": 64, "front": 152, "back": 136},
+  "transitions": [
+    {"name":"GalleryStairs","kind":"stairs","axis":"z","start":-72,"finish":-88,"cross_min":-36,"cross_max":36,"from":0,"to":4,"steps":8},
+    {"name":"GalleryRampWest","kind":"ramp","axis":"z","start":-56,"finish":-88,"cross_min":-80,"cross_max":-64,"from":0,"to":4},
+    {"name":"GalleryRampEast","kind":"ramp","axis":"z","start":-56,"finish":-88,"cross_min":64,"cross_max":80,"from":0,"to":4},
+    {"name":"GardenStairsWest","kind":"stairs","axis":"x","start":-64,"finish":-80,"cross_min":-30,"cross_max":-6,"from":0,"to":4,"steps":8},
+    {"name":"GardenStairsEast","kind":"stairs","axis":"x","start":64,"finish":80,"cross_min":-30,"cross_max":-6,"from":0,"to":4,"steps":8},
+    {"name":"GardenRampWest","kind":"ramp","axis":"x","start":-48,"finish":-80,"cross_min":72,"cross_max":88,"from":0,"to":4},
+    {"name":"GardenRampEast","kind":"ramp","axis":"x","start":48,"finish":80,"cross_min":72,"cross_max":88,"from":0,"to":4},
+    {"name":"OverlookStairs","kind":"stairs","axis":"z","start":120,"finish":136,"cross_min":-16,"cross_max":16,"from":0,"to":-4,"steps":8},
+    {"name":"OverlookRampWest","kind":"ramp","axis":"z","start":104,"finish":136,"cross_min":-52,"cross_max":-36,"from":0,"to":-4},
+    {"name":"OverlookRampEast","kind":"ramp","axis":"z","start":104,"finish":136,"cross_min":36,"cross_max":52,"from":0,"to":-4}
+  ],
+  "retaining_segments": {"side_z":[[-100,-30],[-6,72],[88,116]],"gallery_x":[[-96,-80],[-64,-36],[36,64],[80,96]],"overlook_x":[[-64,-52],[-36,-16],[16,36],[52,64]],"thickness":1,"cap_width":2},
+  "paths": {"width":18,"thickness":0.3,"surface_offset":0.24,"gallery_lane_x":28},
+  "gallery": {"center":[0,-102],"width":120,"depth":28,"height":22,"column_x":[-60,-36,36,60],"alcove_centers":[-45,-15,15,45],"ranks":[2,1,3],"podium_heights":[2,3,1.5],"podium_spacing":7},
+  "landmark": {"center":[0,0],"radius":10,"height":12,"segments":32},
+  "gate": {"scale":0.3,"clearance_width":6,"clearance_height":9,"landing_width":40,"landing_depth":30,"face_height":5,"face_y":6.5},
+  "markers": [
+    {"name":"Spawn","position":[0,0,100]},
+    {"name":"Gallery","position":[0,4,-94]},
+    {"name":"GardenWest","position":[-108,4,-18]},
+    {"name":"GardenEast","position":[108,4,-18]},
+    {"name":"RearTerrace","position":[0,12,-152]},
+    {"name":"Overlook","position":[0,-4,144]}
+  ],
+  "lighting": {"clock_time":14,"brightness":2,"ambient":[145,151,158],"heaven_tint":[255,245,222],"hell_tint":[218,193,197],"heaven_brightness":0.035,"hell_brightness":-0.075,"hell_contrast":0.09,"smoothing_seconds":0.6},
+  "camera": {"position":[215,180,275],"target":[0,0,-8]},
+  "preview_title":"CROSSROADS R4 / ELEVATION WALKTHROUGH",
+  "preview_note":"Terrain + stairs + ramps / Merge movement speed / travel is disabled"
+}

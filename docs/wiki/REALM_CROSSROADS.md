@@ -1,6 +1,62 @@
 # Realm Crossroads
 
-Status: first blockout scale rejected; R3 existing-gate and local-lighting study for review (2026-09-08).
+Status: R4 authored voxel terrain blockout saved and route-tested in isolated local Studio (2026-09-08).
+
+
+## R4: authored terrain and elevation walkthrough
+
+The user requested assessing every elevation change before shaping the Roblox map.
+`configs/realm_crossroads_terrain.json` owns the grading plan; its named
+`tools/realm_crossroads/bake_terrain.luau` authors real Terrain once in **Edit**, only
+in a local PlaceId=0 preview. No runtime geometry builder is installed.
+
+| Area | Elevation | Transition |
+| --- | --- | --- |
+| Spawn, court, both gate landings | 0 | Level choice routes |
+| Side gardens and Champions terrace | +4 | Vertical stone retaining faces; stairs and alternate ramps |
+| Lower arrival overlook | -4 | Central stair and paired ramps |
+| Planted outer/rear rim | +12 target | Landscape slopes around 1:2 to 1:2.5; not primary routes |
+| Island underside | -24 | Steep voxel rock perimeter cliff |
+
+Each stair rises/drops 4 across eight 0.5-stud risers with 2-stud treads. Each
+alternate ramp runs 32, giving 1:8, and is 16 wide. Terrain supports raised
+landings and the grades under stairs. Stone skins give precise risers and
+vertical retaining faces where Roblox's 4-stud voxel reconstruction rounds edges.
+The +12 planted rim is approximate; the rear marker raycasts near 11.6. Primary
+terraces raycast exactly 0/+4/-4. A half-cell occupancy adjustment was necessary
+to prevent Terrain from burying the paths 2 studs above the intended datum.
+
+The saved preview uses the actual Merge bay arches at 30%, native SurfaceAppearance,
+and 5-stud noncolliding inset faces. Spawn-to-gate distance remains 70.5 studs,
+about 2.9 seconds at the configured Merge default speed of 24. Client-local
+proximity tint demonstrates the 26-to-10-stud Heaven/Hell lighting transition.
+Travel, dialogue, live leaderboards, and finished landscaping remain unimplemented.
+
+Validation: direct Humanoid MoveTo tests at speed 24 passed both arch openings,
+gallery stairs/ramp, garden stairs/ramp, and overlook stairs/ramp. Testing found a
+center gallery column obstructing the stair entrance; columns now leave the
+center approach open. These are representative routes with the current avatar,
+not a claim that all avatar scales and every terrain edge are tested. Repo CI
+passed 2,842 headless tests; native bake passed targeted Selene.
+
+Artifacts under `output/realm_crossroads/`:
+- `RealmCrossroads-R4-Terrain.rbxl`: saved native terrain/art in a standalone place.
+- `Realm-Crossroads-Grading-R4.svg`: grading plan, transition key and stair/ramp section.
+- `R4-Saved-Terrain.jpg`: saved-place overview.
+
+Rebuild: `mise exec -- lune run tools/realm_crossroads/prepare_terrain.luau` creates
+an **unbaked seed** (overwrites the local output, so preserve an existing baked file).
+Open that seed once in Studio, then require `ServerStorage.CrossroadsTerrainBake`
+in Edit. Save locally. The alternate native export flow serializes Terrain and
+non-service art with SerializationService, wraps children in service-named folders,
+then runs `save_native_terrain.luau` on `native-r4-export.rbxm`. This preserves the
+native Terrain payload instead of approximating it with Parts. Saved-file reopening
+verified terrain heights and speed. **Do not open a second copy of the same local
+place to verify it:** duplicate Studio windows lock editing. Reuse the current
+instance; the user explicitly flagged this workflow issue.
+
+R1/R2 drawings below remain historical. R4 supersedes the R2 +12 Champions level
+with a +4 usable terrace and reserves +12 for the planted rim.
 
 ## R3: existing Merge arches, inset faces, separated lighting
 

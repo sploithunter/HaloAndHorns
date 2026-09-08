@@ -8743,3 +8743,5 @@ first-session cohort rates.
   and `PlaceRuntime.walkSpeedFor`. Updated the R3 approach drawing and design reference: the
   70.5-stud route now estimates 2.9 seconds. Gate separation and lighting radii stay unchanged.
 - The next walkthrough must use that baseline. No game-wide movement changes or new bake.
+
+- 2026-09-08 — Crossroads R4: authored voxel terrain grading (court 0, gardens/gallery +4, overlook -4, planted rim +12), stairs/ramps and retaining walls; native Merge gates at 30%; eight representative walking routes passed at speed 24. Saved isolated preview and grading diagram. Duplicate local Studio copies lock editing; reuse one instance. See [Realm Crossroads](REALM_CROSSROADS.md).
