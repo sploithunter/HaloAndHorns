@@ -8777,3 +8777,4 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 
 - 2026-09-08 — Animated placed Confluence pool tops with clipped colored surfaces and scrolling textures. Water/lava offsets verified moving at distinct configured rates in Play; original carved frame and nine waterfall/lava Beams preserved.
 - 2026-09-08: Trimmed 12 Crossroads paving intersections into non-overlapping solids after user identified stacked flat surfaces. Visually checked arrival junction; original slabs retained in ServerStorage, config and Edit-time finishing baker recorded.
+- 2026-09-08: Added mirrored spectator/fishing extensions: 32 native seats, 24 static audience dummies, central stairs, oval Terrain pond, two fishing docks, relocated perimeter flora and expanded safety walls. Corrected arrival continuity to Z120 and replaced the center strip with individual edged stone pavers after user rejected the abrupt cut layout. Gameplay remains deferred.

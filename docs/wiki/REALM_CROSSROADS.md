@@ -361,3 +361,24 @@ Twelve overlapping pieces were cut in the current preview, including arrival/gat
 and garden links. Original slabs are backed up in ServerStorage.CrossroadsPavingBeforeTrim.
 Rebuild floor geometry before rerunning this finishing pass. Do not solve floor intersections
 by stacking nearly coplanar faces; adjacent materials need cleaved, non-overlapping boundaries.
+
+## Spectator stands and fishing pond (2026-09-08)
+
+`configs/realm_crossroads_leisure.json` and its Edit baker extend the side lobes to
+X±228 (safety boundary ±224), locally around the activity gardens. East has four
+ascending rows of eight native Seats, a central stair aisle and rear/end rails.
+Twenty-four static seated copies of podium height references preview the audience;
+eight aisle-side seats remain enabled for visitors. These are dummies, not rankings.
+West has a 48×80 oval Terrain-water pond with a walkable bank and two wooden fishing
+platforms. Existing flora was moved to the new outer edge; 16 invisible wall segments
+replace the old footprint boundary. Terrain backups remain in ServerStorage.
+
+Fishing is layout only: fish and rods need assets; land-shark code reuse needs review.
+Possible catches/rewards are Enhancements, potions and eggs, with economy unspecified.
+No fishing or automatic podium-audience gameplay has been added.
+
+The arrival path now continues from Z6 through Z120 to the rear stair landing. The
+visible raised spawn pad is removed (spawn remains enabled but invisible/noncolliding).
+`finish_arrival.luau` prepares the continuous footprint before the paving trim, then
+replaces the center with individual stone pavers and separate edge strips. Its returned
+finish function must run after trim. Floor intersections share a common surface height.

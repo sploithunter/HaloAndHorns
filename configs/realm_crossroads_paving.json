@@ -7,7 +7,6 @@
     "CrossroadsActivitiesR7.PatrolGrove"
   ],
   "priorities": {
-    "PreviewSpawn": 100,
     "FarmAndFightLanding": 95,
     "MergeLanding": 95,
     "ArrivalWalk": 90,
@@ -26,5 +25,49 @@
   },
   "height_tolerance": 0.3,
   "cutter_height": 4,
-  "overlap_epsilon": 0.001
+  "overlap_epsilon": 0.001,
+  "arrival": {
+    "start_z": 6,
+    "end_z": 120,
+    "width": 20,
+    "border_width": 0.6,
+    "surface_y": 0.44,
+    "thickness": 0.3,
+    "stone_color": [
+      202,
+      196,
+      178
+    ],
+    "edge_color": [
+      136,
+      126,
+      106
+    ],
+    "tile_columns": 4,
+    "tile_rows": 19,
+    "tile_colors": [
+      [
+        202,
+        196,
+        178
+      ],
+      [
+        193,
+        187,
+        169
+      ],
+      [
+        210,
+        204,
+        185
+      ],
+      [
+        197,
+        192,
+        176
+      ]
+    ],
+    "joint": 0
+  },
+  "finish_source": "tools/realm_crossroads/finish_arrival.luau"
 }

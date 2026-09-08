@@ -2,6 +2,7 @@
   "revision": 4,
   "root": "RealmCrossroadsR4",
   "bake_source": "tools/realm_crossroads/bake_terrain.luau",
+  "leisure_source": "configs/realm_crossroads_leisure.json",
   "paving_source": "configs/realm_crossroads_paving.json",
   "appearance_source": "configs/realm_crossroads.json",
   "gate_source": "configs/realm_crossroads_gate_study.json",
