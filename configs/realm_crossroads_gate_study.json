@@ -115,7 +115,8 @@
     "gate_outer_lighting_radius": 26,
     "gate_full_lighting_radius": 10,
     "neutral_gap_between_lighting_zones": 28,
-    "walk_speed_reference": 16,
+    "walk_speed_reference": 24,
+    "walk_speed_source": "configs/places.lua roles.merge.walk_speed (default, without buffs)",
     "light_blend": "smooth distance-based fade, scoped to local player; neutral at spawn and gallery",
     "island": [
       360,

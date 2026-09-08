@@ -8736,3 +8736,10 @@ first-session cohort rates.
   lighting. Proposed 80-stud gate separation, 4.4-second walks, and two 26-stud light zones with
   a 28-stud neutral gap. R3 replaces the earlier gate positions and roof-mounted face concept;
   it is not yet built or walk-tested. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+### 2026-09-08 — Crossroads adopts Merge default movement speed
+
+- User selected Merge's default 24 studs/s for the hub, verified against `roles.merge.walk_speed`
+  and `PlaceRuntime.walkSpeedFor`. Updated the R3 approach drawing and design reference: the
+  70.5-stud route now estimates 2.9 seconds. Gate separation and lighting radii stay unchanged.
+- The next walkthrough must use that baseline. No game-wide movement changes or new bake.

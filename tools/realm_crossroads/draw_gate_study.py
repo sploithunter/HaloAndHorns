@@ -1,5 +1,6 @@
 """R3 asset evaluation and inset-face doorway study. Does not modify Roblox."""
 import json
+import math
 from pathlib import Path
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor
@@ -147,6 +148,8 @@ notes(636,212,'Do not carry Merge behavior into the hub',[
 c.showPage()
 header('A-06 / APPROACH LIGHT','Wider entrances, short walks, distinct atmosphere','Focused arrival-plan detail. The proposed 360 x 320 island and rear gallery remain; the two gate centers move farther apart.')
 L=D['layout_proposal'];S=3;cx=322;cy=620
+distance=math.dist(L['spawn'],L['gates'][0])
+walk_seconds=distance/L['walk_speed_reference']
 def plan(x,z):return cx+x*S,cy-z*S
 txt(40,692,'ARRIVAL COURT / DIMENSIONED DETAIL',12,INK,True)
 txt(40,672,'Gate centers X +/-40, Z +42; spawn X 0, Z +100.',10.5,MUTED)
@@ -182,8 +185,8 @@ txt(cx,yy-78,'28 neutral gap',10,INK,center=True)
 x,y=plan(*L['spawn']);c.setFillColor(HexColor('#F5F0E2'));c.setStrokeColor(HexColor(GOLD));c.circle(x,y,10*S,fill=1,stroke=1)
 txt(x,y-4,'SPAWN',11,INK,True,True)
 txt(x,y-47,'Neutral daylight',11,MUTED,center=True)
-txt(x,y-68,'~70.5 studs / 4.4 sec to either gate center',11,INK,center=True)
-txt(x,y-85,'Entry threshold can sit a few studs before the center.',10,MUTED,center=True)
+txt(x,y-68,f'~{distance:.1f} studs / {walk_seconds:.1f} sec to either gate center',11,INK,center=True)
+txt(x,y-85,f'Merge default walk speed: {L["walk_speed_reference"]} studs/sec (no buffs).',10,MUTED,center=True)
 txt(cx,600,'Neutral route',10,MUTED,center=True);txt(cx,585,'to gallery',10,MUTED,center=True)
 txt(42,128,'Scale: 1 drawing interval = 20 studs',10,MUTED)
 line(42,108,102,108,INK,3);line(42,103,42,113,INK);line(102,103,102,113,INK)
@@ -204,7 +207,7 @@ notes(654,482,'Neutral arrival and gallery',[
 ])
 notes(654,378,'Keep the first choice fast',[
  'An 80-stud separation allows wider mesh landings and planting.',
- 'Direct routes keep the first choice to about four seconds.',
+ f'Direct routes take about {walk_seconds:.1f} seconds at Merge default speed.',
  'Verify both mode signs in the actual default spawn camera.',
  'If clipped, adjust depth or camera framing before widening again.'
 ])

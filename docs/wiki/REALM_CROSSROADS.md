@@ -45,8 +45,14 @@ and A-06 wider entrance spacing / lighting plan. The elevation is diagrammatic, 
 
 Keep the 360 × 320 island proposal. Spawn remains X=0/Z=100; move gate centers to X=±40/Z=42
 (**80 studs apart**) and turn each ~34.6° toward spawn. Direct spawn-to-center distance is
-70.5 studs, about **4.4 seconds at 16 studs/s**; the entrance threshold is slightly closer.
-This supersedes R2's X=±26/Z=54 positions and 3.3-second estimate.
+70.5 studs, about **2.9 seconds at Merge's default 24 studs/s**; the entrance threshold is
+slightly closer. The user selected the Merge default speed for Crossroads on 2026-09-08.
+Its source is `configs/places.lua` → `roles.merge.walk_speed`, consumed by
+`PlaceRuntime.walkSpeedFor`; this excludes movement buffs. Use that configured speed for the
+next walkthrough, even if the hub ultimately lives inside Farm & Fight. This is a hub-specific
+design requirement, not authorization to increase all Farm & Fight movement speeds.
+This supersedes R2's gate positions and the R3 study's earlier 16-stud/s / 4.4-second estimate.
+R1/R2 historical drawings and the rejected preview remain unchanged.
 
 Each gate gets a proposed 26-stud outer lighting radius, easing to full theme within 10 studs.
 The circles leave a **28-stud neutral gap** along the line joining their centers. Spawn and the
