@@ -269,27 +269,35 @@ function Player:step(dt)
         local now = os.clock()
         if self.helpCue and not self.seen[self.helpCue] and now >= self.helpAt then
             self:_play(self.helpCue)
-        elseif
-            not GuiService.MenuIsOpen
-            and player:GetAttribute("LargeMenuOpen") ~= true
-            and player:GetAttribute("TutorialHandoffOpen") ~= true
-            and player:GetAttribute("StarterPetChoiceOpen") ~= true
-            and player:GetAttribute("CombatTutorialPromptOpen") ~= true
-            and player:GetAttribute("InPrologue") ~= true
-            and player:GetAttribute("InCombat") ~= true
-        then
-            self.idleSeconds = (self.idleSeconds or 0) + dt
-            local delay = self.hasReminded and self.config.reminder_repeat_seconds
-                or self.config.reminder_delay_seconds
-            if self.idleSeconds >= delay then
-                local speaker = self.catalog[self.identity].speaker
-                local reminder = self.config.reminders[self.identity]
-                    or self.config.reminder_fallback[speaker]
-                if self:_play(reminder) then
-                    self.current.reminder = true
-                    self.hasReminded = true
-                end
-            end
+        else
+            self:_stepReminders(
+                dt,
+                GuiService.MenuIsOpen
+                    or player:GetAttribute("LargeMenuOpen") == true
+                    or player:GetAttribute("TutorialHandoffOpen") == true
+                    or player:GetAttribute("StarterPetChoiceOpen") == true
+                    or player:GetAttribute("CombatTutorialPromptOpen") == true
+                    or player:GetAttribute("InPrologue") == true
+                    or player:GetAttribute("InCombat") == true
+            )
+        end
+    end
+end
+-- Explicit blocked input keeps timer tests independent of a live player's menus/combat.
+function Player:_stepReminders(dt, blocked)
+    if blocked or not self.identity or self.current then
+        return
+    end
+    self.idleSeconds = (self.idleSeconds or 0) + dt
+    local delay = self.hasReminded and self.config.reminder_repeat_seconds
+        or self.config.reminder_delay_seconds
+    if self.idleSeconds >= delay then
+        local speaker = self.catalog[self.identity].speaker
+        local reminder = self.config.reminders[self.identity]
+            or self.config.reminder_fallback[speaker]
+        if self:_play(reminder) then
+            self.current.reminder = true
+            self.hasReminded = true
         end
     end
 end
