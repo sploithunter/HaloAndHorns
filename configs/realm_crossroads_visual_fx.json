@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "world": "RealmCrossroadsR4",
+  "bake_source": "tools/realm_crossroads/visual_fx.luau",
+  "bundle_source": "configs/vendor/crossroads_ambient_bundle.json",
+  "bundle_provenance": "RBX-FX-GEN commits 503334d + bcd1619; codex/crossroads-ambient-fx; ambient fields and pooled water ripple",
+  "runtime_root": "CrossroadsVisualFX",
+  "client_name": "CrossroadsVisualFXClient",
+  "local_root": "CrossroadsLocalVisualFX",
+  "backup_root": "CrossroadsVisualFXOriginals",
+  "old_mist_path": [
+    "CrossroadsFishingR10",
+    "HellFishingPool",
+    "GreenPoolMist"
+  ],
+  "update_interval": 0.1,
+  "quality_attribute": "CrossroadsFXQuality",
+  "reduced_motion_attribute": "CrossroadsReducedMotion",
+  "default_quality": "full",
+  "graphics_tiers": [
+    {
+      "maximum": 3,
+      "quality": "minimal"
+    },
+    {
+      "maximum": 6,
+      "quality": "reduced"
+    },
+    {
+      "maximum": 10,
+      "quality": "full"
+    }
+  ],
+  "fields": [
+    {
+      "name": "HellPoolMist",
+      "preset": "hell_pool_mist",
+      "owner_path": [
+        "CrossroadsFishingR10",
+        "HellFishingPool"
+      ],
+      "placement": "preset"
+    },
+    {
+      "name": "HellGateEmbers",
+      "preset": "hell_gate_embers",
+      "owner_path": [
+        "ExistingMergeArches",
+        "Merge",
+        "Arch"
+      ],
+      "placement": "gate_ground_frame",
+      "ground_y": 0,
+      "offset": [
+        0,
+        3,
+        5
+      ],
+      "sources": [
+        [
+          -6,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ]
+      ]
+    }
+  ],
+  "notes": "Cosmetic local preview only. Replaces old server-authored GreenPoolMist with client-owned equivalent, never doubles it. Full near-camera tier preserves20x4/s5-8s. No Heaven smoke/petal placeholder is enabled. Host can set quality/reduced-motion attributes; production settings adapter remains integration work. Preserve installer module siblings and copy StarterPlayerScripts companion with map. No gameplay, fishing catches, network requests, lighting/water changes."
+}

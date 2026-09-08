@@ -8783,3 +8783,10 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 - 2026-09-08: Replaced the Hell pool's artificial liquid surface with real Terrain water at user request. WaterColor is place-wide, so both ponds retain the existing color. Clear the region before writing buffered replacement voxels when converting solid ground to fluid; otherwise the old solid channel can remain.
 - 2026-09-08: Added 20 ambient green mist emitters across the Hell fishing water, reviewed in Play. Rate, color, opacity, spacing, size and lifetime are config-owned; water and global lighting remain unchanged.
 - 2026-09-08: Captured 37 current-map views and commissioned eight independent section design reviews (20 improvements each), with a coordinated architectural/landscape/FX implementation sequence. Retained screenshot atlas and plans under docs/art/crossroads-review. User clarified that modest new effects should be developed in RBX-FX-GEN rather than constrained by its current crystal-only implementation.
+
+### 2026-09-08 — Crossroads R11 premium construction
+
+- Implemented config-driven core, Bragg, garden, stands, fishing and heraldry craft in the existing local Studio preview; retained approved native gates/fountain and route/capacity contracts.
+- Built/uploaded two Blender fishing rods and installed 18 displays with tip anchors. Added Studio-only cast/reel rehearsal; no production gameplay/rewards/travel writes.
+- Integrated the RBX-FX-GEN ambient bundle (local standalone commit503334d); native lifecycle/quality checks passed and old duplicate mist is archived.
+- Added an explicit nine-pass authoring registry and source-synchronized native exporter; documented exact production integration boundaries and remaining art/QA. Full repo CI passed 2,842 headless tests plus lint/style/build and architecture checks.

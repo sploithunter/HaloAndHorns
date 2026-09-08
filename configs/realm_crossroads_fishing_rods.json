@@ -1,0 +1,113 @@
+{
+  "status": "uploaded_native_structure_verified_pending_visual_qa",
+  "creator_group_id": 15872767,
+  "source_recipe": "assets/source/props/fishing_rods/recipe.json",
+  "source_generator": "assets/source/props/fishing_rods/generate.py",
+  "manifest": "assets/manifest/realm_crossroads_fishing_rods.json",
+  "units": "one Blender unit equals one intended Roblox stud; verify actual imported bounds before placement",
+  "gameplay_connected": false,
+  "models": {
+    "heaven": {
+      "name": "Pearlwing Rod",
+      "model_asset_id": 135506662342652,
+      "source": "assets/exports/props/fishing_rods/heaven/heaven.fbx",
+      "grip_local": [
+        0,
+        0.6,
+        0
+      ],
+      "line_tip_local": [
+        0.31,
+        5.488,
+        0.21
+      ],
+      "reel_pivot_local": [
+        0,
+        1.21,
+        0.225
+      ],
+      "expected_height_studs": 5.5,
+      "texture_id": 115790875963202,
+      "native_meshparts": 5,
+      "native_structure_verified": true,
+      "raw_grip_local": [
+        0,
+        0.6,
+        0
+      ],
+      "raw_line_tip_local": [
+        -0.31,
+        5.488,
+        -0.21
+      ],
+      "native_raw_pivot_position": [
+        -0.0395,
+        2.75,
+        -0.1925
+      ]
+    },
+    "hell": {
+      "name": "Cinderbone Rod",
+      "model_asset_id": 82970001257677,
+      "source": "assets/exports/props/fishing_rods/hell/hell.fbx",
+      "grip_local": [
+        0,
+        0.6,
+        0
+      ],
+      "line_tip_local": [
+        0.31,
+        5.488,
+        0.21
+      ],
+      "reel_pivot_local": [
+        0,
+        1.21,
+        0.225
+      ],
+      "expected_height_studs": 5.5,
+      "texture_id": 139430177813435,
+      "native_meshparts": 5,
+      "native_structure_verified": true,
+      "raw_grip_local": [
+        0,
+        0.6,
+        0
+      ],
+      "raw_line_tip_local": [
+        -0.31,
+        5.488,
+        -0.21
+      ],
+      "native_raw_pivot_position": [
+        -0.042,
+        2.75,
+        -0.1925
+      ]
+    }
+  },
+  "attachment_note": "Native bounds confirm 180-degree raw FBX yaw relative to intended Blender x,z,-y mapping. Installer applies this yaw around raw origin before mounting the grip. LineTip uses raw(-.31,5.488,-.21). Native image QA remains pending.",
+  "installer": "tools/realm_crossroads/fishing_rods.luau",
+  "cache": "CrossroadsFishingRodAssets",
+  "display_root": "FishingRodDisplaysR11",
+  "fishing_root": "CrossroadsFishingR10",
+  "display": {
+    "grip_offset_x": -4.1,
+    "grip_height_above_deck": 1.2,
+    "grip_offset_z": 3.8,
+    "lean_x_degrees": -20,
+    "raw_to_intended_yaw_degrees": 180
+  },
+  "ponds": [
+    {
+      "name": "HeavenFishingPond",
+      "realm": "heaven",
+      "stations": 10
+    },
+    {
+      "name": "HellFishingPool",
+      "realm": "hell",
+      "stations": 8
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "bake_source": "tools/realm_crossroads/polish_shore_routes.luau",
+  "dry_run": false,
+  "backup": "CrossroadsShoreRoutesBackup",
+  "fishing_root": "CrossroadsFishingR10",
+  "material": "Cobblestone",
+  "allowed_source_materials": [
+    "Ground",
+    "Grass",
+    "LeafyGrass",
+    "Cobblestone"
+  ],
+  "route_width": 12,
+  "voxel_resolution": 4,
+  "voxel_y_min": 0,
+  "voxel_y_max": 12,
+  "ground_y_min": 3.7,
+  "ground_y_max": 6.15,
+  "minimum_normal_y": 0.92,
+  "ray_origin_y": 24,
+  "ray_length": 40,
+  "cell_sample_inset": 0.08,
+  "structure_ground_offset": 0.03,
+  "structure_height": 4.5,
+  "max_blocker_examples": 12,
+  "parapet": {
+    "activity_root": "CrossroadsActivitiesR7",
+    "garden": "CoinGarden",
+    "name": "OuterParapet",
+    "target_x": -152.35,
+    "target_width": 0.7,
+    "edge_planter_name": "EdgePlanter",
+    "planter_x": -160,
+    "planter_z": [
+      -5,
+      23,
+      49
+    ],
+    "match_tolerance": 0.15,
+    "associated_flower_name": "softglow_bloom",
+    "flower_radius": 3
+  },
+  "protected_fields": [
+    {
+      "min_x": -152,
+      "max_x": -88,
+      "min_z": -27,
+      "max_z": 63
+    }
+  ],
+  "ponds": [
+    {
+      "name": "HeavenFishingPond",
+      "stations": 10,
+      "region_min": [
+        -288,
+        0,
+        -88
+      ],
+      "region_max": [
+        -148,
+        12,
+        100
+      ],
+      "connectors": [
+        [
+          [
+            -188,
+            -61
+          ],
+          [
+            -156,
+            -61
+          ]
+        ],
+        [
+          [
+            -188,
+            82
+          ],
+          [
+            -158,
+            82
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "HellFishingPool",
+      "stations": 8,
+      "region_min": [
+        184,
+        0,
+        -76
+      ],
+      "region_max": [
+        296,
+        12,
+        92
+      ],
+      "connectors": [
+        [
+          [
+            190,
+            -35
+          ],
+          [
+            205,
+            -35
+          ],
+          [
+            211,
+            -54
+          ],
+          [
+            244,
+            -57
+          ]
+        ],
+        [
+          [
+            190,
+            51
+          ],
+          [
+            205,
+            51
+          ],
+          [
+            211,
+            70
+          ],
+          [
+            244,
+            73
+          ]
+        ]
+      ]
+    }
+  ],
+  "notes": "Mixed-surface 12-stud nominal circulation lies outside the convex envelope of actual rotated dock footprints. Existing dry timber approaches/paving remain part of that walking surface; only exposed dry top-solid Terrain material changes. Hell eastern route follows existing mild rim grade. No global recolor, water or occupancy writes, pond resizing or new floor slabs. Root must inspect read-only audit and perform native walk QA.",
+  "noncolliding_canopy_exclusions": [
+    [
+      "CrossroadsLandscapeR8",
+      "PerimeterFlora"
+    ]
+  ]
+}

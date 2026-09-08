@@ -1,5 +1,6 @@
 {
   "revision": 4,
+  "polish_source": "configs/realm_crossroads_polish.json",
   "root": "RealmCrossroadsR4",
   "bake_source": "tools/realm_crossroads/bake_terrain.luau",
   "fishing_source": "configs/realm_crossroads_fishing.json",

@@ -1,0 +1,182 @@
+{
+  "root": "CrossroadsCraftR11",
+  "bake_source": "tools/realm_crossroads/polish_core.luau",
+  "paving": {
+    "names": [
+      "ModeApproach1",
+      "ModeApproach2",
+      "FarmAndFightLanding",
+      "MergeLanding",
+      "GardenRampConnection",
+      "OverlookApproach",
+      "OverlookLanding"
+    ],
+    "module": 6,
+    "thickness": 0.3,
+    "variation": 0.035
+  },
+  "seal": {
+    "center": [
+      0,
+      0.44,
+      100
+    ],
+    "radius": 5,
+    "thickness": 0.3,
+    "color": [
+      174,
+      146,
+      84
+    ],
+    "inner_color": [
+      213,
+      202,
+      173
+    ]
+  },
+  "gate": {
+    "back_offset": -1.54,
+    "relief_back_offset": -0.64,
+    "relief_back_size": [
+      12,
+      4.6,
+      0.18
+    ],
+    "trim": [
+      171,
+      137,
+      77
+    ],
+    "back_heaven": [
+      220,
+      213,
+      190
+    ],
+    "back_hell": [
+      73,
+      59,
+      54
+    ],
+    "face_brightness": 1.1,
+    "face_range": 14
+  },
+  "plant_groups": [
+    [
+      -65,
+      66,
+      1
+    ],
+    [
+      -70,
+      46,
+      1
+    ],
+    [
+      -69,
+      22,
+      1
+    ],
+    [
+      -58,
+      9,
+      1
+    ],
+    [
+      -29,
+      112,
+      1
+    ],
+    [
+      -61,
+      115,
+      1
+    ],
+    [
+      65,
+      66,
+      2
+    ],
+    [
+      70,
+      46,
+      2
+    ],
+    [
+      69,
+      22,
+      2
+    ],
+    [
+      58,
+      9,
+      2
+    ],
+    [
+      29,
+      112,
+      2
+    ],
+    [
+      61,
+      115,
+      2
+    ]
+  ],
+  "plant_palette": [
+    [
+      "field_flower_bush",
+      "softglow_bloom",
+      "pearl_quartz"
+    ],
+    [
+      "dead_brush",
+      "ash_tuft",
+      "bone_rock"
+    ]
+  ],
+  "plant_height": [
+    2.5,
+    1.8,
+    3.5
+  ],
+  "plant_offsets": [
+    [
+      0,
+      0
+    ],
+    [
+      2.5,
+      1.8
+    ],
+    [
+      -2.8,
+      1.5
+    ]
+  ],
+  "overlook": {
+    "z": 151,
+    "x_min": -60,
+    "x_max": 60,
+    "stone": [
+      202,
+      197,
+      180
+    ],
+    "trim": [
+      163,
+      141,
+      94
+    ],
+    "base_y": -3.58,
+    "rail_height": 3.4,
+    "post_step": 12,
+    "baluster_height": 2.475
+  },
+  "interaction": {
+    "gate_action": "travel_preview",
+    "hold": 0.3,
+    "range": 10,
+    "enabled": false
+  },
+  "notes": "First shared construction pass; source floor polygons preserved in backups and partitioned into exact CSG pavers. Existing landmarks and route clearances preserved."
+}

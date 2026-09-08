@@ -1,0 +1,68 @@
+{
+  "revision": 11,
+  "application_order": [
+    {
+      "config": "configs/realm_crossroads_polish_core.json",
+      "module": "CrossroadsCorePolish",
+      "config_value": "CrossroadsCorePolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_bragg.json",
+      "module": "CrossroadsBraggPolish",
+      "config_value": "CrossroadsBraggPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_fishing.json",
+      "module": "CrossroadsFishingPolish",
+      "config_value": "CrossroadsFishingPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_garden.json",
+      "module": "CrossroadsGardenPolish",
+      "config_value": "CrossroadsGardenPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_arena.json",
+      "module": "CrossroadsArenaPolish",
+      "config_value": "CrossroadsArenaPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_heraldry.json",
+      "module": "CrossroadsHeraldryPolish",
+      "config_value": "CrossroadsHeraldryPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fishing_rods.json",
+      "module": "CrossroadsFishingRodsInstaller",
+      "config_value": "CrossroadsFishingRodsConfig",
+      "source_key": "installer"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_shore_routes.json",
+      "module": "CrossroadsShoreRoutesPolish",
+      "config_value": "CrossroadsShoreRoutesPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_visual_fx.json",
+      "module": "CrossroadsVisualFXInstaller",
+      "config_value": "CrossroadsVisualFXConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_preview_interactions.json",
+      "module": "CrossroadsPreviewInstaller",
+      "config_value": "CrossroadsPreviewConfig",
+      "source_key": "installer_source"
+    }
+  ],
+  "note": "Apply in listed order to the native R10 baseline. FX installer additionally consumes its config-named bundle; preview installer consumes client_source. These are authoring modules, never automatic game startup code.",
+  "native_checkpoint": "assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl",
+  "native_checkpoint_note": "Lossless isolated Studio checkpoint; not mapped into any production Rojo place. Open only if no existing editable preview is already open."
+}

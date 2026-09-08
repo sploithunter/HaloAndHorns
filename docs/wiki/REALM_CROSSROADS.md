@@ -416,3 +416,50 @@ preview before the proposed art pass; distant overview omissions are documented.
 The user explicitly supports modest new FX built in `~/Documents/RBX-FX-GEN` when useful.
 Its current crystal-only scope is not a creative ceiling. The package identifies narrow
 ambient/ripple/burst extensions and separates them from larger editor/platform investments.
+
+## Premium construction checkpoint (R11, 2026-09-08)
+
+The review now has a native first construction pass: 300 fitted approach pavers,
+36 arrival plants, rear sculpted gate titles, Bragg masonry/24 figure fixes, a
+fitted two-realm arrival inlay, a supported garden arch pavilion with four Seats,
+32 crafted stand chairs, recessed rear masonry, and 18 detailed fishing docks.
+Two source-first Blender rods are uploaded and mounted, with actual tip anchors.
+The retained map remains a local PlaceId0 preview; production content is unchanged.
+
+`configs/realm_crossroads_polish.json` lists ten authoring passes in application
+order. The native exporter refreshes their embedded modules/configs from disk,
+without rebaking serialized CSG/terrain. Apply core before heraldry and fishing
+polish before rod placement/interaction setup. Source and uploaded rod provenance
+are named by `configs/realm_crossroads_fishing_rods.json`.
+
+The standalone RBX-FX-GEN ambient extension is locally committed at `503334d`; a
+config-named bundle is vendored into this preview. It replaces the old Hell mist
+with one client-owned field at the approved 20×4/s density, adds restrained gate
+embers, and supports distance/quality/reduced-motion lifecycle controls. Native
+full/off/stop/restart/destroy checks passed. Screenshot capture does not reliably
+show the particle cloud, so property checks are not a new visual approval.
+
+A Studio-only local cast/reel rehearsal uses the 18 station attachments and leaves
+no catches or rewards. Cast height is sampled from actual Terrain water (currently
+Y0), correcting the older nominal Y2 assumption. Leaving the station/respawning
+cleans the bobber and line. Gates and the weekly egg remain disabled authored stubs.
+
+[Implementation status](../art/crossroads-review/IMPLEMENTATION_STATUS.md) records
+completed craft and remaining art/device QA. [Gameplay integration contract](../art/crossroads-review/GAMEPLAY_INTEGRATION.md)
+details server authority, fishing reservations/settlement, authored podium binding,
+wave-clear versus reached metrics, global boss deduplication and future cutover.
+Do not enable production podium tags directly: the existing AwardPodium renderer
+would generate duplicate geometry unless adapted to these authored anchors.
+
+The ambient bundle also includes the small pooled ripple extension (`bcd1619`):
+a cast emits one 32-segment Beam ring, expanding/fading above sampled water,
+with no texture plane. The two-ring pool and reduced/off/reduced-motion cleanup
+passed native smoke checks; the integrated cast and water contact were viewed.
+
+The R11 lossless native checkpoint is retained under
+`assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl`, named by the polish
+registry and deliberately absent from production Rojo mappings. Its17,200instances
+include Terrain, cached source assets, authoring modules and cosmetic scripts.
+The dry-bank route finish changes only SolidMaterial, verifies both occupancies
+unchanged, and widens the Heaven dock-wall passage to12.3studs without reducing
+the64-stud coin field. Both bank passages passed native navigation.

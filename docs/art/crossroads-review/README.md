@@ -77,3 +77,10 @@ The user explicitly supports modest new effects in RBX-FX-GEN.
 [Small-effect implementation backlog](FX_IMPLEMENTATION.md) identifies reusable ambient,
 ripple, glint and burst additions and their minimal pipeline work. The current crystal-only
 scope is a factual starting point, not a restriction on creative designs.
+
+## Implemented construction
+
+The R11 native pass is tracked in [implementation status](IMPLEMENTATION_STATUS.md).
+[Gameplay integration](GAMEPLAY_INTEGRATION.md) specifies the disabled authored stubs
+and required production code. These documents distinguish actual work from the 160
+original review recommendations; the pre-build atlas remains unchanged.

@@ -1,0 +1,181 @@
+{
+  "revision": 2,
+  "core_root": "CrossroadsCraftR11",
+  "seal_root": "ArrivalSeal",
+  "seal_inset": "SealInset",
+  "bragg_root": "BraggRotundaR6",
+  "output_name": "CrossroadsHeraldryR1",
+  "backup_name": "CrossroadsHeraldryBackup",
+  "bake_source": "tools/realm_crossroads/polish_heraldry.luau",
+  "seal": {
+    "center": [
+      0,
+      0.29,
+      100
+    ],
+    "thickness": 0.3,
+    "radius": 3.75,
+    "partition_size": [
+      12,
+      4,
+      16
+    ],
+    "cross_span": 6.65,
+    "cross_width": 0.13,
+    "diamond_size": 0.85,
+    "stroke_width": 0.22,
+    "feather_segments": [
+      [
+        [
+          -2.9,
+          -0.5
+        ],
+        [
+          -1.5,
+          -1.65
+        ]
+      ],
+      [
+        [
+          -2.65,
+          -1.1
+        ],
+        [
+          -1.6,
+          -1.95
+        ]
+      ],
+      [
+        [
+          -2.25,
+          -1.8
+        ],
+        [
+          -1.7,
+          -2.2
+        ]
+      ]
+    ],
+    "horn_segments": [
+      [
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          1.55,
+          -1.5
+        ]
+      ],
+      [
+        [
+          1.55,
+          -1.5
+        ],
+        [
+          2.35,
+          -1.2
+        ]
+      ],
+      [
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          1.0,
+          -2.1
+        ]
+      ],
+      [
+        [
+          1.0,
+          -2.1
+        ],
+        [
+          1.4,
+          -2.6
+        ]
+      ],
+      [
+        [
+          2.35,
+          -1.2
+        ],
+        [
+          2.85,
+          -2.0
+        ]
+      ],
+      [
+        [
+          2.85,
+          -2.0
+        ],
+        [
+          2.55,
+          -2.35
+        ]
+      ]
+    ],
+    "cutter_height": 4
+  },
+  "emblems": {
+    "caches": [
+      "CrossroadsActivityAssets",
+      "CrossroadsExistingDecor",
+      "CrossroadsLandscapeAssets"
+    ],
+    "height": 2.4,
+    "max_width": 3.0,
+    "max_depth": 2.4,
+    "max_top_y": 23,
+    "header_clearance": 0.2,
+    "base_size": [
+      3.2,
+      0.25,
+      2.8
+    ],
+    "minimum_cornice_width": 4,
+    "minimum_cornice_depth": 2.9,
+    "bindings": [
+      {
+        "board_id": "crystal_crusher",
+        "model": "pearl_quartz",
+        "yaw": 0
+      },
+      {
+        "board_id": "eggs_hatched",
+        "model": "wayfinder_egg",
+        "yaw": 180
+      },
+      {
+        "board_id": "bosses_defeated",
+        "model": "animal_skull",
+        "yaw": 180
+      }
+    ]
+  },
+  "palette": {
+    "heaven": [
+      222,
+      215,
+      192
+    ],
+    "hell": [
+      78,
+      65,
+      62
+    ],
+    "gold": [
+      174,
+      146,
+      84
+    ],
+    "stone": [
+      190,
+      180,
+      156
+    ]
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "status": "uploaded_native_structure_verified_pending_visual_qa",
+  "creator_group_id": 15872767,
+  "provenance": "Original precise Blender geometry; no external model or generated image used.",
+  "models": {
+    "heaven": {
+      "realm": "heaven",
+      "triangles": 3232,
+      "components": [
+        {
+          "name": "HeavenRod_Grip",
+          "triangles": 936
+        },
+        {
+          "name": "HeavenRod_Reel",
+          "triangles": 804
+        },
+        {
+          "name": "HeavenRod_Guides",
+          "triangles": 660
+        },
+        {
+          "name": "HeavenRod_Shaft",
+          "triangles": 400
+        },
+        {
+          "name": "HeavenRod_Ornaments",
+          "triangles": 432
+        }
+      ],
+      "bounds_blender": {
+        "min": [
+          -0.28200000524520874,
+          -0.5049999952316284,
+          0.0
+        ],
+        "max": [
+          0.3610000014305115,
+          0.11999999731779099,
+          5.5
+        ],
+        "size": [
+          0.6430000066757202,
+          0.6249999925494194,
+          5.5
+        ]
+      },
+      "attachments_blender": {
+        "Grip": [
+          0,
+          0,
+          0.6
+        ],
+        "LineTip": [
+          0.31,
+          -0.21,
+          5.488
+        ]
+      },
+      "uv": "Smart-projected, padded material-stripe atlas; FBX copy splits per-corner vertices",
+      "source_units": "1 Blender unit = intended 1 stud",
+      "rigged": false,
+      "asset_id": 135506662342652,
+      "fbx": "assets/exports/props/fishing_rods/heaven/heaven.fbx",
+      "glb": "assets/exports/props/fishing_rods/heaven/heaven.glb",
+      "blend": "assets/exports/props/fishing_rods/heaven/heaven.blend",
+      "texture": "assets/exports/props/fishing_rods/heaven/heaven_albedo.png",
+      "integrity_passed": true,
+      "fbx_sha256": "1d2410d0d7dfc4d3e40edf9056ae456994743d62049770c8be4b148f4aad9875",
+      "native_verified": false,
+      "native_structure_verified": true,
+      "texture_id": 115790875963202
+    },
+    "hell": {
+      "realm": "hell",
+      "triangles": 3048,
+      "components": [
+        {
+          "name": "HellRod_Grip",
+          "triangles": 936
+        },
+        {
+          "name": "HellRod_Reel",
+          "triangles": 804
+        },
+        {
+          "name": "HellRod_Guides",
+          "triangles": 660
+        },
+        {
+          "name": "HellRod_Shaft",
+          "triangles": 400
+        },
+        {
+          "name": "HellRod_Ornaments",
+          "triangles": 248
+        }
+      ],
+      "bounds_blender": {
+        "min": [
+          -0.2770000100135803,
+          -0.5049999952316284,
+          0.0
+        ],
+        "max": [
+          0.3610000014305115,
+          0.11999999731779099,
+          5.5
+        ],
+        "size": [
+          0.6380000114440918,
+          0.6249999925494194,
+          5.5
+        ]
+      },
+      "attachments_blender": {
+        "Grip": [
+          0,
+          0,
+          0.6
+        ],
+        "LineTip": [
+          0.31,
+          -0.21,
+          5.488
+        ]
+      },
+      "uv": "Smart-projected, padded material-stripe atlas; FBX copy splits per-corner vertices",
+      "source_units": "1 Blender unit = intended 1 stud",
+      "rigged": false,
+      "asset_id": 82970001257677,
+      "fbx": "assets/exports/props/fishing_rods/hell/hell.fbx",
+      "glb": "assets/exports/props/fishing_rods/hell/hell.glb",
+      "blend": "assets/exports/props/fishing_rods/hell/hell.blend",
+      "texture": "assets/exports/props/fishing_rods/hell/hell_albedo.png",
+      "integrity_passed": true,
+      "fbx_sha256": "21f33b783a3c97b14ec66d72fa1fb59132d8f410342c2963d08fc7c9b6959691",
+      "native_verified": false,
+      "native_structure_verified": true,
+      "texture_id": 139430177813435
+    }
+  }
+}

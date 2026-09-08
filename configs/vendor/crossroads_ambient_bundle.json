@@ -1,0 +1,579 @@
+{
+  "modules": {
+    "AmbientConfig": "-- Pure validation and lifecycle policy; no Roblox or game dependencies.\nlocal Config = {}\nlocal function number(value, low, high)\n    return type(value) == \"number\" and value == value and value >= low and value <= high\nend\nlocal function array(value, count, low, high)\n    if type(value) ~= \"table\" or #value ~= count then\n        return false\n    end\n    for key, v in pairs(value) do\n        if not number(key, 1, count) or key % 1 ~= 0 or not number(v, low, high) then\n            return false\n        end\n    end\n    return true\nend\nlocal function sequence(value, width, low, high)\n    if type(value) ~= \"table\" or #value < 2 or #value > 20 then\n        return false\n    end\n    local previous = -1\n    for i, point in ipairs(value) do\n        if\n            not array(point, width, low, high)\n            or not number(point[1], 0, 1)\n            or point[1] <= previous\n        then\n            return false\n        end\n        if (i == 1 and point[1] ~= 0) or (i == #value and point[1] ~= 1) then\n            return false\n        end\n        previous = point[1]\n    end\n    for key in pairs(value) do\n        if not number(key, 1, #value) or key % 1 ~= 0 then\n            return false\n        end\n    end\n    return true\nend\nfunction Config.validate(p, schema)\n    if type(p) ~= \"table\" or p.version ~= schema.version then\n        return false, \"Unsupported ambient version\"\n    end\n    local checks = {\n        version = p.version == schema.version,\n        name = type(p.name) == \"string\" and #p.name > 0 and #p.name <= 80,\n        origin = array(p.origin, 3, -100000, 100000),\n        texture = type(p.texture) == \"string\"\n            and (\n                string.match(p.texture, \"^rbxasset://\") ~= nil\n                or string.match(p.texture, \"^rbxassetid://%d+$\") ~= nil\n            ),\n        enabled = type(p.enabled) == \"boolean\",\n        rate = number(p.rate, 0, schema.maxRate),\n        lifetime = array(p.lifetime, 2, 0.01, schema.maxLifetime),\n        speed = array(p.speed, 2, 0, schema.maxSpeed),\n        size = sequence(p.size, 2, 0, schema.maxSize),\n        transparency = sequence(p.transparency, 2, 0, 1),\n        color = sequence(p.color, 4, 0, 255),\n        acceleration = array(p.acceleration, 3, -schema.maxAcceleration, schema.maxAcceleration),\n        lightEmission = number(p.lightEmission, 0, 1),\n        rotation = array(p.rotation, 2, -360, 360),\n        rotSpeed = array(p.rotSpeed, 2, -360, 360),\n        spread = array(p.spread, 2, 0, 180),\n        orientation = table.find(schema.orientations, p.orientation) ~= nil,\n        sourceSize = array(p.sourceSize, 3, 0.01, 100),\n        distance = array(p.distance, 2, 0, schema.maxDistance),\n        reducedMotionScale = number(p.reducedMotionScale, 0, 1),\n        burstCount = number(p.burstCount, 0, schema.maxBurst) and p.burstCount % 1 == 0,\n        burstCooldown = number(p.burstCooldown, 0.1, 300),\n        sources = type(p.sources) == \"table\" and #p.sources > 0 and #p.sources <= schema.maxSources,\n    }\n    for key, valid in pairs(checks) do\n        if not valid then\n            return false, \"Invalid ambient \" .. key\n        end\n    end\n    for key in pairs(p) do\n        if checks[key] == nil then\n            return false, \"Unknown ambient key \" .. tostring(key)\n        end\n    end\n    for _, key in ipairs({ \"lifetime\", \"speed\", \"rotation\", \"rotSpeed\", \"distance\" }) do\n        if p[key][1] > p[key][2] then\n            return false, \"Reversed range \" .. key\n        end\n    end\n    if p.distance[1] == p.distance[2] then\n        return false, \"Distance fade requires nonzero span\"\n    end\n    for key, source in pairs(p.sources) do\n        if\n            not number(key, 1, #p.sources)\n            or key % 1 ~= 0\n            or not array(source, 3, -10000, 10000)\n        then\n            return false, \"Invalid source\"\n        end\n    end\n    if\n        #p.sources\n            * (p.rate * p.lifetime[2] + p.burstCount * math.ceil(p.lifetime[2] / p.burstCooldown))\n        > schema.maxParticles\n    then\n        return false, \"Ambient particle budget exceeded\"\n    end\n    return true\nend\nfunction Config.scale(p, schema, distance, quality, reducedMotion)\n    local amount = schema.qualities[quality]\n    assert(amount ~= nil, \"Unknown ambient quality\")\n    local proximity = math.clamp((p.distance[2] - distance) / (p.distance[2] - p.distance[1]), 0, 1)\n    return p.enabled and amount * proximity * (reducedMotion and p.reducedMotionScale or 1) or 0\nend\nfunction Config.canBurst(p, running, scale, now, last)\n    return running and scale > 0 and p.burstCount > 0 and now - last >= p.burstCooldown\nend\nreturn Config\n",
+    "AmbientField": "-- Standalone client-owned ambient field. Caller supplies clock/camera updates;\n-- there are no Heartbeat connections, gameplay imports, or server side effects.\nlocal Policy = require(script.Parent.AmbientConfig)\nlocal AmbientField = {}\nlocal function vector(value)\n    return Vector3.new(unpack(value))\nend\nlocal function curve(value)\n    local points = {}\n    for _, point in ipairs(value) do\n        table.insert(points, NumberSequenceKeypoint.new(point[1], point[2]))\n    end\n    return NumberSequence.new(points)\nend\nlocal function copy(value)\n    if type(value) ~= \"table\" then\n        return value\n    end\n    local result = {}\n    for key, item in pairs(value) do\n        result[key] = copy(item)\n    end\n    return result\nend\nfunction AmbientField.create(parent, config, schema)\n    local valid, problem = Policy.validate(config, schema)\n    assert(valid, problem)\n    local p, limits = copy(config), copy(schema)\n    local root = Instance.new(\"Folder\")\n    root.Name = p.name\n    root.Parent = parent\n    local emitters, sources = {}, {}\n    local colors = {}\n    for _, keypoint in ipairs(p.color) do\n        table.insert(\n            colors,\n            ColorSequenceKeypoint.new(\n                keypoint[1],\n                Color3.fromRGB(keypoint[2], keypoint[3], keypoint[4])\n            )\n        )\n    end\n    for index, position in ipairs(p.sources) do\n        local source = Instance.new(\"Part\")\n        source.Name = \"AmbientSource\" .. index\n        source.Size = vector(p.sourceSize)\n        source.Anchored = true\n        source.CanCollide = false\n        source.CanTouch = false\n        source.CanQuery = false\n        source.CastShadow = false\n        source.Transparency = 1\n        source.Position = vector(p.origin) + vector(position)\n        source.Parent = root\n        local emitter = Instance.new(\"ParticleEmitter\")\n        emitter.Name = \"AmbientParticles\"\n        emitter.Enabled = false\n        emitter.Rate = 0\n        emitter.Texture = p.texture\n        emitter.Lifetime = NumberRange.new(unpack(p.lifetime))\n        emitter.Speed = NumberRange.new(unpack(p.speed))\n        emitter.Size = curve(p.size)\n        emitter.Transparency = curve(p.transparency)\n        emitter.Color = ColorSequence.new(colors)\n        emitter.Acceleration = vector(p.acceleration)\n        emitter.LightEmission = p.lightEmission\n        emitter.Rotation = NumberRange.new(unpack(p.rotation))\n        emitter.RotSpeed = NumberRange.new(unpack(p.rotSpeed))\n        emitter.SpreadAngle = Vector2.new(unpack(p.spread))\n        emitter.Orientation = Enum.ParticleOrientation[p.orientation]\n        emitter.Parent = source\n        table.insert(emitters, emitter)\n        table.insert(sources, source)\n    end\n    local running, destroyed, scale = false, false, 0\n    local lastBurst, clock = -math.huge, 0\n    local handle = { root = root }\n    function handle:start()\n        if not destroyed then\n            running = true\n        end\n    end\n    function handle:stop(clear)\n        running, scale = false, 0\n        if destroyed then\n            return\n        end\n        for _, emitter in ipairs(emitters) do\n            emitter.Enabled = false\n            emitter.Rate = 0\n            if clear then\n                emitter:Clear()\n            end\n        end\n    end\n    function handle:destroy()\n        if destroyed then\n            return\n        end\n        self:stop(true)\n        destroyed = true\n        root:Destroy()\n        table.clear(emitters)\n        table.clear(sources)\n    end\n    function handle:update(dt, cameraPosition, quality, reducedMotion)\n        if destroyed then\n            return\n        end\n        if root.Parent == nil then\n            self:destroy()\n            return\n        end\n        assert(type(dt) == \"number\" and dt >= 0 and dt < math.huge, \"Invalid ambient delta time\")\n        clock += dt\n        -- Nearest source avoids cutting off a long field by its center alone.\n        local distance = math.huge\n        for _, source in ipairs(sources) do\n            distance = math.min(distance, (cameraPosition - source.Position).Magnitude)\n        end\n        scale = running and Policy.scale(p, limits, distance, quality, reducedMotion) or 0\n        for _, emitter in ipairs(emitters) do\n            emitter.Rate = p.rate * scale\n            emitter.Enabled = running and scale > 0 and p.rate > 0\n            -- Existing particles naturally expire across ordinary distance fades.\n            -- Explicit off/reduced-motion suppression takes immediate effect.\n            if quality == \"off\" or (reducedMotion and p.reducedMotionScale == 0) then\n                emitter:Clear()\n            end\n        end\n    end\n    function handle:burst(sourceIndex)\n        if destroyed or not Policy.canBurst(p, running, scale, clock, lastBurst) then\n            return false\n        end\n        local emitter = emitters[sourceIndex]\n        if not emitter then\n            return false\n        end\n        local count = math.floor(p.burstCount * scale)\n        if count < 1 then\n            return false\n        end\n        emitter:Emit(count)\n        lastBurst = clock\n        return true\n    end\n    function handle:status()\n        return { running = running, destroyed = destroyed, scale = scale, sources = #sources }\n    end\n    return handle\nend\nreturn AmbientField\n",
+    "RippleTimeline": "-- Pure bounded validation and analytic timing for native Beam rings.\nlocal Timeline = {}\nlocal function finite(n, low, high)\n    return type(n) == \"number\" and n == n and n >= low and n <= high\nend\nlocal function vector(value, length, low, high)\n    if type(value) ~= \"table\" or #value ~= length then\n        return false\n    end\n    for key, n in pairs(value) do\n        if not finite(key, 1, length) or key % 1 ~= 0 or not finite(n, low, high) then\n            return false\n        end\n    end\n    return true\nend\nfunction Timeline.validate(p)\n    if type(p) ~= \"table\" then\n        return false\n    end\n    local valid = {\n        version = p.version == 1,\n        name = type(p.name) == \"string\" and #p.name > 0 and #p.name <= 80,\n        segments = finite(p.segments, 24, 48) and p.segments % 1 == 0,\n        poolSize = finite(p.poolSize, 1, 2) and p.poolSize % 1 == 0,\n        duration = finite(p.duration, 0.1, 3),\n        radius = vector(p.radius, 2, 0.05, 10),\n        width = vector(p.width, 2, 0.005, 0.5),\n        transparency = vector(p.transparency, 2, 0, 1),\n        surfaceOffset = finite(p.surfaceOffset, 0.01, 0.5),\n        color = vector(p.color, 3, 0, 255),\n        lightEmission = finite(p.lightEmission, 0, 1),\n        maxDistance = finite(p.maxDistance, 1, 500),\n        minimumInterval = finite(p.minimumInterval, 0.01, 10),\n        qualityCapacity = type(p.qualityCapacity) == \"table\",\n        reducedMotionEnabled = type(p.reducedMotionEnabled) == \"boolean\",\n    }\n    for _, ok in pairs(valid) do\n        if not ok then\n            return false\n        end\n    end\n    for key in pairs(p) do\n        if valid[key] == nil then\n            return false\n        end\n    end\n    if p.radius[1] > p.radius[2] or p.transparency[2] ~= 1 then\n        return false\n    end\n    for _, quality in ipairs({ \"full\", \"reduced\", \"minimal\", \"off\" }) do\n        local count = p.qualityCapacity[quality]\n        if not finite(count, 0, p.poolSize) or count % 1 ~= 0 then\n            return false\n        end\n    end\n    for key in pairs(p.qualityCapacity) do\n        if key ~= \"full\" and key ~= \"reduced\" and key ~= \"minimal\" and key ~= \"off\" then\n            return false\n        end\n    end\n    return p.qualityCapacity.off == 0\nend\nfunction Timeline.sample(p, age)\n    local t = math.clamp(age / p.duration, 0, 1)\n    local expansion = 1 - (1 - t) ^ 2\n    return {\n        radius = p.radius[1] + (p.radius[2] - p.radius[1]) * expansion,\n        width = p.width[1] + (p.width[2] - p.width[1]) * t,\n        transparency = p.transparency[1] + (p.transparency[2] - p.transparency[1]) * t,\n        complete = age >= p.duration,\n    }\nend\nfunction Timeline.capacity(p, quality, reducedMotion)\n    if reducedMotion and not p.reducedMotionEnabled then\n        return 0\n    end\n    return p.qualityCapacity[quality] or 0\nend\nfunction Timeline.chooseSlot(rings, capacity)\n    local selected\n    for index = 1, math.min(#rings, capacity) do\n        local ring = rings[index]\n        if not ring.active then\n            return index\n        end\n        if not selected or ring.born < rings[selected].born then\n            selected = index\n        end\n    end\n    return selected\nend\nreturn Timeline\n",
+    "WaterRipple": "-- Two pooled native ring hosts, no texture asset, physics, timers or service loops.\n-- Caller passes actual sampled WATER surface position; this module adds its offset.\nlocal Timeline = require(script.Parent.RippleTimeline)\nlocal WaterRipple = {}\nlocal function copy(value)\n    if type(value) ~= \"table\" then\n        return value\n    end\n    local result = {}\n    for key, item in pairs(value) do\n        result[key] = copy(item)\n    end\n    return result\nend\nfunction WaterRipple.create(parent, config)\n    assert(Timeline.validate(config), \"Invalid water ripple preset\")\n    local p = copy(config)\n    local root = Instance.new(\"Folder\")\n    root.Name = p.name\n    root.Parent = parent\n    local rings = {}\n    local clock, lastTrigger, destroyed = 0, -math.huge, false\n    for index = 1, p.poolSize do\n        local host = Instance.new(\"Part\")\n        host.Name = \"PooledRing\" .. index\n        host.Size = Vector3.one\n        host.Transparency = 1\n        host.Anchored = true\n        host.CanCollide, host.CanTouch, host.CanQuery, host.CastShadow = false, false, false, false\n        host.Parent = root\n        local ring =\n            { host = host, attachments = {}, beams = {}, directions = {}, active = false, born = 0 }\n        for n = 1, p.segments do\n            local theta = (n - 1) * math.pi * 2 / p.segments\n            local attachment = Instance.new(\"Attachment\")\n            attachment.Name = \"RingPoint\" .. n\n            attachment.Parent = host\n            ring.attachments[n] = attachment\n            ring.directions[n] = Vector3.new(math.cos(theta), 0, math.sin(theta))\n        end\n        for n = 1, p.segments do\n            local beam = Instance.new(\"Beam\")\n            beam.Name = \"RingSegment\" .. n\n            beam.Attachment0 = ring.attachments[n]\n            beam.Attachment1 = ring.attachments[n % p.segments + 1]\n            beam.FaceCamera = true\n            beam.Segments = 1\n            beam.Color = ColorSequence.new(Color3.fromRGB(unpack(p.color)))\n            beam.LightEmission = p.lightEmission\n            beam.Enabled = false\n            beam.Parent = host\n            ring.beams[n] = beam\n        end\n        rings[index] = ring\n    end\n    local function hide(ring)\n        ring.active = false\n        for _, beam in ipairs(ring.beams) do\n            beam.Enabled = false\n        end\n    end\n    local function draw(ring, age)\n        local state = Timeline.sample(p, age)\n        if state.complete then\n            hide(ring)\n            return\n        end\n        for n, attachment in ipairs(ring.attachments) do\n            attachment.Position = ring.directions[n] * state.radius\n        end\n        local alpha = NumberSequence.new(state.transparency)\n        for _, beam in ipairs(ring.beams) do\n            beam.Width0, beam.Width1 = state.width, state.width\n            beam.Transparency = alpha\n            beam.Enabled = true\n        end\n    end\n    local handle = { root = root }\n    function handle:clear()\n        if destroyed then\n            return\n        end\n        for _, ring in ipairs(rings) do\n            hide(ring)\n        end\n    end\n    function handle:destroy()\n        if destroyed then\n            return\n        end\n        self:clear()\n        destroyed = true\n        root:Destroy()\n        table.clear(rings)\n    end\n    function handle:trigger(surfacePosition, cameraPosition, quality, reducedMotion)\n        if destroyed then\n            return false\n        end\n        if root.Parent == nil then\n            self:destroy()\n            return false\n        end\n        local capacity = Timeline.capacity(p, quality, reducedMotion)\n        if\n            capacity == 0\n            or (surfacePosition - cameraPosition).Magnitude > p.maxDistance\n            or clock - lastTrigger < p.minimumInterval\n        then\n            return false\n        end\n        for index, ring in ipairs(rings) do\n            if index > capacity then\n                hide(ring)\n            end\n        end\n        local selected = rings[Timeline.chooseSlot(rings, capacity)]\n        -- Pool saturation replaces the oldest allowed ring; never allocates more.\n        selected.host.Position = surfacePosition + Vector3.new(0, p.surfaceOffset, 0)\n        selected.active, selected.born = true, clock\n        lastTrigger = clock\n        draw(selected, 0)\n        return true\n    end\n    function handle:update(dt, cameraPosition, quality, reducedMotion)\n        if destroyed then\n            return\n        end\n        if root.Parent == nil then\n            self:destroy()\n            return\n        end\n        assert(type(dt) == \"number\" and dt >= 0 and dt < math.huge, \"Invalid ripple dt\")\n        clock += dt\n        local capacity = Timeline.capacity(p, quality, reducedMotion)\n        for index, ring in ipairs(rings) do\n            if ring.active then\n                if\n                    index > capacity\n                    or (ring.host.Position - cameraPosition).Magnitude > p.maxDistance\n                then\n                    hide(ring)\n                else\n                    draw(ring, clock - ring.born)\n                end\n            end\n        end\n    end\n    function handle:status()\n        local active = 0\n        for _, ring in ipairs(rings) do\n            if ring.active then\n                active += 1\n            end\n        end\n        return { active = active, poolSize = #rings, destroyed = destroyed }\n    end\n    return handle\nend\nreturn WaterRipple\n"
+  },
+  "presets": {
+    "heaven_petals": {
+      "acceleration": [
+        0.15,
+        -0.25,
+        0.08
+      ],
+      "burstCooldown": 1,
+      "burstCount": 0,
+      "color": [
+        [
+          0,
+          255,
+          211,
+          232
+        ],
+        [
+          1,
+          232,
+          191,
+          235
+        ]
+      ],
+      "distance": [
+        110,
+        150
+      ],
+      "enabled": false,
+      "lifetime": [
+        3,
+        5
+      ],
+      "lightEmission": 0.12,
+      "name": "HeavenPetalsCandidate",
+      "orientation": "FacingCamera",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rate": 0.5,
+      "reducedMotionScale": 0,
+      "rotSpeed": [
+        -30,
+        30
+      ],
+      "rotation": [
+        0,
+        360
+      ],
+      "size": [
+        [
+          0,
+          0.3
+        ],
+        [
+          1,
+          0.4
+        ]
+      ],
+      "sourceSize": [
+        1,
+        1,
+        1
+      ],
+      "sources": [
+        [
+          -5,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ]
+      ],
+      "speed": [
+        0.2,
+        0.6
+      ],
+      "spread": [
+        25,
+        25
+      ],
+      "texture": "rbxasset://textures/particles/smoke_main.dds",
+      "transparency": [
+        [
+          0,
+          1
+        ],
+        [
+          0.2,
+          0.15
+        ],
+        [
+          0.8,
+          0.15
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "version": 1
+    },
+    "hell_gate_embers": {
+      "acceleration": [
+        0.04,
+        0.15,
+        0.03
+      ],
+      "burstCooldown": 1,
+      "burstCount": 0,
+      "color": [
+        [
+          0,
+          242,
+          157,
+          56
+        ],
+        [
+          1,
+          173,
+          54,
+          25
+        ]
+      ],
+      "distance": [
+        110,
+        150
+      ],
+      "enabled": true,
+      "lifetime": [
+        1,
+        2
+      ],
+      "lightEmission": 0.3,
+      "name": "HellGateEmbers",
+      "orientation": "FacingCamera",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rate": 1,
+      "reducedMotionScale": 0,
+      "rotSpeed": [
+        -12,
+        12
+      ],
+      "rotation": [
+        0,
+        360
+      ],
+      "size": [
+        [
+          0,
+          0.15
+        ],
+        [
+          0.5,
+          0.25
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "sourceSize": [
+        1,
+        1,
+        1
+      ],
+      "sources": [
+        [
+          -3,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ]
+      ],
+      "speed": [
+        0.3,
+        0.8
+      ],
+      "spread": [
+        25,
+        25
+      ],
+      "texture": "rbxasset://textures/particles/sparkles_main.dds",
+      "transparency": [
+        [
+          0,
+          1
+        ],
+        [
+          0.2,
+          0.3
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "version": 1
+    },
+    "hell_pool_mist": {
+      "acceleration": [
+        0.12,
+        0.15,
+        0.06
+      ],
+      "burstCooldown": 1,
+      "burstCount": 0,
+      "color": [
+        [
+          0,
+          101,
+          153,
+          48
+        ],
+        [
+          1,
+          55,
+          101,
+          37
+        ]
+      ],
+      "distance": [
+        110,
+        150
+      ],
+      "enabled": true,
+      "lifetime": [
+        5,
+        8
+      ],
+      "lightEmission": 0.12,
+      "name": "HellPoolMist",
+      "orientation": "FacingCamera",
+      "origin": [
+        244,
+        3,
+        8
+      ],
+      "rate": 4,
+      "reducedMotionScale": 0.35,
+      "rotSpeed": [
+        -12,
+        12
+      ],
+      "rotation": [
+        0,
+        360
+      ],
+      "size": [
+        [
+          0,
+          10
+        ],
+        [
+          0.45,
+          18
+        ],
+        [
+          1,
+          23
+        ]
+      ],
+      "sourceSize": [
+        1,
+        1,
+        1
+      ],
+      "sources": [
+        [
+          -12,
+          0,
+          -32
+        ],
+        [
+          -12,
+          0,
+          -20
+        ],
+        [
+          -12,
+          0,
+          -8
+        ],
+        [
+          -12,
+          0,
+          4
+        ],
+        [
+          -12,
+          0,
+          16
+        ],
+        [
+          -12,
+          0,
+          28
+        ],
+        [
+          0,
+          0,
+          -44
+        ],
+        [
+          0,
+          0,
+          -32
+        ],
+        [
+          0,
+          0,
+          -20
+        ],
+        [
+          0,
+          0,
+          -8
+        ],
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          16
+        ],
+        [
+          0,
+          0,
+          28
+        ],
+        [
+          0,
+          0,
+          40
+        ],
+        [
+          12,
+          0,
+          -32
+        ],
+        [
+          12,
+          0,
+          -20
+        ],
+        [
+          12,
+          0,
+          -8
+        ],
+        [
+          12,
+          0,
+          4
+        ],
+        [
+          12,
+          0,
+          16
+        ],
+        [
+          12,
+          0,
+          28
+        ]
+      ],
+      "speed": [
+        0.6,
+        1.2
+      ],
+      "spread": [
+        25,
+        25
+      ],
+      "texture": "rbxasset://textures/particles/smoke_main.dds",
+      "transparency": [
+        [
+          0,
+          1
+        ],
+        [
+          0.15,
+          0.55
+        ],
+        [
+          0.65,
+          0.55
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "version": 1
+    },
+    "water_bubbles": {
+      "acceleration": [
+        0,
+        0.05,
+        0
+      ],
+      "burstCooldown": 8,
+      "burstCount": 3,
+      "color": [
+        [
+          0,
+          177,
+          196,
+          152
+        ],
+        [
+          1,
+          177,
+          196,
+          152
+        ]
+      ],
+      "distance": [
+        110,
+        150
+      ],
+      "enabled": true,
+      "lifetime": [
+        0.5,
+        0.9
+      ],
+      "lightEmission": 0.12,
+      "name": "WaterBubbleBurst",
+      "orientation": "FacingCamera",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rate": 0,
+      "reducedMotionScale": 0,
+      "rotSpeed": [
+        -12,
+        12
+      ],
+      "rotation": [
+        0,
+        360
+      ],
+      "size": [
+        [
+          0,
+          0.2
+        ],
+        [
+          0.3,
+          0.45
+        ],
+        [
+          1,
+          0.8
+        ]
+      ],
+      "sourceSize": [
+        1,
+        1,
+        1
+      ],
+      "sources": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "speed": [
+        0.05,
+        0.15
+      ],
+      "spread": [
+        25,
+        25
+      ],
+      "texture": "rbxasset://textures/particles/smoke_main.dds",
+      "transparency": [
+        [
+          0,
+          1
+        ],
+        [
+          0.15,
+          0.65
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "version": 1
+    }
+  },
+  "ripple": {
+    "color": [
+      193,
+      218,
+      186
+    ],
+    "duration": 0.8,
+    "lightEmission": 0.05,
+    "maxDistance": 100,
+    "minimumInterval": 0.08,
+    "name": "CastContactRipple",
+    "poolSize": 2,
+    "qualityCapacity": {
+      "full": 2,
+      "minimal": 0,
+      "off": 0,
+      "reduced": 1
+    },
+    "radius": [
+      0.35,
+      2.4
+    ],
+    "reducedMotionEnabled": false,
+    "segments": 32,
+    "surfaceOffset": 0.08,
+    "transparency": [
+      0.35,
+      1
+    ],
+    "version": 1,
+    "width": [
+      0.1,
+      0.025
+    ]
+  },
+  "schema": {
+    "maxAcceleration": 30,
+    "maxBurst": 32,
+    "maxDistance": 2000,
+    "maxLifetime": 20,
+    "maxParticles": 1600,
+    "maxRate": 20,
+    "maxSize": 32,
+    "maxSources": 64,
+    "maxSpeed": 30,
+    "orientations": [
+      "FacingCamera",
+      "FacingCameraWorldUp",
+      "VelocityParallel",
+      "VelocityPerpendicular"
+    ],
+    "qualities": {
+      "full": 1,
+      "minimal": 0.2,
+      "off": 0,
+      "reduced": 0.5
+    },
+    "version": 1
+  },
+  "version": 1
+}

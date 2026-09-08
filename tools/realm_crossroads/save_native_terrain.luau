@@ -58,5 +58,20 @@ game.ServerStorage.CrossroadsActivityConfig.Value = serde.encode("json", activit
 local landscape = serde.decode("json", fs.readFile(cfg.landscape_source))
 game.ServerStorage.CrossroadsLandscapeBake.Source = fs.readFile(landscape.bake_source)
 game.ServerStorage.CrossroadsLandscapeConfig.Value = serde.encode("json", landscape)
+-- Keep the saved authoring modules/configuration synchronized with checked-in source.
+-- This does not rebake the serialized native CSG, terrain or uploaded meshes.
+if cfg.polish_source then
+    local polish = serde.decode("json", fs.readFile(cfg.polish_source))
+    for _, pass in ipairs(polish.application_order) do
+        local config = serde.decode("json", fs.readFile(pass.config))
+        local source = assert(config[pass.source_key], "Missing authoring source: " .. pass.config)
+        local module = game.ServerStorage:FindFirstChild(pass.module)
+            or new("ModuleScript", pass.module, game.ServerStorage)
+        module.Source = fs.readFile(source)
+        local value = game.ServerStorage:FindFirstChild(pass.config_value)
+            or new("StringValue", pass.config_value, game.ServerStorage)
+        value.Value = serde.encode("json", config)
+    end
+end
 fs.writeFile("output/realm_crossroads/RealmCrossroads-R4-Terrain.rbxl", r.serializePlace(game))
 print("Saved baked R4 place from native Studio export: " .. #game:GetDescendants() .. " instances")

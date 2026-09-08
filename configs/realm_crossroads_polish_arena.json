@@ -1,0 +1,178 @@
+{
+  "root": "ArenaPolishR11",
+  "backup": "CrossroadsArenaPolishBackup",
+  "bake_source": "tools/realm_crossroads/polish_arena.luau",
+  "preview_only": true,
+  "leisure_root": "CrossroadsLeisureR9",
+  "stands": "ArenaSpectatorStands",
+  "activity_root": "CrossroadsActivitiesR7",
+  "arena": "PatrolGrove",
+  "palette": {
+    "stone": [
+      79,
+      66,
+      61
+    ],
+    "panel": [
+      96,
+      80,
+      69
+    ],
+    "edge": [
+      150,
+      121,
+      86
+    ],
+    "metal": [
+      46,
+      43,
+      41
+    ],
+    "bronze": [
+      145,
+      106,
+      58
+    ],
+    "pad": [
+      108,
+      48,
+      35
+    ]
+  },
+  "chair": {
+    "expected_seats": 32,
+    "seat_height": 1.75,
+    "leg_width": 0.24,
+    "leg_x": 1.32,
+    "leg_z": 1.08,
+    "frame_width": 0.18,
+    "back_height": 3,
+    "back_depth": 0.35,
+    "back_z": 1.45,
+    "back_width": 3.2,
+    "pad_inset": 0.24,
+    "arm_x": 1.7,
+    "arm_y": 0.9,
+    "arm_width": 0.18,
+    "arm_length": 2.55,
+    "fastener_size": 0.12
+  },
+  "steps": {
+    "nosing_depth": 0.3
+  },
+  "facade": {
+    "max_x": 199,
+    "skin_depth": 0.8,
+    "panel_recess": 0.34,
+    "pier_width": 0.6,
+    "bays_per_tier": 4,
+    "footing_height": 0.65,
+    "cap_height": 0.45,
+    "joint": 0.035,
+    "ornament_cache": "CrossroadsActivityAssets",
+    "ornament_name": "animal_skull",
+    "ornament_height": 1.35,
+    "ornament_depth": 0.26,
+    "ornament_face_margin": 0.04
+  },
+  "rails": {
+    "end_z": [
+      -28,
+      44
+    ],
+    "row_x": [
+      164,
+      174,
+      184,
+      194
+    ],
+    "row_top": [
+      6,
+      8,
+      10,
+      12
+    ],
+    "row_depth": 10,
+    "height": 3,
+    "bar_width": 0.24,
+    "post_width": 0.34,
+    "middle_height": 1.5,
+    "rear_x": 198.65,
+    "rear_z_min": -28,
+    "rear_z_max": 44,
+    "rear_top": 12,
+    "rear_post_step": 12
+  },
+  "pavilion": {
+    "center": [
+      120,
+      4,
+      -67
+    ],
+    "pier_center_x_offsets": [
+      -20,
+      20
+    ],
+    "pier_z_offset": -7,
+    "pier_width": 3.2,
+    "pier_height": 12,
+    "course_height": 2,
+    "joint": 0.045,
+    "base_height": 0.6,
+    "base_width": 4.1,
+    "cap_height": 0.65,
+    "cap_width": 4.3,
+    "banner_base_offsets": [
+      -12,
+      12
+    ],
+    "banner_z_offset": -5,
+    "banner_base_size": [
+      5,
+      0.45,
+      4
+    ],
+    "banner_floor": 4.6,
+    "rear_wall_size": [
+      64,
+      5,
+      1.5
+    ],
+    "rear_wall_z_offset": -9,
+    "rear_bays": 8,
+    "banner_names": [
+      "heaven_compass_banner",
+      "hell_skull_banner"
+    ]
+  },
+  "anchors": [
+    {
+      "name": "Battle",
+      "position": [
+        120,
+        5,
+        8
+      ],
+      "binding": "Future bounded patrol encounter; server authority required"
+    },
+    {
+      "name": "Alliance",
+      "position": [
+        120,
+        5,
+        79
+      ],
+      "binding": "Future opt-in alliance interaction outside combat"
+    },
+    {
+      "name": "Stand",
+      "position": [
+        157,
+        5,
+        8
+      ],
+      "binding": "Spectator arrival; retain native Seat behavior"
+    }
+  ],
+  "note": "Geometry and inert metadata only. Preserve native Seats and dummy count. No seat height changes, gameplay or new particle budget. All rear facade details must stay X<=199."
+}
