@@ -16,7 +16,7 @@ def point(x,z):return (cx+x*scale,cy+z*scale)
 def circle(r,fill,outline=None,width=1):
     q=r*scale;d.ellipse((cx-q,cy-q,cx+q,cy+q),fill=fill,outline=outline,width=width)
 text(45,34,'BRAGG ROTUNDA',34,strong=True)
-text(45,80,'R6 architectural proposal  /  14 alcoves  /  8 initial rankings',21)
+text(45,80,'R6 authored preview  /  14 alcoves  /  8 initial rankings',21)
 text(45,113,'Each alcove holds a complete 2 – 1 – 3 podium group.',18)
 circle(C['outer_radius'],'#d1d8c1','#68786b',3)
 circle(54,'#eee6d6','#b4aa94',2)
@@ -33,7 +33,7 @@ for bay in C['bays']:
     radial=(math.sin(angle),math.cos(angle));tangent=(-math.cos(angle),math.sin(angle))
     wx,wz=radial[0]*C['podium_radius'],radial[1]*C['podium_radius']
     def local(x,z):return point(wx+tangent[0]*x+radial[0]*z,wz+tangent[1]*x+radial[1]*z)
-    active=bay['phase']=='initial';siege=bay['source']=='new_tracking'
+    active=bay['phase']=='initial';siege=bay['source'] in ('new_tracking','new_shared_tracking')
     fill='#bdcba9' if active else '#dedfd8'
     if siege:fill='#cfa48b'
     d.polygon([local(-9,-5),local(9,-5),local(9,5),local(-9,5)],fill=fill,outline='#6e766b',width=2)
@@ -61,14 +61,14 @@ for side in [-1,1]:
     px,py=point(side*27,80);text(px,py,'1:8',16,strong=True,anchor='mm')
 text(47,893,'116-stud diameter • floor +4 • entry 26 studs wide',18,strong=True)
 text(47,925,'~5.4 seconds from spawn to the entry at speed 24',18)
-text(47,955,'Plan only. Existing Studio map remains unchanged.',16,fill='#806849')
+text(47,955,'Built in isolated preview. Rankings not connected.',16,fill='#806849')
 text(735,159,'INITIAL DISPLAY',23,strong=True)
 y=200
 for b in [x for x in C['bays'] if x['phase']=='initial']:
-    d.rounded_rectangle((735,y+2,769,y+31),7,fill='#a8694c' if b['source']=='new_tracking' else '#627b59')
+    d.rounded_rectangle((735,y+2,769,y+31),7,fill='#a8694c' if b['source'] in ('new_tracking','new_shared_tracking') else '#627b59')
     text(752,y+16,str(b['number']),17,'white',True,'mm')
     text(786,y+1,b['name'],21,strong=True)
-    text(786,y+27,'Pet Siege — new tracking' if b['source']=='new_tracking' else 'Existing ranking / existing saved score',15,fill='#677471')
+    text(786,y+27,'All Realms — new boss tracking' if b['source']=='new_shared_tracking' else ('Pet Siege — new tracking' if b['source']=='new_tracking' else 'Existing ranking / existing saved score'),15,fill='#677471')
     y+=62
 text(735,711,'SIX RESERVE ALCOVES',23,strong=True)
 text(735,748,'6 / 10   Range and Training Ground',18)

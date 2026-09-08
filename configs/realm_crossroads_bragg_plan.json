@@ -1,5 +1,5 @@
 {
-  "status": "design_only_not_runtime_enabled",
+  "status": "authored_preview_rankings_not_connected",
   "revision": 6,
   "name": "Bragg Rotunda",
   "center": [
@@ -26,10 +26,11 @@
   "tracking_schema_proposal": {
     "highest": "siege_highest_wave_cleared",
     "total": "siege_waves_cleared",
-    "boss": "siege_boss_waves_cleared",
+    "boss": "bosses_defeated",
     "period": "lifetime",
     "eligibility": "normal server-resolved combat, including legitimate offline combat; separate play-mode provenance",
-    "awards": "not_enabled"
+    "awards": "not_enabled",
+    "boss_scope": "all_realms_actual_boss_defeats"
   },
   "bays": [
     {
@@ -37,102 +38,220 @@
       "name": "Most Dragons",
       "board_id": "most_dragons",
       "phase": "initial",
-      "source": "existing"
+      "source": "existing",
+      "title_lines": [
+        "MOST",
+        "DRAGONS"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 2,
       "name": "Crystal Crusher",
       "board_id": "crystal_crusher",
       "phase": "initial",
-      "source": "existing"
+      "source": "existing",
+      "title_lines": [
+        "CRYSTAL",
+        "CRUSHER"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 3,
       "name": "Enemies Defeated",
       "board_id": "enemies_defeated",
       "phase": "initial",
-      "source": "existing"
+      "source": "existing",
+      "title_lines": [
+        "ENEMIES",
+        "DEFEATED"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 4,
       "name": "Team Power",
       "board_id": "team_power",
       "phase": "initial",
-      "source": "existing"
+      "source": "existing",
+      "title_lines": [
+        "TEAM",
+        "POWER"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 5,
       "name": "Eggs Hatched",
       "board_id": "eggs_hatched",
       "phase": "initial",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [
+        "EGGS",
+        "HATCHED"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 6,
       "name": "The Range",
       "board_id": "range_current",
       "phase": "reserve",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     },
     {
       "number": 7,
       "name": "Highest Wave Cleared",
       "board_id": "siege_highest_wave_cleared",
       "phase": "initial",
-      "source": "new_tracking"
+      "source": "new_tracking",
+      "title_lines": [
+        "HIGHEST WAVE",
+        "CLEARED"
+      ],
+      "scope": "PET SIEGE"
     },
     {
       "number": 8,
       "name": "Total Waves Cleared",
       "board_id": "siege_waves_cleared",
       "phase": "initial",
-      "source": "new_tracking"
+      "source": "new_tracking",
+      "title_lines": [
+        "TOTAL WAVES",
+        "CLEARED"
+      ],
+      "scope": "PET SIEGE"
     },
     {
       "number": 9,
-      "name": "Boss Waves Cleared",
-      "board_id": "siege_boss_waves_cleared",
+      "name": "Bosses Defeated",
+      "board_id": "bosses_defeated",
       "phase": "initial",
-      "source": "new_tracking"
+      "source": "new_shared_tracking",
+      "title_lines": [
+        "BOSSES",
+        "DEFEATED"
+      ],
+      "scope": "ALL REALMS"
     },
     {
       "number": 10,
       "name": "Training Ground",
       "board_id": "training_ground_current",
       "phase": "reserve",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     },
     {
       "number": 11,
       "name": "Exclusives Gifted",
       "board_id": "gift_exclusives",
       "phase": "reserve",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     },
     {
       "number": 12,
       "name": "Secrets Gifted",
       "board_id": "gift_secrets",
       "phase": "reserve",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     },
     {
       "number": 13,
       "name": "Mythicals Gifted",
       "board_id": "gift_mythicals",
       "phase": "reserve",
-      "source": "existing_backend"
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     },
     {
       "number": 14,
       "name": "Future Champion",
       "phase": "reserve",
-      "source": "future"
+      "source": "future",
+      "title_lines": [],
+      "scope": "ALL REALMS"
     }
   ],
   "entrance_apron": {
     "half_width": 35,
     "far_offset": 54,
     "near_offset": 62
+  },
+  "bake_source": "tools/realm_crossroads/bake_bragg.luau",
+  "art": {
+    "wall_height": 12,
+    "column_height": 15,
+    "podium_heights": [
+      2.7,
+      4.1,
+      2.1
+    ],
+    "palette": {
+      "floor": [
+        203,
+        198,
+        176
+      ],
+      "stone": [
+        149,
+        149,
+        135
+      ],
+      "light_stone": [
+        222,
+        217,
+        195
+      ],
+      "trim": [
+        173,
+        132,
+        64
+      ],
+      "ink": [
+        65,
+        52,
+        36
+      ],
+      "water": [
+        78,
+        170,
+        185
+      ],
+      "plant": [
+        88,
+        123,
+        68
+      ],
+      "rank1": [
+        223,
+        176,
+        67
+      ],
+      "rank2": [
+        182,
+        201,
+        205
+      ],
+      "rank3": [
+        173,
+        109,
+        69
+      ]
+    },
+    "ring_segments": 64,
+    "jet_count": 6,
+    "jet_width": 0.13,
+    "water_transparency": 0.3
   }
 }

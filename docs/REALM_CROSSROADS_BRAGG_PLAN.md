@@ -1,6 +1,6 @@
-# Bragg Rotunda and Pet Siege rankings — R6 proposal
+# Bragg Rotunda and Pet Siege rankings — R6 preview
 
-2026-09-08. **Design only:** no new production tracking, ranking, awards, or Studio geometry is enabled by this document. Gate artwork remains accepted. This is the specification for the next implementation pass.
+2026-09-08. **Geometry authored in the existing isolated Studio preview.** No production tracking, rankings, awards or winner avatars are connected. Gate artwork remains accepted. Eight groups show PREVIEW nameplates; six reserve alcoves hold planting.
 
 ![R6 Bragg Rotunda layout](art/realm_crossroads/bragg-r6-plan.png)
 
@@ -12,13 +12,13 @@ Replace the straight four-bay Champions gallery with an open circular court. Bui
 - Sixteen angular positions, with two front positions omitted for entry. Fourteen 18 × 10 alcoves face inward around a 47-stud radius.
 - Central fountain: 18-stud diameter, sculptural height at most 8 above the court. A low halo-and-horns composition, separate water jets and a shallow basin keep views across the court open.
 - Main entrance: 26 studs wide, eight 0.5-stud risers with 2-stud treads. Two flanking 16-wide ramps rise 4 over a run of 32. A common raised entry apron connects both ramps to the opening without passing through a podium alcove.
-- The apron extends X=±35, Z=-34 to -26. Central stairs descend toward Z=-10; flanking ramps descend toward Z=6. These are provisional authoring coordinates, not play-tested measurements.
+- The apron extends X=±35, Z=-34 to -26. Central stairs descend toward Z=-10; flanking ramps descend toward Z=6. Stairs and both ramps were walk-tested at the Merge speed of 24.
 - Court uses real raised terrain and vertical stone retaining faces. Cut the front openings for the stairs/ramps. Redraw the existing rear planting transition around the circle; do not leave the old rectangular terrace underneath.
 - Move the current placeholder central landmark into the Bragg fountain composition, freeing the main approach. Keep the accepted gate positions, doorway sizes, and short spawn-to-gate routes.
 - Spawn to the circular opening is approximately 130 studs, 5.4 seconds at speed 24 before steering/acceleration. Visitors can choose a game without visiting Bragg.
 - The fountain and open entry frame the rear Siege champions. Each alcove uses an architectural header, visible category icon and readable physical name plates. Keep the dancing winner figures, podium order, and board identifiers consistent with the existing system.
 
-Machine-readable proposal: `configs/realm_crossroads_bragg_plan.json`. Drawing: `tools/realm_crossroads/draw_bragg_plan.py` → `output/realm_crossroads/Bragg-Rotunda-R6-Plan.png`.
+Machine-readable art configuration: `configs/realm_crossroads_bragg_plan.json`. Drawing: `tools/realm_crossroads/draw_bragg_plan.py` → `output/realm_crossroads/Bragg-Rotunda-R6-Plan.png`.
 
 ## Initial categories and expansion
 
@@ -31,7 +31,7 @@ Machine-readable proposal: `configs/realm_crossroads_bragg_plan.json`. Drawing: 
 | Eggs Hatched | Collection effort across the game | Existing published backend; needs physical podium binding |
 | Highest Wave Cleared | Flagship Siege achievement | New cleared-wave record required |
 | Total Waves Cleared | Sustained Siege play | New durable lifetime counter required |
-| Boss Waves Cleared | Successful major encounters | New durable lifetime counter required |
+| Bosses Defeated — All Realms | Actual boss defeats across Farm & Fight and Pet Siege | New shared durable lifetime counter required |
 
 Reserve six bays for Range, Training Ground, the three gift-giver rankings, and a future category. Their existing backend presence does not mean all six are ready for physical display. Preserve challenge round and gift scoring semantics individually.
 
@@ -63,9 +63,9 @@ Keep new counters under the existing `Stats.Counters` framework, registered in `
 | --- | --- |
 | `siege_highest_wave_cleared` | `max(previous, cleared wave index)` |
 | `siege_waves_cleared` | Increment by one |
-| `siege_boss_waves_cleared` | Increment by one only if the wave contains configured bosses and those bosses were defeated, not merely escaped |
+| `bosses_defeated` | Increment once per credited actual boss defeat in either mode; independent of wave settlement |
 
-Boss classification must come from the resolved wave/enemy configuration, not “every tenth wave.” Lieutenants and ordinary tank enemies do not silently become bosses. A wave containing several bosses still contributes **one boss-wave clear**, matching the title.
+Boss classification must come from the resolved wave/enemy configuration, not “every tenth wave.” Lieutenants and ordinary tank enemies do not silently become bosses. Each actual boss defeat contributes independently, even when several bosses occur in one wave. A later wave failure does not undo an actual boss defeat. Reuse each mode's established eligible kill-credit rules; verify shared-pet ownership and duplicate callbacks before connecting the counter. The shared boss board replaces the proposed boss-wave board.
 
 Implementation requirements:
 
@@ -95,10 +95,10 @@ Fourteen groups mean 42 possible winner figures. The existing four-group setup m
 
 Next implementation sequence:
 
-1. Add and test the three durable Siege counters and settlement guard, including offline-worker ownership and migration behavior.
+1. Add and test two durable Siege wave counters and a shared boss-defeat counter. Use wave-attempt receipts for clears and unique enemy-defeat receipts for bosses, including offline ownership and migration behavior.
 2. Add their config-based leaderboard definitions and local snapshots, retaining all existing publication/exclusion rules.
-3. Author the round terrain terrace, entrance grades, fountain envelope and fourteen alcove hooks in the **existing** isolated Studio preview. Replace the old gallery as one reversible model revision; preserve the accepted gates.
+3. Completed: round terrain terrace, graded entrance, low fountain and fourteen alcoves authored in the existing preview. Superseded geometry and original terrain patch are retained in ServerStorage.BeforeBraggR6. Native 3D titles and untagged preview hooks preserve isolation from the live podium renderer.
 4. Connect eight displays and bounded avatar loading. Use honest empty states until real eligible scores exist.
-5. Walk-test sightlines, ramp landings and approach distance at speed 24; inspect leaderboard correctness, duplicates, resets and performance before production integration.
+5. Stairs, both ramp approaches and the fountain-side aisle passed walking checks at speed 24. Leaderboard correctness, duplicates, resets and animated-avatar performance remain checks for backend integration.
 
 Validation cases for the backend include: reached-but-failed wave, real clear, escaped boss, duplicate resolution, restart/checkpoint restore, repeated genuine clear, rebirth, legacy profile, internal account filtering, Studio isolation, offline lease handoff, and leaderboard refresh after an offline save.

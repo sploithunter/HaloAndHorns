@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R4 terrain plus R5 sculpted gate crests saved in the existing isolated Studio preview; first gate-art pass for visual review (2026-09-08).
+Status: R4 terrain, R5 sculpted gates and R6 Bragg Rotunda authored in the existing isolated Studio preview (2026-09-08). Rankings remain disconnected.
 
 
 
@@ -8,16 +8,20 @@ Status: R4 terrain plus R5 sculpted gate crests saved in the existing isolated S
 
 User accepted the R5 gate artwork and requested more Bragg capacity plus Siege-specific
 rankings using existing leaderboard rules. The [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md)
-proposes a +4 circular court, 116 studs across, with a low 18-stud fountain, fourteen
+now has a +4 circular court, 116 studs across, with a low 18-stud fountain, fourteen
 2/1/3 alcoves, eight initial categories, and six reserve bays. Shared stairs/ramp landings
-avoid routing visitors through podiums. Geometry and new tracking are not implemented yet.
+avoid routing visitors through podiums. Geometry is built; production tracking remains pending. Eight podium groups have physical PREVIEW nameplates; six reserve bays are planted. A low halo-and-horns fountain anchors the center.
 
 The source already saves **highest wave reached** when a wave starts. New Highest Wave
-Cleared, Total Waves Cleared and Boss Waves Cleared require durable server-side settlement
-counters; do not relabel or migrate reached-wave values as clears. The plan defines receipt
+Cleared and Total Waves Cleared require durable server-side settlement counters. User replaced
+the redundant boss-wave proposal with **Bosses Defeated — All Realms**, counting actual
+boss defeats in both Farm & Fight and Pet Siege; do not relabel or migrate reached-wave values as clears. The plan defines receipt
 idempotency, legitimate offline provenance, reset/migration behavior, existing internal-ID
 exclusions and publication cadence, and bounded winner-avatar loading before expansion.
-`configs/realm_crossroads_bragg_plan.json` is design-only and is not loaded by gameplay.
+`configs/realm_crossroads_bragg_plan.json` names the Edit-only `bake_bragg.luau` art companion.
+Regenerate in order: TerrainBake, CrestBake, BraggBake. No runtime geometry generation.
+`BeforeBraggR6` retains original terrain and superseded gallery geometry. Stairs, both ramps
+and the fountain-side aisle passed walk tests at speed 24. Reuse the existing Studio instance.
 
 ## R5: Pet Siege naming and architectural gate titles
 

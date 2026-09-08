@@ -33,6 +33,11 @@ local glyphData = new("StringValue", "CrossroadsGlyphConfig", storage)
 glyphData.Value = fs.readFile(crests.glyph_source)
 local crestBake = new("ModuleScript", "CrossroadsCrestBake", storage)
 crestBake.Source = fs.readFile(crests.source)
+local bragg = serde.decode("json", fs.readFile(cfg.bragg_source))
+local braggData = new("StringValue", "CrossroadsBraggConfig", storage)
+braggData.Value = serde.encode("json", bragg)
+local braggBake = new("ModuleScript", "CrossroadsBraggBake", storage)
+braggBake.Source = fs.readFile(bragg.bake_source)
 local marker = new("Part", "RunEditBakeFirst", workspace)
 marker.Anchored = true
 marker.Size = r.Vector3.new(10, 1, 10)
@@ -40,4 +45,6 @@ local player = new("StarterPlayer", "StarterPlayer", game)
 player.CharacterWalkSpeed = cfg.walk_speed
 fs.writeDir("output/realm_crossroads")
 fs.writeFile("output/realm_crossroads/RealmCrossroads-R4-Terrain.rbxl", r.serializePlace(game))
-print("Created seed. In Studio Edit: require CrossroadsTerrainBake, then CrossroadsCrestBake.")
+print(
+    "Created seed. In Studio Edit: require CrossroadsTerrainBake, then CrossroadsCrestBake, then CrossroadsBraggBake."
+)

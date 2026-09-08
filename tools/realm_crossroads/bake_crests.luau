@@ -1,5 +1,5 @@
 -- R5 authored art companion. Edit-only CSG preserves Blender font silhouettes in the place.
-return function()
+return function(options)
     assert(not game:GetService("RunService"):IsRunning(), "Crest bake requires Edit")
     assert(game.PlaceId == 0, "Local Crossroads preview only")
     local H = game:GetService("HttpService")
@@ -109,6 +109,10 @@ return function()
             u.Name = char
             u.Parent = cache
         end
+    end
+    if options and options.templatesOnly then
+        scratch:Destroy()
+        return #cache:GetChildren()
     end
     local function polygon(parent, name, points, depth, cf, color, material)
         local tris = {}
@@ -288,11 +292,16 @@ return function()
             )
             for _, side in ipairs({ -1, 1 }) do
                 for n = 5, 0, -1 do
-                    local points =
-                        { { -3 * side, -0.5 }, { -3 * side, 0.2 }, { 0, 0.5 }, { 5 * side, 1.1 }, {
+                    local points = {
+                        { -3 * side, -0.5 },
+                        { -3 * side, 0.2 },
+                        { 0, 0.5 },
+                        { 5 * side, 1.1 },
+                        {
                             2 * side,
                             -0.45,
-                        } }
+                        },
+                    }
                     local cf = center * C.new(side * (8 + n * 0.75), 3.6 + n * 0.4, 0.1 - n * 0.1)
                     polygon(
                         ornaments,
@@ -349,17 +358,18 @@ return function()
                     )
                 end
             end
-            polygon(
-                ornaments,
-                "Crown",
-                { { -2, -0.8 }, { -2.6, 2.2 }, { -0.8, 1 }, { 0, 3.7 }, { 0.8, 1 }, { 2.6, 2.2 }, {
+            polygon(ornaments, "Crown", {
+                { -2, -0.8 },
+                { -2.6, 2.2 },
+                { -0.8, 1 },
+                { 0, 3.7 },
+                { 0.8, 1 },
+                { 2.6, 2.2 },
+                {
                     2,
                     -0.8,
-                } },
-                0.8,
-                center * C.new(0, 4.5, -0.2),
-                color.trim
-            )
+                },
+            }, 0.8, center * C.new(0, 4.5, -0.2), color.trim)
             polygon(
                 ornaments,
                 "EmberGem",
