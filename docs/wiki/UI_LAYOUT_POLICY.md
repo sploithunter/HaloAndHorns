@@ -84,3 +84,7 @@ Fixed readable chrome surrounds flexible card areas, with 44px actions and a ful
 selector. `TradeFlowLayoutSmoke.run()` exercises short landscape and desktop geometry plus local
 escrow presentation, mixed-category highlights, state updates, and gift confirmation without real
 inventory changes. Use `show("request")` or `show("gift")` for interactive emulator checks.
+
+Live Trade's config-owned top/bottom bounds reclaim upper safe-area margin without moving its
+uncapped lower edge. Its standard close button aligns inside the header; it must remain completely
+inside both the window and safe viewport, including short landscape phones.

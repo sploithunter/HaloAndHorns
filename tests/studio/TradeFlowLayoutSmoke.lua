@@ -196,6 +196,8 @@ function Smoke.run()
             settle()
             local win = p.window
             assert(inside(win, f.viewport), "Trade window clipped")
+            assert(inside(win.CloseButton, win), "Trade close button escapes the window")
+            assert(inside(win.CloseButton, f.viewport), "Trade close button clipped by safe area")
             local view = p._tradeView
             touch(view.confirm)
             touch(win.Body.Actions.CancelTrade)

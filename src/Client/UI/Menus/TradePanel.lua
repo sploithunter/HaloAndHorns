@@ -1466,7 +1466,13 @@ function TradePanel:_createTradeWindow()
     local win = shell.frame
     constrainLiveWindow(win)
     local sizing = TRADE_CONFIG.live_layout
+    win.Size =
+        UDim2.fromScale(sizing.width_scale, sizing.trade_bottom_scale - sizing.trade_top_scale)
+    win.Position = UDim2.fromScale(0.5, (sizing.trade_top_scale + sizing.trade_bottom_scale) / 2)
     shell.header.Size = UDim2.new(0.99, 0, 0, sizing.header_height)
+    -- Keep the standard X aligned inside the header instead of overhanging the safe top edge.
+    win.CloseButton.Position =
+        UDim2.fromScale(shell.header.Size.X.Scale, shell.header.Position.Y.Scale)
     local body = liveBody(win)
     local columns = Instance.new("Frame")
     columns.Name = "Columns"

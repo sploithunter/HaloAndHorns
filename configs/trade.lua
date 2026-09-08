@@ -13,6 +13,9 @@ return {
     live_layout = {
         width_scale = 0.96,
         height_scale = 0.94,
+        -- Reclaim the upper margin for live trading while preserving its lower edge.
+        trade_top_scale = 0.01,
+        trade_bottom_scale = 0.97,
         max_width = 1100,
         max_height = 760,
         header_height = 32,

@@ -8642,3 +8642,10 @@ first-session cohort rates.
 - Native landscape/desktop smoke coverage includes request acceptance, mixed-category selection,
   removal, offer highlights/order, gem changes, confirmation/cancel, and gift dialog reachability.
   Interactive phone-emulator checks exercised the same controls with stubbed mutations.
+
+### 2026-09-08 — Trade header clearance
+
+- Raised the live trade window's top edge within the safe area while preserving the lower edge.
+  The standard close button now sits inside the header instead of overhanging the panel.
+- Extended native landscape/desktop layout checks to require full close-button containment in both
+  the trade window and safe viewport.
