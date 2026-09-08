@@ -13,6 +13,10 @@ return {
     live_layout = {
         width_scale = 0.96,
         height_scale = 0.94,
+        -- Trade and gift inventories use the device-safe area, including the Roblox top-bar strip.
+        expanded_top_scale = 0.01,
+        expanded_bottom_scale = 0.97,
+        expanded_header_height = 44,
         max_width = 1100,
         max_height = 760,
         header_height = 32,

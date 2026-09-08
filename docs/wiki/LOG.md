@@ -8642,3 +8642,15 @@ first-session cohort rates.
 - Native landscape/desktop smoke coverage includes request acceptance, mixed-category selection,
   removal, offer highlights/order, gem changes, confirmation/cancel, and gift dialog reachability.
   Interactive phone-emulator checks exercised the same controls with stubbed mutations.
+
+### 2026-09-08 — Trade header clearance
+
+- Raised the live trade window's top edge within the safe area while preserving the lower edge.
+  The standard close button now sits inside the header instead of overhanging the panel.
+- Extended native landscape/desktop layout checks to require full close-button containment in both
+  the trade window and safe viewport.
+- Follow-up: the user approved extending behind Roblox's top bar. Live Trade now temporarily uses
+  device-safe insets, retains a 44px header/close target, and restores core-UI insets on close.
+- Inspected each actual-size phone dialog separately. Applied the same expanded parent and contained
+  44px close button to gifting at the user's request; small request/confirmation dialogs remain
+  readable and centered. Verified inset restoration after closing either inventory window.

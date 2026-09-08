@@ -48,6 +48,7 @@ function Smoke.show(mode, size)
     gui.DisplayOrder = 200
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.Parent = player.PlayerGui
+    panel.liveGui = gui
     local viewport = Instance.new("Frame")
     viewport.Name = "Viewport"
     viewport.BackgroundTransparency = 1
@@ -179,10 +180,12 @@ end
 
 function Smoke.run()
     local results = {}
+    -- Trade now uses the device-safe height, which includes the formerly reserved top-bar strip.
     for _, size in ipairs({
-        Vector2.new(733, 313),
-        Vector2.new(690, 337),
-        Vector2.new(667, 295),
+        Vector2.new(733, 371),
+        Vector2.new(690, 395),
+        Vector2.new(667, 353),
+        Vector2.new(667, 320),
         Vector2.new(1280, 720),
     }) do
         local f = Smoke.show("request", size)
@@ -196,6 +199,13 @@ function Smoke.run()
             settle()
             local win = p.window
             assert(inside(win, f.viewport), "Trade window clipped")
+            assert(inside(win.CloseButton, win), "Trade close button escapes the window")
+            assert(inside(win.CloseButton, f.viewport), "Trade close button clipped by safe area")
+            touch(win.CloseButton)
+            assert(
+                p.liveGui.ScreenInsets == Enum.ScreenInsets.DeviceSafeInsets,
+                "Trade reserves the top-bar strip"
+            )
             local view = p._tradeView
             touch(view.confirm)
             touch(win.Body.Actions.CancelTrade)
@@ -296,9 +306,22 @@ function Smoke.run()
             )
             p:_callBus("trade.cancel", {})
             assert(not p.window, "Cancel does not close trade")
+            assert(
+                p.liveGui.ScreenInsets == Enum.ScreenInsets.CoreUISafeInsets,
+                "Trade leaves other dialogs behind the top bar"
+            )
             p:_openGiftPicker({ userId = -8, name = "Mobile Partner" })
             settle()
             assert(inside(p.giftWindow, f.viewport), "Gift picker clipped")
+            assert(
+                inside(p.giftWindow.CloseButton, p.giftWindow),
+                "Gift close button escapes window"
+            )
+            touch(p.giftWindow.CloseButton)
+            assert(
+                p.liveGui.ScreenInsets == Enum.ScreenInsets.DeviceSafeInsets,
+                "Gift picker reserves the top-bar strip"
+            )
             local giftGrid = p._giftView.frame.Content.TradeItems
             assert(giftGrid.AbsoluteSize.Y >= 65, "Gift picker cannot show a whole pet")
             giftGrid.CanvasPosition = Vector2.new(0, giftGrid.AbsoluteCanvasSize.Y)
@@ -312,6 +335,11 @@ function Smoke.run()
             assert(
                 inside(confirm.ConfirmGift, confirm) and inside(confirm.CancelGift, confirm),
                 "Gift actions clipped"
+            )
+            p:_closeGiftPicker()
+            assert(
+                p.liveGui.ScreenInsets == Enum.ScreenInsets.CoreUISafeInsets,
+                "Gift picker leaves the top-bar inset disabled"
             )
         end)
         f.destroy()

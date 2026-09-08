@@ -328,14 +328,14 @@ local function fillLayoutItem(frame)
     flex.Parent = frame
 end
 
-local function liveBody(frame)
+local function liveBody(frame, headerHeight)
     local sizing = TRADE_CONFIG.live_layout
     local body = Instance.new("Frame")
     body.Name = "Body"
     body.AnchorPoint = Vector2.new(0.5, 1)
     body.Position = UDim2.fromScale(0.5, 0.97)
     -- The fixed header is the only height subtraction; the bottom anchor owns placement.
-    body.Size = UDim2.new(0.96, 0, 0.97, -sizing.header_height - sizing.gap)
+    body.Size = UDim2.new(0.96, 0, 0.97, -(headerHeight or sizing.header_height) - sizing.gap)
     body.BackgroundTransparency = 1
     body.ZIndex = frame.ZIndex + 1
     body.Parent = frame
@@ -352,6 +352,22 @@ local function constrainLiveWindow(frame)
     local bounds = Instance.new("UISizeConstraint")
     bounds.MaxSize = Vector2.new(sizing.max_width, sizing.max_height)
     bounds.Parent = frame
+end
+
+local function expandLiveWindow(frame, header)
+    local sizing = TRADE_CONFIG.live_layout
+    frame.Size = UDim2.fromScale(
+        sizing.width_scale,
+        sizing.expanded_bottom_scale - sizing.expanded_top_scale
+    )
+    frame.Position =
+        UDim2.fromScale(0.5, (sizing.expanded_top_scale + sizing.expanded_bottom_scale) / 2)
+    header.Size = UDim2.new(0.99, 0, 0, sizing.expanded_header_height)
+    header.AnchorPoint = Vector2.new(0.5, 0)
+    header.Position = UDim2.fromScale(0.5, 0.01)
+    -- Align the standard X inside the header instead of overhanging the device-safe top edge.
+    frame.CloseButton.Position = UDim2.fromScale(header.Size.X.Scale, header.Position.Y.Scale)
+    frame.CloseButton.Size = UDim2.fromOffset(sizing.touch_height, sizing.touch_height)
 end
 
 local function petDisplayName(item)
@@ -1080,6 +1096,7 @@ function TradePanel:_closeGiftPicker()
         self.giftWindow:Destroy()
         self.giftWindow = nil
     end
+    self:_updateLiveInsets()
 end
 
 function TradePanel:_giftFailureText(reason)
@@ -1219,11 +1236,12 @@ function TradePanel:_openGiftPicker(target)
     corner(window, 20)
     PanelChrome.pillBorder(window, PanelChrome.areaPill(), 330, 0, 0.07)
     self.giftWindow = window
+    self:_updateLiveInsets()
     self:_buildHeader(window, "🎁 Gift to " .. (target.name or "Player"), function()
         self:_closeGiftPicker()
     end, 340)
-    window.Header.Size = UDim2.new(1, 0, 0, TRADE_CONFIG.live_layout.header_height)
-    local body = liveBody(window)
+    expandLiveWindow(window, window.Header)
+    local body = liveBody(window, TRADE_CONFIG.live_layout.expanded_header_height)
     local preference = label(
         body,
         "Accepts: "
@@ -1281,6 +1299,15 @@ function TradePanel:_ensureLiveGui()
     gui.Parent = pg
     self.liveGui = gui
     return gui
+end
+
+function TradePanel:_updateLiveInsets()
+    if self.liveGui then
+        -- Inventory headers may use the top-bar strip; device notch/home-bar protection stays on.
+        self.liveGui.ScreenInsets = (self.window or self.giftWindow)
+                and Enum.ScreenInsets.DeviceSafeInsets
+            or Enum.ScreenInsets.CoreUISafeInsets
+    end
 end
 
 function TradePanel:_onEvent(payload)
@@ -1441,6 +1468,7 @@ function TradePanel:_closeWindow()
         self.window = nil
     end
     self._tradeView = nil
+    self:_updateLiveInsets()
     self:_hideCardTooltip()
     self.state = nil
 end
@@ -1466,8 +1494,8 @@ function TradePanel:_createTradeWindow()
     local win = shell.frame
     constrainLiveWindow(win)
     local sizing = TRADE_CONFIG.live_layout
-    shell.header.Size = UDim2.new(0.99, 0, 0, sizing.header_height)
-    local body = liveBody(win)
+    expandLiveWindow(win, shell.header)
+    local body = liveBody(win, sizing.expanded_header_height)
     local columns = Instance.new("Frame")
     columns.Name = "Columns"
     columns.Size = UDim2.fromScale(1, 0)
@@ -1484,6 +1512,7 @@ function TradePanel:_createTradeWindow()
     footer.ZIndex = 140
     footer.Parent = body
     self.window = win
+    self:_updateLiveInsets()
 
     local function changeSourceTab(tab)
         if self._sourceTab == tab then
