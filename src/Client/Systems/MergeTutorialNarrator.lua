@@ -54,6 +54,7 @@ function Controller.update(world, observing, menuOpen)
     local player = Players.LocalPlayer
     local playerGui = player:FindFirstChildOfClass("PlayerGui")
     local modeNotice = playerGui and playerGui:FindFirstChild("MergeDefenseModeNotice")
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     player:SetAttribute("MergeTutorialMenuOpen", observing == true and menuOpen == true)
     if not config.enabled then
         return
@@ -76,6 +77,8 @@ function Controller.update(world, observing, menuOpen)
         blocked = player:GetAttribute("InCombatTutorial") == true
             or player:GetAttribute("InPrologue") == true
             or player:GetAttribute(transitConfig.active_attribute) == true
+            or not humanoid
+            or humanoid.Health <= 0
             or (modeNotice ~= nil and modeNotice.Enabled),
         bay = world,
         run = attr("ActiveRunId"),

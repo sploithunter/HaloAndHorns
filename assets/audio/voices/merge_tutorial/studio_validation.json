@@ -1,11 +1,10 @@
 {
-  "checked_at": "2026-09-08T17:22:27.140407+00:00",
+  "checked_at": "2026-09-08T17:24:45.025012+00:00",
   "place_id": 84544653387905,
   "scope": "Studio Client, actual Sound instances",
   "expected": 80,
-  "loaded": 78,
+  "loaded": 79,
   "pending_review": [
-    "merge_tutorial.heaven.collect_workshop_coins",
     "merge_tutorial.hell.collect_cannon_coins"
   ],
   "checks": [
@@ -26,5 +25,5 @@
     "profile_progress_modified": false,
     "startup_errors": []
   },
-  "limitation": "Two clips still report Asset has not been reviewed; uploaded IDs are preserved while Roblox moderation finishes."
+  "limitation": "The Hell cannon-coin clip still reports Asset has not been reviewed; its upload ID is preserved while Roblox moderation finishes."
 }
