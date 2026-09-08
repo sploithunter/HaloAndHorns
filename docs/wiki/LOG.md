@@ -8654,3 +8654,12 @@ first-session cohort rates.
 - Inspected each actual-size phone dialog separately. Applied the same expanded parent and contained
   44px close button to gifting at the user's request; small request/confirmation dialogs remain
   readable and centered. Verified inset restoration after closing either inventory window.
+
+### 2026-09-08 — Farm & Fight angel/demon tutorial recording script
+
+- Verified main clean/current after PR488 and both publications, then authored the complete English
+  voice catalog: 88 lines spanning every Homeworld/combat lesson, optional help, and branch handling.
+- Angel encourages outside combat; the existing demon personality teaches all combat courses with
+  light mockery. Current Basic/Advanced course boundaries supersede historical single-course copy.
+- Added the recording sheet and config-only source. Audio generation, upload, and room-aware face/
+  voice playback remain unimplemented; existing gameplay and tutorial text are unchanged.
