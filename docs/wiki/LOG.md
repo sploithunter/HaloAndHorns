@@ -8613,3 +8613,5 @@ first-session cohort rates.
 - Reduced `merge_offline.maximum_bays` from five to two per server using the existing sequential fill gate. This bounds background combat work without a new slowdown detector or repeated load-based removals. Real-player bay priority and the explicit eight-bay Studio stress override remain unchanged. Existing live jobs retain their loaded config until replaced.
 - Updated the production-versus-stress configuration contract; this load reduction does not establish or fix the cause of the remaining shared Studio memory growth.
 - Validation: full CI passed (2,810 tests / 318 specs); wiki consistency passed. Native Studio executed the actual offline service fill method with isolated candidate/acquisition substitutes: two starts, repeated over-cap refusal before candidate reads, replacement after vacancy, and preservation of an occupied human bay. No real profiles were accessed by this check.
+
+- 2026-09-07: Increased the Hell demon-head taunter voice volume another 50%, from 1.56 to 2.34, via `watcher.themes.hell.voice.volume`. Heaven remains at 1.2; spatial falloff and user audio preferences still apply.
