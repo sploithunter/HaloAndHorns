@@ -1,6 +1,68 @@
 # Realm Crossroads
 
-Status: first blockout scale rejected; R2 architectural proposal for review (2026-09-08).
+Status: first blockout scale rejected; R3 existing-gate and local-lighting study for review (2026-09-08).
+
+## R3: existing Merge arches, inset faces, separated lighting
+
+The user requested evaluating the large gates at the enemy-spawn end of each Merge bay,
+plus the circular Farm & Fight return portals. They prefer reusing the larger detailed meshes,
+scaled down, with the angel/demon **inside** the doorway to talk to or walk through. This replaces
+the earlier face-above-gate arrangement. They also requested separated Heaven/Hell approach
+lighting like Merge, while preserving short walks from spawn.
+
+Read-only inspection in the active Merge **Server** datamodel on 2026-09-08 found:
+
+| Family | Native mesh W × H × D | Evaluation |
+| --- | --- | --- |
+| Heaven bay arch | 99.5 × 94.0 × 40.0 | Preferred matched architectural pair; at 30% becomes 29.8 × 28.2 × 12.0 |
+| Hell bay arch | 99.8 × 93.5 × 43.4 | At 30% becomes 29.9 × 28.1 × 13.0 |
+| Celestial return ring | 23.6 × 24.0 × 22.1 | Usable fallback; raised base and deep platform |
+| Infernal return ring | 34.7 × 34.9 × 32.0 | At 24 high becomes 23.8 wide × 22.0 deep; coordinated travel-station pair |
+
+Exact source paths, mesh/SurfaceAppearance IDs, dimensions, and measurement caveats live in
+`configs/realm_crossroads_gate_study.json`. Source captures are under
+`docs/art/realm_crossroads/gate-study/`. `tools/realm_crossroads/draw_gate_study.py` generates
+`output/pdf/Realm-Crossroads-Gate-Study-R3.pdf`: A-04 asset comparison, A-05 inset-face elevation,
+and A-06 wider entrance spacing / lighting plan. The elevation is diagrammatic, not replacement art.
+
+### Scale and fitting constraints
+
+- Trial the bay arches at 25%, 30%, and 35%, with identical player references. The 30% example
+  is a sizing proposal, not a completed scale test. A roughly 5-stud face centered at Y=6.5
+  fits within the arch; keep it non-colliding and fit by visible bounds.
+- Coarse full-depth raycasts of the current **Default collision**, in 1-stud horizontal /
+  2-stud vertical samples, found native base openings around 18–20 studs, widening to about 32.
+  At 30%, that is only **5.4–6 at the base**, widening to 9.6. R2's 10 × 12 clear opening is
+  **not established for these meshes**. Test a real character at the smaller scale, including
+  the base/stair lips, before accepting passage width or final landing height.
+- Hell gate Model bounds include high lightning hooks and report ~414 studs of height;
+  scale using the visible mesh, not that Model bound. Preserve SurfaceAppearance maps:
+  all four inspected gate meshes have empty `TextureID`.
+- Clone art only. Do not import Merge bay attributes, enemy spawn hooks, existing return
+  prompts, or lightning marker towers into Crossroads. No existing Merge assets were edited.
+
+### Revised placement and lighting proposal
+
+Keep the 360 × 320 island proposal. Spawn remains X=0/Z=100; move gate centers to X=±40/Z=42
+(**80 studs apart**) and turn each ~34.6° toward spawn. Direct spawn-to-center distance is
+70.5 studs, about **4.4 seconds at 16 studs/s**; the entrance threshold is slightly closer.
+This supersedes R2's X=±26/Z=54 positions and 3.3-second estimate.
+
+Each gate gets a proposed 26-stud outer lighting radius, easing to full theme within 10 studs.
+The circles leave a **28-stud neutral gap** along the line joining their centers. Spawn and the
+gallery remain outside these regions. Heaven uses pale/gold light; Hell uses darker ambience
+with ember highlights. Preserve floor, face, and sign readability. Final camera visibility and
+walking times still need a Roblox pass; do not claim the wider layout is verified in Play.
+
+`src/Client/Systems/RealmAtmosphere.lua` already owns client-local realm looks. In Merge it
+selects spatial zones with hysteresis and tweens numeric lighting; elsewhere it follows
+`CurrentLayer`. Extend that ownership when implementing hub proximity later, rather than
+adding a competing lighting controller. Restore the neutral/base look on leaving a gate zone;
+handle sky swaps deliberately instead of assuming sky textures blend like numeric properties.
+
+Interaction proposal: a Talk / Enter prompt plus optional threshold crossing; no required
+dialogue and no teleport merely for standing nearby. Face recedes/fades as the player enters.
+These remain design proposals, with no new production routing or lighting implemented.
 
 ## R2 takes precedence over the first blockout
 

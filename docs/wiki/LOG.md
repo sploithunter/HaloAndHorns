@@ -8725,3 +8725,14 @@ first-session cohort rates.
 - Created R2 site plan, gateway/player elevation, longitudinal section, and explicit staged
   build/acceptance instructions. Proposed island 360 × 320; doorway 10 × 12; art envelope 9 high.
 - Kept R2 design parameters separate from the first blockout. R2 is not yet approved or baked.
+
+### 2026-09-08 — Crossroads existing-gate evaluation and approach lighting
+
+- Inspected the actual Heaven/Hell bay-end arches and both Farm & Fight return rings in active
+  Merge Play, without changing the source map. Preferred the matched bay arches at a trial
+  25–30% scale, with faces inside the openings. Recorded native sizes, appearance maps,
+  collision-opening caveats, and the Hell lightning-marker bounds trap.
+- Added R3 architectural sheets for comparison, inset faces, and wider gate placement / local
+  lighting. Proposed 80-stud gate separation, 4.4-second walks, and two 26-stud light zones with
+  a 28-stud neutral gap. R3 replaces the earlier gate positions and roof-mounted face concept;
+  it is not yet built or walk-tested. See [Realm Crossroads](REALM_CROSSROADS.md).
