@@ -382,3 +382,8 @@ visible raised spawn pad is removed (spawn remains enabled but invisible/noncoll
 `finish_arrival.luau` prepares the continuous footprint before the paving trim, then
 replaces the center with individual stone pavers and separate edge strips. Its returned
 finish function must run after trim. Floor intersections share a common surface height.
+
+After paving trim, run the configured `side_junction.bake_source` finishing repair.
+The garden-ramp links reach inward to |X|16; their former |X|20 endpoints missed the
+outside diagonal edge at Z88, leaving small mirrored notches. The repair subtracts
+the existing diagonal solid, preserving a clean shared boundary with no stacked faces.

@@ -69,5 +69,12 @@
     ],
     "joint": 0
   },
-  "finish_source": "tools/realm_crossroads/finish_arrival.luau"
+  "finish_source": "tools/realm_crossroads/finish_arrival.luau",
+  "side_junction": {
+    "bake_source": "tools/realm_crossroads/repair_side_junctions.luau",
+    "inner_x": 16,
+    "outer_x": 48,
+    "center_z": 80,
+    "width": 16
+  }
 }
