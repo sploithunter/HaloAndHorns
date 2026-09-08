@@ -543,171 +543,227 @@ end
 -- Menu-button list view (pick a player)
 ----------------------------------------------------------------------
 
+-- The picker reserves readable chrome and lets flex layout allocate every remaining pixel to
+-- its pages. Preferences have their own scrolling page, so they cannot cover the player list.
 function TradePanel:Show(parent)
     if self.isVisible then
         return
     end
+    local sizing = TRADE_CONFIG.picker_layout
     local frame = Instance.new("Frame")
     frame.Name = "TradePanel"
-    frame.Size = UDim2.new(0.5, 0, 0.7, 0)
-    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    frame.Size = UDim2.fromScale(sizing.width_scale, sizing.height_scale)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.BackgroundColor3 = COLORS.panel
     frame.BorderSizePixel = 0
     frame.ZIndex = 100
     frame.Parent = parent
+    local bounds = Instance.new("UISizeConstraint")
+    bounds.MaxSize = Vector2.new(sizing.max_width, sizing.max_height)
+    bounds.Parent = frame
     corner(frame, 20)
-    -- Standard game pill border (area-themed, same style as the other panels) — Jason: "pills on
-    -- the outside." Replaces the thin header-colored stroke.
-    PanelChrome.pillBorder(frame, PanelChrome.areaPill(), 130, 0, 0.07) -- match the shared shell
+    PanelChrome.pillBorder(frame, PanelChrome.areaPill(), 130, 0, 0.07)
     self.frame = frame
-
     self:_buildHeader(frame, "🤝 Trade", function()
         self:Hide()
     end)
+    frame.Header.Size = UDim2.new(1, 0, 0, sizing.header_height)
 
-    local hint = label(
-        frame,
-        "Pick a player to request a trade or give one pet:",
-        UDim2.new(1, -48, 0, 24),
-        UDim2.new(0, 24, 0, 84),
-        COLORS.subtext,
-        Enum.Font.Gotham
-    )
-    hint.TextXAlignment = Enum.TextXAlignment.Left
-    hint.ZIndex = 102
+    local body = Instance.new("Frame")
+    body.Name = "Body"
+    body.AnchorPoint = Vector2.new(0.5, 1)
+    body.Position = UDim2.fromScale(0.5, sizing.content_bottom_scale)
+    -- Subtract only the fixed header chrome; placement stays anchored to the panel's lower edge.
+    body.Size =
+        UDim2.new(sizing.content_width_scale, 0, sizing.content_bottom_scale, -sizing.header_height)
+    body.BackgroundTransparency = 1
+    body.ZIndex = 101
+    body.Parent = frame
+    local stack = Instance.new("UIListLayout")
+    stack.Padding = UDim.new(0, sizing.gap)
+    stack.SortOrder = Enum.SortOrder.LayoutOrder
+    stack.Parent = body
 
-    local privacy = Instance.new("Frame")
-    privacy.Name = "InvitePrivacy"
-    privacy.Size = UDim2.new(1, -48, 0, 40)
-    privacy.Position = UDim2.new(0, 24, 0, 112)
-    privacy.BackgroundTransparency = 1
-    privacy.ZIndex = 102
-    privacy.Parent = frame
-    self.privacyBar = privacy
-    local privacyLabel = label(
-        privacy,
-        "Accepting requests",
-        UDim2.new(0.37, 0, 1, 0),
-        UDim2.new(0, 0, 0, 0),
-        COLORS.subtext,
-        Enum.Font.Gotham
-    )
-    privacyLabel.TextXAlignment = Enum.TextXAlignment.Left
-    privacyLabel.ZIndex = 103
-    self.privacyButtons = {}
-    for i, mode in ipairs({ "everyone", "friends", "off" }) do
-        local btn = Instance.new("TextButton")
-        btn.Name = mode
-        btn.Size = UDim2.new(0.2, 0, 0.86, 0)
-        btn.Position = UDim2.new(0.37 + (i - 1) * 0.21, 0, 0.07, 0)
-        btn.BackgroundColor3 = COLORS.row
-        btn.Text = TradeLogic.invitePrivacyLabel(mode, TRADE_CONFIG)
-        btn.TextColor3 = COLORS.text
-        btn.TextScaled = true
-        btn.Font = Enum.Font.GothamBold
-        btn.ZIndex = 103
-        btn.Parent = privacy
-        pillify(btn, 16)
-        local constraint = Instance.new("UITextSizeConstraint")
-        constraint.MaxTextSize = 14
-        constraint.Parent = btn
-        btn.Activated:Connect(function()
+    local navigation = Instance.new("Frame")
+    navigation.Name = "Navigation"
+    navigation.Size = UDim2.new(1, 0, 0, sizing.touch_height)
+    navigation.BackgroundTransparency = 1
+    navigation.LayoutOrder = 1
+    navigation.ZIndex = 102
+    navigation.Parent = body
+    local navLayout = Instance.new("UIListLayout")
+    navLayout.FillDirection = Enum.FillDirection.Horizontal
+    navLayout.Padding = UDim.new(0.02, 0)
+    navLayout.Parent = navigation
+
+    local pages = Instance.new("Frame")
+    pages.Name = "Pages"
+    pages.Size = UDim2.fromScale(1, 0)
+    pages.BackgroundTransparency = 1
+    pages.LayoutOrder = 2
+    pages.ZIndex = 101
+    pages.Parent = body
+    local flex = Instance.new("UIFlexItem")
+    flex.FlexMode = Enum.UIFlexMode.Fill
+    flex.Parent = pages
+
+    local function scrollingPage(name)
+        local page = Instance.new("ScrollingFrame")
+        page.Name = name
+        page.Size = UDim2.fromScale(1, 1)
+        page.BackgroundTransparency = 1
+        page.BorderSizePixel = 0
+        page.ScrollBarThickness = 6
+        page.ScrollingDirection = Enum.ScrollingDirection.Y
+        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.CanvasSize = UDim2.new()
+        page.ZIndex = 101
+        page.Parent = pages
+        local layout = Instance.new("UIListLayout")
+        layout.Padding = UDim.new(0, sizing.gap)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Parent = page
+        return page
+    end
+    self.playerList = scrollingPage("PlayerList")
+    local preferences = scrollingPage("Preferences")
+    preferences.Visible = false
+
+    local function navButton(name, width, onClick)
+        local button = Instance.new("TextButton")
+        button.Name = name
+        button.Size = UDim2.fromScale(width, 1)
+        button.BackgroundColor3 = COLORS.row
+        button.Text = name
+        button.TextColor3 = COLORS.text
+        button.TextScaled = true
+        button.Font = Enum.Font.GothamBold
+        button.ZIndex = 103
+        button.Parent = navigation
+        pillify(button, sizing.text_size)
+        button.Activated:Connect(onClick)
+        return button
+    end
+    local playersTab, preferencesTab
+    local function showPreferences(selected)
+        preferences.Visible = selected
+        self.playerList.Visible = not selected
+        playersTab.BackgroundColor3 = selected and COLORS.row or COLORS.header
+        preferencesTab.BackgroundColor3 = selected and COLORS.header or COLORS.row
+    end
+    playersTab = navButton("Players", 0.3, function()
+        showPreferences(false)
+    end)
+    preferencesTab = navButton("Preferences", 0.4, function()
+        showPreferences(true)
+    end)
+    navButton("Refresh", 0.26, function()
+        self:_refreshPlayers()
+    end)
+    showPreferences(false)
+
+    local function preferenceGroup(name, title, modes, order, onSelect)
+        local group = Instance.new("Frame")
+        group.Name = name
+        group.Size = UDim2.new(1, -sizing.gap, 0, 0)
+        group.AutomaticSize = Enum.AutomaticSize.Y
+        group.BackgroundTransparency = 1
+        group.LayoutOrder = order
+        group.ZIndex = 102
+        group.Parent = preferences
+        local layout = Instance.new("UIListLayout")
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Padding = UDim.new(0, sizing.gap)
+        layout.Parent = group
+        local heading = label(
+            group,
+            title,
+            UDim2.new(1, 0, 0, sizing.preference_label_height),
+            UDim2.new(),
+            COLORS.subtext,
+            Enum.Font.Gotham
+        )
+        heading.TextXAlignment = Enum.TextXAlignment.Left
+        heading.TextScaled = false
+        heading.TextSize = sizing.text_size
+        heading.LayoutOrder = 1
+        local choices = Instance.new("Frame")
+        choices.Name = "Choices"
+        choices.Size = UDim2.new(
+            1,
+            0,
+            0,
+            math.ceil(#modes / sizing.preference_columns) * (sizing.touch_height + sizing.gap)
+                - sizing.gap
+        )
+        choices.BackgroundTransparency = 1
+        choices.LayoutOrder = 2
+        choices.ZIndex = 103
+        choices.Parent = group
+        local grid = Instance.new("UIGridLayout")
+        grid.CellSize =
+            UDim2.new(1 / sizing.preference_columns, -sizing.gap, 0, sizing.touch_height)
+        grid.CellPadding = UDim2.fromOffset(sizing.gap, sizing.gap)
+        grid.SortOrder = Enum.SortOrder.LayoutOrder
+        grid.Parent = choices
+        local buttons = {}
+        for index, spec in ipairs(modes) do
+            local button = Instance.new("TextButton")
+            button.Name = spec[1]
+            button.Text = spec[2]
+            button.BackgroundColor3 = COLORS.row
+            button.TextColor3 = COLORS.text
+            button.TextScaled = true
+            button.Font = Enum.Font.GothamBold
+            button.LayoutOrder = index
+            button.ZIndex = 104
+            button.Parent = choices
+            pillify(button, sizing.text_size)
+            button.Activated:Connect(function()
+                onSelect(spec[1])
+            end)
+            buttons[spec[1]] = button
+        end
+        return group, buttons
+    end
+    self.privacyBar, self.privacyButtons = preferenceGroup(
+        "InvitePrivacy",
+        "Accept trade requests from",
+        {
+            { "everyone", TradeLogic.invitePrivacyLabel("everyone", TRADE_CONFIG) },
+            { "friends", TradeLogic.invitePrivacyLabel("friends", TRADE_CONFIG) },
+            { "off", TradeLogic.invitePrivacyLabel("off", TRADE_CONFIG) },
+        },
+        1,
+        function(mode)
             local result = self:_callBus("trade.set_invite_privacy", { mode = mode })
             if result and result.ok then
                 self._privacyOverride = result.mode
             end
             self:_refreshTradePrivacy()
-        end)
-        self.privacyButtons[mode] = btn
-    end
-
-    local giftPrivacy = Instance.new("Frame")
-    giftPrivacy.Name = "GiftAcceptance"
-    giftPrivacy.Size = UDim2.new(1, -48, 0, 40)
-    giftPrivacy.Position = UDim2.new(0, 24, 0, 154)
-    giftPrivacy.BackgroundTransparency = 1
-    giftPrivacy.ZIndex = 102
-    giftPrivacy.Parent = frame
-    self.giftPrivacyBar = giftPrivacy
-    local giftPrivacyLabel = label(
-        giftPrivacy,
-        "Accept gifts",
-        UDim2.new(0.3, 0, 1, 0),
-        UDim2.new(0, 0, 0, 0),
-        COLORS.subtext,
-        Enum.Font.Gotham
+        end
     )
-    giftPrivacyLabel.TextXAlignment = Enum.TextXAlignment.Left
-    giftPrivacyLabel.ZIndex = 103
-    self.giftPrivacyButtons = {}
-    local giftModes = {
-        { "any", "Any" },
-        { "uncommon_plus", "Uncommon+" },
-        { "rare_plus", "Rare+" },
-        { "mythic_plus", "Mythical+" },
-        { "off", "Off" },
-    }
-    for index, modeSpec in ipairs(giftModes) do
-        local mode, display = modeSpec[1], modeSpec[2]
-        local button = Instance.new("TextButton")
-        button.Name = mode
-        button.Size = UDim2.new(0.132, 0, 0.86, 0)
-        button.Position = UDim2.new(0.3 + (index - 1) * 0.138, 0, 0.07, 0)
-        button.BackgroundColor3 = COLORS.row
-        button.Text = display
-        button.TextColor3 = COLORS.text
-        button.TextScaled = true
-        button.Font = Enum.Font.GothamBold
-        button.ZIndex = 103
-        button.Parent = giftPrivacy
-        pillify(button, 12)
-        local constraint = Instance.new("UITextSizeConstraint")
-        constraint.MaxTextSize = 11
-        constraint.Parent = button
-        button.Activated:Connect(function()
+    self.giftPrivacyBar, self.giftPrivacyButtons = preferenceGroup(
+        "GiftAcceptance",
+        "Accept gifts",
+        {
+            { "any", "Any" },
+            { "uncommon_plus", "Uncommon+" },
+            { "rare_plus", "Rare+" },
+            { "mythic_plus", "Mythical+" },
+            { "off", "Off" },
+        },
+        2,
+        function(mode)
             local result = self:_callBus("gift.set_preference", { mode = mode })
             if result and result.ok then
                 self._giftPreferenceOverride = result.mode
             end
             self:_refreshGiftPreference()
             self:_refreshPlayers()
-        end)
-        self.giftPrivacyButtons[mode] = button
-    end
-
-    local list = Instance.new("ScrollingFrame")
-    list.Name = "PlayerList"
-    list.Size = UDim2.new(1, -24, 1, -250)
-    list.Position = UDim2.new(0, 12, 0, 204)
-    list.BackgroundTransparency = 1
-    list.BorderSizePixel = 0
-    list.ScrollBarThickness = 6
-    list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    list.CanvasSize = UDim2.new(0, 0, 0, 0)
-    list.ZIndex = 101
-    list.Parent = frame
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = list
-    self.playerList = list
-
-    local refresh = Instance.new("TextButton")
-    refresh.Size = UDim2.new(0, 160, 0, 40)
-    refresh.Position = UDim2.new(0.5, 0, 1, -30)
-    refresh.AnchorPoint = Vector2.new(0.5, 0.5)
-    refresh.BackgroundColor3 = COLORS.header
-    refresh.Text = "Refresh"
-    refresh.TextColor3 = COLORS.text
-    refresh.TextScaled = true
-    refresh.Font = Enum.Font.GothamBold
-    refresh.ZIndex = 102
-    refresh.Parent = frame
-    pillify(refresh, 18)
-    refresh.Activated:Connect(function()
-        self:_refreshPlayers()
-    end)
+        end
+    )
 
     self.isVisible = true
     self:_refreshTradePrivacy()
@@ -843,7 +899,7 @@ function TradePanel:_refreshPlayers()
         return
     end
     for _, ch in ipairs(self.playerList:GetChildren()) do
-        if ch:IsA("Frame") then
+        if ch:IsA("GuiObject") then
             ch:Destroy()
         end
     end
@@ -884,7 +940,9 @@ end
 
 function TradePanel:_playerRow(p, order)
     local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, -8, 0, 72)
+    row.Name = "Player_" .. tostring(p.userId)
+    row.Size =
+        UDim2.new(1, -TRADE_CONFIG.picker_layout.gap, 0, TRADE_CONFIG.picker_layout.row_height)
     row.BackgroundColor3 = COLORS.row
     row.BorderSizePixel = 0
     row.LayoutOrder = order
@@ -901,8 +959,8 @@ function TradePanel:_playerRow(p, order)
     local name = label(
         row,
         (lvl and ("Lv %d   "):format(lvl) or "") .. p.name .. status,
-        UDim2.new(1, -244, 0, 38),
-        UDim2.new(0, 14, 0, 1),
+        UDim2.fromScale(0.92, 0.25),
+        UDim2.fromScale(0.04, 0.03),
         COLORS.text,
         Enum.Font.GothamBold
     )
@@ -914,8 +972,8 @@ function TradePanel:_playerRow(p, order)
     local giftStatus = label(
         row,
         "Gifts: " .. (p.giftPreferenceLabel or "Unavailable"),
-        UDim2.new(1, -244, 0, 24),
-        UDim2.new(0, 14, 0, 40),
+        UDim2.fromScale(0.92, 0.2),
+        UDim2.fromScale(0.04, 0.29),
         COLORS.subtext,
         Enum.Font.Gotham
     )
@@ -926,8 +984,9 @@ function TradePanel:_playerRow(p, order)
     gsc.Parent = giftStatus
 
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 100, 0, 40)
-    btn.Position = UDim2.new(1, -218, 0.5, -20)
+    btn.Name = "Request"
+    btn.Size = UDim2.new(0.44, 0, 0, TRADE_CONFIG.picker_layout.touch_height)
+    btn.Position = UDim2.fromScale(0.04, 0.56)
     local blockedText = {
         friends_only = "Friends only",
         invites_off = "Off",
@@ -959,8 +1018,8 @@ function TradePanel:_playerRow(p, order)
 
     local giftButton = Instance.new("TextButton")
     giftButton.Name = "GiveGift"
-    giftButton.Size = UDim2.new(0, 100, 0, 40)
-    giftButton.Position = UDim2.new(1, -110, 0.5, -20)
+    giftButton.Size = UDim2.new(0.44, 0, 0, TRADE_CONFIG.picker_layout.touch_height)
+    giftButton.Position = UDim2.fromScale(0.52, 0.56)
     local giftsEnabled = p.giftsEnabled == true
     giftButton.BackgroundColor3 = giftsEnabled and COLORS.gem or COLORS.pending
     giftButton.Text = giftsEnabled and "🎁 Gift" or "Gifts off"

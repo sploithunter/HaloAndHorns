@@ -9,6 +9,22 @@
 ]]
 
 return {
+    -- Responsive player picker: fixed readable chrome, remaining height belongs to the list.
+    picker_layout = {
+        width_scale = 0.92,
+        height_scale = 0.9,
+        max_width = 850,
+        max_height = 650,
+        content_width_scale = 0.94,
+        content_bottom_scale = 0.97,
+        header_height = 48,
+        touch_height = 44,
+        gap = 8,
+        row_height = 112,
+        preference_label_height = 28,
+        preference_columns = 3,
+        text_size = 16,
+    },
     -- Pending invitations are intentionally short-lived: unanswered prompts clear on both clients,
     -- the server rejects late responses, and the requester receives a timeout notice.
     invite_timeout_seconds = 30,
