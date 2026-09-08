@@ -1,8 +1,15 @@
--- Recording script only: no playback hooks or audio assets are enabled by this catalog.
+-- Recorded source audio: Roblox uploads and tutorial playback hooks are not enabled yet.
 -- Spoken copy is authored here; docs/TUTORIAL_VOICE_SCRIPT.md is the matching recording sheet.
 return {
     version = 1,
-    status = "script_only",
+    status = "audio_generated",
+    recordingManifest = "assets/audio/voices/tutorial/manifest.json",
+    -- Playback integration must resolve the already-tuned Merge values, without another gain copy.
+    playbackVolumeSource = {
+        config = "merge_egg_prototype",
+        angel = { "watcher", "voice", "volume" },
+        demon = { "watcher", "themes", "hell", "voice", "volume" },
+    },
     language = "en",
     sections = {
         {

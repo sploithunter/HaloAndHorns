@@ -8663,3 +8663,11 @@ first-session cohort rates.
   light mockery. Current Basic/Advanced course boundaries supersede historical single-course copy.
 - Added the recording sheet and config-only source. Audio generation, upload, and room-aware face/
   voice playback remain unimplemented; existing gameplay and tutorial text are unchanged.
+
+### 2026-09-08 — ElevenLabs tutorial recording pack
+
+- Generated all 88 approved lines with the supplied angel/demon voice IDs. Saved original MP3s,
+  per-character timing, exact text/cue provenance, voice settings, hashes, and validation results.
+- User approved A01/D01 by listening and requested existing merged Watcher levels; the catalog
+  references those canonical volume paths (angel 1.2, demon 2.34) for pending playback integration.
+- Source audio is ready; Roblox upload and tutorial face/playback integration remain pending.
