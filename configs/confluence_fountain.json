@@ -1,0 +1,35 @@
+{
+  "name": "The Confluence",
+  "status": "generating",
+  "pipeline": [
+    "ImageGen",
+    "Meshy Smart Topology T2",
+    "Blender refinement",
+    "Assets",
+    "Roblox group upload"
+  ],
+  "concept": "assets/concepts/confluence/confluence-v1.png",
+  "source_directory": "assets/source/props/confluence",
+  "export_directory": "assets/exports/props/confluence",
+  "source_companion": "assets/source/props/confluence/refine.py",
+  "diameter_studs": 22,
+  "height_limit_studs": 8,
+  "origin": "foundation underside at court contact",
+  "placement_recommendation": [
+    0,
+    4,
+    -88
+  ],
+  "heaven_direction": "negative X, toward Heaven/Farm and Fight",
+  "hell_direction": "positive X, toward Hell/Pet Siege",
+  "creator_group": 15872767,
+  "roblox_model_id": null,
+  "fluids": "separate mesh components; no live map integration",
+  "reference_catalog": [
+    "heaven_star_fountain",
+    "hell_infernal_fountain",
+    "animal_skull",
+    "hell_skull_lantern",
+    "crystal_bloom"
+  ]
+}

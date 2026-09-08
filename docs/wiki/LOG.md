@@ -8757,3 +8757,7 @@ first-session cohort rates.
 - 2026-09-08 — Bragg visual refinement: distributed six reserve alcoves between eight ranking groups, replaced FUTURE signs/topiary with three paired flower-garden themes and sculpted botanical wall medallions. Reserved category bindings remain metadata; same local Studio preview, gate/terrain dimensions unchanged.
 
 - 2026-09-08 — Replaced improvised Bragg flower geometry with existing Merge meshes/textures: Field Flower Bush, Softglow Bloom and Crystal Bloom in three Heaven bays; Animal Skull with Skull Lantern pairs in three Hell bays. Preserved interleaved positions; visually verified skull facing and asset scale. Asset IDs/placements remain in config; native templates cached in preview.
+
+## 2026-09-08 — Standalone Confluence fountain asset started
+
+Separate fountain agent is preparing ImageGen → Meshy → Blender source and Roblox upload for the Bragg center, without map edits. Contract is `configs/confluence_fountain.json`; 22-stud footprint and 8-stud height limit. Source and provenance under `assets/source/props/confluence/`.
