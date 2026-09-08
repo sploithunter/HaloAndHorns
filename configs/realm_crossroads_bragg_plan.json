@@ -503,5 +503,11 @@
         "hell_skull_lantern": 101289093060410
       }
     }
+  },
+  "replacement_fountain": {
+    "model_name": "ConfluenceFountain",
+    "template_name": "ConfluenceNativeTemplate",
+    "surface_offset": 0.44,
+    "asset_config": "configs/confluence_fountain.json"
   }
 }

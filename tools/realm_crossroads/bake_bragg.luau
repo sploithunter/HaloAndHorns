@@ -45,6 +45,20 @@ return function()
             end
         end
     end
+    local replacement = cfg.replacement_fountain
+    local currentBragg = oldRoot:FindFirstChild("BraggRotundaR6")
+    if replacement and currentBragg then
+        local current = currentBragg:FindFirstChild(replacement.model_name)
+        if current then
+            local previous = game.ServerStorage:FindFirstChild(replacement.template_name)
+            if previous then
+                previous:Destroy()
+            end
+            local copy = current:Clone()
+            copy.Name = replacement.template_name
+            copy.Parent = game.ServerStorage
+        end
+    end
     local old = oldRoot:FindFirstChild("BraggRotundaR6")
     if old then
         old:Destroy()
@@ -503,6 +517,16 @@ return function()
     end
     text(fountain, "BRAGG", 1.3, 10, C.new(origin + V.new(0, 1.1, 10.9)), "ink")
     game:GetService("ChangeHistoryService"):SetWaypoint("Bragg Rotunda R6")
+    if replacement then
+        local template = game.ServerStorage:FindFirstChild(replacement.template_name)
+        if template then
+            fountain:Destroy()
+            local model = template:Clone()
+            model.Name = replacement.model_name
+            model.Parent = root
+            model:PivotTo(C.new(origin + V.new(0, replacement.surface_offset, 0)))
+        end
+    end
     return {
         alcoves = #cfg.bays,
         podiumGroups = 8,
