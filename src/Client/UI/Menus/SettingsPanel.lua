@@ -312,7 +312,8 @@ function SettingsPanel:_createSliderSetting(
     maxValue,
     layoutOrder,
     callback,
-    step
+    step,
+    endpointSnap
 )
     local theme = uiConfig.helpers.get_theme(uiConfig)
 
@@ -400,6 +401,14 @@ function SettingsPanel:_createSliderSetting(
             0,
             1
         )
+        -- Make mute/max reachable on touch without requiring a sub-pixel edge hit.
+        if endpointSnap then
+            if percent <= endpointSnap then
+                percent = 0
+            elseif percent >= 1 - endpointSnap then
+                percent = 1
+            end
+        end
         setSliderValue(minValue + (maxValue - minValue) * percent)
     end
 
@@ -672,7 +681,8 @@ function SettingsPanel:_createAudioSettings()
             self.settings.audio.voicesVolume = value
             self:_applyAudioSettings()
         end,
-        voiceConfig.slider_step
+        voiceConfig.slider_step,
+        voiceConfig.endpoint_snap_fraction
     )
 
     self:_createToggleSetting("UI Sounds", self.settings.audio.uiSoundsEnabled, 5, function(value)

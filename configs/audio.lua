@@ -8,6 +8,7 @@ return {
         curve_exponent = 2,
         maximum_gain = 4,
         slider_step = 0.01,
+        endpoint_snap_fraction = 0.03,
     },
     buses = {
         effects = { name = "Effects", default_volume = 1, maximum_volume = 1 },
