@@ -6,6 +6,8 @@ local SoundService = game:GetService("SoundService")
 local ContentProvider = game:GetService("ContentProvider")
 local GuiService = game:GetService("GuiService")
 local Director = require(ReplicatedStorage.Shared.Game.TutorialVoiceDirector)
+local VoiceLocale = require(ReplicatedStorage.Shared.Game.TutorialVoiceLocale)
+local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
 local Mixer = require(script.Parent.MergeWatcherAudio)
 local Presentation = require(script.Parent.TutorialVoicePresentation)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -25,6 +27,12 @@ function Narrator.new(options)
         config = config,
         catalog = Director.catalog(lines),
         assets = options.assets or require(ReplicatedStorage.Configs.tutorial_voice_assets).clips,
+        locales = options.locales
+            or require(ReplicatedStorage.Configs.tutorial_voice_locales).locales,
+        language = TutorialLocalization.languageFor(
+            options.localeId or Players.LocalPlayer:GetAttribute("TutorialLocaleId")
+        ),
+        unavailable = {},
         watcher = watcher,
         volumes = lines.playbackVolumeSource,
         mixer = Mixer.new(audioConfig),
@@ -33,6 +41,14 @@ function Narrator.new(options)
         eventTimes = {},
         connections = {},
     }, Player)
+    if options.localeId == nil then
+        table.insert(
+            self.connections,
+            Players.LocalPlayer:GetAttributeChangedSignal("TutorialLocaleId"):Connect(function()
+                self:setLocale(Players.LocalPlayer:GetAttribute("TutorialLocaleId"))
+            end)
+        )
+    end
     table.insert(
         self.connections,
         RunService.Heartbeat:Connect(function(dt)
@@ -56,8 +72,31 @@ function Player:cancel()
     self.nextCue, self.helpCue, self.identity, self.state = nil, nil, nil, nil
     table.clear(self.seen)
 end
-function Player:_play(cue, completion)
-    local line, asset = self.catalog[cue], self.assets[cue]
+function Player:setLocale(localeId)
+    local language = TutorialLocalization.languageFor(localeId)
+    if language == self.language then
+        return
+    end
+    self.language = language
+    -- Translate an active performance without reviving completed lessons or losing its queue.
+    local current = self.current
+    if current then
+        local idleSeconds = self.idleSeconds
+        if self:_play(current.cue, current.completion) then
+            self.current.reminder = current.reminder
+        end
+        self.idleSeconds = idleSeconds
+    end
+end
+function Player:_play(cue, completion, forceEnglish)
+    local line = self.catalog[cue]
+    local asset, language = VoiceLocale.resolve(
+        forceEnglish and "en" or self.language,
+        cue,
+        self.assets,
+        self.locales,
+        self.unavailable
+    )
     if not self.config.enabled or not line or not asset then
         return false
     end
@@ -79,19 +118,41 @@ function Player:_play(cue, completion)
         startedAt = now,
         seconds = asset.seconds,
         completion = completion,
+        language = language,
+        assetId = asset.asset_id,
     }
     self.idleSeconds = 0
     self.seen[cue] = true
     self.presentation:show(line.speaker)
     self.presentation.gui:SetAttribute("Cue", cue)
+    self.presentation.gui:SetAttribute("VoiceLanguage", language)
     speakingOwners[self] = true
     Players.LocalPlayer:SetAttribute("TutorialNarrationActive", true)
     task.spawn(function()
-        pcall(function()
-            ContentProvider:PreloadAsync({ sound })
+        local ok = pcall(function()
+            ContentProvider:PreloadAsync({ sound }, function(_, status)
+                if self.current and self.current.sound == sound then
+                    self.current.loadFailed = status == Enum.AssetFetchStatus.Failure
+                end
+            end)
         end)
+        if not ok and self.current and self.current.sound == sound then
+            self.current.loadFailed = true
+        end
     end)
     return true
+end
+function Player:_fallback(current)
+    if current.language == "en" then
+        return false
+    end
+    -- A rejected/unavailable recording is tried only once per player instance, not every reminder.
+    self.unavailable[current.assetId] = true
+    if self:_play(current.cue, current.completion, true) then
+        self.current.reminder = current.reminder
+        return true
+    end
+    return false
 end
 -- External tutorial tracks share playback, queue bounds, presentation and reminders.
 function Player:updateCueProgress(progress)
@@ -252,7 +313,10 @@ function Player:step(dt)
                 current.resolved = true
                 current.audioStarted = age
                 current.sound:Play()
-            elseif age >= self.config.audio.load_deadline_seconds then
+            elseif current.loadFailed or age >= self.config.audio.load_deadline_seconds then
+                if self:_fallback(current) then
+                    return
+                end
                 current.resolved = true
                 current.failed = true
                 warn("Tutorial voice unavailable: " .. current.cue)

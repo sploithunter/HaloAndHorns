@@ -1,0 +1,3530 @@
+{
+  "version": 1,
+  "voices": {
+    "angel": "thfYL0Elyru2qqTtNQsE",
+    "demon": "NxGA8X3YhTrnf3TRQf6Q"
+  },
+  "voice_settings": {
+    "angel": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.25,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    },
+    "demon": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.3,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    }
+  },
+  "sections": [
+    {
+      "id": "es_farm_angel",
+      "locale": "es",
+      "track": "farm",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "ES_A01",
+          "cue": "tutorial.hatch_first_egg",
+          "source_id": "A01",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.",
+          "usage": "main",
+          "locale": "es",
+          "text": "A tu compañero le vendría bien un amigo. Sigue el camino hasta el Huevo de Tierra, y vamos a despertar a uno."
+        },
+        {
+          "id": "ES_A02",
+          "cue": "tutorial.farm_crystals",
+          "source_id": "A02",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "See those crystals? With Farm Near on, your pets will mine beside you. Help them along, and we’ll soon have coins for another friend.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Ves esos cristales? Con Farm Near activado, tus mascotas minarán a tu lado. Ayúdalas un poquito, y pronto tendremos monedas para otro amigo."
+        },
+        {
+          "id": "ES_A03",
+          "cue": "tutorial.hatch_another",
+          "source_id": "A03",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned another egg. Shall we see who’s waiting inside? Every new friend gives your little squad more strength.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ya ganaste otro huevo. ¿Vemos quién nos espera dentro? Cada nuevo amigo le da más fuerza a tu pequeño escuadrón."
+        },
+        {
+          "id": "ES_A04",
+          "cue": "tutorial.build_squad",
+          "source_id": "A04",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "I’ve left a Rainbow Kitty in your inventory. Open Pets, and let’s make room for that bright little spark on your squad.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Dejé un Gatito Arcoíris en tu inventario. Abre Pets, y vamos a hacerle un lugar en tu escuadrón a esa pequeña chispa."
+        },
+        {
+          "id": "ES_A05",
+          "cue": "tutorial.bind_power",
+          "source_id": "A05",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s a gift within you, too. It’s called Resonance. Open Edit on your power bar, and give it a place where you can reach it.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tú también llevas un don dentro. Se llama Resonance. Abre Edit en tu barra de poderes y dale un lugar donde lo tengas a mano."
+        },
+        {
+          "id": "ES_A06",
+          "cue": "tutorial.cast_power",
+          "source_id": "A06",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now, try Resonance near the crystals. Feel that? Your power helps them break faster and yield a little more.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora prueba Resonance cerca de los cristales. ¿Lo sientes? Tu poder ayuda a romperlos más rápido y a obtener un poquito más."
+        },
+        {
+          "id": "ES_A07",
+          "cue": "tutorial.slot_power",
+          "source_id": "A07",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A little Potency will make that gift stronger. Open Powers, and let’s add your new enhancement to Resonance.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un poco de Potency hará más fuerte ese don. Abre Powers, y añadamos tu nueva mejora a Resonance."
+        },
+        {
+          "id": "ES_A08",
+          "cue": "tutorial.first_fight",
+          "source_id": "A08",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The Earth cave is a place to practice fighting. Follow the trail when you’re ready. Its instructor has rather more horns than patience.",
+          "usage": "main",
+          "locale": "es",
+          "text": "La cueva de Tierra es un lugar para practicar combate. Sigue el camino cuando estés listo. Su instructor tiene bastantes más cuernos que paciencia."
+        },
+        {
+          "id": "ES_A09",
+          "cue": "tutorial.rally_call",
+          "source_id": "A09",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A good leader knows when to call everyone home. Try Rally—the flag on your power bar—and bring your pets back to your side.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un buen líder sabe cuándo reunir a todos. Prueba Rally, la bandera de tu barra de poderes, y llama a tus mascotas a tu lado."
+        },
+        {
+          "id": "ES_A10",
+          "cue": "tutorial.completion",
+          "source_id": "A10",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Look how far you’ve come. The Ascension Altar is ready for you. Choose your next power, then follow your missions. There’s a whole world waiting.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Mira cuánto has avanzado. El Altar de Ascensión te espera. Elige tu próximo poder y sigue tus misiones. Hay todo un mundo por descubrir."
+        },
+        {
+          "id": "ES_A11",
+          "cue": "tutorial.build_squad.guide.unequip",
+          "source_id": "A11",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your active squad is full. Let one pet rest in your inventory, and we can welcome the Kitty.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Tu escuadrón activo está lleno. Deja que una mascota descanse en tu inventario, y podremos darle la bienvenida al Gatito."
+        },
+        {
+          "id": "ES_A12",
+          "cue": "tutorial.build_squad.guide.pick",
+          "source_id": "A12",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s your Rainbow Kitty. Choose that little one for the open place on your squad.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Ahí está tu Gatito Arcoíris. Elígelo para ocupar el lugar libre de tu escuadrón."
+        },
+        {
+          "id": "ES_A13",
+          "cue": "tutorial.build_squad.guide.activate",
+          "source_id": "A13",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "They’re ready. Choose Activate, and your new squad will join you.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Ya están listos. Elige Activate, y tu nuevo escuadrón se reunirá contigo."
+        },
+        {
+          "id": "ES_A14",
+          "cue": "tutorial.bind_power.choose",
+          "source_id": "A14",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Resonance and an open place on your power bar. Put it wherever feels right to you.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Resonance y un lugar libre en tu barra de poderes. Ponlo donde te resulte más cómodo."
+        },
+        {
+          "id": "ES_A15",
+          "cue": "tutorial.bind_power.done",
+          "source_id": "A15",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There it is. Choose Done to finish setting your power bar.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Ahí está. Elige Done para terminar de organizar tu barra de poderes."
+        },
+        {
+          "id": "ES_A16",
+          "cue": "tutorial.slot_power.pick_power",
+          "source_id": "A16",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Resonance. That’s the power we’re making stronger.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Resonance. Ese es el poder que vamos a fortalecer."
+        },
+        {
+          "id": "ES_A17",
+          "cue": "tutorial.slot_power.pick_slot",
+          "source_id": "A17",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "An empty enhancement slot is a little room to grow. Choose one on Resonance.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Una ranura de mejora vacía es un pequeño espacio para crecer. Elige una en Resonance."
+        },
+        {
+          "id": "ES_A18",
+          "cue": "tutorial.slot_power.pick_enhancement",
+          "source_id": "A18",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Potency. It gives your crystal-boosting pulse a little more strength.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Potency. Le dará un poquito más de fuerza al pulso que potencia tus cristales."
+        },
+        {
+          "id": "ES_A19",
+          "cue": "tutorial.slot_power.apply",
+          "source_id": "A19",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Apply, and that extra strength becomes yours.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Apply, y esa fuerza extra será tuya."
+        },
+        {
+          "id": "ES_A20",
+          "cue": "tutorial.farm_crystals.reminder",
+          "source_id": "A20",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Try a small crystal nearby. Keep Farm Near on, and let your squad earn the coins together.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Prueba con un cristal pequeño cercano. Mantén Farm Near activado y deja que tu escuadrón gane las monedas en equipo."
+        },
+        {
+          "id": "ES_A21",
+          "cue": "tutorial.cast_power.reminder",
+          "source_id": "A21",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Bring your squad close to the crystals before you use Resonance. That’s where its gift can help.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Acerca tu escuadrón a los cristales antes de usar Resonance. Ahí es donde su don puede ayudar."
+        },
+        {
+          "id": "ES_A22",
+          "cue": "tutorial.first_fight.handoff",
+          "source_id": "A22",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Of course. Training will be waiting in Quest whenever you’re ready. You can return to the Earth cave then.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Claro que sí. El entrenamiento te esperará en Quest cuando estés listo. Entonces podrás volver a la cueva de Tierra."
+        },
+        {
+          "id": "ES_A23",
+          "cue": "tutorial.resume",
+          "source_id": "A23",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back, little light. We’ll carry on from where you left off. Follow your current lesson when you’re ready.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Bienvenido de nuevo, pequeña luz. Seguiremos donde lo dejaste. Continúa con tu lección actual cuando estés listo."
+        },
+        {
+          "id": "ES_A24",
+          "cue": "tutorial.basic_return",
+          "source_id": "A24",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back. I hope he remembered his manners. You’ve learned to look after your squad—and that matters far more than looking fearless.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Bienvenido de nuevo. Espero que haya recordado sus buenos modales. Aprendiste a cuidar de tu escuadrón, y eso vale mucho más que parecer valiente."
+        },
+        {
+          "id": "ES_A25",
+          "cue": "tutorial.choose_companion",
+          "source_id": "A25",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There you are, little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty — who will join you on your adventure?",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Ahí estás, pequeña luz. Vamos a elegir a tu primer compañero. Un conejito, un osito, un perrito o un gatito... ¿quién te acompañará en esta aventura?"
+        },
+        {
+          "id": "ES_A26",
+          "cue": "tutorial.hatch_first_egg.reminder",
+          "source_id": "A26",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your next little friend is waiting. Follow the glowing trail to the Earth Egg, and choose Hatch. I’ll be right here.",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Tu próximo amiguito te está esperando. Sigue el camino brillante hasta el Huevo de Tierra y abre uno. Yo estaré aquí."
+        },
+        {
+          "id": "ES_A27",
+          "cue": "tutorial.next_task.reminder",
+          "source_id": "A27",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Take your time, little light. When you’re ready, follow the glowing guide and try the next step. I know you can do it.",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Sin prisa, pequeña luz. Cuando estés listo, sigue la guía brillante e intenta el siguiente paso. Sé que puedes hacerlo."
+        }
+      ]
+    },
+    {
+      "id": "es_farm_demon",
+      "locale": "es",
+      "track": "farm",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "ES_D01",
+          "cue": "combat_tutorial.ready",
+          "source_id": "D01",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "So. The angel sent me another promising little soul. Choose Enter on that frost door. I’ve found you something suitably unimpressive to fight.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Vaya. El ángel me envió otra pequeña alma prometedora. Elige Enter en esa puerta helada. Te encontré un rival convenientemente poco impresionante."
+        },
+        {
+          "id": "ES_D02",
+          "cue": "combat_tutorial.first_fight",
+          "source_id": "D02",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s your opponent. Get close and let your pets do the fighting. Yes, they do most of the work. Try to look involved.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahí está tu oponente. Acércate y deja que tus mascotas peleen. Sí, ellas hacen casi todo. Intenta parecer ocupado."
+        },
+        {
+          "id": "ES_D03",
+          "cue": "combat_tutorial.advance_stage",
+          "source_id": "D03",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "One training dog defeated. Terrifying. The glowing pillar takes you back to the lobby. We’ll see if that was luck.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un perro de entrenamiento derrotado. Aterrador. El pilar brillante te devuelve al vestíbulo. Veremos si fue suerte."
+        },
+        {
+          "id": "ES_D04",
+          "cue": "combat_tutorial.battle_brew",
+          "source_id": "D04",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Berserk Brew. A little borrowed ferocity for your pets. Take a sip from your power bar. This is the safe room, after all.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Berserk Brew. Un poco de ferocidad prestada para tus mascotas. Toma un sorbo desde tu barra de poderes. Después de todo, esta es la sala segura."
+        },
+        {
+          "id": "ES_D05",
+          "cue": "combat_tutorial.ready_brew",
+          "source_id": "D05",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Feeling fierce? Enter the arena. Let’s find out whether your pets agree.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Te sientes feroz? Entra en la arena. Veamos si tus mascotas están de acuerdo."
+        },
+        {
+          "id": "ES_D06",
+          "cue": "combat_tutorial.brew_fight",
+          "source_id": "D06",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Notice the harder hits? That’s the brew. Finish this one before you start taking all the credit.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Notas esos golpes más fuertes? Es la bebida. Termina con este antes de atribuirte todo el mérito."
+        },
+        {
+          "id": "ES_D07",
+          "cue": "combat_tutorial.advance_brew",
+          "source_id": "D07",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Better. The pillar will bring you back. Next, we address your squad’s regrettable habit of getting hurt.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Mejor. El pilar te traerá de vuelta. Ahora trataremos esa lamentable costumbre de tu escuadrón de salir herido."
+        },
+        {
+          "id": "ES_D08",
+          "cue": "combat_tutorial.bind_heal",
+          "source_id": "D08",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You have Heal. How inconvenient for me. Open Edit, put it on your power bar, and finish with Done.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tienes Heal. Qué inconveniente para mí. Abre Edit, ponlo en tu barra de poderes y termina con Done."
+        },
+        {
+          "id": "ES_D09",
+          "cue": "combat_tutorial.enhance_heal",
+          "source_id": "D09",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Let’s make Heal worth using. Open Powers and give it the Healing enhancement I provided. I prefer my opponents properly prepared.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Hagamos que Heal valga la pena. Abre Powers y añade la mejora Healing que te di. Prefiero oponentes bien preparados."
+        },
+        {
+          "id": "ES_D10",
+          "cue": "combat_tutorial.ready_heal",
+          "source_id": "D10",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your healing lesson awaits. Enter the arena—and do pay attention to your pets this time.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu lección de curación te espera. Entra en la arena, y esta vez presta atención a tus mascotas."
+        },
+        {
+          "id": "ES_D11",
+          "cue": "combat_tutorial.select_pet",
+          "source_id": "D11",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That yellow health bar belongs to your wounded pet. Select its card. Admiring the problem won’t mend it.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Esa barra de salud amarilla es de tu mascota herida. Selecciona su tarjeta. Admirar el problema no va a curarla."
+        },
+        {
+          "id": "ES_D12",
+          "cue": "combat_tutorial.cast_heal",
+          "source_id": "D12",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now use Heal on the pet you selected. Once it recovers, those enemy shields come down. Consider that your warning.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora usa Heal en la mascota que seleccionaste. Cuando se recupere, caerán los escudos enemigos. Considéralo una advertencia."
+        },
+        {
+          "id": "ES_D13",
+          "cue": "combat_tutorial.heal_fight",
+          "source_id": "D13",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Shields down. Finish both training dogs. The exit pillar is for winners, little hero.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Escudos abajo. Acaba con los dos perros de entrenamiento. El pilar de salida es para los ganadores, pequeño héroe."
+        },
+        {
+          "id": "ES_D14",
+          "cue": "combat_tutorial.advance_heal",
+          "source_id": "D14",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The room is clear. Use the glowing pillar to finish Basic Training. You’ve become slightly less likely to embarrass yourself.",
+          "usage": "main",
+          "locale": "es",
+          "text": "La sala está despejada. Usa el pilar brillante para terminar el entrenamiento básico. Ahora es un poco menos probable que hagas el ridículo."
+        },
+        {
+          "id": "ES_D15",
+          "cue": "combat_tutorial.ready_weaken",
+          "source_id": "D15",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Back for more? How irritatingly diligent. I’ve given you Weakening Vials. Enter the arena, and we’ll spoil someone’s defenses.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Volviste por más? Qué dedicación tan irritante. Te di Weakening Vials. Entra en la arena, y arruinaremos unas cuantas defensas."
+        },
+        {
+          "id": "ES_D16",
+          "cue": "combat_tutorial.select_enemy",
+          "source_id": "D16",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose the marked enemy’s card. The vial needs a target. Throwing it at your own feet would make a very short lesson.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige la tarjeta del enemigo marcado. El frasco necesita un objetivo. Tirártelo a los pies haría esta lección muy breve."
+        },
+        {
+          "id": "ES_D17",
+          "cue": "combat_tutorial.throw_weaken",
+          "source_id": "D17",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Throw the Weakening Vial at your target. Down come the shields. Then you can get on with the unpleasant business of winning.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Lanza el Weakening Vial contra tu objetivo. Abajo los escudos. Después podrás dedicarte al desagradable asunto de ganar."
+        },
+        {
+          "id": "ES_D18",
+          "cue": "combat_tutorial.weaken_fight",
+          "source_id": "D18",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Their shields are gone. Defeat both dogs. No, the pillar won’t rescue you from unfinished work.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ya no tienen escudos. Derrota a los dos perros. No, el pilar no te rescatará del trabajo pendiente."
+        },
+        {
+          "id": "ES_D19",
+          "cue": "combat_tutorial.advance_weaken",
+          "source_id": "D19",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You found a weakness and used it. Almost devious. Take the pillar back to the lobby.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Encontraste una debilidad y la aprovechaste. Casi astuto. Usa el pilar para volver al vestíbulo."
+        },
+        {
+          "id": "ES_D20",
+          "cue": "combat_tutorial.stack_brew",
+          "source_id": "D20",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "More Berserk Brew means bigger hits, not a longer timer. Drink five sips. We’re building a damage meter, not a collection.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Más Berserk Brew significa golpes más fuertes, no más tiempo. Toma cinco sorbos. Estamos llenando un medidor de daño, no haciendo una colección."
+        },
+        {
+          "id": "ES_D21",
+          "cue": "combat_tutorial.ready_stack",
+          "source_id": "D21",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There. A proper dose of trouble. Enter the arena while that damage meter has something left to give.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Eso es. Una buena dosis de problemas. Entra en la arena mientras a ese medidor de daño le quede algo que ofrecer."
+        },
+        {
+          "id": "ES_D22",
+          "cue": "combat_tutorial.stack_fight",
+          "source_id": "D22",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now watch those hits. Much more convincing. Finish the dog before your borrowed courage wears off.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora mira esos golpes. Mucho más convincentes. Acaba con el perro antes de que se te pase el valor prestado."
+        },
+        {
+          "id": "ES_D23",
+          "cue": "combat_tutorial.advance_stack",
+          "source_id": "D23",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That was almost efficient. The glowing pillar finishes this course. I suppose you’ll want your reward.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Eso fue casi eficiente. El pilar brillante termina este curso. Supongo que querrás tu recompensa."
+        },
+        {
+          "id": "ES_D24",
+          "cue": "combat_tutorial.ready_tank",
+          "source_id": "D24",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Let’s put something sturdier between your squad and disaster. Open Pets. One doggy is making room for a bear.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Pongamos algo más resistente entre tu escuadrón y el desastre. Abre Pets. Un perrito le hará lugar a un oso."
+        },
+        {
+          "id": "ES_D25",
+          "cue": "combat_tutorial.tank_fight",
+          "source_id": "D25",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The tank draws attention and takes the punishment. It hits less hard, but your other pets get to keep their dignity—and their health. Finish the fight.",
+          "usage": "main",
+          "locale": "es",
+          "text": "El tanque atrae la atención y aguanta los golpes. Pega menos fuerte, pero tus otras mascotas conservan su dignidad y su salud. Termina la pelea."
+        },
+        {
+          "id": "ES_D26",
+          "cue": "combat_tutorial.advance_tank",
+          "source_id": "D26",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Still standing. How tiresome. Take the pillar back; your next opponents have learned a little trick.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Sigues en pie. Qué agotador. Vuelve por el pilar; tus próximos oponentes aprendieron un truquito."
+        },
+        {
+          "id": "ES_D27",
+          "cue": "combat_tutorial.ready_healer",
+          "source_id": "D27",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The next pack brought a healer. Leave it alone and it will keep repairing your hard work. Enter when you’ve grasped the problem.",
+          "usage": "main",
+          "locale": "es",
+          "text": "El próximo grupo trajo un sanador. Déjalo tranquilo y seguirá reparando todo tu esfuerzo. Entra cuando hayas entendido el problema."
+        },
+        {
+          "id": "ES_D28",
+          "cue": "combat_tutorial.healer_hunt",
+          "source_id": "D28",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That green healing mark is your clue. Send your pets after the healer first. I’d rather you didn’t, which should tell you everything.",
+          "usage": "main",
+          "locale": "es",
+          "text": "La marca verde de curación es tu pista. Envía primero a tus mascotas contra el sanador. Preferiría que no lo hicieras, y eso debería decirte todo."
+        },
+        {
+          "id": "ES_D29",
+          "cue": "combat_tutorial.healer_fight",
+          "source_id": "D29",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Healer down. Now finish the rest of the pack. They’re suddenly much less optimistic.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Cayó el sanador. Ahora acaba con el resto del grupo. De pronto se les fue el optimismo."
+        },
+        {
+          "id": "ES_D30",
+          "cue": "combat_tutorial.advance_healer",
+          "source_id": "D30",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There. No one left to patch them up. Back through the pillar. One last room, and I stop holding your hand.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Listo. Ya no queda nadie que los cure. Vuelve por el pilar. Una última sala, y dejo de llevarte de la mano."
+        },
+        {
+          "id": "ES_D31",
+          "cue": "combat_tutorial.ready_together",
+          "source_id": "D31",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Final room. Two dogs, one healer, and no helpful arrows. You have the tools. Enter when you’re ready to make me regret teaching you.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Última sala. Dos perros, un sanador y ninguna flecha de ayuda. Tienes las herramientas. Entra cuando estés listo para hacerme lamentar haberte enseñado."
+        },
+        {
+          "id": "ES_D32",
+          "cue": "combat_tutorial.together_fight",
+          "source_id": "D32",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "All yours, little hero. Clear the room. Let’s see what you remember when I stop telling you.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Todo tuyo, pequeño héroe. Despeja la sala. Veamos qué recuerdas cuando dejo de darte instrucciones."
+        },
+        {
+          "id": "ES_D33",
+          "cue": "combat_tutorial.advance_together",
+          "source_id": "D33",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "No arrows, and you still managed it. Deeply inconvenient. Take the glowing pillar and finish your training.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Sin flechas, y aun así lo lograste. Terriblemente inconveniente. Usa el pilar brillante y termina tu entrenamiento."
+        },
+        {
+          "id": "ES_D34",
+          "cue": "combat_courses.basic.completion",
+          "source_id": "D34",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Basic Training, complete. Your pets and powers are ready for the world. Advanced lessons are optional. I’m sure you’ll miss my encouragement.",
+          "usage": "completion",
+          "locale": "es",
+          "text": "Entrenamiento básico completado. Tus mascotas y poderes están listos para el mundo. Las lecciones avanzadas son opcionales. Seguro extrañarás mis palabras de ánimo."
+        },
+        {
+          "id": "ES_D35",
+          "cue": "combat_courses.advanced_1.completion",
+          "source_id": "D35",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Advanced One, complete. You’ve earned a Double XP token. Use it from your inventory when you want the extra experience. Do try to make it count.",
+          "usage": "completion",
+          "locale": "es",
+          "text": "Avanzado uno, completado. Ganaste una ficha de experiencia doble. Úsala desde tu inventario cuando quieras experiencia extra. Procura aprovecharla."
+        },
+        {
+          "id": "ES_D36",
+          "cue": "combat_courses.advanced_2.completion",
+          "source_id": "D36",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "All courses complete. There’s a Double Coins token waiting in your inventory. Use it when you’re ready. You’ve become a rather troublesome little hero.",
+          "usage": "completion",
+          "locale": "es",
+          "text": "Todos los cursos completados. Te espera una ficha de monedas dobles en tu inventario. Úsala cuando quieras. Te has vuelto un pequeño héroe bastante problemático."
+        },
+        {
+          "id": "ES_D37",
+          "cue": "combat_tutorial.bind_heal.choose",
+          "source_id": "D37",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Heal, then give it a place on your power bar. Ideally somewhere you’ll remember when things start biting.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Heal y dale un lugar en tu barra de poderes. Preferiblemente uno que recuerdes cuando empiecen los mordiscos."
+        },
+        {
+          "id": "ES_D38",
+          "cue": "combat_tutorial.bind_heal.done",
+          "source_id": "D38",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now choose Done. You can admire your arrangement after you survive.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Ahora elige Done. Podrás admirar tu distribución cuando sobrevivas."
+        },
+        {
+          "id": "ES_D39",
+          "cue": "combat_tutorial.enhance_heal.pick_power",
+          "source_id": "D39",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Heal. We’re improving that power, not browsing for something prettier.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Heal. Estamos mejorando ese poder, no buscando algo más bonito."
+        },
+        {
+          "id": "ES_D40",
+          "cue": "combat_tutorial.enhance_heal.pick_slot",
+          "source_id": "D40",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty slot on Heal. Even your good intentions need somewhere to go.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige una ranura vacía en Heal. Hasta tus buenas intenciones necesitan un lugar."
+        },
+        {
+          "id": "ES_D41",
+          "cue": "combat_tutorial.enhance_heal.pick_enhancement",
+          "source_id": "D41",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Healing. The name is a subtle clue.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Healing. El nombre es una pista bastante sutil."
+        },
+        {
+          "id": "ES_D42",
+          "cue": "combat_tutorial.enhance_heal.apply",
+          "source_id": "D42",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Apply it. A staged enhancement is doing precisely nothing for you.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Usa Apply. Una mejora que aún no aplicaste no te está ayudando en absoluto."
+        },
+        {
+          "id": "ES_D43",
+          "cue": "combat_tutorial.ready_tank.guide.unequip",
+          "source_id": "D43",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Take a doggy off your active squad. The bear needs a place, not an invitation to an already full party.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Quita un perrito de tu escuadrón activo. El oso necesita un lugar, no una invitación a una fiesta que ya está llena."
+        },
+        {
+          "id": "ES_D44",
+          "cue": "combat_tutorial.ready_tank.guide.pick",
+          "source_id": "D44",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose your strongest bear. The Tank option in Best Pets can find it for you, if counting muscles proves difficult.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige a tu oso más fuerte. La opción Tank en Best Pets puede encontrarlo por ti, si contar músculos resulta complicado."
+        },
+        {
+          "id": "ES_D45",
+          "cue": "combat_tutorial.ready_tank.guide.activate",
+          "source_id": "D45",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Activate. I need the bear in the fight, not posing in your inventory.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Activate. Necesito al oso en la pelea, no posando en tu inventario."
+        },
+        {
+          "id": "ES_D46",
+          "cue": "combat_tutorial.ready_tank.guide.close",
+          "source_id": "D46",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The bear is on your squad. Close Pets so we can get on with it.",
+          "usage": "help",
+          "locale": "es",
+          "text": "El oso ya está en tu escuadrón. Cierra Pets para que podamos continuar."
+        },
+        {
+          "id": "ES_D47",
+          "cue": "combat_tutorial.ready_tank.guide.enter",
+          "source_id": "D47",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your tank is ready. Enter the arena and let it earn its place.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Tu tanque está listo. Entra en la arena y deja que se gane su lugar."
+        },
+        {
+          "id": "ES_D48",
+          "cue": "combat_courses.menu",
+          "source_id": "D48",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Basic first. Then, if you insist on improving, two advanced courses await. Choose your lesson, little hero.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Primero el básico. Después, si insistes en mejorar, te esperan dos cursos avanzados. Elige tu lección, pequeño héroe."
+        },
+        {
+          "id": "ES_D49",
+          "cue": "combat_courses.locked",
+          "source_id": "D49",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Finish the earlier course first. Skipping the lesson is not the same as mastering it.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Termina primero el curso anterior. Saltarse la lección no es lo mismo que dominarla."
+        },
+        {
+          "id": "ES_D50",
+          "cue": "combat_courses.replay.start",
+          "source_id": "D50",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A repeat performance? Very well. The practice is yours; the first-time reward stays first-time.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "¿Otra función? Muy bien. La práctica es tuya; la recompensa de primera vez sigue siendo de primera vez."
+        },
+        {
+          "id": "ES_D51",
+          "cue": "combat_courses.replay.completion",
+          "source_id": "D51",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Finished again. No second reward, of course. Surely my company was compensation enough.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Terminado otra vez. Sin segunda recompensa, por supuesto. Seguro que mi compañía fue compensación suficiente."
+        },
+        {
+          "id": "ES_D52",
+          "cue": "combat_tutorial.leave_confirm",
+          "source_id": "D52",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Leaving already? Your progress is saved. Come back when you’re ready to disappoint me properly.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "¿Ya te vas? Tu progreso está guardado. Vuelve cuando estés listo para decepcionarme como se debe."
+        },
+        {
+          "id": "ES_D53",
+          "cue": "combat_tutorial.resume",
+          "source_id": "D53",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Back, are you? Your completed lessons still count. We’ll prepare this round again before you enter.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "¿Volviste? Tus lecciones completadas siguen contando. Prepararemos esta ronda otra vez antes de que entres."
+        },
+        {
+          "id": "ES_D54",
+          "cue": "combat_tutorial.door.pets_equipped",
+          "source_id": "D54",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Bring at least one pet. This is combat training, not an audition for the role of bait.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Trae al menos una mascota. Esto es entrenamiento de combate, no una audición para el papel de carnada."
+        },
+        {
+          "id": "ES_D55",
+          "cue": "combat_tutorial.door.hotbar_not_editing",
+          "source_id": "D55",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Done on your power bar first. I prefer my opponents assembled before the fight.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Elige Done en tu barra de poderes primero. Prefiero a mis oponentes bien organizados antes de pelear."
+        },
+        {
+          "id": "ES_D56",
+          "cue": "combat_tutorial.door.heal_unbound",
+          "source_id": "D56",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Heal belongs on your power bar. Put it there before asking that door to open.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Heal debe estar en tu barra de poderes. Ponlo ahí antes de pedir que se abra esa puerta."
+        },
+        {
+          "id": "ES_D57",
+          "cue": "combat_tutorial.door.heal_unenhanced",
+          "source_id": "D57",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Add Healing to Heal and apply it. Then we can discuss opening the door.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Añade Healing a Heal y usa Apply. Después hablaremos de abrir la puerta."
+        },
+        {
+          "id": "ES_D58",
+          "cue": "combat_tutorial.door.brew_unused",
+          "source_id": "D58",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The Berserk Brew is for drinking. One sip, little hero. Then you may enter.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "El Berserk Brew es para beber. Un sorbo, pequeño héroe. Después puedes entrar."
+        },
+        {
+          "id": "ES_D59",
+          "cue": "combat_tutorial.door.tank_missing",
+          "source_id": "D59",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A bear on your active squad, please. Owning a tank is not the same as bringing one.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Un oso en tu escuadrón activo, por favor. Tener un tanque no es lo mismo que traerlo."
+        },
+        {
+          "id": "ES_D60",
+          "cue": "combat_tutorial.stack_brew.remaining_4",
+          "source_id": "D60",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Four more sips. That meter isn’t filling itself.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Cuatro sorbos más. Ese medidor no se va a llenar solo."
+        },
+        {
+          "id": "ES_D61",
+          "cue": "combat_tutorial.stack_brew.remaining_3",
+          "source_id": "D61",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Three more. I admire your commitment to doing this slowly.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Tres más. Admiro tu empeño en hacer esto despacio."
+        },
+        {
+          "id": "ES_D62",
+          "cue": "combat_tutorial.stack_brew.remaining_2",
+          "source_id": "D62",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Two more sips. Even I can see you’re nearly there.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Dos sorbos más. Hasta yo veo que ya casi llegas."
+        },
+        {
+          "id": "ES_D63",
+          "cue": "combat_tutorial.stack_brew.remaining_1",
+          "source_id": "D63",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "One more. Let’s not lose our nerve at the finish.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Uno más. No perdamos el valor justo al final."
+        },
+        {
+          "id": "ES_D64",
+          "cue": "combat_tutorial.healer_hunt.lost",
+          "source_id": "D64",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your pets have wandered off the healer. Select it again. We were so close to having a strategy.",
+          "usage": "conditional",
+          "locale": "es",
+          "text": "Tus mascotas se alejaron del sanador. Selecciónalo otra vez. Estuvimos tan cerca de tener una estrategia."
+        },
+        {
+          "id": "ES_D65",
+          "cue": "combat_tutorial.next_task.reminder",
+          "source_id": "D65",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Admiring the scenery? Charming. Your next lesson is waiting. Follow the guide when you’re ready, little hero.",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "¿Admirando el paisaje? Encantador. Tu próxima lección te espera. Sigue la guía cuando estés listo, pequeño héroe."
+        }
+      ]
+    },
+    {
+      "id": "es_merge_angel",
+      "locale": "es",
+      "track": "merge",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "ES_MA01",
+          "cue": "merge_tutorial.heaven.collect_setup",
+          "source_id": "MA01",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Welcome to your little corner of Heaven. Follow the glowing trail to gather the Waycoins, then the gem. We’ll turn them into a brave little defense.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Bienvenido a tu rinconcito del Cielo. Sigue el camino brillante para recoger las Waycoins y después la gema. Las convertiremos en una pequeña defensa valiente."
+        },
+        {
+          "id": "ES_MA02",
+          "cue": "merge_tutorial.heaven.collect_setup.auto",
+          "source_id": "MA02",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Coin Pup is already gathering our supplies. Let that helpful little nose collect the coins and gem; then we’ll put them to good use.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu Coin Pup ya está reuniendo los suministros. Deja que ese pequeño ayudante recoja las monedas y la gema; después les daremos buen uso."
+        },
+        {
+          "id": "ES_MA03",
+          "cue": "merge_tutorial.heaven.create_five",
+          "source_id": "MA03",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now, let’s build your first defense. Use Buy Egg to create five Earth Eggs. There’s a whole little squad waiting to begin.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora preparemos tu primera defensa. Usa Buy Egg para crear cinco Huevos de Tierra. Todo un pequeño escuadrón está esperando para empezar."
+        },
+        {
+          "id": "ES_MA04",
+          "cue": "merge_tutorial.heaven.deploy_best",
+          "source_id": "MA04",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Lovely. Choose Deploy Best, and your eggs will take their places on the defense line. Your little guardians can handle the first arrivals.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Qué bien. Elige Deploy Best, y tus huevos ocuparán su lugar en la línea de defensa. Tus pequeños guardianes pueden encargarse de los primeros visitantes."
+        },
+        {
+          "id": "ES_MA05",
+          "cue": "merge_tutorial.heaven.collect_workshop_coins",
+          "source_id": "MA05",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Before we strengthen the line, gather a Waycoin pile. The engineer needs a little funding to bring his work to life.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Antes de fortalecer la línea, recoge un montón de Waycoins. El ingeniero necesita un poquito de ayuda para poner en marcha su trabajo."
+        },
+        {
+          "id": "ES_MA06",
+          "cue": "merge_tutorial.heaven.talk_engineer",
+          "source_id": "MA06",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Our engineer has arrived at the gold line. Follow the guide and speak with him. A sturdy defense can give every guardian a little more time.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Nuestro ingeniero llegó a la línea dorada. Sigue la guía y habla con él. Una defensa resistente puede darles un poquito más de tiempo a tus guardianes."
+        },
+        {
+          "id": "ES_MA07",
+          "cue": "merge_tutorial.heaven.unlock_bulwark",
+          "source_id": "MA07",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock the Impaler Palisade with your gem. Those sharp little points will help your new wall stand up to trouble.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Desbloquea Impaler Palisade con tu gema. Esas pequeñas puntas ayudarán a que tu nuevo muro resista los problemas."
+        },
+        {
+          "id": "ES_MA08",
+          "cue": "merge_tutorial.heaven.install_bulwark",
+          "source_id": "MA08",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now choose Install. There—another layer of protection for your brave little defenders. We’re building something worth holding onto.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora elige Install. Ahí está, otra capa de protección para tus valientes defensores. Estamos construyendo algo que vale la pena cuidar."
+        },
+        {
+          "id": "ES_MA09",
+          "cue": "merge_tutorial.heaven.collect_cannon_coins",
+          "source_id": "MA09",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Gather a Waycoin pile for the next improvement. A little support from the artillery commander will help your line last longer.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Recoge un montón de Waycoins para la próxima mejora. Un poco de apoyo del comandante de artillería ayudará a que tu línea dure más."
+        },
+        {
+          "id": "ES_MA10",
+          "cue": "merge_tutorial.heaven.collect_cannon_gem",
+          "source_id": "MA10",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Follow the guide to the gem. Keep it close; it will unlock a cannon that helps mend your defense.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Sigue la guía hasta la gema. Guárdala bien; desbloqueará un cañón que ayuda a reparar tu defensa."
+        },
+        {
+          "id": "ES_MA11",
+          "cue": "merge_tutorial.heaven.talk_commander",
+          "source_id": "MA11",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The artillery commander is ready at the right-hand gun. Follow the guide and speak with him. Even the strongest line deserves a little care.",
+          "usage": "main",
+          "locale": "es",
+          "text": "El comandante de artillería te espera junto al cañón de la derecha. Sigue la guía y habla con él. Hasta la línea más fuerte merece un poquito de cuidado."
+        },
+        {
+          "id": "ES_MA12",
+          "cue": "merge_tutorial.heaven.unlock_cannon",
+          "source_id": "MA12",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Unlock for the Heal cannon. Your gem will open a gentler kind of artillery—one that helps keep your defense standing.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Unlock para el cañón Heal. Tu gema abrirá el camino a una artillería más amable, que ayuda a mantener tu defensa en pie."
+        },
+        {
+          "id": "ES_MA13",
+          "cue": "merge_tutorial.heaven.install_cannon",
+          "source_id": "MA13",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install, and let the Heal cannon join your defense. A little kindness in the right place can make a wonderful difference.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Install y deja que el cañón Heal se una a tu defensa. Un poquito de bondad en el lugar adecuado puede hacer maravillas."
+        },
+        {
+          "id": "ES_MA14",
+          "cue": "merge_tutorial.heaven.power_lesson",
+          "source_id": "MA14",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned a new power. Open Powers and choose one, then Commit. Magnet is a helpful first choice for bringing scattered loot a little closer.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ganaste un nuevo poder. Abre Powers, elige uno y usa Commit. Magnet es una buena primera opción para acercar el botín disperso."
+        },
+        {
+          "id": "ES_MA15",
+          "cue": "merge_tutorial.heaven.collect_upgrade_coins",
+          "source_id": "MA15",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s gather a few more Waycoins for your eggs. Follow the guide; a stronger line begins with one small improvement at a time.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Recojamos unas Waycoins más para tus huevos. Sigue la guía; una línea más fuerte empieza con una pequeña mejora a la vez."
+        },
+        {
+          "id": "ES_MA16",
+          "cue": "merge_tutorial.heaven.collect_upgrade_coins.auto",
+          "source_id": "MA16",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Coin Pup will gather what we need. Give that faithful little helper a moment, and we’ll improve your defense together.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu Coin Pup recogerá lo que necesitamos. Dale un momento a ese fiel ayudante y mejoraremos tu defensa juntos."
+        },
+        {
+          "id": "ES_MA17",
+          "cue": "merge_tutorial.heaven.upgrade_eggs",
+          "source_id": "MA17",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s give your line a little more strength. Buy a couple of eggs, then use Deploy Best. If you already have an egg, placing it works too.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Démosle un poquito más de fuerza a tu línea. Compra un par de huevos y usa Deploy Best. Si ya tienes un huevo, colocarlo también sirve."
+        },
+        {
+          "id": "ES_MA18",
+          "cue": "merge_tutorial.heaven.upgrade_eggs.deploy",
+          "source_id": "MA18",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your eggs are ready. Choose Deploy Best to combine matching eggs or place one on the line. Either is a good next step.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tus huevos están listos. Elige Deploy Best para combinar huevos iguales o colocar uno en la línea. Cualquiera de las dos opciones es un buen paso."
+        },
+        {
+          "id": "ES_MA19",
+          "cue": "merge_tutorial.heaven.slots_lesson",
+          "source_id": "MA19",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s make room for your powers to grow. In Powers, choose two extra enhancement slots, then Commit. You can change your picks before committing.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Hagamos espacio para que crezcan tus poderes. En Powers, elige dos ranuras de mejora adicionales y usa Commit. Puedes cambiar tus elecciones antes de confirmar."
+        },
+        {
+          "id": "ES_MA20",
+          "cue": "merge_tutorial.heaven.enhance_lesson",
+          "source_id": "MA20",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now we can give a power a little more sparkle. Choose it in Powers, and let’s fit an enhancement into one of its slots.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahora podemos darle un poquito más de brillo a un poder. Elígelo en Powers y pongamos una mejora en una de sus ranuras."
+        },
+        {
+          "id": "ES_MA21",
+          "cue": "merge_tutorial.heaven.talk_quartermaster",
+          "source_id": "MA21",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Meet Macros, your Quartermaster. He has boosts, enhancements, and optional training whenever you want them. There’s no need to visit right now; your adventure is yours.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Te presento a Macros, tu intendente. Tiene potenciadores, mejoras y entrenamiento opcional cuando quieras. No hace falta visitarlo ahora; esta aventura es tuya."
+        },
+        {
+          "id": "ES_MA22",
+          "cue": "merge_tutorial.heaven.after_setup",
+          "source_id": "MA22",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your guardians are ready. Try spreading your defense across more hatchers; two smaller squads can serve you better than one powerful egg. It’s your choice.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tus guardianes están listos. Prueba repartir tu defensa entre más incubadoras. Dos escuadrones pequeños pueden ayudarte más que un solo huevo poderoso. Tú decides."
+        },
+        {
+          "id": "ES_MA23",
+          "cue": "merge_tutorial.heaven.after_bulwark",
+          "source_id": "MA23",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your wall is in place. Let’s see how the line holds now. Each small improvement gives your guardians a little more breathing room.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu muro está en su lugar. Veamos cómo resiste la línea ahora. Cada pequeña mejora les da un poquito más de respiro a tus guardianes."
+        },
+        {
+          "id": "ES_MA24",
+          "cue": "merge_tutorial.heaven.after_cannon",
+          "source_id": "MA24",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Heal cannon is ready. Keep the defense going; there’s a new power waiting a little further along.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu cañón Heal está listo. Sigue defendiendo; un nuevo poder te espera un poquito más adelante."
+        },
+        {
+          "id": "ES_MA25",
+          "cue": "merge_tutorial.heaven.after_power",
+          "source_id": "MA25",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That power is yours now. Try it when it will help, and keep your defense growing. You’re finding your own way.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ese poder ya es tuyo. Úsalo cuando te ayude y sigue haciendo crecer tu defensa. Estás encontrando tu propio camino."
+        },
+        {
+          "id": "ES_MA26",
+          "cue": "merge_tutorial.heaven.after_upgrade",
+          "source_id": "MA26",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That’s a little stronger already. Let your guardians get back to work. You can keep improving the line as you go.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ya está un poquito más fuerte. Deja que tus guardianes vuelvan al trabajo. Puedes seguir mejorando la línea mientras avanzas."
+        },
+        {
+          "id": "ES_MA27",
+          "cue": "merge_tutorial.heaven.after_slots",
+          "source_id": "MA27",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your extra slots are ready. Keep the line steady, and soon we’ll give one of your powers a useful enhancement.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tus ranuras adicionales están listas. Mantén firme la línea, y pronto le daremos una mejora útil a uno de tus poderes."
+        },
+        {
+          "id": "ES_MA28",
+          "cue": "merge_tutorial.heaven.after_enhance",
+          "source_id": "MA28",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "There—that power has a little more to offer. Keep going; you’ve nearly learned everything you need to manage this defense yourself.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ahí está, ese poder tiene un poquito más que ofrecer. Sigue adelante; ya casi sabes todo lo necesario para cuidar de esta defensa por tu cuenta."
+        },
+        {
+          "id": "ES_MA29",
+          "cue": "merge_tutorial.heaven.completion",
+          "source_id": "MA29",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve learned the essentials, little light. Keep growing your defense, explore when you wish, and remember: you can always take a breather in Farm and Fight.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Aprendiste lo esencial, pequeña luz. Sigue haciendo crecer tu defensa y explora cuando quieras. Recuerda que siempre puedes tomar un respiro en Farm and Fight."
+        },
+        {
+          "id": "ES_MA30",
+          "cue": "merge_tutorial.heaven.resume",
+          "source_id": "MA30",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back, little light. Your progress is still here. Follow the guide, and we’ll pick up with the step you were working on.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Bienvenido de nuevo, pequeña luz. Tu progreso sigue aquí. Sigue la guía, y retomaremos el paso en el que estabas trabajando."
+        },
+        {
+          "id": "ES_MA31",
+          "cue": "merge_tutorial.heaven.reminder",
+          "source_id": "MA31",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Whenever you’re ready, little light, the glowing guide will show your next step. Take your time. We’ll build this together.",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Cuando estés listo, pequeña luz, la guía brillante te mostrará el siguiente paso. Sin prisa. Lo construiremos juntos."
+        },
+        {
+          "id": "ES_MA32",
+          "cue": "merge_tutorial.heaven.help.power",
+          "source_id": "MA32",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Magnet is a helpful beginning. Choose the power you want, then Commit when you’re happy with your choice.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Magnet es un buen comienzo. Elige el poder que quieras y usa Commit cuando estés contento con tu elección."
+        },
+        {
+          "id": "ES_MA33",
+          "cue": "merge_tutorial.heaven.help.slots",
+          "source_id": "MA33",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose two extra slots on powers you own. You can put them where they’ll help most, and change your picks before you Commit.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige dos ranuras adicionales en poderes que ya tengas. Ponlas donde más ayuden; puedes cambiar tus elecciones antes de usar Commit."
+        },
+        {
+          "id": "ES_MA34",
+          "cue": "merge_tutorial.heaven.help.commit",
+          "source_id": "MA34",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your choices are ready. Choose Commit to make them yours, or adjust them first if something doesn’t feel right.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Tus elecciones están listas. Usa Commit para confirmarlas, o ajústalas primero si algo no te convence."
+        },
+        {
+          "id": "ES_MA35",
+          "cue": "merge_tutorial.heaven.help.owned",
+          "source_id": "MA35",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose one of your powers. Then we can look at its slots and find a home for that enhancement.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige uno de tus poderes. Después veremos sus ranuras y encontraremos un hogar para esa mejora."
+        },
+        {
+          "id": "ES_MA36",
+          "cue": "merge_tutorial.heaven.help.slot",
+          "source_id": "MA36",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty enhancement slot on that power. A small space, with room for something helpful.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige una ranura de mejora vacía en ese poder. Un pequeño espacio para algo útil."
+        },
+        {
+          "id": "ES_MA37",
+          "cue": "merge_tutorial.heaven.help.enhancement",
+          "source_id": "MA37",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an enhancement that fits your power. A Focus enhancement can help it use less of your energy.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige una mejora compatible con tu poder. Una mejora Focus puede ayudar a que gaste menos energía."
+        },
+        {
+          "id": "ES_MA38",
+          "cue": "merge_tutorial.heaven.help.apply",
+          "source_id": "MA38",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That looks ready. Choose Apply to place the enhancement into your power. Then let’s see what it can do.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Ya parece listo. Elige Apply para colocar la mejora en tu poder. Después veremos qué puede hacer."
+        },
+        {
+          "id": "ES_MA39",
+          "cue": "merge_tutorial.heaven.help.origin",
+          "source_id": "MA39",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "This choice shapes the powers you can learn. Take a moment to explore the origins, and choose the one that feels right for you.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Esta elección define los poderes que puedes aprender. Tómate un momento para explorar los orígenes y elige el que más te guste."
+        },
+        {
+          "id": "ES_MA40",
+          "cue": "merge_tutorial.heaven.help.origin_review",
+          "source_id": "MA40",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Take one last look before you confirm. Your origin is a permanent choice, so choose the path you truly want to follow.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Revísalo una última vez antes de confirmar. Tu origen es una elección permanente, así que elige el camino que de verdad quieras seguir."
+        }
+      ]
+    },
+    {
+      "id": "es_merge_demon",
+      "locale": "es",
+      "track": "merge",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "ES_MD01",
+          "cue": "merge_tutorial.hell.collect_setup",
+          "source_id": "MD01",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "So, this patch of Hell is yours. Collect the Waycoins along the glowing trail, then the gem. Even impending disaster needs a starting budget.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Así que este rinconcito del Infierno es tuyo. Recoge las Waycoins del camino brillante y luego la gema. Hasta un desastre anunciado necesita un presupuesto inicial."
+        },
+        {
+          "id": "ES_MD02",
+          "cue": "merge_tutorial.hell.collect_setup.auto",
+          "source_id": "MD02",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You brought a Coin Pup. Delegating already? Sensible. Let it collect the coins and gem while you practice looking like you’re in charge.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Trajiste un Coin Pup. ¿Ya estás delegando? Sensato. Deja que recoja las monedas y la gema mientras practicas esa cara de estar al mando."
+        },
+        {
+          "id": "ES_MD03",
+          "cue": "merge_tutorial.hell.create_five",
+          "source_id": "MD03",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Five Earth Eggs. Use Buy Egg until you have them. Yes, eggs. Apparently that is what stands between you and utter embarrassment.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Cinco Huevos de Tierra. Usa Buy Egg hasta tenerlos. Sí, huevos. Al parecer, eso es lo que te separa de la vergüenza absoluta."
+        },
+        {
+          "id": "ES_MD04",
+          "cue": "merge_tutorial.hell.deploy_best",
+          "source_id": "MD04",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Deploy Best. It puts those eggs to work on your defense line. They cannot defend much while you leave them admiring the board.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Deploy Best. Pondrá esos huevos a trabajar en tu línea de defensa. No pueden defender mucho si los dejas admirando el tablero."
+        },
+        {
+          "id": "ES_MD05",
+          "cue": "merge_tutorial.hell.collect_workshop_coins",
+          "source_id": "MD05",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Fetch a Waycoin pile. The engineer does not accept hopeful expressions as payment. I asked.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Recoge un montón de Waycoins. El ingeniero no acepta miradas de esperanza como pago. Ya pregunté."
+        },
+        {
+          "id": "ES_MD06",
+          "cue": "merge_tutorial.hell.talk_engineer",
+          "source_id": "MD06",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The engineer is waiting at the gold line. Go speak with him. A wall might compensate for that optimistic approach to survival.",
+          "usage": "main",
+          "locale": "es",
+          "text": "El ingeniero espera en la línea dorada. Ve a hablar con él. Quizá un muro compense esa manera tan optimista de intentar sobrevivir."
+        },
+        {
+          "id": "ES_MD07",
+          "cue": "merge_tutorial.hell.unlock_bulwark",
+          "source_id": "MD07",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock the Impaler Palisade. One gem buys a rather pointed objection to trespassers. Finally, a decorating choice I approve of.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Desbloquea Impaler Palisade. Una gema compra una objeción bastante puntiaguda contra los intrusos. Por fin una decoración que apruebo."
+        },
+        {
+          "id": "ES_MD08",
+          "cue": "merge_tutorial.hell.install_bulwark",
+          "source_id": "MD08",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install. Owning a wall and actually putting it in the enemy’s way are, regrettably, different things.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Install. Tener un muro y ponerlo en el camino del enemigo son, lamentablemente, cosas distintas."
+        },
+        {
+          "id": "ES_MD09",
+          "cue": "merge_tutorial.hell.collect_cannon_coins",
+          "source_id": "MD09",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Another Waycoin pile, please. Artillery is wonderfully persuasive, but apparently persuasion has installation costs.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Otro montón de Waycoins, por favor. La artillería es muy persuasiva, pero al parecer la persuasión tiene gastos de instalación."
+        },
+        {
+          "id": "ES_MD10",
+          "cue": "merge_tutorial.hell.collect_cannon_gem",
+          "source_id": "MD10",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Collect that gem. We’re unlocking a Heal cannon. Try not to look so disappointed that it does something useful.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Recoge esa gema. Vamos a desbloquear un cañón Heal. Intenta no parecer tan decepcionado porque haga algo útil."
+        },
+        {
+          "id": "ES_MD11",
+          "cue": "merge_tutorial.hell.talk_commander",
+          "source_id": "MD11",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your artillery commander is waiting by the right-hand gun. Go introduce yourself before your defense introduces itself to the floor.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tu comandante de artillería espera junto al cañón de la derecha. Ve a presentarte antes de que tu defensa termine presentándose ante el suelo."
+        },
+        {
+          "id": "ES_MD12",
+          "cue": "merge_tutorial.hell.unlock_cannon",
+          "source_id": "MD12",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock Heal with your gem. Yes, healing artillery. Apparently keeping your defenders alive is part of the strategy.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Desbloquea Heal con tu gema. Sí, artillería que cura. Al parecer, mantener vivos a tus defensores es parte de la estrategia."
+        },
+        {
+          "id": "ES_MD13",
+          "cue": "merge_tutorial.hell.install_cannon",
+          "source_id": "MD13",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install. Let the Heal cannon earn its place. Your defenders have been very patient with your management so far.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Install. Deja que el cañón Heal se gane su lugar. Hasta ahora, tus defensores han tenido mucha paciencia con tu gestión."
+        },
+        {
+          "id": "ES_MD14",
+          "cue": "merge_tutorial.hell.power_lesson",
+          "source_id": "MD14",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned a power. Open Powers, choose one, and Commit. Magnet can collect scattered loot. Anything that reduces your wandering is progress.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ganaste un poder. Abre Powers, elige uno y usa Commit. Magnet recoge el botín disperso. Cualquier cosa que reduzca tus paseos es un avance."
+        },
+        {
+          "id": "ES_MD15",
+          "cue": "merge_tutorial.hell.collect_upgrade_coins",
+          "source_id": "MD15",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Gather some more Waycoins. Your eggs could use an improvement, and glaring at them has achieved remarkably little.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Recoge más Waycoins. A tus huevos les vendría bien una mejora, y mirarlos con mala cara ha servido de muy poco."
+        },
+        {
+          "id": "ES_MD16",
+          "cue": "merge_tutorial.hell.collect_upgrade_coins.auto",
+          "source_id": "MD16",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let your Coin Pup gather the funds. At least one member of this operation understands the assignment.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Deja que tu Coin Pup reúna los fondos. Al menos alguien en esta operación entiende cuál es su tarea."
+        },
+        {
+          "id": "ES_MD17",
+          "cue": "merge_tutorial.hell.upgrade_eggs",
+          "source_id": "MD17",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Time to improve those eggs. Buy a couple, then use Deploy Best. Already have one waiting? Place it. I’m mocking you, not trying to trap you.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Hora de mejorar esos huevos. Compra un par y usa Deploy Best. ¿Ya tienes uno esperando? Colócalo. Me burlo de ti, no intento atraparte."
+        },
+        {
+          "id": "ES_MD18",
+          "cue": "merge_tutorial.hell.upgrade_eggs.deploy",
+          "source_id": "MD18",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Deploy Best. It can combine matching eggs or place one on the line. Either counts. Do try to contain your relief.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Elige Deploy Best. Puede combinar huevos iguales o colocar uno en la línea. Ambas cosas cuentan. Intenta disimular el alivio."
+        },
+        {
+          "id": "ES_MD19",
+          "cue": "merge_tutorial.hell.slots_lesson",
+          "source_id": "MD19",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Two extra enhancement slots are yours to choose. Open Powers, place them, and Commit. You may reconsider before committing. A rare luxury.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Puedes elegir dos ranuras de mejora adicionales. Abre Powers, colócalas y usa Commit. Puedes cambiar de opinión antes de confirmar. Un lujo poco común."
+        },
+        {
+          "id": "ES_MD20",
+          "cue": "merge_tutorial.hell.enhance_lesson",
+          "source_id": "MD20",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Those new slots are not merely decorative. Choose a power in Powers, and fit it with an enhancement. Let’s see some improvement.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Esas ranuras nuevas no son solo decorativas. Elige un poder en Powers y ponle una mejora. Veamos algún avance."
+        },
+        {
+          "id": "ES_MD21",
+          "cue": "merge_tutorial.hell.talk_quartermaster",
+          "source_id": "MD21",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That’s Macros, your Quartermaster. Boosts, enhancements, optional training. Visit when you like. For once, I am not giving you homework.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Ese es Macros, tu intendente. Potenciadores, mejoras, entrenamiento opcional. Visítalo cuando quieras. Por una vez, no te estoy dejando tarea."
+        },
+        {
+          "id": "ES_MD22",
+          "cue": "merge_tutorial.hell.after_setup",
+          "source_id": "MD22",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Eggs in one basket? How traditional. Try filling another hatcher; two smaller squads can serve you better than one powerful egg. Your defense, your decision.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Todos los huevos en una sola canasta? Qué clásico. Prueba poner un huevo en otra incubadora. Dos escuadrones pequeños pueden ayudarte más que un solo huevo poderoso. Tu defensa, tu decisión."
+        },
+        {
+          "id": "ES_MD23",
+          "cue": "merge_tutorial.hell.after_bulwark",
+          "source_id": "MD23",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "A wall, installed correctly. I shall try not to sound surprised. Let the next enemies test your handiwork.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un muro bien instalado. Intentaré no parecer sorprendido. Deja que los próximos enemigos prueben tu obra."
+        },
+        {
+          "id": "ES_MD24",
+          "cue": "merge_tutorial.hell.after_cannon",
+          "source_id": "MD24",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The Heal cannon is installed. Let’s see whether your defense survives long enough to earn its next lesson.",
+          "usage": "main",
+          "locale": "es",
+          "text": "El cañón Heal está instalado. Veamos si tu defensa sobrevive lo suficiente para ganarse la próxima lección."
+        },
+        {
+          "id": "ES_MD25",
+          "cue": "merge_tutorial.hell.after_power",
+          "source_id": "MD25",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "A power of your own. Use it when it helps. I’d hate for it to become another expensive ornament.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un poder propio. Úsalo cuando ayude. Me disgustaría que se convirtiera en otro adorno caro."
+        },
+        {
+          "id": "ES_MD26",
+          "cue": "merge_tutorial.hell.after_upgrade",
+          "source_id": "MD26",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "An improvement. I noticed. Your guardians may return to work while I recover from this unexpected competence.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Una mejora. Lo noté. Tus guardianes pueden volver al trabajo mientras me recupero de esta competencia inesperada."
+        },
+        {
+          "id": "ES_MD27",
+          "cue": "merge_tutorial.hell.after_slots",
+          "source_id": "MD27",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your slots are ready. Hold the line a little longer, and we’ll put something useful in one of them.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Tus ranuras están listas. Resiste un poquito más, y pondremos algo útil en una de ellas."
+        },
+        {
+          "id": "ES_MD28",
+          "cue": "merge_tutorial.hell.after_enhance",
+          "source_id": "MD28",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "An enhanced power. Better. Keep the defense going. You are becoming inconveniently capable.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Un poder mejorado. Bien. Mantén la defensa. Te estás volviendo inconvenientemente capaz."
+        },
+        {
+          "id": "ES_MD29",
+          "cue": "merge_tutorial.hell.completion",
+          "source_id": "MD29",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That concludes your introduction to barely controlled chaos. Keep improving your defense. Explore if you like. You may even visit Farm and Fight. I shall endure your absence.",
+          "usage": "main",
+          "locale": "es",
+          "text": "Aquí termina tu introducción al caos apenas controlado. Sigue mejorando tu defensa. Explora si quieres. Incluso puedes visitar Farm and Fight. Soportaré tu ausencia."
+        },
+        {
+          "id": "ES_MD30",
+          "cue": "merge_tutorial.hell.resume",
+          "source_id": "MD30",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Back for more? Your progress survived. Follow the guide, and we’ll resume the part you were so thoughtfully contemplating.",
+          "usage": "main",
+          "locale": "es",
+          "text": "¿Volviste por más? Tu progreso sobrevivió. Sigue la guía y retomaremos esa parte que estabas contemplando con tanto cuidado."
+        },
+        {
+          "id": "ES_MD31",
+          "cue": "merge_tutorial.hell.reminder",
+          "source_id": "MD31",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your next step is still waiting by the glowing guide. No rush. The enemies have only their entire existence to spare.",
+          "usage": "reminder",
+          "locale": "es",
+          "text": "Tu siguiente tarea sigue esperando junto al camino brillante. Sin prisa. Los enemigos solo tienen toda la eternidad por delante."
+        },
+        {
+          "id": "ES_MD32",
+          "cue": "merge_tutorial.hell.help.power",
+          "source_id": "MD32",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a power, then Commit. Magnet is useful. So, I’m told, is making a decision.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige un poder y usa Commit. Magnet es útil. Tomar una decisión también lo es, según me cuentan."
+        },
+        {
+          "id": "ES_MD33",
+          "cue": "merge_tutorial.hell.help.slots",
+          "source_id": "MD33",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Place your extra slots on powers you own. Change your picks if you must, then Commit. Empty deliberation is not an enhancement.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Coloca tus ranuras adicionales en poderes que ya tengas. Cambia tus elecciones si hace falta y usa Commit. Reflexionar sin hacer nada no es una mejora."
+        },
+        {
+          "id": "ES_MD34",
+          "cue": "merge_tutorial.hell.help.commit",
+          "source_id": "MD34",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your choices are waiting. Commit to keep them, or adjust them first. Staring at the button is not a third option.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Tus elecciones están esperando. Usa Commit para confirmarlas, o ajústalas primero. Mirar fijamente el botón no es una tercera opción."
+        },
+        {
+          "id": "ES_MD35",
+          "cue": "merge_tutorial.hell.help.owned",
+          "source_id": "MD35",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a power you own. We need somewhere to put the enhancement, preferably somewhere useful.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige un poder que tengas. Necesitamos dónde poner la mejora. Preferiblemente, en algún lugar útil."
+        },
+        {
+          "id": "ES_MD36",
+          "cue": "merge_tutorial.hell.help.slot",
+          "source_id": "MD36",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty slot on that power. Yes, the empty one. We’re filling it, not admiring it.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige una ranura vacía en ese poder. Sí, la vacía. Vamos a llenarla, no a admirarla."
+        },
+        {
+          "id": "ES_MD37",
+          "cue": "merge_tutorial.hell.help.enhancement",
+          "source_id": "MD37",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a fitting enhancement. Focus reduces the energy your power spends. Efficiency. Such a refreshing concept.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige una mejora compatible. Focus reduce la energía que gasta tu poder. Eficiencia. Qué concepto tan refrescante."
+        },
+        {
+          "id": "ES_MD38",
+          "cue": "merge_tutorial.hell.help.apply",
+          "source_id": "MD38",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Apply. The enhancement does rather more inside the power than it does sitting in a menu.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Elige Apply. La mejora hace bastante más dentro del poder que sentada en un menú."
+        },
+        {
+          "id": "ES_MD39",
+          "cue": "merge_tutorial.hell.help.origin",
+          "source_id": "MD39",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choosing an origin? That shapes the powers you can learn. Read the choices. Even I would not rush you through this one.",
+          "usage": "help",
+          "locale": "es",
+          "text": "¿Eligiendo un origen? Eso define los poderes que puedes aprender. Lee las opciones. Ni yo te apuraría con esta decisión."
+        },
+        {
+          "id": "ES_MD40",
+          "cue": "merge_tutorial.hell.help.origin_review",
+          "source_id": "MD40",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "One last look before you confirm. Your origin is permanent. For this decision, thinking twice is entirely acceptable.",
+          "usage": "help",
+          "locale": "es",
+          "text": "Una última revisión antes de confirmar. Tu origen es permanente. Para esta decisión, pensarlo dos veces es perfectamente aceptable."
+        }
+      ]
+    },
+    {
+      "id": "pt-br_farm_angel",
+      "locale": "pt-br",
+      "track": "farm",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "BR_A01",
+          "cue": "tutorial.hatch_first_egg",
+          "source_id": "A01",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your companion could use a friend. Follow the trail to the Earth Egg, and let’s wake one.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seu companheiro vai gostar de ter um amigo. Siga o caminho até o Ovo da Terra, e vamos acordar um."
+        },
+        {
+          "id": "BR_A02",
+          "cue": "tutorial.farm_crystals",
+          "source_id": "A02",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "See those crystals? With Farm Near on, your pets will mine beside you. Help them along, and we’ll soon have coins for another friend.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Está vendo aqueles cristais? Com Farm Near ligado, seus pets mineram ao seu lado. Ajude um pouquinho, e logo teremos moedas para outro amigo."
+        },
+        {
+          "id": "BR_A03",
+          "cue": "tutorial.hatch_another",
+          "source_id": "A03",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned another egg. Shall we see who’s waiting inside? Every new friend gives your little squad more strength.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você conseguiu outro ovo. Vamos ver quem está esperando lá dentro? Cada novo amigo deixa seu pequeno esquadrão mais forte."
+        },
+        {
+          "id": "BR_A04",
+          "cue": "tutorial.build_squad",
+          "source_id": "A04",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "I’ve left a Rainbow Kitty in your inventory. Open Pets, and let’s make room for that bright little spark on your squad.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Deixei um Gatinho Arco-Íris no seu inventário. Abra Pets, e vamos dar um lugar no seu esquadrão para essa pequena luz."
+        },
+        {
+          "id": "BR_A05",
+          "cue": "tutorial.bind_power",
+          "source_id": "A05",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s a gift within you, too. It’s called Resonance. Open Edit on your power bar, and give it a place where you can reach it.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você também tem um dom. Ele se chama Resonance. Abra Edit na sua barra de poderes e coloque esse poder onde fique fácil de usar."
+        },
+        {
+          "id": "BR_A06",
+          "cue": "tutorial.cast_power",
+          "source_id": "A06",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now, try Resonance near the crystals. Feel that? Your power helps them break faster and yield a little more.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora experimente Resonance perto dos cristais. Sentiu? Seu poder ajuda a quebrá-los mais rápido e a conseguir um pouquinho mais."
+        },
+        {
+          "id": "BR_A07",
+          "cue": "tutorial.slot_power",
+          "source_id": "A07",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A little Potency will make that gift stronger. Open Powers, and let’s add your new enhancement to Resonance.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Um pouco de Potency vai deixar esse dom mais forte. Abra Powers, e vamos colocar sua nova melhoria em Resonance."
+        },
+        {
+          "id": "BR_A08",
+          "cue": "tutorial.first_fight",
+          "source_id": "A08",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The Earth cave is a place to practice fighting. Follow the trail when you’re ready. Its instructor has rather more horns than patience.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "A caverna da Terra é um lugar para praticar combate. Siga o caminho quando estiver pronto. O instrutor tem bem mais chifres do que paciência."
+        },
+        {
+          "id": "BR_A09",
+          "cue": "tutorial.rally_call",
+          "source_id": "A09",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A good leader knows when to call everyone home. Try Rally—the flag on your power bar—and bring your pets back to your side.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Um bom líder sabe quando chamar todo mundo de volta. Experimente Rally, a bandeira na sua barra de poderes, e traga seus pets para perto."
+        },
+        {
+          "id": "BR_A10",
+          "cue": "tutorial.completion",
+          "source_id": "A10",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Look how far you’ve come. The Ascension Altar is ready for you. Choose your next power, then follow your missions. There’s a whole world waiting.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Olhe só quanto você avançou. O Altar de Ascensão está pronto para você. Escolha seu próximo poder e siga suas missões. Há um mundo inteiro esperando."
+        },
+        {
+          "id": "BR_A11",
+          "cue": "tutorial.build_squad.guide.unequip",
+          "source_id": "A11",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your active squad is full. Let one pet rest in your inventory, and we can welcome the Kitty.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Seu esquadrão ativo está cheio. Deixe um pet descansar no inventário, e podemos receber o Gatinho."
+        },
+        {
+          "id": "BR_A12",
+          "cue": "tutorial.build_squad.guide.pick",
+          "source_id": "A12",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s your Rainbow Kitty. Choose that little one for the open place on your squad.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Ali está seu Gatinho Arco-Íris. Escolha ele para ocupar a vaga no seu esquadrão."
+        },
+        {
+          "id": "BR_A13",
+          "cue": "tutorial.build_squad.guide.activate",
+          "source_id": "A13",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "They’re ready. Choose Activate, and your new squad will join you.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Está tudo pronto. Escolha Activate, e seu novo esquadrão vai se juntar a você."
+        },
+        {
+          "id": "BR_A14",
+          "cue": "tutorial.bind_power.choose",
+          "source_id": "A14",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Resonance and an open place on your power bar. Put it wherever feels right to you.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Resonance e um espaço livre na sua barra de poderes. Coloque onde for mais confortável para você."
+        },
+        {
+          "id": "BR_A15",
+          "cue": "tutorial.bind_power.done",
+          "source_id": "A15",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There it is. Choose Done to finish setting your power bar.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Pronto. Escolha Done para terminar de organizar sua barra de poderes."
+        },
+        {
+          "id": "BR_A16",
+          "cue": "tutorial.slot_power.pick_power",
+          "source_id": "A16",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Resonance. That’s the power we’re making stronger.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Resonance. É esse poder que vamos fortalecer."
+        },
+        {
+          "id": "BR_A17",
+          "cue": "tutorial.slot_power.pick_slot",
+          "source_id": "A17",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "An empty enhancement slot is a little room to grow. Choose one on Resonance.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Um espaço de melhoria vazio é uma chance de crescer. Escolha um em Resonance."
+        },
+        {
+          "id": "BR_A18",
+          "cue": "tutorial.slot_power.pick_enhancement",
+          "source_id": "A18",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Potency. It gives your crystal-boosting pulse a little more strength.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Potency. Ela deixa um pouquinho mais forte o pulso que ajuda com seus cristais."
+        },
+        {
+          "id": "BR_A19",
+          "cue": "tutorial.slot_power.apply",
+          "source_id": "A19",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Apply, and that extra strength becomes yours.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Apply, e essa força extra será sua."
+        },
+        {
+          "id": "BR_A20",
+          "cue": "tutorial.farm_crystals.reminder",
+          "source_id": "A20",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Try a small crystal nearby. Keep Farm Near on, and let your squad earn the coins together.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Experimente um cristal pequeno por perto. Deixe Farm Near ligado e permita que seu esquadrão ganhe as moedas em equipe."
+        },
+        {
+          "id": "BR_A21",
+          "cue": "tutorial.cast_power.reminder",
+          "source_id": "A21",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Bring your squad close to the crystals before you use Resonance. That’s where its gift can help.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Leve seu esquadrão para perto dos cristais antes de usar Resonance. É ali que esse dom pode ajudar."
+        },
+        {
+          "id": "BR_A22",
+          "cue": "tutorial.first_fight.handoff",
+          "source_id": "A22",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Of course. Training will be waiting in Quest whenever you’re ready. You can return to the Earth cave then.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Claro. O treinamento vai esperar por você em Quest. Quando estiver pronto, pode voltar à caverna da Terra."
+        },
+        {
+          "id": "BR_A23",
+          "cue": "tutorial.resume",
+          "source_id": "A23",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back, little light. We’ll carry on from where you left off. Follow your current lesson when you’re ready.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Que bom ter você de volta, minha luzinha. Vamos continuar de onde parou. Siga sua lição atual quando estiver pronto."
+        },
+        {
+          "id": "BR_A24",
+          "cue": "tutorial.basic_return",
+          "source_id": "A24",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back. I hope he remembered his manners. You’ve learned to look after your squad—and that matters far more than looking fearless.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Bem-vindo de volta. Espero que ele tenha lembrado das boas maneiras. Você aprendeu a cuidar do seu esquadrão, e isso vale muito mais do que parecer destemido."
+        },
+        {
+          "id": "BR_A25",
+          "cue": "tutorial.choose_companion",
+          "source_id": "A25",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There you are, little light. Let’s choose your first companion. A bunny, a bear, a doggy, or a kitty — who will join you on your adventure?",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Aí está você, minha luzinha. Vamos escolher seu primeiro companheiro. Um coelhinho, um ursinho, um cachorrinho ou um gatinho... quem vai acompanhar você nesta aventura?"
+        },
+        {
+          "id": "BR_A26",
+          "cue": "tutorial.hatch_first_egg.reminder",
+          "source_id": "A26",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your next little friend is waiting. Follow the glowing trail to the Earth Egg, and choose Hatch. I’ll be right here.",
+          "usage": "reminder",
+          "locale": "pt-br",
+          "text": "Seu próximo amiguinho está esperando. Siga o caminho brilhante até o Ovo da Terra e abra um. Vou estar bem aqui."
+        },
+        {
+          "id": "BR_A27",
+          "cue": "tutorial.next_task.reminder",
+          "source_id": "A27",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Take your time, little light. When you’re ready, follow the glowing guide and try the next step. I know you can do it.",
+          "usage": "reminder",
+          "locale": "pt-br",
+          "text": "Sem pressa, minha luzinha. Quando estiver pronto, siga a indicação brilhante e tente o próximo passo. Eu sei que você consegue."
+        }
+      ]
+    },
+    {
+      "id": "pt-br_farm_demon",
+      "locale": "pt-br",
+      "track": "farm",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "BR_D01",
+          "cue": "combat_tutorial.ready",
+          "source_id": "D01",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "So. The angel sent me another promising little soul. Choose Enter on that frost door. I’ve found you something suitably unimpressive to fight.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Ora. O anjo me mandou outra alminha promissora. Escolha Enter naquela porta congelada. Encontrei um adversário devidamente pouco impressionante para você."
+        },
+        {
+          "id": "BR_D02",
+          "cue": "combat_tutorial.first_fight",
+          "source_id": "D02",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There’s your opponent. Get close and let your pets do the fighting. Yes, they do most of the work. Try to look involved.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Ali está seu oponente. Chegue perto e deixe seus pets lutarem. Sim, eles fazem quase todo o trabalho. Tente parecer envolvido."
+        },
+        {
+          "id": "BR_D03",
+          "cue": "combat_tutorial.advance_stage",
+          "source_id": "D03",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "One training dog defeated. Terrifying. The glowing pillar takes you back to the lobby. We’ll see if that was luck.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Um cachorro de treinamento derrotado. Aterrorizante. O pilar brilhante leva você de volta ao saguão. Vamos ver se foi sorte."
+        },
+        {
+          "id": "BR_D04",
+          "cue": "combat_tutorial.battle_brew",
+          "source_id": "D04",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Berserk Brew. A little borrowed ferocity for your pets. Take a sip from your power bar. This is the safe room, after all.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Berserk Brew. Um pouco de ferocidade emprestada para seus pets. Tome um gole pela barra de poderes. Afinal, esta é a sala segura."
+        },
+        {
+          "id": "BR_D05",
+          "cue": "combat_tutorial.ready_brew",
+          "source_id": "D05",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Feeling fierce? Enter the arena. Let’s find out whether your pets agree.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Está se sentindo feroz? Entre na arena. Vamos descobrir se seus pets concordam."
+        },
+        {
+          "id": "BR_D06",
+          "cue": "combat_tutorial.brew_fight",
+          "source_id": "D06",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Notice the harder hits? That’s the brew. Finish this one before you start taking all the credit.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Percebeu os golpes mais fortes? É a poção. Acabe com esse antes de começar a levar todo o crédito."
+        },
+        {
+          "id": "BR_D07",
+          "cue": "combat_tutorial.advance_brew",
+          "source_id": "D07",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Better. The pillar will bring you back. Next, we address your squad’s regrettable habit of getting hurt.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Melhor. O pilar vai trazer você de volta. Agora vamos tratar desse hábito lamentável do seu esquadrão de se machucar."
+        },
+        {
+          "id": "BR_D08",
+          "cue": "combat_tutorial.bind_heal",
+          "source_id": "D08",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You have Heal. How inconvenient for me. Open Edit, put it on your power bar, and finish with Done.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você tem Heal. Que inconveniente para mim. Abra Edit, coloque na barra de poderes e termine com Done."
+        },
+        {
+          "id": "BR_D09",
+          "cue": "combat_tutorial.enhance_heal",
+          "source_id": "D09",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Let’s make Heal worth using. Open Powers and give it the Healing enhancement I provided. I prefer my opponents properly prepared.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Vamos fazer Heal valer a pena. Abra Powers e coloque a melhoria Healing que eu dei a você. Prefiro oponentes bem preparados."
+        },
+        {
+          "id": "BR_D10",
+          "cue": "combat_tutorial.ready_heal",
+          "source_id": "D10",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your healing lesson awaits. Enter the arena—and do pay attention to your pets this time.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Sua lição de cura está esperando. Entre na arena, e desta vez preste atenção nos seus pets."
+        },
+        {
+          "id": "BR_D11",
+          "cue": "combat_tutorial.select_pet",
+          "source_id": "D11",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That yellow health bar belongs to your wounded pet. Select its card. Admiring the problem won’t mend it.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Aquela barra de vida amarela é do seu pet ferido. Selecione o cartão dele. Admirar o problema não vai curá-lo."
+        },
+        {
+          "id": "BR_D12",
+          "cue": "combat_tutorial.cast_heal",
+          "source_id": "D12",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now use Heal on the pet you selected. Once it recovers, those enemy shields come down. Consider that your warning.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora use Heal no pet que você selecionou. Quando ele se recuperar, os escudos inimigos vão cair. Considere isso um aviso."
+        },
+        {
+          "id": "BR_D13",
+          "cue": "combat_tutorial.heal_fight",
+          "source_id": "D13",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Shields down. Finish both training dogs. The exit pillar is for winners, little hero.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escudos abaixados. Derrote os dois cachorros de treinamento. O pilar de saída é para vencedores, pequeno herói."
+        },
+        {
+          "id": "BR_D14",
+          "cue": "combat_tutorial.advance_heal",
+          "source_id": "D14",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The room is clear. Use the glowing pillar to finish Basic Training. You’ve become slightly less likely to embarrass yourself.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "A sala está livre. Use o pilar brilhante para terminar o treinamento básico. Agora você tem um pouco menos de chance de passar vergonha."
+        },
+        {
+          "id": "BR_D15",
+          "cue": "combat_tutorial.ready_weaken",
+          "source_id": "D15",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Back for more? How irritatingly diligent. I’ve given you Weakening Vials. Enter the arena, and we’ll spoil someone’s defenses.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Voltou para mais? Que dedicação irritante. Dei a você Weakening Vials. Entre na arena, e vamos estragar as defesas de alguém."
+        },
+        {
+          "id": "BR_D16",
+          "cue": "combat_tutorial.select_enemy",
+          "source_id": "D16",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose the marked enemy’s card. The vial needs a target. Throwing it at your own feet would make a very short lesson.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha o cartão do inimigo marcado. O frasco precisa de um alvo. Jogar nos próprios pés deixaria a lição bem curta."
+        },
+        {
+          "id": "BR_D17",
+          "cue": "combat_tutorial.throw_weaken",
+          "source_id": "D17",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Throw the Weakening Vial at your target. Down come the shields. Then you can get on with the unpleasant business of winning.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Jogue o Weakening Vial no seu alvo. Lá se vão os escudos. Depois você pode cuidar dessa tarefa desagradável de vencer."
+        },
+        {
+          "id": "BR_D18",
+          "cue": "combat_tutorial.weaken_fight",
+          "source_id": "D18",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Their shields are gone. Defeat both dogs. No, the pillar won’t rescue you from unfinished work.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Os escudos acabaram. Derrote os dois cachorros. Não, o pilar não vai salvar você do trabalho que ficou pela metade."
+        },
+        {
+          "id": "BR_D19",
+          "cue": "combat_tutorial.advance_weaken",
+          "source_id": "D19",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "You found a weakness and used it. Almost devious. Take the pillar back to the lobby.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você encontrou uma fraqueza e aproveitou. Quase malicioso. Use o pilar para voltar ao saguão."
+        },
+        {
+          "id": "BR_D20",
+          "cue": "combat_tutorial.stack_brew",
+          "source_id": "D20",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "More Berserk Brew means bigger hits, not a longer timer. Drink five sips. We’re building a damage meter, not a collection.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Mais Berserk Brew significa golpes maiores, não mais tempo. Beba cinco goles. Estamos enchendo um medidor de dano, não fazendo uma coleção."
+        },
+        {
+          "id": "BR_D21",
+          "cue": "combat_tutorial.ready_stack",
+          "source_id": "D21",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There. A proper dose of trouble. Enter the arena while that damage meter has something left to give.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Pronto. Uma boa dose de problemas. Entre na arena enquanto esse medidor de dano ainda tem algo a oferecer."
+        },
+        {
+          "id": "BR_D22",
+          "cue": "combat_tutorial.stack_fight",
+          "source_id": "D22",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now watch those hits. Much more convincing. Finish the dog before your borrowed courage wears off.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora veja esses golpes. Muito mais convincentes. Acabe com o cachorro antes que sua coragem emprestada passe."
+        },
+        {
+          "id": "BR_D23",
+          "cue": "combat_tutorial.advance_stack",
+          "source_id": "D23",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That was almost efficient. The glowing pillar finishes this course. I suppose you’ll want your reward.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Isso foi quase eficiente. O pilar brilhante encerra este curso. Suponho que você queira sua recompensa."
+        },
+        {
+          "id": "BR_D24",
+          "cue": "combat_tutorial.ready_tank",
+          "source_id": "D24",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Let’s put something sturdier between your squad and disaster. Open Pets. One doggy is making room for a bear.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Vamos pôr algo mais resistente entre seu esquadrão e o desastre. Abra Pets. Um cachorrinho vai dar lugar a um urso."
+        },
+        {
+          "id": "BR_D25",
+          "cue": "combat_tutorial.tank_fight",
+          "source_id": "D25",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The tank draws attention and takes the punishment. It hits less hard, but your other pets get to keep their dignity—and their health. Finish the fight.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "O tanque chama a atenção e aguenta os golpes. Ele bate menos forte, mas seus outros pets mantêm a dignidade e a vida. Termine a luta."
+        },
+        {
+          "id": "BR_D26",
+          "cue": "combat_tutorial.advance_tank",
+          "source_id": "D26",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Still standing. How tiresome. Take the pillar back; your next opponents have learned a little trick.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Ainda de pé. Que cansativo. Volte pelo pilar; seus próximos oponentes aprenderam um truquezinho."
+        },
+        {
+          "id": "BR_D27",
+          "cue": "combat_tutorial.ready_healer",
+          "source_id": "D27",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The next pack brought a healer. Leave it alone and it will keep repairing your hard work. Enter when you’ve grasped the problem.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "O próximo grupo trouxe um curandeiro. Deixe ele em paz, e vai continuar desfazendo todo o seu esforço. Entre quando entender o problema."
+        },
+        {
+          "id": "BR_D28",
+          "cue": "combat_tutorial.healer_hunt",
+          "source_id": "D28",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "That green healing mark is your clue. Send your pets after the healer first. I’d rather you didn’t, which should tell you everything.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "A marca verde de cura é sua pista. Mande seus pets atrás do curandeiro primeiro. Eu preferia que não fizesse isso, o que já diz tudo."
+        },
+        {
+          "id": "BR_D29",
+          "cue": "combat_tutorial.healer_fight",
+          "source_id": "D29",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Healer down. Now finish the rest of the pack. They’re suddenly much less optimistic.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Curandeiro derrotado. Agora acabe com o resto do grupo. De repente, eles ficaram bem menos otimistas."
+        },
+        {
+          "id": "BR_D30",
+          "cue": "combat_tutorial.advance_healer",
+          "source_id": "D30",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "There. No one left to patch them up. Back through the pillar. One last room, and I stop holding your hand.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Pronto. Não sobrou ninguém para curar os outros. Volte pelo pilar. Só mais uma sala, e eu paro de segurar sua mão."
+        },
+        {
+          "id": "BR_D31",
+          "cue": "combat_tutorial.ready_together",
+          "source_id": "D31",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Final room. Two dogs, one healer, and no helpful arrows. You have the tools. Enter when you’re ready to make me regret teaching you.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Última sala. Dois cachorros, um curandeiro e nenhuma seta de ajuda. Você tem as ferramentas. Entre quando estiver pronto para me fazer lamentar ter ensinado você."
+        },
+        {
+          "id": "BR_D32",
+          "cue": "combat_tutorial.together_fight",
+          "source_id": "D32",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "All yours, little hero. Clear the room. Let’s see what you remember when I stop telling you.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Tudo seu, pequeno herói. Limpe a sala. Vamos ver o que você lembra quando eu paro de explicar."
+        },
+        {
+          "id": "BR_D33",
+          "cue": "combat_tutorial.advance_together",
+          "source_id": "D33",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "No arrows, and you still managed it. Deeply inconvenient. Take the glowing pillar and finish your training.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Sem setas, e mesmo assim conseguiu. Profundamente inconveniente. Use o pilar brilhante e termine seu treinamento."
+        },
+        {
+          "id": "BR_D34",
+          "cue": "combat_courses.basic.completion",
+          "source_id": "D34",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Basic Training, complete. Your pets and powers are ready for the world. Advanced lessons are optional. I’m sure you’ll miss my encouragement.",
+          "usage": "completion",
+          "locale": "pt-br",
+          "text": "Treinamento básico concluído. Seus pets e poderes estão prontos para o mundo. As lições avançadas são opcionais. Tenho certeza de que vai sentir falta do meu incentivo."
+        },
+        {
+          "id": "BR_D35",
+          "cue": "combat_courses.advanced_1.completion",
+          "source_id": "D35",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Advanced One, complete. You’ve earned a Double XP token. Use it from your inventory when you want the extra experience. Do try to make it count.",
+          "usage": "completion",
+          "locale": "pt-br",
+          "text": "Avançado um, concluído. Você ganhou uma ficha de experiência em dobro. Use pelo inventário quando quiser experiência extra. Tente fazer valer a pena."
+        },
+        {
+          "id": "BR_D36",
+          "cue": "combat_courses.advanced_2.completion",
+          "source_id": "D36",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "All courses complete. There’s a Double Coins token waiting in your inventory. Use it when you’re ready. You’ve become a rather troublesome little hero.",
+          "usage": "completion",
+          "locale": "pt-br",
+          "text": "Todos os cursos concluídos. Uma ficha de moedas em dobro espera no seu inventário. Use quando quiser. Você virou um pequeno herói bastante problemático."
+        },
+        {
+          "id": "BR_D37",
+          "cue": "combat_tutorial.bind_heal.choose",
+          "source_id": "D37",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Heal, then give it a place on your power bar. Ideally somewhere you’ll remember when things start biting.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Heal e dê um lugar a ele na barra de poderes. De preferência onde você lembre quando começarem as mordidas."
+        },
+        {
+          "id": "BR_D38",
+          "cue": "combat_tutorial.bind_heal.done",
+          "source_id": "D38",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Now choose Done. You can admire your arrangement after you survive.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Agora escolha Done. Você pode admirar sua organização depois de sobreviver."
+        },
+        {
+          "id": "BR_D39",
+          "cue": "combat_tutorial.enhance_heal.pick_power",
+          "source_id": "D39",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Heal. We’re improving that power, not browsing for something prettier.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Heal. Estamos melhorando esse poder, não procurando algo mais bonito."
+        },
+        {
+          "id": "BR_D40",
+          "cue": "combat_tutorial.enhance_heal.pick_slot",
+          "source_id": "D40",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty slot on Heal. Even your good intentions need somewhere to go.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um espaço vazio em Heal. Até suas boas intenções precisam de um lugar."
+        },
+        {
+          "id": "BR_D41",
+          "cue": "combat_tutorial.enhance_heal.pick_enhancement",
+          "source_id": "D41",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Healing. The name is a subtle clue.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Healing. O nome é uma pista bem sutil."
+        },
+        {
+          "id": "BR_D42",
+          "cue": "combat_tutorial.enhance_heal.apply",
+          "source_id": "D42",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Apply it. A staged enhancement is doing precisely nothing for you.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Use Apply. Uma melhoria que ainda não foi aplicada não está ajudando em absolutamente nada."
+        },
+        {
+          "id": "BR_D43",
+          "cue": "combat_tutorial.ready_tank.guide.unequip",
+          "source_id": "D43",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Take a doggy off your active squad. The bear needs a place, not an invitation to an already full party.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Tire um cachorrinho do esquadrão ativo. O urso precisa de uma vaga, não de um convite para uma festa que já está lotada."
+        },
+        {
+          "id": "BR_D44",
+          "cue": "combat_tutorial.ready_tank.guide.pick",
+          "source_id": "D44",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose your strongest bear. The Tank option in Best Pets can find it for you, if counting muscles proves difficult.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha seu urso mais forte. A opção Tank em Best Pets pode encontrar ele para você, se contar músculos for difícil."
+        },
+        {
+          "id": "BR_D45",
+          "cue": "combat_tutorial.ready_tank.guide.activate",
+          "source_id": "D45",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Activate. I need the bear in the fight, not posing in your inventory.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Activate. Preciso do urso na luta, não fazendo pose no inventário."
+        },
+        {
+          "id": "BR_D46",
+          "cue": "combat_tutorial.ready_tank.guide.close",
+          "source_id": "D46",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The bear is on your squad. Close Pets so we can get on with it.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "O urso está no seu esquadrão. Feche Pets para continuarmos."
+        },
+        {
+          "id": "BR_D47",
+          "cue": "combat_tutorial.ready_tank.guide.enter",
+          "source_id": "D47",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your tank is ready. Enter the arena and let it earn its place.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Seu tanque está pronto. Entre na arena e deixe ele merecer a vaga."
+        },
+        {
+          "id": "BR_D48",
+          "cue": "combat_courses.menu",
+          "source_id": "D48",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Basic first. Then, if you insist on improving, two advanced courses await. Choose your lesson, little hero.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "O básico primeiro. Depois, se insistir em melhorar, dois cursos avançados esperam por você. Escolha sua lição, pequeno herói."
+        },
+        {
+          "id": "BR_D49",
+          "cue": "combat_courses.locked",
+          "source_id": "D49",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Finish the earlier course first. Skipping the lesson is not the same as mastering it.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Termine o curso anterior primeiro. Pular uma lição não é o mesmo que dominar o assunto."
+        },
+        {
+          "id": "BR_D50",
+          "cue": "combat_courses.replay.start",
+          "source_id": "D50",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A repeat performance? Very well. The practice is yours; the first-time reward stays first-time.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Vai repetir a apresentação? Muito bem. A prática é sua; a recompensa de primeira vez continua sendo de primeira vez."
+        },
+        {
+          "id": "BR_D51",
+          "cue": "combat_courses.replay.completion",
+          "source_id": "D51",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Finished again. No second reward, of course. Surely my company was compensation enough.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Terminou de novo. Sem segunda recompensa, é claro. Certamente minha companhia já foi compensação suficiente."
+        },
+        {
+          "id": "BR_D52",
+          "cue": "combat_tutorial.leave_confirm",
+          "source_id": "D52",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Leaving already? Your progress is saved. Come back when you’re ready to disappoint me properly.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Já vai embora? Seu progresso está salvo. Volte quando estiver pronto para me decepcionar direito."
+        },
+        {
+          "id": "BR_D53",
+          "cue": "combat_tutorial.resume",
+          "source_id": "D53",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Back, are you? Your completed lessons still count. We’ll prepare this round again before you enter.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Voltou, foi? Suas lições concluídas continuam valendo. Vamos preparar esta rodada de novo antes de você entrar."
+        },
+        {
+          "id": "BR_D54",
+          "cue": "combat_tutorial.door.pets_equipped",
+          "source_id": "D54",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Bring at least one pet. This is combat training, not an audition for the role of bait.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Traga pelo menos um pet. Isto é treinamento de combate, não uma audição para o papel de isca."
+        },
+        {
+          "id": "BR_D55",
+          "cue": "combat_tutorial.door.hotbar_not_editing",
+          "source_id": "D55",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Choose Done on your power bar first. I prefer my opponents assembled before the fight.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Escolha Done na barra de poderes primeiro. Prefiro meus oponentes organizados antes da luta."
+        },
+        {
+          "id": "BR_D56",
+          "cue": "combat_tutorial.door.heal_unbound",
+          "source_id": "D56",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Heal belongs on your power bar. Put it there before asking that door to open.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Heal precisa estar na barra de poderes. Coloque lá antes de pedir para a porta abrir."
+        },
+        {
+          "id": "BR_D57",
+          "cue": "combat_tutorial.door.heal_unenhanced",
+          "source_id": "D57",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Add Healing to Heal and apply it. Then we can discuss opening the door.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Coloque Healing em Heal e use Apply. Depois podemos conversar sobre abrir a porta."
+        },
+        {
+          "id": "BR_D58",
+          "cue": "combat_tutorial.door.brew_unused",
+          "source_id": "D58",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "The Berserk Brew is for drinking. One sip, little hero. Then you may enter.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Berserk Brew é para beber. Um gole, pequeno herói. Depois pode entrar."
+        },
+        {
+          "id": "BR_D59",
+          "cue": "combat_tutorial.door.tank_missing",
+          "source_id": "D59",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "A bear on your active squad, please. Owning a tank is not the same as bringing one.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Um urso no esquadrão ativo, por favor. Ter um tanque não é o mesmo que trazer um."
+        },
+        {
+          "id": "BR_D60",
+          "cue": "combat_tutorial.stack_brew.remaining_4",
+          "source_id": "D60",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Four more sips. That meter isn’t filling itself.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Mais quatro goles. Esse medidor não vai se encher sozinho."
+        },
+        {
+          "id": "BR_D61",
+          "cue": "combat_tutorial.stack_brew.remaining_3",
+          "source_id": "D61",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Three more. I admire your commitment to doing this slowly.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Mais três. Admiro sua dedicação a fazer isso devagar."
+        },
+        {
+          "id": "BR_D62",
+          "cue": "combat_tutorial.stack_brew.remaining_2",
+          "source_id": "D62",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Two more sips. Even I can see you’re nearly there.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Mais dois goles. Até eu vejo que está quase lá."
+        },
+        {
+          "id": "BR_D63",
+          "cue": "combat_tutorial.stack_brew.remaining_1",
+          "source_id": "D63",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "One more. Let’s not lose our nerve at the finish.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Mais um. Não vamos perder a coragem bem no final."
+        },
+        {
+          "id": "BR_D64",
+          "cue": "combat_tutorial.healer_hunt.lost",
+          "source_id": "D64",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Your pets have wandered off the healer. Select it again. We were so close to having a strategy.",
+          "usage": "conditional",
+          "locale": "pt-br",
+          "text": "Seus pets se afastaram do curandeiro. Selecione ele de novo. Estávamos tão perto de ter uma estratégia."
+        },
+        {
+          "id": "BR_D65",
+          "cue": "combat_tutorial.next_task.reminder",
+          "source_id": "D65",
+          "source_catalog": "configs/tutorial_voice_lines.lua",
+          "english_meaning": "Admiring the scenery? Charming. Your next lesson is waiting. Follow the guide when you’re ready, little hero.",
+          "usage": "reminder",
+          "locale": "pt-br",
+          "text": "Admirando a paisagem? Encantador. Sua próxima lição está esperando. Siga a indicação quando estiver pronto, pequeno herói."
+        }
+      ]
+    },
+    {
+      "id": "pt-br_merge_angel",
+      "locale": "pt-br",
+      "track": "merge",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "BR_MA01",
+          "cue": "merge_tutorial.heaven.collect_setup",
+          "source_id": "MA01",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Welcome to your little corner of Heaven. Follow the glowing trail to gather the Waycoins, then the gem. We’ll turn them into a brave little defense.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Bem-vindo ao seu cantinho do Céu. Siga o caminho brilhante para recolher as Waycoins e depois a gema. Vamos transformar tudo numa pequena defesa corajosa."
+        },
+        {
+          "id": "BR_MA02",
+          "cue": "merge_tutorial.heaven.collect_setup.auto",
+          "source_id": "MA02",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Coin Pup is already gathering our supplies. Let that helpful little nose collect the coins and gem; then we’ll put them to good use.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seu Coin Pup já está reunindo os suprimentos. Deixe esse pequeno ajudante recolher as moedas e a gema; depois vamos usar tudo direitinho."
+        },
+        {
+          "id": "BR_MA03",
+          "cue": "merge_tutorial.heaven.create_five",
+          "source_id": "MA03",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now, let’s build your first defense. Use Buy Egg to create five Earth Eggs. There’s a whole little squad waiting to begin.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora vamos montar sua primeira defesa. Use Buy Egg para criar cinco Ovos da Terra. Um pequeno esquadrão inteiro está esperando para começar."
+        },
+        {
+          "id": "BR_MA04",
+          "cue": "merge_tutorial.heaven.deploy_best",
+          "source_id": "MA04",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Lovely. Choose Deploy Best, and your eggs will take their places on the defense line. Your little guardians can handle the first arrivals.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Que ótimo. Escolha Deploy Best, e seus ovos vão ocupar seus lugares na linha de defesa. Seus pequenos guardiões dão conta dos primeiros visitantes."
+        },
+        {
+          "id": "BR_MA05",
+          "cue": "merge_tutorial.heaven.collect_workshop_coins",
+          "source_id": "MA05",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Before we strengthen the line, gather a Waycoin pile. The engineer needs a little funding to bring his work to life.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Antes de fortalecer a linha, recolha uma pilha de Waycoins. O engenheiro precisa de uma ajudinha para colocar o trabalho em prática."
+        },
+        {
+          "id": "BR_MA06",
+          "cue": "merge_tutorial.heaven.talk_engineer",
+          "source_id": "MA06",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Our engineer has arrived at the gold line. Follow the guide and speak with him. A sturdy defense can give every guardian a little more time.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Nosso engenheiro chegou à linha dourada. Siga a indicação e fale com ele. Uma defesa resistente pode dar um pouquinho mais de tempo a cada guardião."
+        },
+        {
+          "id": "BR_MA07",
+          "cue": "merge_tutorial.heaven.unlock_bulwark",
+          "source_id": "MA07",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock the Impaler Palisade with your gem. Those sharp little points will help your new wall stand up to trouble.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Desbloqueie Impaler Palisade com sua gema. Aquelas pontinhas vão ajudar sua nova muralha a resistir aos problemas."
+        },
+        {
+          "id": "BR_MA08",
+          "cue": "merge_tutorial.heaven.install_bulwark",
+          "source_id": "MA08",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now choose Install. There—another layer of protection for your brave little defenders. We’re building something worth holding onto.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora escolha Install. Pronto, mais uma camada de proteção para seus valentes defensores. Estamos construindo algo que vale a pena cuidar."
+        },
+        {
+          "id": "BR_MA09",
+          "cue": "merge_tutorial.heaven.collect_cannon_coins",
+          "source_id": "MA09",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Gather a Waycoin pile for the next improvement. A little support from the artillery commander will help your line last longer.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Recolha uma pilha de Waycoins para a próxima melhoria. Um pouco de apoio do comandante de artilharia vai ajudar sua linha a durar mais."
+        },
+        {
+          "id": "BR_MA10",
+          "cue": "merge_tutorial.heaven.collect_cannon_gem",
+          "source_id": "MA10",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Follow the guide to the gem. Keep it close; it will unlock a cannon that helps mend your defense.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Siga a indicação até a gema. Guarde bem; ela vai desbloquear um canhão que ajuda a consertar sua defesa."
+        },
+        {
+          "id": "BR_MA11",
+          "cue": "merge_tutorial.heaven.talk_commander",
+          "source_id": "MA11",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The artillery commander is ready at the right-hand gun. Follow the guide and speak with him. Even the strongest line deserves a little care.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "O comandante de artilharia está pronto junto ao canhão da direita. Siga a indicação e fale com ele. Até a linha mais forte merece um pouquinho de cuidado."
+        },
+        {
+          "id": "BR_MA12",
+          "cue": "merge_tutorial.heaven.unlock_cannon",
+          "source_id": "MA12",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Unlock for the Heal cannon. Your gem will open a gentler kind of artillery—one that helps keep your defense standing.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Unlock para o canhão Heal. Sua gema vai abrir caminho para uma artilharia mais gentil, que ajuda a manter sua defesa de pé."
+        },
+        {
+          "id": "BR_MA13",
+          "cue": "merge_tutorial.heaven.install_cannon",
+          "source_id": "MA13",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install, and let the Heal cannon join your defense. A little kindness in the right place can make a wonderful difference.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Install e deixe o canhão Heal se juntar à defesa. Um pouco de gentileza no lugar certo pode fazer uma bela diferença."
+        },
+        {
+          "id": "BR_MA14",
+          "cue": "merge_tutorial.heaven.power_lesson",
+          "source_id": "MA14",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned a new power. Open Powers and choose one, then Commit. Magnet is a helpful first choice for bringing scattered loot a little closer.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você ganhou um novo poder. Abra Powers, escolha um e use Commit. Magnet é uma boa primeira escolha para trazer o saque espalhado para mais perto."
+        },
+        {
+          "id": "BR_MA15",
+          "cue": "merge_tutorial.heaven.collect_upgrade_coins",
+          "source_id": "MA15",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s gather a few more Waycoins for your eggs. Follow the guide; a stronger line begins with one small improvement at a time.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Vamos recolher mais algumas Waycoins para seus ovos. Siga a indicação; uma linha mais forte começa com uma pequena melhoria de cada vez."
+        },
+        {
+          "id": "BR_MA16",
+          "cue": "merge_tutorial.heaven.collect_upgrade_coins.auto",
+          "source_id": "MA16",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Coin Pup will gather what we need. Give that faithful little helper a moment, and we’ll improve your defense together.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seu Coin Pup vai recolher o que precisamos. Dê um momento a esse ajudante fiel, e vamos melhorar sua defesa juntos."
+        },
+        {
+          "id": "BR_MA17",
+          "cue": "merge_tutorial.heaven.upgrade_eggs",
+          "source_id": "MA17",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s give your line a little more strength. Buy a couple of eggs, then use Deploy Best. If you already have an egg, placing it works too.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Vamos dar um pouquinho mais de força à sua linha. Compre dois ovos e use Deploy Best. Se já tiver um ovo, colocar ele na linha também serve."
+        },
+        {
+          "id": "BR_MA18",
+          "cue": "merge_tutorial.heaven.upgrade_eggs.deploy",
+          "source_id": "MA18",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your eggs are ready. Choose Deploy Best to combine matching eggs or place one on the line. Either is a good next step.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seus ovos estão prontos. Escolha Deploy Best para combinar ovos iguais ou colocar um na linha. Qualquer uma das opções é um bom próximo passo."
+        },
+        {
+          "id": "BR_MA19",
+          "cue": "merge_tutorial.heaven.slots_lesson",
+          "source_id": "MA19",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let’s make room for your powers to grow. In Powers, choose two extra enhancement slots, then Commit. You can change your picks before committing.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Vamos abrir espaço para seus poderes crescerem. Em Powers, escolha dois espaços extras de melhoria e use Commit. Você pode mudar suas escolhas antes de confirmar."
+        },
+        {
+          "id": "BR_MA20",
+          "cue": "merge_tutorial.heaven.enhance_lesson",
+          "source_id": "MA20",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Now we can give a power a little more sparkle. Choose it in Powers, and let’s fit an enhancement into one of its slots.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Agora podemos dar um pouquinho mais de brilho a um poder. Escolha ele em Powers, e vamos encaixar uma melhoria num dos espaços."
+        },
+        {
+          "id": "BR_MA21",
+          "cue": "merge_tutorial.heaven.talk_quartermaster",
+          "source_id": "MA21",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Meet Macros, your Quartermaster. He has boosts, enhancements, and optional training whenever you want them. There’s no need to visit right now; your adventure is yours.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Conheça Macros, seu intendente. Ele tem reforços, melhorias e treinamento opcional quando você quiser. Não precisa visitar agora; a aventura é sua."
+        },
+        {
+          "id": "BR_MA22",
+          "cue": "merge_tutorial.heaven.after_setup",
+          "source_id": "MA22",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your guardians are ready. Try spreading your defense across more hatchers; two smaller squads can serve you better than one powerful egg. It’s your choice.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seus guardiões estão prontos. Experimente espalhar sua defesa por mais incubadoras. Dois esquadrões pequenos podem ajudar mais do que um único ovo poderoso. Você escolhe."
+        },
+        {
+          "id": "BR_MA23",
+          "cue": "merge_tutorial.heaven.after_bulwark",
+          "source_id": "MA23",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your wall is in place. Let’s see how the line holds now. Each small improvement gives your guardians a little more breathing room.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Sua muralha está no lugar. Vamos ver como a linha resiste agora. Cada pequena melhoria dá um pouquinho mais de fôlego aos seus guardiões."
+        },
+        {
+          "id": "BR_MA24",
+          "cue": "merge_tutorial.heaven.after_cannon",
+          "source_id": "MA24",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your Heal cannon is ready. Keep the defense going; there’s a new power waiting a little further along.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seu canhão Heal está pronto. Continue defendendo; há um novo poder esperando um pouco mais à frente."
+        },
+        {
+          "id": "BR_MA25",
+          "cue": "merge_tutorial.heaven.after_power",
+          "source_id": "MA25",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That power is yours now. Try it when it will help, and keep your defense growing. You’re finding your own way.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Esse poder agora é seu. Experimente quando puder ajudar e continue fortalecendo sua defesa. Você está encontrando seu próprio caminho."
+        },
+        {
+          "id": "BR_MA26",
+          "cue": "merge_tutorial.heaven.after_upgrade",
+          "source_id": "MA26",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That’s a little stronger already. Let your guardians get back to work. You can keep improving the line as you go.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Já ficou um pouquinho mais forte. Deixe seus guardiões voltarem ao trabalho. Você pode continuar melhorando a linha enquanto avança."
+        },
+        {
+          "id": "BR_MA27",
+          "cue": "merge_tutorial.heaven.after_slots",
+          "source_id": "MA27",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your extra slots are ready. Keep the line steady, and soon we’ll give one of your powers a useful enhancement.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seus espaços extras estão prontos. Mantenha a linha firme, e logo vamos dar uma melhoria útil a um dos seus poderes."
+        },
+        {
+          "id": "BR_MA28",
+          "cue": "merge_tutorial.heaven.after_enhance",
+          "source_id": "MA28",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "There—that power has a little more to offer. Keep going; you’ve nearly learned everything you need to manage this defense yourself.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Pronto, esse poder tem um pouquinho mais a oferecer. Continue; você já aprendeu quase tudo de que precisa para cuidar dessa defesa por conta própria."
+        },
+        {
+          "id": "BR_MA29",
+          "cue": "merge_tutorial.heaven.completion",
+          "source_id": "MA29",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve learned the essentials, little light. Keep growing your defense, explore when you wish, and remember: you can always take a breather in Farm and Fight.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você aprendeu o essencial, minha luzinha. Continue fortalecendo sua defesa e explore quando quiser. Lembre que sempre pode respirar um pouco em Farm and Fight."
+        },
+        {
+          "id": "BR_MA30",
+          "cue": "merge_tutorial.heaven.resume",
+          "source_id": "MA30",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Welcome back, little light. Your progress is still here. Follow the guide, and we’ll pick up with the step you were working on.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Bem-vindo de volta, minha luzinha. Seu progresso continua aqui. Siga a indicação, e vamos retomar o passo em que você estava."
+        },
+        {
+          "id": "BR_MA31",
+          "cue": "merge_tutorial.heaven.reminder",
+          "source_id": "MA31",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Whenever you’re ready, little light, the glowing guide will show your next step. Take your time. We’ll build this together.",
+          "usage": "reminder",
+          "locale": "pt-br",
+          "text": "Quando estiver pronto, minha luzinha, a indicação brilhante vai mostrar o próximo passo. Sem pressa. Vamos construir isso juntos."
+        },
+        {
+          "id": "BR_MA32",
+          "cue": "merge_tutorial.heaven.help.power",
+          "source_id": "MA32",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Magnet is a helpful beginning. Choose the power you want, then Commit when you’re happy with your choice.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Magnet é um bom começo. Escolha o poder que quiser e use Commit quando estiver contente com a escolha."
+        },
+        {
+          "id": "BR_MA33",
+          "cue": "merge_tutorial.heaven.help.slots",
+          "source_id": "MA33",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose two extra slots on powers you own. You can put them where they’ll help most, and change your picks before you Commit.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha dois espaços extras em poderes que você já tem. Coloque onde puderem ajudar mais e mude suas escolhas antes de usar Commit, se quiser."
+        },
+        {
+          "id": "BR_MA34",
+          "cue": "merge_tutorial.heaven.help.commit",
+          "source_id": "MA34",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your choices are ready. Choose Commit to make them yours, or adjust them first if something doesn’t feel right.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Suas escolhas estão prontas. Use Commit para confirmar, ou ajuste primeiro se alguma coisa não parecer certa."
+        },
+        {
+          "id": "BR_MA35",
+          "cue": "merge_tutorial.heaven.help.owned",
+          "source_id": "MA35",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose one of your powers. Then we can look at its slots and find a home for that enhancement.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um dos seus poderes. Depois podemos olhar os espaços e encontrar um lugar para essa melhoria."
+        },
+        {
+          "id": "BR_MA36",
+          "cue": "merge_tutorial.heaven.help.slot",
+          "source_id": "MA36",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty enhancement slot on that power. A small space, with room for something helpful.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um espaço de melhoria vazio nesse poder. Um lugar pequeno, com espaço para algo útil."
+        },
+        {
+          "id": "BR_MA37",
+          "cue": "merge_tutorial.heaven.help.enhancement",
+          "source_id": "MA37",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an enhancement that fits your power. A Focus enhancement can help it use less of your energy.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha uma melhoria compatível com seu poder. Uma melhoria Focus pode ajudar a gastar menos energia."
+        },
+        {
+          "id": "BR_MA38",
+          "cue": "merge_tutorial.heaven.help.apply",
+          "source_id": "MA38",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That looks ready. Choose Apply to place the enhancement into your power. Then let’s see what it can do.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Parece pronto. Escolha Apply para colocar a melhoria no seu poder. Depois vamos ver o que ele consegue fazer."
+        },
+        {
+          "id": "BR_MA39",
+          "cue": "merge_tutorial.heaven.help.origin",
+          "source_id": "MA39",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "This choice shapes the powers you can learn. Take a moment to explore the origins, and choose the one that feels right for you.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Essa escolha define os poderes que você pode aprender. Explore as origens com calma e escolha aquela que mais combina com você."
+        },
+        {
+          "id": "BR_MA40",
+          "cue": "merge_tutorial.heaven.help.origin_review",
+          "source_id": "MA40",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Take one last look before you confirm. Your origin is a permanent choice, so choose the path you truly want to follow.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Confira uma última vez antes de confirmar. Sua origem é uma escolha permanente, então escolha o caminho que você realmente quer seguir."
+        }
+      ]
+    },
+    {
+      "id": "pt-br_merge_demon",
+      "locale": "pt-br",
+      "track": "merge",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "BR_MD01",
+          "cue": "merge_tutorial.hell.collect_setup",
+          "source_id": "MD01",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "So, this patch of Hell is yours. Collect the Waycoins along the glowing trail, then the gem. Even impending disaster needs a starting budget.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Então este cantinho do Inferno é seu. Recolha as Waycoins pelo caminho brilhante e depois a gema. Até um desastre anunciado precisa de um orçamento inicial."
+        },
+        {
+          "id": "BR_MD02",
+          "cue": "merge_tutorial.hell.collect_setup.auto",
+          "source_id": "MD02",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You brought a Coin Pup. Delegating already? Sensible. Let it collect the coins and gem while you practice looking like you’re in charge.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Trouxe um Coin Pup. Já está delegando? Sensato. Deixe ele recolher as moedas e a gema enquanto você pratica essa cara de quem está no comando."
+        },
+        {
+          "id": "BR_MD03",
+          "cue": "merge_tutorial.hell.create_five",
+          "source_id": "MD03",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Five Earth Eggs. Use Buy Egg until you have them. Yes, eggs. Apparently that is what stands between you and utter embarrassment.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Cinco Ovos da Terra. Use Buy Egg até conseguir todos. Sim, ovos. Aparentemente, é isso que separa você de passar uma vergonha completa."
+        },
+        {
+          "id": "BR_MD04",
+          "cue": "merge_tutorial.hell.deploy_best",
+          "source_id": "MD04",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Deploy Best. It puts those eggs to work on your defense line. They cannot defend much while you leave them admiring the board.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Deploy Best. Isso põe seus ovos para trabalhar na linha de defesa. Eles não defendem muita coisa se ficarem admirando o tabuleiro."
+        },
+        {
+          "id": "BR_MD05",
+          "cue": "merge_tutorial.hell.collect_workshop_coins",
+          "source_id": "MD05",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Fetch a Waycoin pile. The engineer does not accept hopeful expressions as payment. I asked.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Recolha uma pilha de Waycoins. O engenheiro não aceita olhares esperançosos como pagamento. Eu perguntei."
+        },
+        {
+          "id": "BR_MD06",
+          "cue": "merge_tutorial.hell.talk_engineer",
+          "source_id": "MD06",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The engineer is waiting at the gold line. Go speak with him. A wall might compensate for that optimistic approach to survival.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "O engenheiro está esperando na linha dourada. Vá falar com ele. Uma muralha talvez compense essa sua visão tão otimista da sobrevivência."
+        },
+        {
+          "id": "BR_MD07",
+          "cue": "merge_tutorial.hell.unlock_bulwark",
+          "source_id": "MD07",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock the Impaler Palisade. One gem buys a rather pointed objection to trespassers. Finally, a decorating choice I approve of.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Desbloqueie Impaler Palisade. Uma gema compra uma objeção bastante pontuda aos invasores. Finalmente, uma decoração que eu aprovo."
+        },
+        {
+          "id": "BR_MD08",
+          "cue": "merge_tutorial.hell.install_bulwark",
+          "source_id": "MD08",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install. Owning a wall and actually putting it in the enemy’s way are, regrettably, different things.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Install. Ter uma muralha e realmente pôr ela no caminho do inimigo são, infelizmente, coisas diferentes."
+        },
+        {
+          "id": "BR_MD09",
+          "cue": "merge_tutorial.hell.collect_cannon_coins",
+          "source_id": "MD09",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Another Waycoin pile, please. Artillery is wonderfully persuasive, but apparently persuasion has installation costs.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Outra pilha de Waycoins, por favor. Artilharia é muito convincente, mas parece que convencer alguém tem custo de instalação."
+        },
+        {
+          "id": "BR_MD10",
+          "cue": "merge_tutorial.hell.collect_cannon_gem",
+          "source_id": "MD10",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Collect that gem. We’re unlocking a Heal cannon. Try not to look so disappointed that it does something useful.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Recolha aquela gema. Vamos desbloquear um canhão Heal. Tente não parecer tão decepcionado por ele fazer algo útil."
+        },
+        {
+          "id": "BR_MD11",
+          "cue": "merge_tutorial.hell.talk_commander",
+          "source_id": "MD11",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your artillery commander is waiting by the right-hand gun. Go introduce yourself before your defense introduces itself to the floor.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seu comandante de artilharia espera junto ao canhão da direita. Vá se apresentar antes que sua defesa acabe se apresentando ao chão."
+        },
+        {
+          "id": "BR_MD12",
+          "cue": "merge_tutorial.hell.unlock_cannon",
+          "source_id": "MD12",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Unlock Heal with your gem. Yes, healing artillery. Apparently keeping your defenders alive is part of the strategy.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Desbloqueie Heal com sua gema. Sim, artilharia que cura. Aparentemente, manter seus defensores vivos faz parte da estratégia."
+        },
+        {
+          "id": "BR_MD13",
+          "cue": "merge_tutorial.hell.install_cannon",
+          "source_id": "MD13",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Install. Let the Heal cannon earn its place. Your defenders have been very patient with your management so far.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Install. Deixe o canhão Heal merecer seu lugar. Seus defensores têm sido muito pacientes com sua gestão até agora."
+        },
+        {
+          "id": "BR_MD14",
+          "cue": "merge_tutorial.hell.power_lesson",
+          "source_id": "MD14",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "You’ve earned a power. Open Powers, choose one, and Commit. Magnet can collect scattered loot. Anything that reduces your wandering is progress.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você ganhou um poder. Abra Powers, escolha um e use Commit. Magnet recolhe o saque espalhado. Qualquer coisa que diminua suas andanças já é progresso."
+        },
+        {
+          "id": "BR_MD15",
+          "cue": "merge_tutorial.hell.collect_upgrade_coins",
+          "source_id": "MD15",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Gather some more Waycoins. Your eggs could use an improvement, and glaring at them has achieved remarkably little.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Recolha mais Waycoins. Seus ovos precisam de uma melhoria, e olhar feio para eles não adiantou muita coisa."
+        },
+        {
+          "id": "BR_MD16",
+          "cue": "merge_tutorial.hell.collect_upgrade_coins.auto",
+          "source_id": "MD16",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Let your Coin Pup gather the funds. At least one member of this operation understands the assignment.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Deixe seu Coin Pup reunir os fundos. Pelo menos alguém nesta operação entendeu a tarefa."
+        },
+        {
+          "id": "BR_MD17",
+          "cue": "merge_tutorial.hell.upgrade_eggs",
+          "source_id": "MD17",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Time to improve those eggs. Buy a couple, then use Deploy Best. Already have one waiting? Place it. I’m mocking you, not trying to trap you.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Hora de melhorar esses ovos. Compre dois e use Deploy Best. Já tem um esperando? Coloque na linha. Estou zombando de você, não tentando prender você aqui."
+        },
+        {
+          "id": "BR_MD18",
+          "cue": "merge_tutorial.hell.upgrade_eggs.deploy",
+          "source_id": "MD18",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Deploy Best. It can combine matching eggs or place one on the line. Either counts. Do try to contain your relief.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Escolha Deploy Best. Ele pode combinar ovos iguais ou colocar um na linha. Os dois contam. Tente disfarçar esse alívio."
+        },
+        {
+          "id": "BR_MD19",
+          "cue": "merge_tutorial.hell.slots_lesson",
+          "source_id": "MD19",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Two extra enhancement slots are yours to choose. Open Powers, place them, and Commit. You may reconsider before committing. A rare luxury.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Você pode escolher dois espaços extras de melhoria. Abra Powers, coloque eles e use Commit. Pode mudar de ideia antes de confirmar. Um luxo raro."
+        },
+        {
+          "id": "BR_MD20",
+          "cue": "merge_tutorial.hell.enhance_lesson",
+          "source_id": "MD20",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Those new slots are not merely decorative. Choose a power in Powers, and fit it with an enhancement. Let’s see some improvement.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Esses espaços novos não são apenas decorativos. Escolha um poder em Powers e coloque uma melhoria. Vamos ver algum progresso."
+        },
+        {
+          "id": "BR_MD21",
+          "cue": "merge_tutorial.hell.talk_quartermaster",
+          "source_id": "MD21",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That’s Macros, your Quartermaster. Boosts, enhancements, optional training. Visit when you like. For once, I am not giving you homework.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Esse é Macros, seu intendente. Reforços, melhorias, treinamento opcional. Visite quando quiser. Por uma vez, não estou passando dever de casa."
+        },
+        {
+          "id": "BR_MD22",
+          "cue": "merge_tutorial.hell.after_setup",
+          "source_id": "MD22",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Eggs in one basket? How traditional. Try filling another hatcher; two smaller squads can serve you better than one powerful egg. Your defense, your decision.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Todos os ovos na mesma cesta? Que clássico. Experimente colocar um ovo em outra incubadora. Dois esquadrões pequenos podem ajudar mais do que um único ovo poderoso. Sua defesa, sua decisão."
+        },
+        {
+          "id": "BR_MD23",
+          "cue": "merge_tutorial.hell.after_bulwark",
+          "source_id": "MD23",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "A wall, installed correctly. I shall try not to sound surprised. Let the next enemies test your handiwork.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Uma muralha instalada corretamente. Vou tentar não parecer surpreso. Deixe os próximos inimigos testarem sua obra."
+        },
+        {
+          "id": "BR_MD24",
+          "cue": "merge_tutorial.hell.after_cannon",
+          "source_id": "MD24",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "The Heal cannon is installed. Let’s see whether your defense survives long enough to earn its next lesson.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "O canhão Heal está instalado. Vamos ver se sua defesa sobrevive o bastante para ganhar a próxima lição."
+        },
+        {
+          "id": "BR_MD25",
+          "cue": "merge_tutorial.hell.after_power",
+          "source_id": "MD25",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "A power of your own. Use it when it helps. I’d hate for it to become another expensive ornament.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Um poder só seu. Use quando ajudar. Eu detestaria ver isso virar mais um enfeite caro."
+        },
+        {
+          "id": "BR_MD26",
+          "cue": "merge_tutorial.hell.after_upgrade",
+          "source_id": "MD26",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "An improvement. I noticed. Your guardians may return to work while I recover from this unexpected competence.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Uma melhoria. Eu percebi. Seus guardiões podem voltar ao trabalho enquanto me recupero dessa competência inesperada."
+        },
+        {
+          "id": "BR_MD27",
+          "cue": "merge_tutorial.hell.after_slots",
+          "source_id": "MD27",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your slots are ready. Hold the line a little longer, and we’ll put something useful in one of them.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Seus espaços estão prontos. Segure a linha mais um pouco, e vamos pôr algo útil em um deles."
+        },
+        {
+          "id": "BR_MD28",
+          "cue": "merge_tutorial.hell.after_enhance",
+          "source_id": "MD28",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "An enhanced power. Better. Keep the defense going. You are becoming inconveniently capable.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Um poder melhorado. Melhor assim. Continue defendendo. Você está ficando inconvenientemente capaz."
+        },
+        {
+          "id": "BR_MD29",
+          "cue": "merge_tutorial.hell.completion",
+          "source_id": "MD29",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "That concludes your introduction to barely controlled chaos. Keep improving your defense. Explore if you like. You may even visit Farm and Fight. I shall endure your absence.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Isso encerra sua introdução ao caos quase controlado. Continue melhorando sua defesa. Explore se quiser. Pode até visitar Farm and Fight. Vou suportar sua ausência."
+        },
+        {
+          "id": "BR_MD30",
+          "cue": "merge_tutorial.hell.resume",
+          "source_id": "MD30",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Back for more? Your progress survived. Follow the guide, and we’ll resume the part you were so thoughtfully contemplating.",
+          "usage": "main",
+          "locale": "pt-br",
+          "text": "Voltou para mais? Seu progresso sobreviveu. Siga a indicação, e vamos retomar aquela parte que você estava contemplando com tanto cuidado."
+        },
+        {
+          "id": "BR_MD31",
+          "cue": "merge_tutorial.hell.reminder",
+          "source_id": "MD31",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your next step is still waiting by the glowing guide. No rush. The enemies have only their entire existence to spare.",
+          "usage": "reminder",
+          "locale": "pt-br",
+          "text": "Sua próxima tarefa continua esperando perto do caminho brilhante. Sem pressa. Os inimigos só têm a eternidade inteira pela frente."
+        },
+        {
+          "id": "BR_MD32",
+          "cue": "merge_tutorial.hell.help.power",
+          "source_id": "MD32",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a power, then Commit. Magnet is useful. So, I’m told, is making a decision.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um poder e use Commit. Magnet é útil. Tomar uma decisão também é, pelo que me contam."
+        },
+        {
+          "id": "BR_MD33",
+          "cue": "merge_tutorial.hell.help.slots",
+          "source_id": "MD33",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Place your extra slots on powers you own. Change your picks if you must, then Commit. Empty deliberation is not an enhancement.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Coloque seus espaços extras em poderes que você já tem. Mude as escolhas se precisar e use Commit. Pensar sem fazer nada não é uma melhoria."
+        },
+        {
+          "id": "BR_MD34",
+          "cue": "merge_tutorial.hell.help.commit",
+          "source_id": "MD34",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Your choices are waiting. Commit to keep them, or adjust them first. Staring at the button is not a third option.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Suas escolhas estão esperando. Use Commit para confirmar ou ajuste primeiro. Encarar o botão não é uma terceira opção."
+        },
+        {
+          "id": "BR_MD35",
+          "cue": "merge_tutorial.hell.help.owned",
+          "source_id": "MD35",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a power you own. We need somewhere to put the enhancement, preferably somewhere useful.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um poder que você tem. Precisamos de um lugar para a melhoria, de preferência um lugar útil."
+        },
+        {
+          "id": "BR_MD36",
+          "cue": "merge_tutorial.hell.help.slot",
+          "source_id": "MD36",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose an empty slot on that power. Yes, the empty one. We’re filling it, not admiring it.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha um espaço vazio nesse poder. Sim, o vazio. Vamos preencher, não admirar."
+        },
+        {
+          "id": "BR_MD37",
+          "cue": "merge_tutorial.hell.help.enhancement",
+          "source_id": "MD37",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose a fitting enhancement. Focus reduces the energy your power spends. Efficiency. Such a refreshing concept.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha uma melhoria compatível. Focus reduz a energia que seu poder gasta. Eficiência. Que conceito refrescante."
+        },
+        {
+          "id": "BR_MD38",
+          "cue": "merge_tutorial.hell.help.apply",
+          "source_id": "MD38",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choose Apply. The enhancement does rather more inside the power than it does sitting in a menu.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolha Apply. A melhoria faz bem mais dentro do poder do que parada num menu."
+        },
+        {
+          "id": "BR_MD39",
+          "cue": "merge_tutorial.hell.help.origin",
+          "source_id": "MD39",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "Choosing an origin? That shapes the powers you can learn. Read the choices. Even I would not rush you through this one.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Escolhendo uma origem? Isso define os poderes que você pode aprender. Leia as opções. Nem eu apressaria você nessa decisão."
+        },
+        {
+          "id": "BR_MD40",
+          "cue": "merge_tutorial.hell.help.origin_review",
+          "source_id": "MD40",
+          "source_catalog": "configs/merge_tutorial_voice_lines.lua",
+          "english_meaning": "One last look before you confirm. Your origin is permanent. For this decision, thinking twice is entirely acceptable.",
+          "usage": "help",
+          "locale": "pt-br",
+          "text": "Uma última conferida antes de confirmar. Sua origem é permanente. Para esta decisão, pensar duas vezes é perfeitamente aceitável."
+        }
+      ]
+    }
+  ],
+  "terminology": "Keep live English button and power labels recognizable. Translate prose, Earth Egg and pet descriptions. Brazilian Portuguese and neutral Latin American Spanish; reuse approved pilot wording exactly."
+}

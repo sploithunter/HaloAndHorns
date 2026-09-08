@@ -31,8 +31,8 @@
 - Prologue/death cancel speech; Roblox's native menu pauses it. TutorialNarrationActive suppresses
   ambient Merge Watcher and RealmHellFaces encounters. Sounds, faces, mixer effects, and the
   bus-volume connection have explicit cleanup. Voices mute also releases background ducking.
-- Written/device-specific guidance and existing localization stay authoritative. These spoken
-  recordings are English; unavailable/muted audio never blocks play.
+- Written/device-specific guidance stays authoritative. English, Spanish and Brazilian Portuguese
+  recordings follow the tutorial language preference; unavailable/muted audio never blocks play.
 
 ## Verification and recording provenance
 
@@ -100,5 +100,7 @@ regression gate (42 main steps).
 [Spanish/Brazilian Portuguese pilot](../TUTORIAL_LOCALIZATION_VOICE_PILOT.md) contains one welcome,
 one instruction, and one reminder per character/language (12 recordings). Copy and generation
 settings live in `configs/voice_pilots/spanish_portuguese.json`; recordings are in
-`assets/audio/voices/localization_pilot/`. This is a listening experiment, not runtime language
-support. Keep the current English routing until the pilot is reviewed and full coverage is ready.
+`assets/audio/voices/localization_pilot/`. The user approved these performances on 2026-09-08.
+The full implementation reuses all 12 original MP3s and extends coverage to 344 localized
+recordings across both games. See [Tutorial Localization](TUTORIAL_LOCALIZATION.md#spoken-tutorials)
+for routing, English fallback, generation provenance and runtime verification.

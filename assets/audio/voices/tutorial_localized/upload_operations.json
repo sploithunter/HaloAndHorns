@@ -1,0 +1,690 @@
+{
+  "BR_A05": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A05.mp3",
+    "started_at": "2026-09-08T17:51:04.627Z",
+    "operationId": "f493cb34-5b10-47f7-a18b-9b5b407d7998",
+    "assetId": "109034224449701",
+    "completed_at": "2026-09-08T17:51:07.959Z"
+  },
+  "BR_A06": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A06.mp3",
+    "started_at": "2026-09-08T17:51:04.661Z",
+    "operationId": "434d51ed-aa2b-40e9-b8a0-60339dd62ead",
+    "assetId": "111280380744652",
+    "completed_at": "2026-09-08T17:51:07.928Z"
+  },
+  "BR_A07": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A07.mp3",
+    "started_at": "2026-09-08T17:51:04.662Z",
+    "operationId": "039c753d-8704-49c8-afe4-8ae44606b5c8",
+    "assetId": "74427133347743",
+    "completed_at": "2026-09-08T17:51:07.858Z"
+  },
+  "BR_A08": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A08.mp3",
+    "started_at": "2026-09-08T17:51:10.668Z",
+    "operationId": "92690367-f366-46e3-b738-3015896128bc",
+    "assetId": "115525287759346",
+    "completed_at": "2026-09-08T17:51:13.668Z"
+  },
+  "BR_A09": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A09.mp3",
+    "started_at": "2026-09-08T17:51:10.669Z",
+    "operationId": "0a739316-dede-41cc-acce-a534f8606529",
+    "assetId": "127814874823746",
+    "completed_at": "2026-09-08T17:51:13.772Z"
+  },
+  "BR_A10": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A10.mp3",
+    "started_at": "2026-09-08T17:51:10.670Z",
+    "operationId": "7f25cd60-554b-498e-8238-ebdb041895b9",
+    "assetId": "76117212686354",
+    "completed_at": "2026-09-08T17:51:14.017Z"
+  },
+  "BR_A11": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A11.mp3",
+    "started_at": "2026-09-08T17:51:13.672Z",
+    "operationId": "a22ffb0b-3c3a-421a-873d-4b26b9c633b7",
+    "assetId": "102585912100220",
+    "completed_at": "2026-09-08T17:51:16.646Z"
+  },
+  "BR_A12": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A12.mp3",
+    "started_at": "2026-09-08T17:51:16.679Z",
+    "operationId": "25fca221-03d5-4412-8bc2-94f9dfd80b1b",
+    "assetId": "83649985845496",
+    "completed_at": "2026-09-08T17:51:19.623Z"
+  },
+  "BR_A13": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A13.mp3",
+    "started_at": "2026-09-08T17:51:16.681Z",
+    "operationId": "f39a59d3-5bda-4edb-9dea-56d3dc7516a4",
+    "assetId": "88115392438634",
+    "completed_at": "2026-09-08T17:51:19.765Z"
+  },
+  "BR_A14": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A14.mp3",
+    "started_at": "2026-09-08T17:51:16.682Z",
+    "operationId": "e31f793e-5ef4-455e-a452-3d862103c356",
+    "assetId": "86690662343893",
+    "completed_at": "2026-09-08T17:51:19.988Z"
+  },
+  "BR_A15": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A15.mp3",
+    "started_at": "2026-09-08T17:51:19.686Z",
+    "operationId": "9b697df5-45f9-4f06-881b-4ae9efb86309",
+    "assetId": "83549349667367",
+    "completed_at": "2026-09-08T17:51:22.633Z"
+  },
+  "BR_A16": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A16.mp3",
+    "started_at": "2026-09-08T17:51:22.689Z",
+    "operationId": "98fb0e02-6d77-492b-8a41-f2c5b6be67d6",
+    "assetId": "125934238955788",
+    "completed_at": "2026-09-08T17:51:25.614Z"
+  },
+  "BR_A17": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A17.mp3",
+    "started_at": "2026-09-08T17:51:22.690Z",
+    "operationId": "5f7dde9d-fec7-4688-ad61-859283a3d0d7",
+    "assetId": "96910719316475",
+    "completed_at": "2026-09-08T17:51:25.641Z"
+  },
+  "BR_A18": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A18.mp3",
+    "started_at": "2026-09-08T17:51:22.691Z",
+    "operationId": "b02f968e-9aa5-407a-9037-c247c87243e8",
+    "assetId": "92772341634540",
+    "completed_at": "2026-09-08T17:51:25.908Z"
+  },
+  "BR_A19": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A19.mp3",
+    "started_at": "2026-09-08T17:51:25.694Z",
+    "operationId": "15b3aee0-3d99-4e26-8c06-42eeade8b615",
+    "assetId": "87303760411242",
+    "completed_at": "2026-09-08T17:51:28.624Z"
+  },
+  "BR_A20": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A20.mp3",
+    "started_at": "2026-09-08T17:51:25.695Z",
+    "operationId": "29fa2be4-f47c-4a8f-98dc-698af31696d2",
+    "assetId": "104253008818997",
+    "completed_at": "2026-09-08T17:51:28.715Z"
+  },
+  "BR_A21": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A21.mp3",
+    "started_at": "2026-09-08T17:51:28.698Z",
+    "operationId": "fa7294a4-83ea-4d25-a297-35a7ac0e4d84",
+    "assetId": "127900723275694",
+    "completed_at": "2026-09-08T17:51:31.656Z"
+  },
+  "BR_A22": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A22.mp3",
+    "started_at": "2026-09-08T17:51:28.700Z",
+    "operationId": "480f0464-99a2-4910-84cb-3dea02b74883",
+    "assetId": "105112963330658",
+    "completed_at": "2026-09-08T17:51:31.742Z"
+  },
+  "BR_A23": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A23.mp3",
+    "started_at": "2026-09-08T17:51:31.704Z",
+    "operationId": "0bcbbfaa-967d-42e5-b7c2-7b1616bf363e",
+    "assetId": "120617955559934",
+    "completed_at": "2026-09-08T17:51:34.809Z"
+  },
+  "BR_A24": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A24.mp3",
+    "started_at": "2026-09-08T17:51:31.705Z",
+    "operationId": "dbdba513-b4ed-4382-aaf9-b6ea26ce1c88",
+    "assetId": "104872269579322",
+    "completed_at": "2026-09-08T17:51:34.811Z"
+  },
+  "BR_A27": {
+    "status": "complete",
+    "file": "pt-br/angel/BR_A27.mp3",
+    "started_at": "2026-09-08T17:51:34.709Z",
+    "operationId": "da1b8626-fec8-40db-a2dd-2ef39abf5d8a",
+    "assetId": "120024024702303",
+    "completed_at": "2026-09-08T17:51:37.740Z"
+  },
+  "BR_D01": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D01.mp3",
+    "started_at": "2026-09-08T17:51:37.712Z",
+    "operationId": "fc9ecd5b-d5dc-4144-9724-146992bd4064",
+    "assetId": "135174082337151",
+    "completed_at": "2026-09-08T17:51:40.944Z"
+  },
+  "BR_D02": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D02.mp3",
+    "started_at": "2026-09-08T17:51:37.714Z",
+    "operationId": "5f6b6647-d022-4a61-855e-314d52d62551",
+    "assetId": "124613580077432",
+    "completed_at": "2026-09-08T17:51:40.728Z"
+  },
+  "BR_D03": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D03.mp3",
+    "started_at": "2026-09-08T17:51:40.718Z",
+    "operationId": "4c013675-83e0-4db0-9af4-4de4f1aab8e4",
+    "assetId": "108713728115411",
+    "completed_at": "2026-09-08T17:51:43.863Z"
+  },
+  "BR_D04": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D04.mp3",
+    "started_at": "2026-09-08T17:51:43.722Z",
+    "operationId": "71a9cd5b-5808-4b12-a283-608798d33cb8",
+    "assetId": "102178237838362",
+    "completed_at": "2026-09-08T17:51:46.766Z"
+  },
+  "BR_D05": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D05.mp3",
+    "started_at": "2026-09-08T17:51:43.725Z",
+    "operationId": "82d0de2c-6bfb-4401-b185-8976601f7beb",
+    "assetId": "132435606977347",
+    "completed_at": "2026-09-08T17:51:46.717Z"
+  },
+  "BR_D06": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D06.mp3",
+    "started_at": "2026-09-08T17:51:46.729Z",
+    "operationId": "23f0e00c-14ce-4e9b-b7af-f3d38234f14e",
+    "assetId": "77031156168352",
+    "completed_at": "2026-09-08T17:51:49.730Z"
+  },
+  "BR_D07": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D07.mp3",
+    "started_at": "2026-09-08T17:51:46.730Z",
+    "operationId": "5ca84181-01b5-4a4b-bb52-6d8a548423ee",
+    "assetId": "134684141508306",
+    "completed_at": "2026-09-08T17:51:49.778Z"
+  },
+  "BR_D08": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D08.mp3",
+    "started_at": "2026-09-08T17:51:49.732Z",
+    "operationId": "297bd8dd-c1af-4a42-9931-88f6e0ec9e61",
+    "assetId": "133497292979671",
+    "completed_at": "2026-09-08T17:51:52.774Z"
+  },
+  "BR_D09": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D09.mp3",
+    "started_at": "2026-09-08T17:51:49.734Z",
+    "operationId": "3f521f71-f5ee-41a2-9d2b-af607cb246ae",
+    "assetId": "127208331279129",
+    "completed_at": "2026-09-08T17:51:52.857Z"
+  },
+  "BR_D10": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D10.mp3",
+    "started_at": "2026-09-08T17:51:52.737Z",
+    "operationId": "89e5072e-3b3e-4531-82f0-695e7cec6cde",
+    "assetId": "78634191534390",
+    "completed_at": "2026-09-08T17:51:55.763Z"
+  },
+  "BR_D11": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D11.mp3",
+    "started_at": "2026-09-08T17:51:55.740Z",
+    "operationId": "32bbcec4-2041-4f0b-a123-56cbb9f50de9",
+    "assetId": "80867194396962",
+    "completed_at": "2026-09-08T17:51:58.864Z"
+  },
+  "BR_D12": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D12.mp3",
+    "started_at": "2026-09-08T17:51:55.742Z",
+    "operationId": "4a497103-88bb-4489-9eaa-03519b71908e",
+    "assetId": "88146334880063",
+    "completed_at": "2026-09-08T17:51:59.119Z"
+  },
+  "BR_D13": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D13.mp3",
+    "started_at": "2026-09-08T17:51:58.744Z",
+    "operationId": "f59c265c-39a9-4158-bda7-ead9fdf6f4f4",
+    "assetId": "123777918472730",
+    "completed_at": "2026-09-08T17:52:01.741Z"
+  },
+  "BR_D14": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D14.mp3",
+    "started_at": "2026-09-08T17:52:01.749Z",
+    "operationId": "62f370f3-cbe9-406d-9250-ac041b9add0c",
+    "assetId": "98783052309504",
+    "completed_at": "2026-09-08T17:52:04.806Z"
+  },
+  "BR_D15": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D15.mp3",
+    "started_at": "2026-09-08T17:52:01.752Z",
+    "operationId": "fa5a9369-9387-4d32-a0d9-7d09499a3611",
+    "assetId": "137223022304603",
+    "completed_at": "2026-09-08T17:52:04.787Z"
+  },
+  "BR_D16": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D16.mp3",
+    "started_at": "2026-09-08T17:52:01.753Z",
+    "operationId": "f513ed39-ca77-47bb-aba1-8f2a7ea4b591",
+    "assetId": "87676684685127",
+    "completed_at": "2026-09-08T17:52:05.038Z"
+  },
+  "BR_D17": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D17.mp3",
+    "started_at": "2026-09-08T17:52:07.758Z",
+    "operationId": "9ae46632-f985-40a3-9e56-f050d265098a",
+    "assetId": "115960367326494",
+    "completed_at": "2026-09-08T17:52:10.747Z"
+  },
+  "BR_D18": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D18.mp3",
+    "started_at": "2026-09-08T17:52:07.759Z",
+    "operationId": "c2135499-857c-439c-b2dc-c12887c55180",
+    "assetId": "137822903089614",
+    "completed_at": "2026-09-08T17:52:10.807Z"
+  },
+  "BR_D19": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D19.mp3",
+    "started_at": "2026-09-08T17:52:07.760Z",
+    "operationId": "65484df4-776a-4656-af78-58cd6e713e02",
+    "assetId": "128390032851190",
+    "completed_at": "2026-09-08T17:52:11.125Z"
+  },
+  "BR_D20": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D20.mp3",
+    "started_at": "2026-09-08T17:52:10.763Z",
+    "operationId": "85036e77-5d20-494a-b659-dea369812b33",
+    "assetId": "136547879362313",
+    "completed_at": "2026-09-08T17:52:13.848Z"
+  },
+  "BR_D21": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D21.mp3",
+    "started_at": "2026-09-08T17:52:13.769Z",
+    "operationId": "2bdcaa5c-14c8-4e15-9238-c76d1d4f2b05",
+    "assetId": "122931204764103",
+    "completed_at": "2026-09-08T17:52:16.767Z"
+  },
+  "BR_D22": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D22.mp3",
+    "started_at": "2026-09-08T17:52:13.771Z",
+    "operationId": "11b0c775-4ce9-4721-b098-10853adb5d4d",
+    "assetId": "79482607777362",
+    "completed_at": "2026-09-08T17:52:17.114Z"
+  },
+  "BR_D23": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D23.mp3",
+    "started_at": "2026-09-08T17:52:16.775Z",
+    "operationId": "c6622593-3a94-4a3d-808c-3607a45d3631",
+    "assetId": "114750037180324",
+    "completed_at": "2026-09-08T17:52:19.804Z"
+  },
+  "BR_D24": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D24.mp3",
+    "started_at": "2026-09-08T17:52:16.779Z",
+    "operationId": "0800d7ef-ff09-459c-b60e-9c83f3175be0",
+    "assetId": "90224930641465",
+    "completed_at": "2026-09-08T17:52:19.777Z"
+  },
+  "BR_D25": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D25.mp3",
+    "started_at": "2026-09-08T17:52:19.784Z",
+    "operationId": "cfeed482-91bd-4145-97a3-456e45f1ae60",
+    "assetId": "74493457180482",
+    "completed_at": "2026-09-08T17:52:22.794Z"
+  },
+  "BR_D26": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D26.mp3",
+    "started_at": "2026-09-08T17:52:19.785Z",
+    "operationId": "5f5aeb54-8540-44b3-b8b2-3aa22fd4ffbe",
+    "assetId": "91913775065724",
+    "completed_at": "2026-09-08T17:52:22.911Z"
+  },
+  "BR_D27": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D27.mp3",
+    "started_at": "2026-09-08T17:52:22.788Z",
+    "operationId": "dcdbc312-9bef-4045-af2b-8172a0aca578",
+    "assetId": "81702047927049",
+    "completed_at": "2026-09-08T17:52:25.863Z"
+  },
+  "BR_D28": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D28.mp3",
+    "started_at": "2026-09-08T17:52:25.792Z",
+    "operationId": "7a61206d-8ee3-4024-bc72-650550974f3b",
+    "assetId": "132257964173046",
+    "completed_at": "2026-09-08T17:52:28.887Z"
+  },
+  "BR_D29": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D29.mp3",
+    "started_at": "2026-09-08T17:52:25.793Z",
+    "operationId": "7e67d047-6d3b-4843-8d5a-06b196386916",
+    "assetId": "88934988534537",
+    "completed_at": "2026-09-08T17:52:29.139Z"
+  },
+  "BR_D30": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D30.mp3",
+    "started_at": "2026-09-08T17:52:28.797Z",
+    "operationId": "d50f78fb-a74d-40bb-a3a2-570d21cddf4f",
+    "assetId": "72361007709573",
+    "completed_at": "2026-09-08T17:52:31.868Z"
+  },
+  "BR_D31": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D31.mp3",
+    "started_at": "2026-09-08T17:52:31.804Z",
+    "operationId": "952ab576-ed3d-4530-b15c-dea8bb8a89bf",
+    "assetId": "87734800042651",
+    "completed_at": "2026-09-08T17:52:34.835Z"
+  },
+  "BR_D32": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D32.mp3",
+    "started_at": "2026-09-08T17:52:31.807Z",
+    "operationId": "576e138b-2ccc-45d6-aa3d-079da86c1ced",
+    "assetId": "110815019953096",
+    "completed_at": "2026-09-08T17:52:35.119Z"
+  },
+  "BR_D33": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D33.mp3",
+    "started_at": "2026-09-08T17:52:34.811Z",
+    "operationId": "a1d8627c-6696-4253-8bbf-ea1c52d3a8fc",
+    "assetId": "81086294117234",
+    "completed_at": "2026-09-08T17:52:37.872Z"
+  },
+  "BR_D34": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D34.mp3",
+    "started_at": "2026-09-08T17:52:37.816Z",
+    "operationId": "2c834580-b93a-4704-bfb9-1c8f1d3c2b61",
+    "assetId": "98647776517640",
+    "completed_at": "2026-09-08T17:52:40.778Z"
+  },
+  "BR_D35": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D35.mp3",
+    "started_at": "2026-09-08T17:52:37.818Z",
+    "operationId": "149a8f01-9c71-4540-b8bd-ad292701d6a3",
+    "assetId": "136857464102458",
+    "completed_at": "2026-09-08T17:52:41.169Z"
+  },
+  "BR_D36": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D36.mp3",
+    "started_at": "2026-09-08T17:52:40.822Z",
+    "operationId": "d1e81511-114f-416f-a63f-cf6ee9189fba",
+    "assetId": "82637364815587",
+    "completed_at": "2026-09-08T17:52:43.946Z"
+  },
+  "BR_D37": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D37.mp3",
+    "started_at": "2026-09-08T17:52:40.823Z",
+    "operationId": "e281029d-0fc4-4926-97c1-7e5337ad9bd1",
+    "assetId": "70766183931901",
+    "completed_at": "2026-09-08T17:52:43.937Z"
+  },
+  "BR_D38": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D38.mp3",
+    "started_at": "2026-09-08T17:52:43.826Z",
+    "operationId": "cfff13b7-4ef9-4180-95e6-ab3fad5595ed",
+    "assetId": "99357338883078",
+    "completed_at": "2026-09-08T17:52:46.800Z"
+  },
+  "BR_D39": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D39.mp3",
+    "started_at": "2026-09-08T17:52:46.830Z",
+    "operationId": "1090385a-9a43-41ac-8673-e28a71116f61",
+    "assetId": "129788388178019",
+    "completed_at": "2026-09-08T17:52:49.879Z"
+  },
+  "BR_D40": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D40.mp3",
+    "started_at": "2026-09-08T17:52:46.831Z",
+    "operationId": "82da7d1e-dd21-45a7-af33-5847dbfa5f83",
+    "assetId": "129108836837696",
+    "completed_at": "2026-09-08T17:52:49.985Z"
+  },
+  "BR_D41": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D41.mp3",
+    "started_at": "2026-09-08T17:52:46.832Z",
+    "operationId": "468f5418-4260-4633-bfa0-ab5742aee42a",
+    "assetId": "91759247867573",
+    "completed_at": "2026-09-08T17:52:49.866Z"
+  },
+  "BR_D42": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D42.mp3",
+    "started_at": "2026-09-08T17:52:52.836Z",
+    "operationId": "59a5d2e3-2210-436a-b251-b8d1168c3fc4",
+    "assetId": "119225570897282",
+    "completed_at": "2026-09-08T17:52:55.850Z"
+  },
+  "BR_D43": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D43.mp3",
+    "started_at": "2026-09-08T17:52:52.837Z",
+    "operationId": "421782ce-e0d3-4509-89be-836de672885a",
+    "assetId": "130154599534262",
+    "completed_at": "2026-09-08T17:52:55.907Z"
+  },
+  "BR_D44": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D44.mp3",
+    "started_at": "2026-09-08T17:52:52.838Z",
+    "operationId": "d249cbea-d576-4827-908c-66574b78ceda",
+    "assetId": "75939156142610",
+    "completed_at": "2026-09-08T17:52:56.332Z"
+  },
+  "BR_D45": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D45.mp3",
+    "started_at": "2026-09-08T17:52:58.844Z",
+    "operationId": "223fd58a-76cf-4fb5-9d26-e5efbb702571",
+    "assetId": "113767760403794",
+    "completed_at": "2026-09-08T17:53:01.856Z"
+  },
+  "BR_D46": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D46.mp3",
+    "started_at": "2026-09-08T17:52:58.849Z",
+    "operationId": "245684c6-c711-488a-9902-d72d694a9e7e",
+    "assetId": "87212327439589",
+    "completed_at": "2026-09-08T17:53:01.805Z"
+  },
+  "BR_D47": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D47.mp3",
+    "started_at": "2026-09-08T17:52:58.850Z",
+    "operationId": "06e55838-b7f5-435e-9b00-cdaa373c0454",
+    "assetId": "106432420671538",
+    "completed_at": "2026-09-08T17:53:02.104Z"
+  },
+  "BR_D48": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D48.mp3",
+    "started_at": "2026-09-08T17:53:01.854Z",
+    "operationId": "c0e6ccb2-97df-421b-a8ea-33b985a5883f",
+    "assetId": "118345508391606",
+    "completed_at": "2026-09-08T17:53:04.829Z"
+  },
+  "BR_D49": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D49.mp3",
+    "started_at": "2026-09-08T17:53:04.857Z",
+    "operationId": "396c459f-8ccd-41d2-bf31-046585c91824",
+    "assetId": "121666935381654",
+    "completed_at": "2026-09-08T17:53:07.895Z"
+  },
+  "BR_D50": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D50.mp3",
+    "started_at": "2026-09-08T17:53:04.859Z",
+    "operationId": "fe40505c-bdeb-4911-b1b8-4f7e1df50f74",
+    "assetId": "125955588918870",
+    "completed_at": "2026-09-08T17:53:07.884Z"
+  },
+  "BR_D51": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D51.mp3",
+    "started_at": "2026-09-08T17:53:04.860Z",
+    "operationId": "9c8707da-ed61-46b8-8adb-d6f28db4ae44",
+    "assetId": "126146419074787",
+    "completed_at": "2026-09-08T17:53:08.115Z"
+  },
+  "BR_D52": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D52.mp3",
+    "started_at": "2026-09-08T17:53:10.869Z",
+    "operationId": "d0b6f10f-d818-4cb9-86e7-f3e3540f596d",
+    "assetId": "74357423291708",
+    "completed_at": "2026-09-08T17:53:13.834Z"
+  },
+  "BR_D53": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D53.mp3",
+    "started_at": "2026-09-08T17:53:10.875Z",
+    "operationId": "87224c17-6e1b-41d9-8b99-7165f7243de3",
+    "assetId": "111057183748749",
+    "completed_at": "2026-09-08T17:53:13.960Z"
+  },
+  "BR_D54": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D54.mp3",
+    "started_at": "2026-09-08T17:53:10.877Z",
+    "operationId": "cb0f9b19-eabf-4117-a7b4-8a29926ce27b",
+    "assetId": "100192164469604",
+    "completed_at": "2026-09-08T17:53:14.206Z"
+  },
+  "BR_D55": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D55.mp3",
+    "started_at": "2026-09-08T17:53:13.881Z",
+    "operationId": "bd2a60c4-e939-4453-9ab6-d86add5e0f15",
+    "assetId": "133311101057771",
+    "completed_at": "2026-09-08T17:53:16.815Z"
+  },
+  "BR_D56": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D56.mp3",
+    "started_at": "2026-09-08T17:53:16.884Z",
+    "operationId": "bfcf0f0c-0fa0-48db-a2a5-714900b9a324",
+    "assetId": "77714072134646",
+    "completed_at": "2026-09-08T17:53:19.832Z"
+  },
+  "BR_D57": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D57.mp3",
+    "started_at": "2026-09-08T17:53:16.885Z",
+    "operationId": "28d89b23-be8e-46ba-b9ad-bdf786add563",
+    "assetId": "115594414319036",
+    "completed_at": "2026-09-08T17:53:19.876Z"
+  },
+  "BR_D58": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D58.mp3",
+    "started_at": "2026-09-08T17:53:16.886Z",
+    "operationId": "691753ff-9919-4a82-8c36-7f575fa79ee4",
+    "assetId": "110719978884874",
+    "completed_at": "2026-09-08T17:53:20.244Z"
+  },
+  "BR_D59": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D59.mp3",
+    "started_at": "2026-09-08T17:53:19.889Z",
+    "operationId": "d52a7639-e6f4-4411-b5ef-6a2af65e4356",
+    "assetId": "107810617444502",
+    "completed_at": "2026-09-08T17:53:22.872Z"
+  },
+  "BR_D60": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D60.mp3",
+    "started_at": "2026-09-08T17:53:19.890Z",
+    "operationId": "0aa6ec3f-d71e-4448-b389-f50ae1e25548",
+    "assetId": "111398955763909",
+    "completed_at": "2026-09-08T17:53:22.871Z"
+  },
+  "BR_D61": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D61.mp3",
+    "started_at": "2026-09-08T17:53:22.893Z",
+    "operationId": "2e0eac90-2c47-48b4-a3cc-a3e35e6c62cc",
+    "assetId": "84941824987789",
+    "completed_at": "2026-09-08T17:53:25.971Z"
+  },
+  "BR_D62": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D62.mp3",
+    "started_at": "2026-09-08T17:53:22.894Z",
+    "operationId": "0a501650-d204-4e40-a36d-150391c84311",
+    "assetId": "78814879871848",
+    "completed_at": "2026-09-08T17:53:25.906Z"
+  },
+  "BR_D63": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D63.mp3",
+    "started_at": "2026-09-08T17:53:22.896Z",
+    "operationId": "c884e995-2364-4afd-8836-a40947bc5dc2",
+    "assetId": "107474784608730",
+    "completed_at": "2026-09-08T17:53:25.912Z"
+  },
+  "BR_D64": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D64.mp3",
+    "started_at": "2026-09-08T17:53:28.908Z",
+    "operationId": "899ab0dd-6d2c-4217-af22-cdcca568f96b",
+    "assetId": "122126312493181",
+    "completed_at": "2026-09-08T17:53:32.110Z"
+  },
+  "BR_D65": {
+    "status": "complete",
+    "file": "pt-br/demon/BR_D65.mp3",
+    "started_at": "2026-09-08T17:53:28.910Z",
+    "operationId": "99bd379e-cf6f-4766-b784-d6b5ac01db57",
+    "assetId": "107806360487362",
+    "completed_at": "2026-09-08T17:53:32.197Z"
+  }
+}

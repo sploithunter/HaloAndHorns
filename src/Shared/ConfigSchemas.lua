@@ -281,6 +281,7 @@ local SCHEMAS = {
         language = "string",
     }),
     tutorial_voice_assets = schema({ clips = "table" }),
+    tutorial_voice_locales = schema({ recording_catalog = "string", locales = "table" }),
     tutorial_voice_lines = schema({
         version = "number",
         status = "string",

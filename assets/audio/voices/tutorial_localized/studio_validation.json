@@ -1,0 +1,1667 @@
+{
+  "checked_at": "2026-09-08T17:58:28.788226+00:00",
+  "place_id": 84544653387905,
+  "mode": "Studio Client",
+  "method": "Sound parented to SoundService; PreloadAsync({sound}), IsLoaded, TimeLength > 0; sounds never played",
+  "expected": 184,
+  "checked": 184,
+  "loaded": 179,
+  "clips": [
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_first_egg",
+      "asset_id": 124084582151418,
+      "timeLength": 7.058866213151927,
+      "loaded": true,
+      "id": "BR_A01"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.farm_crystals",
+      "asset_id": 122967180267921,
+      "timeLength": 11.517097505668934,
+      "loaded": true,
+      "id": "BR_A02"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_another",
+      "asset_id": 105852147766044,
+      "timeLength": 8.080544217687075,
+      "loaded": true,
+      "id": "BR_A03"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad",
+      "asset_id": 74845759632323,
+      "timeLength": 8.452063492063493,
+      "loaded": true,
+      "id": "BR_A04"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power",
+      "asset_id": 109034224449701,
+      "timeLength": 10.727619047619047,
+      "loaded": true,
+      "id": "BR_A05"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.cast_power",
+      "asset_id": 111280380744652,
+      "timeLength": 11.842176870748299,
+      "loaded": true,
+      "id": "BR_A06"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power",
+      "asset_id": 74427133347743,
+      "timeLength": 8.080544217687075,
+      "loaded": true,
+      "id": "BR_A07"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.first_fight",
+      "asset_id": 115525287759346,
+      "timeLength": 10.588299319727891,
+      "loaded": true,
+      "id": "BR_A08"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.rally_call",
+      "asset_id": 127814874823746,
+      "timeLength": 11.052698412698414,
+      "loaded": true,
+      "id": "BR_A09"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.completion",
+      "asset_id": 76117212686354,
+      "timeLength": 12.72453514739229,
+      "loaded": true,
+      "id": "BR_A10"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.unequip",
+      "asset_id": 102585912100220,
+      "timeLength": 7.569705215419501,
+      "loaded": true,
+      "id": "BR_A11"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.pick",
+      "asset_id": 83649985845496,
+      "timeLength": 5.433469387755102,
+      "loaded": true,
+      "id": "BR_A12"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.activate",
+      "asset_id": 88115392438634,
+      "timeLength": 5.526349206349207,
+      "loaded": true,
+      "id": "BR_A13"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power.choose",
+      "asset_id": 86690662343893,
+      "timeLength": 7.75546485260771,
+      "loaded": true,
+      "id": "BR_A14"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power.done",
+      "asset_id": 83549349667367,
+      "timeLength": 5.61922902494331,
+      "loaded": true,
+      "id": "BR_A15"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_power",
+      "asset_id": 125934238955788,
+      "timeLength": 3.575873015873016,
+      "loaded": true,
+      "id": "BR_A16"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_slot",
+      "asset_id": 96910719316475,
+      "timeLength": 5.6656689342403626,
+      "loaded": true,
+      "id": "BR_A17"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_enhancement",
+      "asset_id": 92772341634540,
+      "timeLength": 6.455147392290249,
+      "loaded": true,
+      "id": "BR_A18"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.apply",
+      "asset_id": 87303760411242,
+      "timeLength": 3.0650340136054424,
+      "loaded": true,
+      "id": "BR_A19"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.farm_crystals.reminder",
+      "asset_id": 104253008818997,
+      "timeLength": 8.312743764172335,
+      "loaded": true,
+      "id": "BR_A20"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.cast_power.reminder",
+      "asset_id": 127900723275694,
+      "timeLength": 7.244625850340136,
+      "loaded": true,
+      "id": "BR_A21"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.first_fight.handoff",
+      "asset_id": 105112963330658,
+      "timeLength": 7.430385487528345,
+      "loaded": true,
+      "id": "BR_A22"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.resume",
+      "asset_id": 120617955559934,
+      "timeLength": 8.034104308390022,
+      "loaded": true,
+      "id": "BR_A23"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.basic_return",
+      "asset_id": 104872269579322,
+      "timeLength": 11.470657596371883,
+      "loaded": true,
+      "id": "BR_A24"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.choose_companion",
+      "asset_id": 101580523928407,
+      "timeLength": 12.72453514739229,
+      "loaded": true,
+      "id": "BR_A25"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_first_egg.reminder",
+      "asset_id": 108736367305752,
+      "timeLength": 8.034104308390022,
+      "loaded": true,
+      "id": "BR_A26"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.next_task.reminder",
+      "asset_id": 120024024702303,
+      "timeLength": 10.077460317460318,
+      "loaded": true,
+      "id": "BR_A27"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready",
+      "asset_id": 135174082337151,
+      "timeLength": 17.04344671201814,
+      "loaded": true,
+      "id": "BR_D01"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.first_fight",
+      "asset_id": 124613580077432,
+      "timeLength": 16.857687074829933,
+      "loaded": true,
+      "id": "BR_D02"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_stage",
+      "asset_id": 108713728115411,
+      "timeLength": 13.699773242630386,
+      "loaded": true,
+      "id": "BR_D03"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.battle_brew",
+      "asset_id": 102178237838362,
+      "timeLength": 15.557369614512472,
+      "loaded": true,
+      "id": "BR_D04"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_brew",
+      "asset_id": 132435606977347,
+      "timeLength": 8.591383219954649,
+      "loaded": true,
+      "id": "BR_D05"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.brew_fight",
+      "asset_id": 77031156168352,
+      "timeLength": 11.42421768707483,
+      "loaded": true,
+      "id": "BR_D06"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "cue": "combat_tutorial.advance_brew",
+      "asset_id": 134684141508306,
+      "timeLength": 0,
+      "loaded": false,
+      "id": "BR_D07"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal",
+      "asset_id": 133497292979671,
+      "timeLength": 12.956734693877552,
+      "loaded": true,
+      "id": "BR_D08"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal",
+      "asset_id": 127208331279129,
+      "timeLength": 13.699773242630386,
+      "loaded": true,
+      "id": "BR_D09"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_heal",
+      "asset_id": 78634191534390,
+      "timeLength": 9.47374149659864,
+      "loaded": true,
+      "id": "BR_D10"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.select_pet",
+      "asset_id": 80867194396962,
+      "timeLength": 13.096054421768708,
+      "loaded": true,
+      "id": "BR_D11"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.cast_heal",
+      "asset_id": 88146334880063,
+      "timeLength": 15.51092970521542,
+      "loaded": true,
+      "id": "BR_D12"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.heal_fight",
+      "asset_id": 123777918472730,
+      "timeLength": 13.374693877551021,
+      "loaded": true,
+      "id": "BR_D13"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_heal",
+      "asset_id": 98783052309504,
+      "timeLength": 13.746213151927437,
+      "loaded": true,
+      "id": "BR_D14"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_weaken",
+      "asset_id": 137223022304603,
+      "timeLength": 14.117732426303855,
+      "loaded": true,
+      "id": "BR_D15"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.select_enemy",
+      "asset_id": 87676684685127,
+      "timeLength": 13.328253968253968,
+      "loaded": true,
+      "id": "BR_D16"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.throw_weaken",
+      "asset_id": 115960367326494,
+      "timeLength": 11.00625850340136,
+      "loaded": true,
+      "id": "BR_D17"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.weaken_fight",
+      "asset_id": 137822903089614,
+      "timeLength": 15.464489795918368,
+      "loaded": true,
+      "id": "BR_D18"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_weaken",
+      "asset_id": 128390032851190,
+      "timeLength": 11.284897959183674,
+      "loaded": true,
+      "id": "BR_D19"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew",
+      "asset_id": 136547879362313,
+      "timeLength": 16.439727891156462,
+      "loaded": true,
+      "id": "BR_D20"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_stack",
+      "asset_id": 122931204764103,
+      "timeLength": 11.749297052154194,
+      "loaded": true,
+      "id": "BR_D21"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_fight",
+      "asset_id": 79482607777362,
+      "timeLength": 13.003174603174603,
+      "loaded": true,
+      "id": "BR_D22"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_stack",
+      "asset_id": 114750037180324,
+      "timeLength": 11.377777777777778,
+      "loaded": true,
+      "id": "BR_D23"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank",
+      "asset_id": 90224930641465,
+      "timeLength": 11.609977324263038,
+      "loaded": true,
+      "id": "BR_D24"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "cue": "combat_tutorial.tank_fight",
+      "asset_id": 74493457180482,
+      "timeLength": 0,
+      "loaded": false,
+      "id": "BR_D25"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_tank",
+      "asset_id": 91913775065724,
+      "timeLength": 13.049614512471654,
+      "loaded": true,
+      "id": "BR_D26"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_healer",
+      "asset_id": 81702047927049,
+      "timeLength": 13.374693877551021,
+      "loaded": true,
+      "id": "BR_D27"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_hunt",
+      "asset_id": 132257964173046,
+      "timeLength": 16.300408163265306,
+      "loaded": true,
+      "id": "BR_D28"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_fight",
+      "asset_id": 88934988534537,
+      "timeLength": 11.888616780045352,
+      "loaded": true,
+      "id": "BR_D29"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_healer",
+      "asset_id": 72361007709573,
+      "timeLength": 13.978412698412699,
+      "loaded": true,
+      "id": "BR_D30"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_together",
+      "asset_id": 87734800042651,
+      "timeLength": 21.037278911564627,
+      "loaded": true,
+      "id": "BR_D31"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.together_fight",
+      "asset_id": 110815019953096,
+      "timeLength": 11.609977324263038,
+      "loaded": true,
+      "id": "BR_D32"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_together",
+      "asset_id": 81086294117234,
+      "timeLength": 15.232290249433106,
+      "loaded": true,
+      "id": "BR_D33"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.basic.completion",
+      "asset_id": 98647776517640,
+      "timeLength": 15.882448979591837,
+      "loaded": true,
+      "id": "BR_D34"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.advanced_1.completion",
+      "asset_id": 136857464102458,
+      "timeLength": 15.836009070294784,
+      "loaded": true,
+      "id": "BR_D35"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.advanced_2.completion",
+      "asset_id": 82637364815587,
+      "timeLength": 16.253968253968253,
+      "loaded": true,
+      "id": "BR_D36"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal.choose",
+      "asset_id": 70766183931901,
+      "timeLength": 13.653333333333334,
+      "loaded": true,
+      "id": "BR_D37"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal.done",
+      "asset_id": 99357338883078,
+      "timeLength": 7.616145124716553,
+      "loaded": true,
+      "id": "BR_D38"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_power",
+      "asset_id": 129788388178019,
+      "timeLength": 8.777142857142858,
+      "loaded": true,
+      "id": "BR_D39"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_slot",
+      "asset_id": 129108836837696,
+      "timeLength": 7.337505668934241,
+      "loaded": true,
+      "id": "BR_D40"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_enhancement",
+      "asset_id": 91759247867573,
+      "timeLength": 5.572789115646258,
+      "loaded": true,
+      "id": "BR_D41"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.apply",
+      "asset_id": 119225570897282,
+      "timeLength": 10.913378684807256,
+      "loaded": true,
+      "id": "BR_D42"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.unequip",
+      "asset_id": 130154599534262,
+      "timeLength": 11.702857142857143,
+      "loaded": true,
+      "id": "BR_D43"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.pick",
+      "asset_id": 75939156142610,
+      "timeLength": 12.399455782312925,
+      "loaded": true,
+      "id": "BR_D44"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.activate",
+      "asset_id": 113767760403794,
+      "timeLength": 9.241541950113378,
+      "loaded": true,
+      "id": "BR_D45"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.close",
+      "asset_id": 87212327439589,
+      "timeLength": 6.6873469387755105,
+      "loaded": true,
+      "id": "BR_D46"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.enter",
+      "asset_id": 106432420671538,
+      "timeLength": 7.75546485260771,
+      "loaded": true,
+      "id": "BR_D47"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.menu",
+      "asset_id": 118345508391606,
+      "timeLength": 14.86077097505669,
+      "loaded": true,
+      "id": "BR_D48"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.locked",
+      "asset_id": 121666935381654,
+      "timeLength": 9.659501133786849,
+      "loaded": true,
+      "id": "BR_D49"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.replay.start",
+      "asset_id": 125955588918870,
+      "timeLength": 13.699773242630386,
+      "loaded": true,
+      "id": "BR_D50"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.replay.completion",
+      "asset_id": 126146419074787,
+      "timeLength": 13.003174603174603,
+      "loaded": true,
+      "id": "BR_D51"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.leave_confirm",
+      "asset_id": 74357423291708,
+      "timeLength": 10.7740589569161,
+      "loaded": true,
+      "id": "BR_D52"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.resume",
+      "asset_id": 111057183748749,
+      "timeLength": 13.188934240362812,
+      "loaded": true,
+      "id": "BR_D53"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.pets_equipped",
+      "asset_id": 100192164469604,
+      "timeLength": 9.47374149659864,
+      "loaded": true,
+      "id": "BR_D54"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.hotbar_not_editing",
+      "asset_id": 133311101057771,
+      "timeLength": 10.12390022675737,
+      "loaded": true,
+      "id": "BR_D55"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.heal_unbound",
+      "asset_id": 77714072134646,
+      "timeLength": 9.427301587301587,
+      "loaded": true,
+      "id": "BR_D56"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.heal_unenhanced",
+      "asset_id": 115594414319036,
+      "timeLength": 8.359183673469389,
+      "loaded": true,
+      "id": "BR_D57"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.brew_unused",
+      "asset_id": 110719978884874,
+      "timeLength": 9.752380952380953,
+      "loaded": true,
+      "id": "BR_D58"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.tank_missing",
+      "asset_id": 107810617444502,
+      "timeLength": 7.987664399092971,
+      "loaded": true,
+      "id": "BR_D59"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_4",
+      "asset_id": 111398955763909,
+      "timeLength": 7.569705215419501,
+      "loaded": true,
+      "id": "BR_D60"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_3",
+      "asset_id": 84941824987789,
+      "timeLength": 5.804988662131519,
+      "loaded": true,
+      "id": "BR_D61"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_2",
+      "asset_id": 78814879871848,
+      "timeLength": 5.479909297052155,
+      "loaded": true,
+      "id": "BR_D62"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_1",
+      "asset_id": 107474784608730,
+      "timeLength": 5.108390022675737,
+      "loaded": true,
+      "id": "BR_D63"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_hunt.lost",
+      "asset_id": 122126312493181,
+      "timeLength": 10.866938775510205,
+      "loaded": true,
+      "id": "BR_D64"
+    },
+    {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.next_task.reminder",
+      "asset_id": 107806360487362,
+      "timeLength": 14.628571428571428,
+      "loaded": true,
+      "id": "BR_D65"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_first_egg",
+      "asset_id": 93221289737261,
+      "timeLength": 7.662585034013605,
+      "loaded": true,
+      "id": "ES_A01"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.farm_crystals",
+      "asset_id": 100268080110956,
+      "timeLength": 12.167256235827665,
+      "loaded": true,
+      "id": "ES_A02"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_another",
+      "asset_id": 132733323412777,
+      "timeLength": 9.241541950113378,
+      "loaded": true,
+      "id": "ES_A03"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad",
+      "asset_id": 83158954134491,
+      "timeLength": 8.730702947845804,
+      "loaded": true,
+      "id": "ES_A04"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power",
+      "asset_id": 98747185009193,
+      "timeLength": 9.47374149659864,
+      "loaded": true,
+      "id": "ES_A05"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.cast_power",
+      "asset_id": 131835104950671,
+      "timeLength": 10.216780045351474,
+      "loaded": true,
+      "id": "ES_A06"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power",
+      "asset_id": 116703469516868,
+      "timeLength": 8.777142857142858,
+      "loaded": true,
+      "id": "ES_A07"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.first_fight",
+      "asset_id": 102030919395587,
+      "timeLength": 12.213696145124716,
+      "loaded": true,
+      "id": "ES_A08"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.rally_call",
+      "asset_id": 120075244391980,
+      "timeLength": 10.170340136054422,
+      "loaded": true,
+      "id": "ES_A09"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.completion",
+      "asset_id": 80230812665292,
+      "timeLength": 13.374693877551021,
+      "loaded": true,
+      "id": "ES_A10"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.unequip",
+      "asset_id": 128821225830707,
+      "timeLength": 9.102222222222222,
+      "loaded": true,
+      "id": "ES_A11"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.pick",
+      "asset_id": 72208076047886,
+      "timeLength": 4.96907029478458,
+      "loaded": true,
+      "id": "ES_A12"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.build_squad.guide.activate",
+      "asset_id": 93068784359294,
+      "timeLength": 5.804988662131519,
+      "loaded": true,
+      "id": "ES_A13"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power.choose",
+      "asset_id": 105749567071491,
+      "timeLength": 6.780226757369615,
+      "loaded": true,
+      "id": "ES_A14"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.bind_power.done",
+      "asset_id": 136284796664593,
+      "timeLength": 5.526349206349207,
+      "loaded": true,
+      "id": "ES_A15"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_power",
+      "asset_id": 81620742460638,
+      "timeLength": 3.4829931972789114,
+      "loaded": true,
+      "id": "ES_A16"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_slot",
+      "asset_id": 117888988047682,
+      "timeLength": 7.383945578231293,
+      "loaded": true,
+      "id": "ES_A17"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.pick_enhancement",
+      "asset_id": 94969043595577,
+      "timeLength": 6.501587301587302,
+      "loaded": true,
+      "id": "ES_A18"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.slot_power.apply",
+      "asset_id": 107092691942620,
+      "timeLength": 2.8328344671201813,
+      "loaded": true,
+      "id": "ES_A19"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.farm_crystals.reminder",
+      "asset_id": 111682827410010,
+      "timeLength": 9.613061224489796,
+      "loaded": true,
+      "id": "ES_A20"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.cast_power.reminder",
+      "asset_id": 88517554584492,
+      "timeLength": 7.383945578231293,
+      "loaded": true,
+      "id": "ES_A21"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.first_fight.handoff",
+      "asset_id": 116443988454733,
+      "timeLength": 8.034104308390022,
+      "loaded": true,
+      "id": "ES_A22"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.resume",
+      "asset_id": 90948213200067,
+      "timeLength": 7.75546485260771,
+      "loaded": true,
+      "id": "ES_A23"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.basic_return",
+      "asset_id": 73897879248839,
+      "timeLength": 11.795736961451247,
+      "loaded": true,
+      "id": "ES_A24"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.choose_companion",
+      "asset_id": 108226888889749,
+      "timeLength": 12.49233560090703,
+      "loaded": true,
+      "id": "ES_A25"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.hatch_first_egg.reminder",
+      "asset_id": 77676221429168,
+      "timeLength": 9.659501133786849,
+      "loaded": true,
+      "id": "ES_A26"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "tutorial.next_task.reminder",
+      "asset_id": 112523609205881,
+      "timeLength": 10.170340136054422,
+      "loaded": true,
+      "id": "ES_A27"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready",
+      "asset_id": 132684089505157,
+      "timeLength": 17.69360544217687,
+      "loaded": true,
+      "id": "ES_D01"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "cue": "combat_tutorial.first_fight",
+      "asset_id": 88728608848149,
+      "timeLength": 0,
+      "loaded": false,
+      "id": "ES_D02"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_stage",
+      "asset_id": 122574635830290,
+      "timeLength": 14.489251700680272,
+      "loaded": true,
+      "id": "ES_D03"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.battle_brew",
+      "asset_id": 93421892421777,
+      "timeLength": 17.87936507936508,
+      "loaded": true,
+      "id": "ES_D04"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_brew",
+      "asset_id": 112734468143351,
+      "timeLength": 9.427301587301587,
+      "loaded": true,
+      "id": "ES_D05"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.brew_fight",
+      "asset_id": 80662425858029,
+      "timeLength": 12.027936507936507,
+      "loaded": true,
+      "id": "ES_D06"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_brew",
+      "asset_id": 79657183665022,
+      "timeLength": 11.517097505668934,
+      "loaded": true,
+      "id": "ES_D07"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal",
+      "asset_id": 107962311069859,
+      "timeLength": 12.167256235827665,
+      "loaded": true,
+      "id": "ES_D08"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal",
+      "asset_id": 102619820696251,
+      "timeLength": 13.885532879818594,
+      "loaded": true,
+      "id": "ES_D09"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_heal",
+      "asset_id": 99857341537156,
+      "timeLength": 11.656417233560092,
+      "loaded": true,
+      "id": "ES_D10"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.select_pet",
+      "asset_id": 92197992834777,
+      "timeLength": 13.328253968253968,
+      "loaded": true,
+      "id": "ES_D11"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.cast_heal",
+      "asset_id": 87130030277248,
+      "timeLength": 15.603809523809524,
+      "loaded": true,
+      "id": "ES_D12"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.heal_fight",
+      "asset_id": 87441767631415,
+      "timeLength": 14.396371882086168,
+      "loaded": true,
+      "id": "ES_D13"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_heal",
+      "asset_id": 133275909173236,
+      "timeLength": 16.114648526077097,
+      "loaded": true,
+      "id": "ES_D14"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_weaken",
+      "asset_id": 113468572356658,
+      "timeLength": 14.953650793650795,
+      "loaded": true,
+      "id": "ES_D15"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.select_enemy",
+      "asset_id": 121220160863445,
+      "timeLength": 14.814331065759637,
+      "loaded": true,
+      "id": "ES_D16"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.throw_weaken",
+      "asset_id": 87490558653791,
+      "timeLength": 12.399455782312925,
+      "loaded": true,
+      "id": "ES_D17"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.weaken_fight",
+      "asset_id": 119941613738344,
+      "timeLength": 13.096054421768708,
+      "loaded": true,
+      "id": "ES_D18"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_weaken",
+      "asset_id": 91122029539594,
+      "timeLength": 11.19201814058957,
+      "loaded": true,
+      "id": "ES_D19"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew",
+      "asset_id": 120802639220901,
+      "timeLength": 15.928888888888888,
+      "loaded": true,
+      "id": "ES_D20"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_stack",
+      "asset_id": 90381620067473,
+      "timeLength": 13.328253968253968,
+      "loaded": true,
+      "id": "ES_D21"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_fight",
+      "asset_id": 112265083320685,
+      "timeLength": 13.049614512471654,
+      "loaded": true,
+      "id": "ES_D22"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_stack",
+      "asset_id": 118041442555575,
+      "timeLength": 11.563537414965987,
+      "loaded": true,
+      "id": "ES_D23"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank",
+      "asset_id": 89525442300274,
+      "timeLength": 11.19201814058957,
+      "loaded": true,
+      "id": "ES_D24"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.tank_fight",
+      "asset_id": 94608584074956,
+      "timeLength": 18.390204081632653,
+      "loaded": true,
+      "id": "ES_D25"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_tank",
+      "asset_id": 138935534467998,
+      "timeLength": 12.399455782312925,
+      "loaded": true,
+      "id": "ES_D26"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_healer",
+      "asset_id": 118230484648178,
+      "timeLength": 14.582131519274377,
+      "loaded": true,
+      "id": "ES_D27"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_hunt",
+      "asset_id": 127443686427329,
+      "timeLength": 15.603809523809524,
+      "loaded": true,
+      "id": "ES_D28"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_fight",
+      "asset_id": 82327269758535,
+      "timeLength": 11.888616780045352,
+      "loaded": true,
+      "id": "ES_D29"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_healer",
+      "asset_id": 79477727390614,
+      "timeLength": 13.421133786848072,
+      "loaded": true,
+      "id": "ES_D30"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_together",
+      "asset_id": 89306181774547,
+      "timeLength": 17.41496598639456,
+      "loaded": true,
+      "id": "ES_D31"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.together_fight",
+      "asset_id": 116942710898495,
+      "timeLength": 11.470657596371883,
+      "loaded": true,
+      "id": "ES_D32"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.advance_together",
+      "asset_id": 132355798095754,
+      "timeLength": 14.210612244897959,
+      "loaded": true,
+      "id": "ES_D33"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.basic.completion",
+      "asset_id": 99074542249943,
+      "timeLength": 18.483083900226756,
+      "loaded": true,
+      "id": "ES_D34"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.advanced_1.completion",
+      "asset_id": 93593572614598,
+      "timeLength": 16.81124716553288,
+      "loaded": true,
+      "id": "ES_D35"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.advanced_2.completion",
+      "asset_id": 124757404871335,
+      "timeLength": 18.390204081632653,
+      "loaded": true,
+      "id": "ES_D36"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal.choose",
+      "asset_id": 92339024004168,
+      "timeLength": 13.606893424036281,
+      "loaded": true,
+      "id": "ES_D37"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.bind_heal.done",
+      "asset_id": 125496121303196,
+      "timeLength": 7.7090249433106575,
+      "loaded": true,
+      "id": "ES_D38"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_power",
+      "asset_id": 129357059589512,
+      "timeLength": 9.195102040816327,
+      "loaded": true,
+      "id": "ES_D39"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_slot",
+      "asset_id": 129220166976576,
+      "timeLength": 9.241541950113378,
+      "loaded": true,
+      "id": "ES_D40"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.pick_enhancement",
+      "asset_id": 101710059587591,
+      "timeLength": 7.476825396825397,
+      "loaded": true,
+      "id": "ES_D41"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.enhance_heal.apply",
+      "asset_id": 129668089845287,
+      "timeLength": 8.823582766439909,
+      "loaded": true,
+      "id": "ES_D42"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.unequip",
+      "asset_id": 97989965708744,
+      "timeLength": 14.210612244897959,
+      "loaded": true,
+      "id": "ES_D43"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.pick",
+      "asset_id": 130707913187229,
+      "timeLength": 13.931972789115646,
+      "loaded": true,
+      "id": "ES_D44"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.activate",
+      "asset_id": 81631662501632,
+      "timeLength": 9.009342403628118,
+      "loaded": true,
+      "id": "ES_D45"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.close",
+      "asset_id": 90015418779550,
+      "timeLength": 8.823582766439909,
+      "loaded": true,
+      "id": "ES_D46"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.ready_tank.guide.enter",
+      "asset_id": 125085819763485,
+      "timeLength": 8.219863945578231,
+      "loaded": true,
+      "id": "ES_D47"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "cue": "combat_courses.menu",
+      "asset_id": 113116132255307,
+      "timeLength": 0,
+      "loaded": false,
+      "id": "ES_D48"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.locked",
+      "asset_id": 137561103601079,
+      "timeLength": 8.962902494331066,
+      "loaded": true,
+      "id": "ES_D49"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.replay.start",
+      "asset_id": 126613070541780,
+      "timeLength": 13.746213151927437,
+      "loaded": true,
+      "id": "ES_D50"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_courses.replay.completion",
+      "asset_id": 101636570281289,
+      "timeLength": 13.606893424036281,
+      "loaded": true,
+      "id": "ES_D51"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.leave_confirm",
+      "asset_id": 77920513389746,
+      "timeLength": 10.495419501133787,
+      "loaded": true,
+      "id": "ES_D52"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.resume",
+      "asset_id": 114172981575583,
+      "timeLength": 13.049614512471654,
+      "loaded": true,
+      "id": "ES_D53"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.pets_equipped",
+      "asset_id": 125097893124475,
+      "timeLength": 10.448979591836734,
+      "loaded": true,
+      "id": "ES_D54"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.hotbar_not_editing",
+      "asset_id": 116672576538399,
+      "timeLength": 12.445895691609977,
+      "loaded": true,
+      "id": "ES_D55"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.heal_unbound",
+      "asset_id": 110452189028752,
+      "timeLength": 10.356099773242631,
+      "loaded": true,
+      "id": "ES_D56"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "cue": "combat_tutorial.door.heal_unenhanced",
+      "asset_id": 75922368555291,
+      "timeLength": 0,
+      "loaded": false,
+      "id": "ES_D57"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.brew_unused",
+      "asset_id": 78606707531326,
+      "timeLength": 11.00625850340136,
+      "loaded": true,
+      "id": "ES_D58"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.door.tank_missing",
+      "asset_id": 87638927094005,
+      "timeLength": 10.634739229024943,
+      "loaded": true,
+      "id": "ES_D59"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_4",
+      "asset_id": 122334428399203,
+      "timeLength": 7.198185941043084,
+      "loaded": true,
+      "id": "ES_D60"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_3",
+      "asset_id": 104948117609724,
+      "timeLength": 6.222947845804988,
+      "loaded": true,
+      "id": "ES_D61"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_2",
+      "asset_id": 87900343366664,
+      "timeLength": 5.6656689342403626,
+      "loaded": true,
+      "id": "ES_D62"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.stack_brew.remaining_1",
+      "asset_id": 75279699728892,
+      "timeLength": 5.433469387755102,
+      "loaded": true,
+      "id": "ES_D63"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.healer_hunt.lost",
+      "asset_id": 106619272581594,
+      "timeLength": 9.93814058956916,
+      "loaded": true,
+      "id": "ES_D64"
+    },
+    {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "combat_tutorial.next_task.reminder",
+      "asset_id": 140160119469844,
+      "timeLength": 13.653333333333334,
+      "loaded": true,
+      "id": "ES_D65"
+    }
+  ]
+}
