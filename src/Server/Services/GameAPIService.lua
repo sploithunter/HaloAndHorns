@@ -33,6 +33,7 @@ local Validators = require(ReplicatedStorage.Shared.API.Validators)
 local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
 local PowerFormula = require(ReplicatedStorage.Shared.Game.PowerFormula)
 local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
+local VoiceVolume = require(ReplicatedStorage.Shared.Effects.VoiceVolume)
 
 local GameAPIService = {}
 GameAPIService.__index = GameAPIService
@@ -796,10 +797,19 @@ function GameAPIService:_registerCommands()
                 or {}
             if type(args.audio) == "table" then
                 -- whitelist the known numeric/boolean fields (no arbitrary blobs in the profile)
+                local previousAudio = data.Settings.ClientPrefs.audio
+                local voicesVolume = args.audio.voicesVolume
+                if voicesVolume == nil and type(previousAudio) == "table" then
+                    voicesVolume = previousAudio.voicesVolume
+                end
                 data.Settings.ClientPrefs.audio = {
                     masterVolume = math.clamp(tonumber(args.audio.masterVolume) or 1, 0, 1),
                     effectsVolume = math.clamp(tonumber(args.audio.effectsVolume) or 1, 0, 1),
                     musicVolume = math.clamp(tonumber(args.audio.musicVolume) or 1, 0, 1),
+                    voicesVolume = VoiceVolume.level(
+                        voicesVolume,
+                        ConfigLoader:LoadConfig("audio").voices
+                    ),
                     uiSoundsEnabled = args.audio.uiSoundsEnabled ~= false,
                 }
             end

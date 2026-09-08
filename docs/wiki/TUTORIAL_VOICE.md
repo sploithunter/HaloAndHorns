@@ -32,3 +32,13 @@ The user requested the merged Watcher volume balance for tutorial playback. The 
 `playbackVolumeSource` references the existing Merge values (angel 1.2 / demon 2.34 now);
 resolve those references during integration rather than baking gain into the MP3s.
 Roblox upload/permissions and face/playback lifecycle remain pending.
+
+## Voices preference — 2026-09-08
+
+Settings → Audio → Voices Volume is saved as `Settings.ClientPrefs.audio.voicesVolume`
+(a 0–1 slider level), restored by `AudioPrefs` at boot, and defaults to 50% for old/new
+profiles. `configs/audio.lua` owns the label, default, curve, and bus limits. Gain is
+`4 * level^2`: 0% mutes, 50% preserves the tuned base volume, 100% amplifies it fourfold.
+Master scales voices; Effects and Music remain independent. Existing angel/demon Watcher
+speech now mirrors the `voices` bus, preserving its 1.2/2.34 per-character base levels and
+background ducking. Muting voices releases ducking. Tutorial playback must use this bus too.

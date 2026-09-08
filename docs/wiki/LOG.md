@@ -8671,3 +8671,12 @@ first-session cohort rates.
 - User approved A01/D01 by listening and requested existing merged Watcher levels; the catalog
   references those canonical volume paths (angel 1.2, demon 2.34) for pending playback integration.
 - Source audio is ready; Roblox upload and tutorial face/playback integration remain pending.
+
+### 2026-09-08 — Separate saved Voices volume
+
+- Added a dedicated Settings audio slider and voice bus: default 50 is unity, 0 is off, 100 is
+  fourfold gain, using a config-owned square curve. Master remains the overall volume control.
+- Existing Watcher angel/demon clips retain their merged 1.2/2.34 base levels and mirror the voice
+  bus independently of Effects/Music. Muting voices lets background ducking release.
+- Persisted voice levels normalize missing/non-finite values to 50%; legacy settings writes that
+  omit the new field preserve the saved voice value. Tutorial source recordings remain unaltered.
