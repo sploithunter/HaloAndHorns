@@ -71,3 +71,16 @@ halves; no fixed button strip may subtract the name's entire width on portrait s
 geometry lives in `configs/trade.lua`. `TradeMobileLayoutSmoke.run()` checks rendered bounds, 44px
 controls, final-row scroll reachability, disabled actions, and repeated empty refreshes in Studio
 Client across five viewport sizes, using stubbed commands without sending real trades or gifts.
+
+Live trading uses two columns on desktop and mobile: the local inventory includes highlighted
+escrow cards first, followed by the selected category's available items; the partner column shows
+only their offer. All offered categories stay visible when browsing Pets, Enhancements, or Eggs.
+Partial stacks retain separate offered/available cards because escrow removes offered copies from
+inventory. Tapping an offered card removes one copy; remaining copies keep the existing bulk-add
+picker. The current gem offer is an explicit readout beside its editor.
+
+Trade, incoming requests, gift picking, and gift confirmation respect the screen's safe inset.
+Fixed readable chrome surrounds flexible card areas, with 44px actions and a full-width category
+selector. `TradeFlowLayoutSmoke.run()` exercises short landscape and desktop geometry plus local
+escrow presentation, mixed-category highlights, state updates, and gift confirmation without real
+inventory changes. Use `show("request")` or `show("gift")` for interactive emulator checks.

@@ -10,6 +10,23 @@
 
 return {
     -- Responsive player picker: fixed readable chrome, remaining height belongs to the list.
+    live_layout = {
+        width_scale = 0.96,
+        height_scale = 0.94,
+        max_width = 1100,
+        max_height = 760,
+        header_height = 32,
+        column_title_height = 24,
+        gap = 6,
+        touch_height = 44,
+        offer_highlight = Color3.fromRGB(46, 204, 113),
+        offer_highlight_transparency = 0.88,
+        offer_outline_thickness = 3,
+        dialog_width_scale = 0.92,
+        dialog_max_width = 460,
+        confirmation_height = 230,
+        request_height = 180,
+    },
     picker_layout = {
         width_scale = 0.92,
         height_scale = 0.9,

@@ -8630,3 +8630,15 @@ first-session cohort rates.
   so narrow portrait screens keep readable names and usable targets.
 - Fixed repeated empty refreshes retaining old message labels. Added native Studio rendered-layout
   coverage for short landscape, portrait, desktop, eight rows, disabled actions, and scroll reachability.
+
+### 2026-09-08 — Two-panel trading and landscape gift flow
+
+- User-directed two-column trade redesign combines inventory and local offer: offered cards are
+  highlighted and sorted first across categories; the partner's offer remains alongside. Partial
+  stacks keep separately keyed offered/available copies; server escrow and transfer rules remain
+  authoritative. Gem offers have a persistent readout, and confirmation shows the offered item count.
+- Replaced overflowing source tabs with a contained category selector, reserved 44px trade actions,
+  honored top safe insets, and expanded the gift picker with a bounded centered confirmation dialog.
+- Native landscape/desktop smoke coverage includes request acceptance, mixed-category selection,
+  removal, offer highlights/order, gem changes, confirmation/cancel, and gift dialog reachability.
+  Interactive phone-emulator checks exercised the same controls with stubbed mutations.
