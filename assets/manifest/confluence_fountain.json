@@ -1,0 +1,22 @@
+{
+  "name": "Confluence",
+  "status": "uploaded_review_candidate",
+  "config": "configs/confluence_fountain.json",
+  "model": "assets/place/Confluence.rbxm",
+  "source": "assets/source/props/confluence/README.md",
+  "geometry_report": "assets/exports/props/confluence/manifest.json",
+  "preview": "assets/exports/props/confluence/Confluence-Walkthrough.png",
+  "map_inserted": false,
+  "roblox_visual_review": "pending placement review",
+  "native_checks": {
+    "mesh_parts": 24,
+    "scrolling_beams": 9,
+    "dimensions": [
+      21.99677,
+      7.799863,
+      22.000002
+    ],
+    "heaven_negative_x": true,
+    "hell_positive_x": true
+  }
+}

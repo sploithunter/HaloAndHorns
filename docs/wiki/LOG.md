@@ -8761,3 +8761,7 @@ first-session cohort rates.
 ## 2026-09-08 — Standalone Confluence fountain asset started
 
 Separate fountain agent is preparing ImageGen → Meshy → Blender source and Roblox upload for the Bragg center, without map edits. Contract is `configs/confluence_fountain.json`; 22-stud footprint and 8-stud height limit. Source and provenance under `assets/source/props/confluence/`.
+
+### 2026-09-08 — Confluence fountain asset delivered separately
+
+Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure check, repaired-mesh retexture, Blender realm material correction and separate pools/falls. Uploaded the 24-part model to group 15872767; config records the Model and texture IDs. Native `assets/place/Confluence.rbxm` adds nine scrolling Beams and corrects FBX orientation. Measured 22-stud footprint / 7.8-stud height; 20,716 triangles, largest mesh 3,690. Verified upload in unparented Studio model and native file round-trip; preview model/export buffer destroyed. No map insertion or shared library rewrite. Review renders and packed Blender source accompany the asset. CI passes 2,842 tests; targeted Lua and Python checks pass. Visual Beam motion awaits placement review.
