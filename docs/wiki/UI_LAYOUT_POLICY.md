@@ -63,3 +63,11 @@ Config-authored proportional spans partition the assembly, and internal button c
 design canvas. Merge's tutorial replaces only the inner pill, leaving both flanks visible and
 interactive. The full-screen `ResponsiveDock` is presentation-only and may host transient feedback;
 it must not own persistent hotbar controls.
+
+Trade's player picker keeps its fixed-height header and touch navigation above a flex-filled page.
+Players and Preferences use separate vertical scrolling surfaces, so saved request/gift policies
+cannot crowd out the player list on a short phone. Player rows put names above two full-width action
+halves; no fixed button strip may subtract the name's entire width on portrait screens. Picker
+geometry lives in `configs/trade.lua`. `TradeMobileLayoutSmoke.run()` checks rendered bounds, 44px
+controls, final-row scroll reachability, disabled actions, and repeated empty refreshes in Studio
+Client across five viewport sizes, using stubbed commands without sending real trades or gifts.

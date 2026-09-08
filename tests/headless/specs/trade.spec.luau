@@ -170,9 +170,16 @@ return function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
             local service = readFile("src/Server/Services/TradeService.lua")
             local api = readFile("src/Server/Services/GameAPIService.lua")
-            expect(string.find(panel, '{ "everyone", "friends", "off" }', 1, true) ~= nil).to.equal(
-                true
-            )
+            for _, mode in ipairs({ "everyone", "friends", "off" }) do
+                expect(
+                    string.find(
+                        panel,
+                        '{ "' .. mode .. '", TradeLogic.invitePrivacyLabel(',
+                        1,
+                        true
+                    ) ~= nil
+                ).to.equal(true)
+            end
             expect(string.find(panel, '"trade.set_invite_privacy"', 1, true) ~= nil).to.equal(true)
             expect(string.find(service, "TradeLogic.canSendInvite({", 1, true) ~= nil).to.equal(
                 true

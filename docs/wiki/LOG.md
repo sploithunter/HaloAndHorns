@@ -8621,3 +8621,12 @@ first-session cohort rates.
 
 - 2026-09-08: Fixed flora sway selecting Farm & Fight biome-named hatchers such as `Grass`. Authored stand markers, egg IDs/tags and ancestor ownership now override flora classification. Disabled whole-model tree sway in config and skip zero-amplitude tracking, keeping rigid trunks rooted while small flora continues moving. Added native-classifier runtime regression and tree-versus-plant amplitude coverage.
 - Native Farm & Fight Edit audit found 11 Grass hatchers selected by the old rules; fixed production candidate function rejects all 48 authored hatchers. Full CI passes 2,811 tests / 318 specs, runtime ancestor/marker regression passes, and wiki checks pass.
+
+### 2026-09-08 — Repair mobile Trade player picker
+
+- Replaced the crowded fixed-offset player picker with a capped responsive shell, compact header,
+  Players/Preferences tabs, and independent scrolling pages. Preferences no longer consume the
+  player list's height; Refresh stays in navigation. Player names sit above 44px Request/Gift actions
+  so narrow portrait screens keep readable names and usable targets.
+- Fixed repeated empty refreshes retaining old message labels. Added native Studio rendered-layout
+  coverage for short landscape, portrait, desktop, eight rows, disabled actions, and scroll reachability.
