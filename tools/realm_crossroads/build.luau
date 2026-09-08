@@ -65,7 +65,11 @@ local function ring(parent, name, center, radius, thickness, height, color, segm
         )
     end
 end
+local pathIndex = 0
 local function path(parent, name, a, b)
+    pathIndex += 1
+    local offset = V.new(0, pathIndex * cfg.paths.layer_step, 0)
+    a, b = a + offset, b + offset
     local mid = (a + b) / 2
     local length = (a - b).Magnitude
     part(
@@ -163,20 +167,20 @@ for _, gate in cfg.gates do
         "ModeSign",
         gate.label,
         { width, s.sign_height, 1 },
-        base * C.new(0, s.opening_height + s.sign_height / 2, s.depth / 2)
+        base * C.new(0, s.opening_height + s.sign_height / 2 + s.sign_lift, s.depth / 2)
     )
     label(
         g,
         "Description",
         gate.subtitle,
         { width, 2, 0.5 },
-        base * C.new(0, s.opening_height - 1, s.depth / 2 + 0.1)
+        base * C.new(0, s.opening_height - 1 - s.subtitle_drop, s.depth / 2 + 0.1)
     )
     part(
         g,
         "Lintel",
         { width + 2, 2, s.depth + 2 },
-        base * C.new(0, s.opening_height + s.sign_height + 1, 0),
+        base * C.new(0, s.opening_height + s.sign_height + 1 + s.sign_lift, 0),
         "trim",
         "Limestone"
     )
@@ -209,8 +213,10 @@ for _, gate in cfg.gates do
         + math.abs(rot.YVector.Y) * raw.Y
         + math.abs(rot.ZVector.Y) * raw.Z
     mesh.Size = raw * (s.avatar_height / boundsY)
+    mesh.MeshSize = V.new(table.unpack(art.mesh_size))
     mesh.CFrame = base
-        * C.new(0, s.opening_height + s.sign_height + 2 + s.avatar_height / 2, 0)
+        * C.new(0, s.opening_height + s.sign_height + 2 + s.avatar_height / 2 + s.sign_lift, 0)
+        * C.Angles(0, math.rad(art.facing_yaw), 0)
         * rot
     mesh.Anchored, mesh.CanCollide, mesh.CanTouch = true, false, false
     mesh.Color = roblox.Color3.fromRGB(table.unpack(art.color))

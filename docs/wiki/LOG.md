@@ -8718,3 +8718,10 @@ first-session cohort rates.
 - Added a config-driven offline bake for a 240 × 220-stud local Roblox walkthrough and a
   spawn-neutral import model. No production place, profile, spawn, or travel changes.
 - See [Realm Crossroads](REALM_CROSSROADS.md) for scale, rebuild command, and integration limits.
+
+### 2026-09-08 — Crossroads scale correction; architectural design before rebuilding
+
+- User rejected R1 scale: gateways too large; island too small. Paused Roblox iteration.
+- Created R2 site plan, gateway/player elevation, longitudinal section, and explicit staged
+  build/acceptance instructions. Proposed island 360 × 320; doorway 10 × 12; art envelope 9 high.
+- Kept R2 design parameters separate from the first blockout. R2 is not yet approved or baked.
