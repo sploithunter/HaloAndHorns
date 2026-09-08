@@ -404,3 +404,15 @@ Hell water now has a local green mist layer: `hell_mist` in the fishing config a
 `bake_pool_mist.luau` author 20 noncolliding sources across the ellipse. Native particle
 emitters animate without a gameplay script. Reviewed at the fishing bank in Play;
 water reflections and fishing platforms remain visible. Run this after the fishing bake.
+
+## Premium design review (2026-09-08)
+
+[Eight-section design package](../art/crossroads-review/README.md) retains 37 screenshots,
+independent section reviews and a coordinated implementation plan. Each area receives 20
+specific improvements, phased build steps, asset briefs and acceptance criteria. This is
+planning evidence, not implemented geometry. The screenshot atlas preserves the current
+preview before the proposed art pass; distant overview omissions are documented.
+
+The user explicitly supports modest new FX built in `~/Documents/RBX-FX-GEN` when useful.
+Its current crystal-only scope is not a creative ceiling. The package identifies narrow
+ambient/ripple/burst extensions and separates them from larger editor/platform investments.
