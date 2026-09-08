@@ -109,6 +109,7 @@ function Presentation:step(dt, age, loudness, forcePortrait)
         or Players.LocalPlayer:GetAttribute("LargeMenuOpen") == true
         or Players.LocalPlayer:GetAttribute("TutorialHandoffOpen") == true
         or Players.LocalPlayer:GetAttribute("CombatTutorialPromptOpen") == true
+        or Players.LocalPlayer:GetAttribute("MergeTutorialMenuOpen") == true
     local position = inMenu and cfg.menu_position or cfg.portrait_position
     local size = inMenu and cfg.menu_size or cfg.portrait_size
     self.card.Position = UDim2.fromScale(position.x, position.y)

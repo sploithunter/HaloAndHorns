@@ -122,6 +122,7 @@ function Guide.entry(controller)
 end
 
 function Guide.clear(menu)
+    Players.LocalPlayer:SetAttribute("MergeTutorialPowerGuideAction", nil)
     local prior = menu._mergeGuide
     if not prior then
         return
@@ -191,6 +192,7 @@ function Guide.refresh(menu)
         action = menu.pendingOrigin and "origin_review" or "origin"
         text = Guide.text(menu.pendingOrigin and "review_origin" or "choose_origin")
     end
+    player:SetAttribute("MergeTutorialPowerGuideAction", action)
     local title = menu.frame:FindFirstChild("PowerChoiceTitle")
     local state = { tweens = {}, objects = {}, title = title, text = title and title.Text }
     menu._mergeGuide = state

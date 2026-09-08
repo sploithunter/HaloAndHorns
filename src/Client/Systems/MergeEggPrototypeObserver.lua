@@ -999,6 +999,12 @@ local function tutorialBuyEggCueAllowed(world)
 end
 
 local function updateTutorialCard(card, world, observing, bulwarkMenu, cannonMenu)
+    local MergeTutorialNarrator = require(script.Parent.MergeTutorialNarrator)
+    MergeTutorialNarrator.update(
+        world,
+        observing,
+        (bulwarkMenu and bulwarkMenu:isOpen()) or (cannonMenu and cannonMenu:isOpen())
+    )
     local tutorial = type(CONFIG.tutorial) == "table" and CONFIG.tutorial or {}
     if
         not (tutorial.power_lessons and tutorial.power_lessons.enabled)

@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-09-08T17:24:45.025012+00:00",
+  "place_id": 84544653387905,
+  "scope": "Studio Client, actual Sound instances",
+  "expected": 80,
+  "loaded": 79,
+  "pending_review": [
+    "merge_tutorial.hell.collect_cannon_coins"
+  ],
+  "checks": [
+    "PreloadAsync({sound})",
+    "IsLoaded",
+    "positive TimeLength"
+  ],
+  "runtime": {
+    "merge_main_step_side_combinations": 38,
+    "farm_regression_main_steps": 42,
+    "owned_bay_automatic_playback": true,
+    "mode_notice_gates_voice": true,
+    "shared_voice_priority": true,
+    "world_and_menu_presentation": true,
+    "recurring_reminders": true,
+    "completion_handoff": true,
+    "cleanup": true,
+    "profile_progress_modified": false,
+    "startup_errors": []
+  },
+  "limitation": "The Hell cannon-coin clip still reports Asset has not been reviewed; its upload ID is preserved while Roblox moderation finishes."
+}

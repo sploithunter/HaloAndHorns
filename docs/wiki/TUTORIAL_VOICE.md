@@ -63,3 +63,34 @@ The outer 3% of the voice slider snaps to mute/max for reliable touch endpoints.
 Master scales voices; Effects and Music remain independent. Existing angel/demon Watcher
 speech now mirrors the `voices` bus, preserving its 1.2/2.34 per-character base levels and
 background ducking. Muting voices releases ducking. Tutorial playback uses this same bus.
+
+## Merge narration (2026-09-08)
+
+[Paired Heaven/Hell scripts](../MERGE_TUTORIAL_VOICE_SCRIPT.md) cover the current Wave 0–14
+onboarding, Auto Collector branches, skippable egg improvement, power menu help, and idle
+encouragement. Both scripts advise spreading defenders across hatchers without making it a gate.
+The owned bay’s replicated side selects the speaker; shared playback/presentation and Voices
+preferences are reused. `merge_tutorial_voice_lines` contains 40 paired cues (80 recordings),
+with group-owned uploads in `merge_tutorial_voice_assets`. Original audio, alignment, manifests,
+and technical checks live in `assets/audio/voices/merge_tutorial/`.
+
+`MergeTutorialVoiceDirector` selects from the **owned** bay and run, never the bay the camera
+happens to face. The existing observer HUD cadence drives `MergeTutorialNarrator`; no server
+polling or extra scene scan is added. The observer is at Luau's top-level local-register limit:
+keep the narrator require scoped inside `updateTutorialCard`, not at module scope.
+
+Main cues do not restart on count refreshes. Auto Collector collection copy, Deploy Best
+aliases, optional Wave 8 upgrades, and the Wave 14 timed Quartermaster introduction follow the
+existing server tutorial. Completion is latched across separately delivered required/completed
+attributes and waits for the timed introduction to finish. Initial completed/reborn joins stay
+silent. Combat intervals get one short handoff and no idle reminders; hands-on steps use the
+shared 45-second/60-second idle reminders and progress resets. Power-menu help follows the
+existing guide action and clears when that action or lesson changes. The first-visit combat-mode
+notice blocks tutorial narration until dismissed. Gameplay uses world faces; menus use portraits.
+
+Multiple tutorial players share a speaking-owner set so an idle/cancelled Farm player cannot
+clear active Merge narration priority. `merge_tutorial_voice.spec.luau` covers both route catalogs
+and state transitions. `MergeTutorialVoiceSmoke` runs 38 main step/side combinations, progress
+refreshes, side changes, shared priority, reminders, completion sequencing, world/menu
+presentation, and cleanup without modifying saved progress. The existing Farm smoke remains a
+regression gate (42 main steps).

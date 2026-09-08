@@ -272,6 +272,14 @@ local SCHEMAS = {
         presentation = "table",
         audio = "table",
     }),
+    merge_tutorial_voice = schema({ enabled = "boolean", steps = "table", side_speakers = "table" }),
+    merge_tutorial_voice_assets = schema({ clips = "table" }),
+    merge_tutorial_voice_lines = schema({
+        version = "number",
+        status = "string",
+        sections = "table",
+        language = "string",
+    }),
     tutorial_voice_assets = schema({ clips = "table" }),
     tutorial_voice_lines = schema({
         version = "number",
