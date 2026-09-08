@@ -16,6 +16,14 @@ local Player = {}
 Player.__index = Player
 local singleton
 local speakingOwners = {}
+function Narrator.isSpeaking(except)
+    for owner in pairs(speakingOwners) do
+        if owner ~= except then
+            return true
+        end
+    end
+    return false
+end
 function Narrator.new(options)
     options = options or {}
     local config = options.config or require(ReplicatedStorage.Configs.tutorial_voice)

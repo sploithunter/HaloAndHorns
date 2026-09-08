@@ -1,0 +1,64 @@
+{
+  "clips": {
+    "1": {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.angel",
+      "loaded": true,
+      "timeLength": 12.631655328798185,
+      "asset_id": 132152235467950
+    },
+    "2": {
+      "locale": "en",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.angel",
+      "loaded": true,
+      "timeLength": 10.588299319727891,
+      "asset_id": 131358066920529
+    },
+    "3": {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.angel",
+      "loaded": true,
+      "timeLength": 11.749297052154194,
+      "asset_id": 105745455251031
+    },
+    "4": {
+      "locale": "pt-br",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.demon",
+      "loaded": true,
+      "timeLength": 19.17968253968254,
+      "asset_id": 87026591390259
+    },
+    "5": {
+      "locale": "en",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.demon",
+      "loaded": true,
+      "timeLength": 17.554285714285715,
+      "asset_id": 104094276382137
+    },
+    "6": {
+      "locale": "es",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
+      "cue": "collector_comment.demon",
+      "loaded": true,
+      "timeLength": 18.018684807256236,
+      "asset_id": 124353306850158
+    }
+  },
+  "done": 6,
+  "expected": 6,
+  "loaded": 6,
+  "verification": {
+    "date": "2026-09-08",
+    "farmMainSteps": 42,
+    "mergeMainSteps": 38,
+    "localeSwitches": 10,
+    "collectorLifecycleCasesPerGame": 6,
+    "collectorPerformances": 6,
+    "existingGains": true
+  }
+}

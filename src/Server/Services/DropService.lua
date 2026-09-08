@@ -27,6 +27,8 @@ local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
 local MagnetRadius = require(ReplicatedStorage.Shared.Game.MagnetRadius)
 local AutoCollectorPickup = require(ReplicatedStorage.Shared.Game.AutoCollectorPickup)
+local CollectorCommentPolicy = require(ReplicatedStorage.Shared.Game.CollectorCommentPolicy)
+local collectorCommentConfig = require(ReplicatedStorage.Configs.collector_voice)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local ModelTemplateStore = require(ReplicatedStorage.Shared.Utils.ModelTemplateStore)
@@ -105,6 +107,7 @@ function DropService:Init()
     self._currencyTemplates = {} -- non-gem pickup templates, keyed by saved currency id
     self._collectRadiusEnchantCache = setmetatable({}, { __mode = "k" })
     self._autoCollectors = {} -- userId -> passive collector movement state
+    self._collectorCommentProgress = setmetatable({}, { __mode = "k" })
     self._lastStepAt = os.clock()
 
     if not self._config.enabled then
@@ -399,7 +402,7 @@ function DropService:_stepAutoCollectors(now, dt)
                 then
                     -- Reuse the owner-authoritative wallet/inventory grant and done guard. No
                     -- fly-to-character animation, auto-use/slotting, or player Magnet changes.
-                    self:_collect(target)
+                    self:_collect(target, false, true)
                     state.target = nil
                     state.nextTargetAt = 0
                 end
@@ -1339,7 +1342,7 @@ function DropService:DiscardDrops(player, source)
     return discarded
 end
 
-function DropService:_collect(rec, _force)
+function DropService:_collect(rec, force, byCollector)
     if not rec or rec._done then
         return
     end
@@ -1410,6 +1413,23 @@ function DropService:_collect(rec, _force)
         if economy and economy.AddCurrency then
             pcall(function()
                 local credited = economy:AddCurrency(plr, rec.currency, rec.amount, "drop_collect")
+                if credited and typeof(plr) == "Instance" and not force and not byCollector then
+                    local state = self._collectorCommentProgress[plr] or {}
+                    self._collectorCommentProgress[plr] = state
+                    if
+                        CollectorCommentPolicy.pickup(
+                            state,
+                            os.clock(),
+                            plr:GetAttribute(collectorCommentConfig.eligibility_attribute) == true
+                                and plr:GetAttribute("AutoCollectorEnabled") ~= true,
+                            true,
+                            rec.currency,
+                            collectorCommentConfig
+                        )
+                    then
+                        fireGameEvent(plr, collectorCommentConfig.event, {})
+                    end
+                end
                 if
                     credited
                     and rec.source == "merge_egg_prototype"

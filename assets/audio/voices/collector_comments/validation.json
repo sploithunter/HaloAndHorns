@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "expected_clips": 6,
+  "validated_clips": 6,
+  "angel_clips": 3,
+  "demon_clips": 3,
+  "total_duration_seconds": 89.722,
+  "total_bytes": 1441802,
+  "checks": [
+    "MP3 decode",
+    "SHA-256",
+    "speaker voice IDs",
+    "canonical text and cue mapping",
+    "full input alignment and timing bounds",
+    "non-silent audio",
+    "clipping below 0.1% of samples"
+  ],
+  "limitation": "Provider alignment verifies the submitted text and timing metadata; it is not an independent transcription or a listening review.",
+  "clips": [
+    {
+      "id": "BR_COIN_ANGEL",
+      "duration_seconds": 11.749297,
+      "peak_dbfs": -7.3,
+      "rms_dbfs": -22.83,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "BR_COIN_DEMON",
+      "duration_seconds": 19.179683,
+      "peak_dbfs": -7.0,
+      "rms_dbfs": -26.65,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "EN_COIN_ANGEL",
+      "duration_seconds": 10.588299,
+      "peak_dbfs": -6.21,
+      "rms_dbfs": -23.34,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "EN_COIN_DEMON",
+      "duration_seconds": 17.554286,
+      "peak_dbfs": -8.1,
+      "rms_dbfs": -29.51,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_COIN_ANGEL",
+      "duration_seconds": 12.631655,
+      "peak_dbfs": -6.5,
+      "rms_dbfs": -20.54,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "ES_COIN_DEMON",
+      "duration_seconds": 18.018685,
+      "peak_dbfs": -8.57,
+      "rms_dbfs": -26.87,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    }
+  ]
+}
