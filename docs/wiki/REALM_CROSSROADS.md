@@ -346,3 +346,18 @@ all open maps were left unchanged. Production placement and visual effect review
 The Confluence is now placed in the existing isolated Bragg map at (0,4.44,-88),
 seated on the actual court surface. Prior fountain is retained under ServerStorage.FountainBeforeConfluence.
 Both side routes passed at speed 24; native nine Beam effects are enabled for in-map review.
+
+Confluence pool tops now use 383 conservative rectangular masks sampled from the original
+Blender pool meshes. Original pool meshes are hidden; colored noncolliding surfaces carry
+tiled textures. StarterPlayerScripts.ConfluenceSurfaceFlow scrolls them locally at 15 Hz
+within 100 studs (water U=.25, lava U=.075 studs/sec, config-owned). Both rates were measured
+in Play. No stone/metal geometry or production gameplay is animated. Copy the client companion
+when integrating the native fountain into Farm & Fight; a standalone model alone does not run it.
+
+Paving junctions now receive an Edit-time CSG trim after all art/theme bakes. Config
+`realm_crossroads_paving.json` names the selected floor patches and footprint priority;
+`trim_paving.luau` subtracts higher-priority footprints through lower-priority slabs.
+Twelve overlapping pieces were cut in the current preview, including arrival/gate branches
+and garden links. Original slabs are backed up in ServerStorage.CrossroadsPavingBeforeTrim.
+Rebuild floor geometry before rerunning this finishing pass. Do not solve floor intersections
+by stacking nearly coplanar faces; adjacent materials need cleaved, non-overlapping boundaries.

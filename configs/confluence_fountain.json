@@ -1,6 +1,6 @@
 {
   "name": "The Confluence",
-  "status": "uploaded_review_candidate",
+  "status": "placed_preview_with_scrolling_pool_surfaces",
   "pipeline": [
     "ImageGen",
     "Meshy Smart Topology T2",
@@ -24,7 +24,7 @@
   "hell_direction": "positive X, toward Hell/Pet Siege",
   "creator_group": 15872767,
   "roblox_model_id": 138190114448131,
-  "fluids": "separate mesh components; no live map integration",
+  "fluids": "Separate colored pool masks with client-scrolling Texture surfaces and nine flowing fall Beams",
   "reference_catalog": [
     "heaven_star_fountain",
     "hell_infernal_fountain",
@@ -52,5 +52,34 @@
     "beam_width_angle": 0.19,
     "segments": 12,
     "status": "nine_native_scrolling_beams_structurally_verified"
+  },
+  "surface_flow": {
+    "tiles_source": "configs/confluence_surface_tiles.json",
+    "bake_source": "assets/source/props/confluence/apply_surface_flow.luau",
+    "client_source": "assets/source/props/confluence/surface_flow_client.luau",
+    "water": {
+      "color": [
+        51,
+        157,
+        179
+      ],
+      "speed_u": 0.25,
+      "speed_v": 0.07,
+      "tile_studs": 5,
+      "transparency": 0.12
+    },
+    "lava": {
+      "color": [
+        167,
+        50,
+        17
+      ],
+      "speed_u": 0.075,
+      "speed_v": -0.025,
+      "tile_studs": 5,
+      "transparency": 0.04
+    },
+    "update_hz": 15,
+    "view_radius": 100
   }
 }

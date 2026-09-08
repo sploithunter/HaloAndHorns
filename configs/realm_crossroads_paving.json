@@ -1,0 +1,30 @@
+{
+  "bake_source": "tools/realm_crossroads/trim_paving.luau",
+  "groups": [
+    "PathsAndLandings",
+    "BraggRotundaR6.TerraceAndEntry",
+    "CrossroadsActivitiesR7.CoinGarden",
+    "CrossroadsActivitiesR7.PatrolGrove"
+  ],
+  "priorities": {
+    "PreviewSpawn": 100,
+    "FarmAndFightLanding": 95,
+    "MergeLanding": 95,
+    "ArrivalWalk": 90,
+    "ModeApproach1": 80,
+    "ModeApproach2": 80,
+    "GardenConnection": 70,
+    "GardenRampConnection": 70,
+    "OverlookApproach": 70,
+    "OverlookLanding": 70,
+    "PavilionFloor": 95,
+    "Playfield": 90,
+    "GatheringTerrace": 85,
+    "RampLandingLink": 70,
+    "PavilionApproach": 70,
+    "GatheringLink": 70
+  },
+  "height_tolerance": 0.3,
+  "cutter_height": 4,
+  "overlap_epsilon": 0.001
+}

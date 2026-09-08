@@ -43,3 +43,7 @@ For native assembly, load the configured raw Model without parenting it into any
 - Native file round-trip: one model, 24 anchored MeshParts, nine connected scrolling Beams. Lua companion: Selene 0 errors/warnings; Python companions compile. Repository CI: 2,842 tests pass.
 
 Existing catalogs checked before generation: Heaven star fountain, Hell infernal fountain, horned animal skull, Hell skull lantern and Heaven flora. The user explicitly requested a new ImageGen → Meshy → Blender asset; no external paid source models are redistributed here.
+
+## In-map pool animation refinement
+
+The Crossroads placement uses `surface_tiles.py` to extract conservative rectangular masks from the original pool geometry into `configs/confluence_surface_tiles.json`. `apply_surface_flow.luau(model, config, tiles)` hides only the original flat pool meshes and adds colored Texture surfaces. Install `surface_flow_client.luau` as a LocalScript under StarterPlayerScripts for nearby client-only scrolling. Tuning lives in `configs/confluence_fountain.json.surface_flow`. Water and lava offsets were measured moving at their configured distinct rates in Studio Play. The original raw Roblox upload remains unchanged; pool motion is an authored placement companion.
