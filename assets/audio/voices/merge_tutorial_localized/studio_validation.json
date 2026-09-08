@@ -5,7 +5,7 @@
   "method": "Sound parented to SoundService; PreloadAsync({sound}), IsLoaded, TimeLength > 0; sounds never played",
   "expected": 160,
   "checked": 160,
-  "loaded": 127,
+  "loaded": 160,
   "clips": [
     {
       "locale": "pt-br",
@@ -351,11 +351,11 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.heaven.help.origin",
       "asset_id": 76659481758085,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.402539682539683,
+      "loaded": true,
       "id": "BR_MA39"
     },
     {
@@ -387,11 +387,11 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.create_five",
       "asset_id": 77972544877273,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 17.647165532879818,
+      "loaded": true,
       "id": "BR_MD03"
     },
     {
@@ -405,11 +405,11 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.collect_workshop_coins",
       "asset_id": 82033747044466,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.495419501133787,
+      "loaded": true,
       "id": "BR_MD05"
     },
     {
@@ -423,11 +423,11 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.unlock_bulwark",
       "asset_id": 138162428173741,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.117732426303855,
+      "loaded": true,
       "id": "BR_MD07"
     },
     {
@@ -450,110 +450,110 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.collect_cannon_gem",
       "asset_id": 125483482656401,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 11.517097505668934,
+      "loaded": true,
       "id": "BR_MD10"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.talk_commander",
       "asset_id": 112832190062128,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 12.213696145124716,
+      "loaded": true,
       "id": "BR_MD11"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.unlock_cannon",
       "asset_id": 89287078183531,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.303492063492063,
+      "loaded": true,
       "id": "BR_MD12"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.install_cannon",
       "asset_id": 124931500933164,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 13.188934240362812,
+      "loaded": true,
       "id": "BR_MD13"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.power_lesson",
       "asset_id": 92137170103652,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 18.575963718820862,
+      "loaded": true,
       "id": "BR_MD14"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.collect_upgrade_coins",
       "asset_id": 139838354300416,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 11.377777777777778,
+      "loaded": true,
       "id": "BR_MD15"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.collect_upgrade_coins.auto",
       "asset_id": 85662585346984,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 7.9412244897959186,
+      "loaded": true,
       "id": "BR_MD16"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.upgrade_eggs",
       "asset_id": 128155369661343,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 19.458321995464853,
+      "loaded": true,
       "id": "BR_MD17"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.upgrade_eggs.deploy",
       "asset_id": 112898145673867,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.44281179138322,
+      "loaded": true,
       "id": "BR_MD18"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.slots_lesson",
       "asset_id": 73099294816734,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 17.182766439909297,
+      "loaded": true,
       "id": "BR_MD19"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.enhance_lesson",
       "asset_id": 114352290003738,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.02485260770975,
+      "loaded": true,
       "id": "BR_MD20"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.talk_quartermaster",
       "asset_id": 100670187510161,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 16.81124716553288,
+      "loaded": true,
       "id": "BR_MD21"
     },
     {
@@ -567,74 +567,74 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_bulwark",
       "asset_id": 102835334724161,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 13.885532879818594,
+      "loaded": true,
       "id": "BR_MD23"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_cannon",
       "asset_id": 73741335175758,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.309659863945578,
+      "loaded": true,
       "id": "BR_MD24"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_power",
       "asset_id": 99817659675546,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.541859410430838,
+      "loaded": true,
       "id": "BR_MD25"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_upgrade",
       "asset_id": 76426289365156,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 11.981496598639456,
+      "loaded": true,
       "id": "BR_MD26"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_slots",
       "asset_id": 124241084501466,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.12390022675737,
+      "loaded": true,
       "id": "BR_MD27"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.after_enhance",
       "asset_id": 139517720655801,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 12.678095238095239,
+      "loaded": true,
       "id": "BR_MD28"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.completion",
       "asset_id": 106975328624657,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 17.832925170068027,
+      "loaded": true,
       "id": "BR_MD29"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.resume",
       "asset_id": 136392850600792,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.257052154195012,
+      "loaded": true,
       "id": "BR_MD30"
     },
     {
@@ -648,83 +648,83 @@
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.power",
       "asset_id": 136849372131430,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 12.120816326530612,
+      "loaded": true,
       "id": "BR_MD32"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.slots",
       "asset_id": 91103195741868,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 16.579047619047618,
+      "loaded": true,
       "id": "BR_MD33"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.commit",
       "asset_id": 110309098656170,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 12.585215419501134,
+      "loaded": true,
       "id": "BR_MD34"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.owned",
       "asset_id": 80532002153349,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 10.495419501133787,
+      "loaded": true,
       "id": "BR_MD35"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.slot",
       "asset_id": 128494323595028,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 12.167256235827665,
+      "loaded": true,
       "id": "BR_MD36"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.enhancement",
       "asset_id": 125900775696263,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 13.885532879818594,
+      "loaded": true,
       "id": "BR_MD37"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.apply",
       "asset_id": 92307011752999,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 9.241541950113378,
+      "loaded": true,
       "id": "BR_MD38"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.origin",
       "asset_id": 80208080893576,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 13.978412698412699,
+      "loaded": true,
       "id": "BR_MD39"
     },
     {
       "locale": "pt-br",
-      "fetchStatus": "Enum.AssetFetchStatus.Failure",
+      "fetchStatus": "Enum.AssetFetchStatus.Success",
       "cue": "merge_tutorial.hell.help.origin_review",
       "asset_id": 132883211334500,
-      "timeLength": 0,
-      "loaded": false,
+      "timeLength": 14.535691609977324,
+      "loaded": true,
       "id": "BR_MD40"
     },
     {
@@ -1447,5 +1447,7 @@
       "loaded": true,
       "id": "ES_MD40"
     }
-  ]
+  ],
+  "initial_loaded": 127,
+  "rechecked_at": "2026-09-08T18:00:48.153330+00:00"
 }
