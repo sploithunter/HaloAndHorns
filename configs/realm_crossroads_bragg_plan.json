@@ -1,0 +1,138 @@
+{
+  "status": "design_only_not_runtime_enabled",
+  "revision": 6,
+  "name": "Bragg Rotunda",
+  "center": [
+    0,
+    -88
+  ],
+  "court_elevation": 4,
+  "outer_radius": 58,
+  "podium_radius": 47,
+  "alcove_width": 18,
+  "alcove_depth": 10,
+  "fountain_radius": 9,
+  "fountain_height_limit": 8,
+  "angular_slots": 16,
+  "entrance_slots": 2,
+  "entrance_width": 26,
+  "stair_risers": 8,
+  "stair_rise": 0.5,
+  "stair_tread": 2,
+  "ramp_rise": 4,
+  "ramp_run": 32,
+  "ramp_width": 16,
+  "figure_budget_initial": 12,
+  "tracking_schema_proposal": {
+    "highest": "siege_highest_wave_cleared",
+    "total": "siege_waves_cleared",
+    "boss": "siege_boss_waves_cleared",
+    "period": "lifetime",
+    "eligibility": "normal server-resolved combat, including legitimate offline combat; separate play-mode provenance",
+    "awards": "not_enabled"
+  },
+  "bays": [
+    {
+      "number": 1,
+      "name": "Most Dragons",
+      "board_id": "most_dragons",
+      "phase": "initial",
+      "source": "existing"
+    },
+    {
+      "number": 2,
+      "name": "Crystal Crusher",
+      "board_id": "crystal_crusher",
+      "phase": "initial",
+      "source": "existing"
+    },
+    {
+      "number": 3,
+      "name": "Enemies Defeated",
+      "board_id": "enemies_defeated",
+      "phase": "initial",
+      "source": "existing"
+    },
+    {
+      "number": 4,
+      "name": "Team Power",
+      "board_id": "team_power",
+      "phase": "initial",
+      "source": "existing"
+    },
+    {
+      "number": 5,
+      "name": "Eggs Hatched",
+      "board_id": "eggs_hatched",
+      "phase": "initial",
+      "source": "existing_backend"
+    },
+    {
+      "number": 6,
+      "name": "The Range",
+      "board_id": "range_current",
+      "phase": "reserve",
+      "source": "existing_backend"
+    },
+    {
+      "number": 7,
+      "name": "Highest Wave Cleared",
+      "board_id": "siege_highest_wave_cleared",
+      "phase": "initial",
+      "source": "new_tracking"
+    },
+    {
+      "number": 8,
+      "name": "Total Waves Cleared",
+      "board_id": "siege_waves_cleared",
+      "phase": "initial",
+      "source": "new_tracking"
+    },
+    {
+      "number": 9,
+      "name": "Boss Waves Cleared",
+      "board_id": "siege_boss_waves_cleared",
+      "phase": "initial",
+      "source": "new_tracking"
+    },
+    {
+      "number": 10,
+      "name": "Training Ground",
+      "board_id": "training_ground_current",
+      "phase": "reserve",
+      "source": "existing_backend"
+    },
+    {
+      "number": 11,
+      "name": "Exclusives Gifted",
+      "board_id": "gift_exclusives",
+      "phase": "reserve",
+      "source": "existing_backend"
+    },
+    {
+      "number": 12,
+      "name": "Secrets Gifted",
+      "board_id": "gift_secrets",
+      "phase": "reserve",
+      "source": "existing_backend"
+    },
+    {
+      "number": 13,
+      "name": "Mythicals Gifted",
+      "board_id": "gift_mythicals",
+      "phase": "reserve",
+      "source": "existing_backend"
+    },
+    {
+      "number": 14,
+      "name": "Future Champion",
+      "phase": "reserve",
+      "source": "future"
+    }
+  ],
+  "entrance_apron": {
+    "half_width": 35,
+    "far_offset": 54,
+    "near_offset": 62
+  }
+}

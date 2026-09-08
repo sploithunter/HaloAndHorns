@@ -4,6 +4,21 @@ Status: R4 terrain plus R5 sculpted gate crests saved in the existing isolated S
 
 
 
+## R6: Bragg Rotunda and Siege ranking plan
+
+User accepted the R5 gate artwork and requested more Bragg capacity plus Siege-specific
+rankings using existing leaderboard rules. The [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md)
+proposes a +4 circular court, 116 studs across, with a low 18-stud fountain, fourteen
+2/1/3 alcoves, eight initial categories, and six reserve bays. Shared stairs/ramp landings
+avoid routing visitors through podiums. Geometry and new tracking are not implemented yet.
+
+The source already saves **highest wave reached** when a wave starts. New Highest Wave
+Cleared, Total Waves Cleared and Boss Waves Cleared require durable server-side settlement
+counters; do not relabel or migrate reached-wave values as clears. The plan defines receipt
+idempotency, legitimate offline provenance, reset/migration behavior, existing internal-ID
+exclusions and publication cadence, and bounded winner-avatar loading before expansion.
+`configs/realm_crossroads_bragg_plan.json` is design-only and is not loaded by gameplay.
+
 ## R5: Pet Siege naming and architectural gate titles
 
 User accepted **Pet Siege** as the mode name, with **SIEGE** as the large gate title.

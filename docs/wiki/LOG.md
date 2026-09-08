@@ -8749,3 +8749,5 @@ first-session cohort rates.
 - 2026-09-08 — Crossroads demon face: removed inherited tilted placement matrix and used upright mesh rotation with 180-degree yaw toward spawn. Visually verified, saved native preview, and resumed the same Studio walkthrough.
 
 - 2026-09-08 — Crossroads R5: accepted Pet Siege / SIEGE naming; Blender-derived extruded native lettering, paired heraldic crests, physical relief panels and proximity lighting in the existing preview. Two gate routes pass at speed 24; no art collisions or title GUIs; CI passes 2,842 tests. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Planned Bragg Rotunda: fourteen podium groups, eight initial rankings and central fountain. Audited existing Siege reached-wave record versus proposed cleared-wave/lifetime/boss-wave counters; documented shared leaderboard exclusions, offline provenance, migration and avatar budget. Plan only; no map/backend changes. See [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md).
