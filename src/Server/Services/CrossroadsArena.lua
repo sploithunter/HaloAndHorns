@@ -29,6 +29,8 @@ function Arena:Init()
     self.enemy = self._modules.EnemyService
     self.data = self._modules.DataService
     self.nextAt = 0
+    self.wasInside = setmetatable({}, { __mode = "k" })
+    self.entryCueAt = setmetatable({}, { __mode = "k" })
 end
 
 function Arena:_inside(player, inset)
@@ -172,6 +174,7 @@ function Arena:_begin(player, entrants)
                     "ArrivalAt",
                     workspace:GetServerTimeNow() + self.cfg.arrival_seconds
                 )
+                marker:SetAttribute("ThunderCue", index == 1)
                 marker.Parent = self.arrivals
                 table.insert(run.markers, marker)
                 table.insert(
@@ -251,12 +254,24 @@ function Arena:_tick()
     end
     bounds:SetAttribute("GameplayConnected", true)
     local entrants = {}
+    local now = os.clock()
     for _, player in ipairs(Players:GetPlayers()) do
+        local inside = self:_inside(player, self.cfg.entry_inset)
+        if inside and not self.wasInside[player] then
+            local last = self.entryCueAt[player]
+            if not last or now - last >= self.cfg.entry_audio.cooldown_seconds then
+                self.entryCueAt[player] = now
+                player:SetAttribute(
+                    self.cfg.entry_audio.cue_attribute,
+                    workspace:GetServerTimeNow()
+                )
+            end
+        end
+        self.wasInside[player] = inside
         if self:_eligible(player) then
             table.insert(entrants, player)
         end
     end
-    local now = os.clock()
     local run = self.run
     if run then
         bounds:SetAttribute("ArenaEnemies", run.remaining)

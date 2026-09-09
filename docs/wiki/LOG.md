@@ -8874,3 +8874,11 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   7.8-stud gap). Audited 225 perimeter and 69 other matching landscaping models; final support
   checks and zero-movement replay passed. Added a config-owned Edit repair with original-pivot
   retention. Native ground-level views, helper lint/format and wiki checks passed.
+
+- 2026-09-09 — Added user-supplied arena entry voice and thunder: trimmed 3.51 seconds before
+  the main thunder impact, retained the tail and reduced gain; uploaded both to the project group.
+  Server entry-edge cue is debounced; lightning batches emit one clap. Uses Voices/Effects buses.
+  Corrected the earlier foliage author's config filename to `realm_crossroads_foliage_grounding.json`
+  so Rojo's existing editor-only exclusion applies; fresh native server startup now passes.
+  Native arena entry loaded/played both group-owned assets with one voice and one clap; voice
+  did not repeat across rounds. Targeted lint, formatting, Rojo build and 2,856 headless tests pass.

@@ -39,7 +39,7 @@ Native Play review confirmed clear central paving and shortened grass. All 72,74
 ### Final-terrain foliage pass
 
 After importing and completing Terrain changes, run `tools/realm_crossroads/ground_foliage.luau`
-with `(Workspace.RealmCrossroadsR4, decoded configs/crossroads_foliage_grounding.json)` in Edit.
+with `(Workspace.RealmCrossroadsR4, decoded configs/realm_crossroads_foliage_grounding.json)` in Edit.
 It operates in the imported models' world coordinates and only lowers floating perimeter models.
 Use a fresh ModuleScript instance when refreshing the helper source. Its optional third `true`
 argument audits without mutation. The 2026-09-09 pass lowered 51 of 225 models; a second pass

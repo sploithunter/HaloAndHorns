@@ -38,6 +38,14 @@ mission clears, first-clear bonuses or Pet Siege wave counts. Studio arena rewar
 checks scaling/bounds/clear lifecycle without profile setting writes, then restores player attributes.
 Solo runtime and simulated team-density tests are not a multiplayer performance validation.
 
+Arena audio uses the supplied “Let's go” clip once when each player crosses into the floor,
+with an 8-second re-entry debounce, through the Voices bus. The server stamps a fresh per-player
+`CrossroadsArenaEntryCue`; remaining inside or starting another round does not repeat the voice.
+The thunder source is trimmed by 3.51 seconds, leaving its main impact at approximately 14 ms.
+Only the first arrival marker carries `ThunderCue`, so a whole team makes one clap through Effects.
+Audio is preloaded and remains enabled with reduced motion; volume/mute preferences still apply.
+Source/edit provenance and upload IDs live in `assets/audio/crossroads_arena/`.
+
 ## Nine Lives card identity — 2026-09-09
 
 Rainbow Kitty's inventory/equipped/trade card now carries a lower-right purple `9` badge.
@@ -634,7 +642,7 @@ validation; its hash and precise limits are in IMPLEMENTATION_STATUS.md.
 The imported perimeter retained old raised-ground elevations in 51 placements after the side
 terrain was flattened: 25 Heaven and 26 Hell, with a maximum 7.8-stud air gap. The Edit-only
 `tools/realm_crossroads/ground_foliage.luau` post-import pass consumes
-`configs/crossroads_foliage_grounding.json` and lowers only floating models under
+`configs/realm_crossroads_foliage_grounding.json` and lowers only floating models under
 `CrossroadsLandscapeR8.PerimeterFlora` onto final Terrain with a 0.35-stud root embed. It preserves
 scale, yaw, X/Z positions and original pivots as attributes. Raised-bed/platform decor is excluded.
 Run after terrain/import edits; fixed-height terrain rays and the positive-gap gate prevent drift.

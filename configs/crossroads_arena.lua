@@ -6,6 +6,14 @@ return {
     floor_path = { "RealmCrossroadsR4", "CrossroadsActivitiesR7", "PatrolGrove", "Playfield" },
     poll_seconds = 0.5,
     arrival_seconds = 2,
+    entry_audio = {
+        id = "rbxassetid://85508116459916",
+        volume = 0.5,
+        seconds = 5.88,
+        cleanup_tail = 0.75,
+        cooldown_seconds = 8,
+        cue_attribute = "CrossroadsArenaEntryCue",
+    },
     round_pause_seconds = 12,
     abandoned_seconds = 8,
     max_round_seconds = 600,
@@ -89,6 +97,11 @@ return {
         runtime_name = "CrossroadsArenaArrivals",
         poll_seconds = 0.1,
         reduced_motion_attribute = "CrossroadsReducedMotion",
+        thunder = {
+            id = "rbxassetid://123407646075746",
+            volume = 0.5,
+            seconds = 8.49,
+        },
         lightning = {
             enabled = true,
             duration = 0.55,
