@@ -316,3 +316,7 @@ Current status as of 2026-05-27:
 ## Studio Assistant Model Note
 
 Roblox Studio Assistant can use `Roblox Default` or user-supplied provider API keys for Anthropic, OpenAI, and Google API. It does not currently expose a ChatGPT/Claude/Gemini consumer subscription login in Studio's API key panel. For subscription-backed OpenAI development, use Codex through MCP instead.
+
+## Crossroads authoring inputs
+
+Rojo excludes root configs/realm_crossroads*.json, configs/crossroads_fossil.json and configs/confluence*.json. These are offline map authoring inputs, archived with native map assets; importing them as runtime ModuleScripts triggers ConfigLoader schema errors. Runtime Crossroads behavior is configured in areas.lua. Other JSON configs, including the schema-backed merge_stress_host, remain included.
