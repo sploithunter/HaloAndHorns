@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Arena combat, the coin garden, and featured egg hatching are connected; Pet Siege and fishing remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Arena combat, the coin garden, featured egg hatching, fishing, and Pet Siege routing are connected. Crossroads owns the arrival introduction; the Farm gate releases ordinary Farm onboarding. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
 
@@ -742,3 +742,48 @@ longer derives collector appearance from the hatchable Trail Pup. Missing dedica
 not silently substitute the egg dog. Old configs without a dedicated visual keep their template
 fallback. No inventory species or hatch variants were added. Native Basic/Golden/Rainbow prototype
 sources and original auto dog verified; 2,867 headless tests pass, including collector separation.
+
+## Arrival introduction and connected gates — 2026-09-09
+
+`crossroads_tutorial.lua` owns the optional welcome, captions, angel/demon sequence, layout,
+and narration deadline. `crossroads_voice_assets.lua` binds seven new original recordings;
+source copy, MP3s, alignment and validation live under `assets/audio/voices/crossroads_tutorial/`
+and `configs/voice_comments/crossroads.json`. Existing voice models, character gains, and the
+Voices volume preference are reused. These new lines currently use English fallback for all
+language preferences; existing destination tutorials retain their localized recordings.
+
+Each client session welcomes the player with the angel, explains Farm & Fight and Pet Siege,
+and explicitly offers free exploration. The first hell-side crossing queues an uninterruptible
+angel → demon → angel → demon exchange after the welcome. The demon then owns hell guidance.
+Returning to heaven gives one short angel greeting. Neutral ground retains the previous guide;
+subsequent border crossings change guide without replaying the exchange. Side detection uses
+RealmAtmosphere's existing hysteresis attribute, independent of CurrentRealm/level progression.
+Movement stays available and captions progress even with muted/unavailable audio.
+
+`CrossroadsOnboarding` suppresses the Farm starter chooser, tutorial guidance, tutorial event
+advancement and step grants until the Farm gate is used, and suspends guidance on hub returns.
+PrologueService defers its first eligibility decision until that gate; ZoneService can place a
+Crossroads arrival while this decision is pending. Saved tutorial/prologue progress is retained.
+The dedicated Pet Siege place keeps its own existing onboarding.
+
+The shared narrator reserves the voice channel for the entire conversation, including gaps.
+Other tutorial speech retains only its latest deferred cue; obsolete/cleared lessons are dropped.
+`CrossroadsDialogueActive` is a bounded cosmetic client-to-server signal. While narration owns
+the channel, each player may queue one gate intent. Completion releases it, after rechecking the
+character, life and gate proximity; disconnection clears it. A config-owned 150-second deadline
+releases a stalled client. This signal does not grant pets, currency or tutorial completion.
+
+The Crossroads Pet Siege marker routes to the configured merge place. A per-character touch
+latch survives failed teleports: waiting inside never repeats attempts, leaving the padded gate
+volume rearms touch, and E permits a deliberate retry after the five-second cooldown. Both Pet
+Siege endcaps and the Quartermaster return to the main place's Crossroads arrival. Their visible
+copy says Crossroads; the existing internal `main` role and `farm_fight` action remain compatible.
+
+Native Studio verification: all seven Sounds loaded; the four handoff cues ran in order; a gate
+entered during the demon's final line made zero attempts during speech and one after completion.
+Standing inside after simulated failure stayed at one; an explicit prompt retry made the second.
+The Farm gate resumed saved tutorial step 6; returning to Crossroads hid that guidance again.
+Both endcap prompts and Quartermaster dispatch resolved main place 77766176054993; actual
+cross-place teleport completion cannot be tested in Studio. The older unsynced Pet Siege snapshot
+also needed existing collector_voice/BraggProgress and matching leaderboard/stats config copies
+before clean Play startup. Runtime QA stubs are discarded when Play stops.

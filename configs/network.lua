@@ -1218,6 +1218,17 @@ return {
                 arguments = { { name = "snapshot", type = "table" } },
             },
         },
+        CrossroadsDialogueActive = {
+            name = "CrossroadsDialogueActive",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 10,
+            handler = "CrossroadsDialogue.Active",
+            schema = { kind = "tuple", arguments = { { name = "active", type = "boolean" } } },
+        },
         TutorialStateRequest = {
             name = "TutorialStateRequest",
             transport = "reliable_event",

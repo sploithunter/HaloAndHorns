@@ -678,7 +678,10 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
         local action = PrologueSpawnGate.action(
             workspace:GetAttribute("PrologueServiceInit") == true,
             player:GetAttribute("InPrologue") == true,
-            player:GetAttribute("PrologueGate")
+            player:GetAttribute("PrologueGate"),
+            self._crossroads
+                and self._crossroads:IsEnabled()
+                and player:GetAttribute("CrossroadsFarmEntered") ~= true
         )
         if action == "place" then
             return true
@@ -704,7 +707,10 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
         action = PrologueSpawnGate.action(
             workspace:GetAttribute("PrologueServiceInit") == true,
             player:GetAttribute("InPrologue") == true,
-            player:GetAttribute("PrologueGate")
+            player:GetAttribute("PrologueGate"),
+            self._crossroads
+                and self._crossroads:IsEnabled()
+                and player:GetAttribute("CrossroadsFarmEntered") ~= true
         )
         if action == "wait" and player.Parent then
             changed.Event:Wait()

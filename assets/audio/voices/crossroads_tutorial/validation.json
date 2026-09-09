@@ -1,0 +1,84 @@
+{
+  "complete": true,
+  "expected_clips": 7,
+  "validated_clips": 7,
+  "angel_clips": 5,
+  "demon_clips": 2,
+  "total_duration_seconds": 80.248,
+  "total_bytes": 1291800,
+  "checks": [
+    "MP3 decode",
+    "SHA-256",
+    "speaker voice IDs",
+    "canonical text and cue mapping",
+    "full input alignment and timing bounds",
+    "non-silent audio",
+    "clipping below 0.1% of samples"
+  ],
+  "limitation": "Provider alignment verifies the submitted text and timing metadata; it is not an independent transcription or a listening review.",
+  "clips": [
+    {
+      "id": "CR_A01",
+      "duration_seconds": 16.997007,
+      "peak_dbfs": -5.37,
+      "rms_dbfs": -23.95,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_A02",
+      "duration_seconds": 12.724535,
+      "peak_dbfs": -6.14,
+      "rms_dbfs": -23.54,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_A03",
+      "duration_seconds": 3.715193,
+      "peak_dbfs": -2.95,
+      "rms_dbfs": -23.06,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_A04",
+      "duration_seconds": 4.783311,
+      "peak_dbfs": -4.51,
+      "rms_dbfs": -19.99,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_A05",
+      "duration_seconds": 11.377778,
+      "peak_dbfs": -3.32,
+      "rms_dbfs": -23.08,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_D01",
+      "duration_seconds": 7.848345,
+      "peak_dbfs": -10.15,
+      "rms_dbfs": -30.42,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "CR_D02",
+      "duration_seconds": 22.801995,
+      "peak_dbfs": -8.04,
+      "rms_dbfs": -29.13,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    }
+  ]
+}

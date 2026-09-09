@@ -6,6 +6,7 @@
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CrossroadsOnboarding = require(ReplicatedStorage.Shared.Game.CrossroadsOnboarding)
 local TweenService = game:GetService("TweenService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -514,6 +515,9 @@ local function apply(state)
         statusLabel.TextColor3 = Color3.fromRGB(255, 105, 105)
         return
     end
+    if CrossroadsOnboarding.pending(Players.LocalPlayer) then
+        return
+    end
     if not gui then
         show(state)
     end
@@ -524,6 +528,17 @@ function StarterPetController.start()
         return
     end
     started = true
+    local function crossroadsChanged()
+        if CrossroadsOnboarding.pending(Players.LocalPlayer) then
+            destroyGui()
+        else
+            Signals.StarterPetStateRequest:FireServer()
+        end
+    end
+    Players.LocalPlayer
+        :GetAttributeChangedSignal("CrossroadsFarmEntered")
+        :Connect(crossroadsChanged)
+    Players.LocalPlayer:GetAttributeChangedSignal("InCrossroads"):Connect(crossroadsChanged)
     prewarmStarterChoices()
     Signals.StarterPetState.OnClientEvent:Connect(apply)
     task.spawn(function()

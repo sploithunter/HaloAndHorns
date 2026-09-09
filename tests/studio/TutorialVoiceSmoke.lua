@@ -20,6 +20,7 @@ function Smoke.run()
     config.audio.group_name = "TutorialVoiceSmoke"
     local n = Narrator.new({ config = config })
     local report = { mainSteps = 0 }
+    local exchange
     local ok, err = pcall(function()
         n:setStarterChoice(true, false)
         n:setState({ id = "hatch_first_egg", index = 1 })
@@ -34,6 +35,27 @@ function Smoke.run()
         assert(n.current.cue == "tutorial.hatch_first_egg", "Egg lesson did not follow choice")
         n:cancel()
         report.starterChoice = true
+        exchange = Narrator.new({ config = config })
+        assert(Narrator.acquire(exchange), "Exchange did not acquire narration")
+        n:setState({ id = "hatch_first_egg", index = 1 })
+        assert(n.current == nil and n.deferredCue, "Farm narration interrupted the exchange")
+        n:setState(nil)
+        Narrator.release(exchange)
+        n:step(0)
+        assert(n.current == nil, "An obsolete deferred lesson played after clearing the track")
+        Narrator.acquire(exchange)
+        n:setState({ id = "hatch_first_egg", index = 1 })
+        n:setState({ id = "farm_crystals", index = 2 })
+        Narrator.release(exchange)
+        n:step(0)
+        assert(
+            n.current and n.current.cue == "tutorial.farm_crystals",
+            "Latest lesson did not resume after exchange"
+        )
+        exchange:destroy()
+        exchange = nil
+        n:cancel()
+        report.exchangePriority = true
         n:setState({ done = true })
         assert(n.current == nil, "Veteran join narrated completion")
         n:setState({ id = "hatch_first_egg", index = 1 })
@@ -182,6 +204,9 @@ function Smoke.run()
         report.replay = true
         report.portrait = true
     end)
+    if exchange then
+        exchange:destroy()
+    end
     n:destroy()
     assert(
         not game.SoundService:FindFirstChild("TutorialVoiceSmoke"),

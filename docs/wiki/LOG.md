@@ -8895,3 +8895,11 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - 2026-09-09 — Trail Pup sizing correction: user explicitly rejected height matching because AutoDog has short legs, and considered the original 4.4 preview too small. Final scale is 5.2, using body breadth; supersedes the earlier 3.4 scale note.
 
 - 2026-09-09 — User approved the final 5.2-scale Trail Pup shepherd size after side-by-side body-width comparison with AutoDog.
+
+- 2026-09-09 — Crossroads onboarding and portals: added the voiced angel welcome and ordered
+  angel/demon handoff, deferred Farm prologue/starter/tutorial until the Farm gate, retained saved
+  progress on hub returns, and queued gate intent until dialogue completion. Added Pet Siege gate
+  touch debounce and Crossroads return copy/routing on both endcaps and Quartermaster. Seven
+  original recordings uploaded and verified with native Sound loading; native handoff, gate queue,
+  deliberate retry and saved-step resume checked. Headless suite: 2,874 passes; full CI remains
+  blocked by the existing CrossroadsArena.lua arrival timer architecture debt.

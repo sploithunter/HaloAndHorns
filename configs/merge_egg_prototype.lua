@@ -414,9 +414,9 @@ return {
             {
                 id = "heaven_farm",
                 ancestor_name = "Meshy_AI_Celestial_Marble_Gate_0903140522_texture",
-                destination = "PORTAL TO FARM & FIGHT",
-                word = "FARM",
-                tagline = "GROW YOUR FORTUNE",
+                destination = "PORTAL TO CROSSROADS",
+                word = "CROSSROADS",
+                tagline = "YOUR NEXT ADVENTURE",
                 layout = {
                     -- The celestial gate has a smaller visual aperture than its LightningRing
                     -- marker, so FARM needs a lower optical center than FIGHT.
@@ -442,9 +442,9 @@ return {
             {
                 id = "hell_fight",
                 ancestor_name = "Meshy_AI_Infernal_Eclipse_Gate_0903140501_texture",
-                destination = "PORTAL TO FARM & FIGHT",
-                word = "FIGHT",
-                tagline = "EARN IT THE HARD WAY",
+                destination = "PORTAL TO CROSSROADS",
+                word = "CROSSROADS",
+                tagline = "CHOOSE YOUR NEXT PATH",
                 palette = {
                     veil = { 112, 17, 34 },
                     primary = { 255, 72, 45 },
@@ -482,6 +482,20 @@ return {
             },
             studio_bypass = false,
         },
+        crossroads_entry = {
+            root_name = "RealmCrossroadsR4",
+            path = { "CrossroadsCraftR11", "GateRearCraft", "MergeTravelAnchor" },
+            prompt_name = "ProximityPrompt",
+            action_text = "Enter Pet Siege",
+            object_text = "Pet Siege",
+            size = { 16, 9, 4 },
+            max_distance = 14,
+            touch_distance = 12,
+            hold_seconds = 0.2,
+            retry_cooldown_seconds = 5,
+            exit_padding = 3,
+            destination_role = "merge",
+        },
         return_route = {
             -- Both themed LightningRing gates are public return routes. The old cyan common-area
             -- HallOfWorldsPortal was an authoring placeholder and is removed if an older place
@@ -491,7 +505,7 @@ return {
             expected_gate_count = 2,
             prompt_name = "MergeEggPrototypeExitPrompt",
             action_text = "Return",
-            object_text = "Farm & Fight",
+            object_text = "Crossroads",
             destination_role = "main",
             public = true,
         },
@@ -619,7 +633,7 @@ return {
             },
             roles = {
                 merge = {
-                    title = "ENTERING MERGE",
+                    title = "ENTERING PET SIEGE",
                     detail = "Your bay is being prepared",
                     primary = { 164, 101, 255 },
                     secondary = { 72, 225, 255 },
@@ -627,7 +641,7 @@ return {
                     panel = { 23, 17, 46 },
                 },
                 main = {
-                    title = "RETURNING TO FARM & FIGHT",
+                    title = "RETURNING TO CROSSROADS",
                     detail = "The realms are opening",
                     primary = { 75, 245, 166 },
                     secondary = { 82, 216, 255 },
@@ -1212,7 +1226,7 @@ return {
             },
             talk_quartermaster = {
                 title = "MEET YOUR QUARTERMASTER",
-                body = "Macros has potions, enhancements, passes and optional training. Visit whenever you like—or take a breather in Farm & Fight.",
+                body = "Macros has potions, enhancements, passes and optional training. Visit whenever you like—or take a breather in Crossroads.",
                 target = "quartermaster",
             },
         },
@@ -1262,7 +1276,7 @@ return {
             shadows = false,
         },
         introduction_seconds = 5,
-        greeting = "Need a pick-me-up? Potions, enhancements and optional training—I'm your guy. Or take a breather in Farm & Fight!",
+        greeting = "Need a pick-me-up? Potions, enhancements and optional training—I'm your guy. Or take a breather in Crossroads!",
         greeting_complete = "Ready for more? Browse boosts, trade enhancements, or try optional training for a level.",
         services = {
             title = "QUARTERMASTER",
@@ -1292,8 +1306,8 @@ return {
             enhancements_label = "💎 ENHANCEMENTS",
             enhancements_body = "Buy what you need. Sell what you don't.",
             enhancements_color = { 109, 65, 174 },
-            farm_fight_label = "FARM & FIGHT — TAKE A BREATHER",
-            farm_fight_body = "Farm coins. Hatch pets. Find the Merge gate when chaos calls.",
+            farm_fight_label = "CROSSROADS — TAKE A BREATHER",
+            farm_fight_body = "Fish, hatch pets, or choose your next adventure. Return through the Pet Siege portal.",
             four_service_height = 586,
             five_service_height = 674,
             close_label = "NOT NOW",

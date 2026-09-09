@@ -11620,6 +11620,29 @@ function MergeEggPrototypeService:_performPortalTransit(player, pending)
 end
 
 function MergeEggPrototypeService:_stepPortalTransits(now)
+    local hook = self._crossroadsGate
+    local entries = self._crossroadsGateEntries
+    if hook and entries then
+        local padding = self._config.gate.crossroads_entry.exit_padding
+        local half = hook.Size / 2 + Vector3.new(padding, padding, padding)
+        for player, entry in pairs(entries) do
+            local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if not player.Parent or player.Character ~= entry.character then
+                entries[player] = nil
+            elseif not root then
+                entry.latched = false
+            else
+                local point = hook.CFrame:PointToObjectSpace(root.Position)
+                if
+                    math.abs(point.X) > half.X
+                    or math.abs(point.Y) > half.Y
+                    or math.abs(point.Z) > half.Z
+                then
+                    entry.latched = false
+                end
+            end
+        end
+    end
     for player, pending in pairs(self._portalTransitByPlayer) do
         if not player.Parent then
             self._portalTransitByPlayer[player] = nil
@@ -11639,6 +11662,27 @@ function MergeEggPrototypeService:_stepPortalTransits(now)
 end
 
 function MergeEggPrototypeService:_teleportToRole(player, role)
+    local character = player.Character
+    if
+        require(script.Parent.CrossroadsDialogue).defer(player, function()
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local gate = self._crossroadsGate
+            if
+                player.Character == character
+                and root
+                and humanoid
+                and humanoid.Health > 0
+                and gate
+                and (root.Position - gate.Position).Magnitude
+                    <= self._config.gate.crossroads_entry.max_distance
+            then
+                self:_teleportToRole(player, role)
+            end
+        end)
+    then
+        return true, "dialogue_pending"
+    end
     local placeId = PlaceRuntime.placeIdForRole(self._placesConfig, role)
     if not placeId then
         return false, "place_role_unconfigured"
@@ -11729,6 +11773,76 @@ function MergeEggPrototypeService:_bindPublicReturnGate()
         })
     end
     return prompts
+end
+
+function MergeEggPrototypeService:_bindCrossroadsGate()
+    local cfg = self._config.gate.crossroads_entry
+    local hook = Workspace:FindFirstChild(cfg.root_name)
+    for _, name in ipairs(cfg.path) do
+        hook = hook and hook:FindFirstChild(name)
+    end
+    if not (hook and hook:IsA("BasePart")) then
+        return nil
+    end
+    hook.Size = Vector3.new(table.unpack(cfg.size))
+    hook.CanCollide, hook.CanTouch = false, true
+    hook:SetAttribute("GameplayConnected", true)
+    hook:SetAttribute("PreviewOnly", false)
+    hook:SetAttribute("StubAction", nil)
+    hook:SetAttribute("Destination", cfg.destination_role)
+    self._crossroadsGate = hook
+    self._crossroadsGateEntries = {}
+    local function enter(player, distance, fromTouch)
+        local character = player and player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if
+            not root
+            or not humanoid
+            or humanoid.Health <= 0
+            or player:GetAttribute("InMission")
+            or player:GetAttribute("InPrologue")
+            or (root.Position - hook.Position).Magnitude > distance
+        then
+            return false, "invalid_gate_entry"
+        end
+        if not self:_hasPreviewAccess(player) then
+            return false, "coming_soon"
+        end
+        local now = os.clock()
+        local entry = self._crossroadsGateEntries[player]
+        if entry and entry.character == character then
+            if now < entry.nextTryAt or (fromTouch and entry.latched) then
+                return false, "gate_debounce"
+            end
+        end
+        -- Latch before starting transit. Failure/timeout clears the shield, not this entry lock.
+        self._crossroadsGateEntries[player] = {
+            character = character,
+            latched = true,
+            nextTryAt = now + cfg.retry_cooldown_seconds,
+        }
+        return self:_teleportToRole(player, cfg.destination_role)
+    end
+    self._crossroadsGatePrompt = self:_attachPrompt(
+        hook,
+        cfg.prompt_name,
+        cfg.action_text,
+        cfg.object_text,
+        function(player)
+            enter(player, cfg.max_distance)
+        end
+    )
+    self._crossroadsGatePrompt.MaxActivationDistance = cfg.max_distance
+    self._crossroadsGatePrompt.HoldDuration = cfg.hold_seconds
+    hook.Touched:Connect(function(part)
+        local character = part:FindFirstAncestorOfClass("Model")
+        local player = character and Players:GetPlayerFromCharacter(character)
+        if player then
+            enter(player, cfg.touch_distance, true)
+        end
+    end)
+    return hook
 end
 
 function MergeEggPrototypeService:_bindRestrictedHallGate()
@@ -18446,6 +18560,7 @@ function MergeEggPrototypeService:Start()
     end
     if not self:_isDedicatedMergePlace() then
         self:_bindRestrictedHallGate()
+        self:_bindCrossroadsGate()
     else
         self:_bindPublicReturnGate()
     end

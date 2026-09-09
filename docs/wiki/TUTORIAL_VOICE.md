@@ -129,3 +129,12 @@ No store opens and no purchase prompt is triggered. Progress is ephemeral and we
 `collector_comments.spec.luau`, `collector_ownership_runtime.luau`, the actual DropService
 `auto_collector_runtime.luau` harness, and native `CollectorCommentsSmoke` cover ownership
 failures/benefit sources, pickup exclusions, throttling, speaker choice and cancellation.
+
+## Crossroads arrival — 2026-09-09
+
+The hub has a separate seven-line English catalog and angel/demon exchange; see
+[Crossroads arrival introduction](REALM_CROSSROADS.md#arrival-introduction-and-connected-gates--2026-09-09).
+Farm's prologue, starter offer, first-Egg guidance and existing saved steps wait for the Farm gate.
+The narration channel remains reserved across the complete exchange, so a realm change cannot
+replace its middle line. New destination/gate intents wait until it finishes. Muted/unavailable
+recordings retain timed captions; existing destination localization is unchanged.

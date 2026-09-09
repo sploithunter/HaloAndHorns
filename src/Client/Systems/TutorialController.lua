@@ -16,6 +16,7 @@
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CrossroadsOnboarding = require(ReplicatedStorage.Shared.Game.CrossroadsOnboarding)
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
@@ -95,6 +96,7 @@ local function hidesHomeTutorial(player)
         return false
     end
     return isMergePlace()
+        or CrossroadsOnboarding.pending(player)
         or player:GetAttribute("InMergeEggPrototype") == true
         or player:GetAttribute("InPrologue") == true
 end
@@ -1582,6 +1584,8 @@ function TutorialController.start()
             Signals.TutorialStateRequest:FireServer() -- nothing parked: pull fresh
         end
     end
+    me:GetAttributeChangedSignal("CrossroadsFarmEntered"):Connect(onHomeTutorialGateChanged)
+    me:GetAttributeChangedSignal("InCrossroads"):Connect(onHomeTutorialGateChanged)
     me:GetAttributeChangedSignal("InPrologue"):Connect(onHomeTutorialGateChanged)
     me:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(onHomeTutorialGateChanged)
     me:GetAttributeChangedSignal("LargeMenuOpen"):Connect(function()

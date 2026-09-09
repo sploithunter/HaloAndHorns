@@ -744,6 +744,7 @@ do
         require(script.Systems.TopHudStack).start()
         require(script.Systems.HotbarFlank).start()
         require(script.Systems.HoverboardController).start()
+        require(script.Systems.CrossroadsTutorial).start()
         require(script.Systems.StarterPetController).start()
         require(script.Systems.FoundersChoiceController).start()
         require(script.Systems.TutorialController).start()

@@ -326,6 +326,16 @@ local SCHEMAS = {
         sections = "table",
         language = "string",
     }),
+    crossroads_voice_assets = schema({ clips = "table" }),
+    crossroads_tutorial = schema({
+        enabled = "boolean",
+        sections = "table",
+        welcome = "table",
+        hell_handoff = "table",
+        heaven_return = "table",
+        ui = "table",
+        dialogue_timeout_seconds = "number",
+    }),
     tutorial_voice_assets = schema({ clips = "table" }),
     tutorial_voice_locales = schema({ recording_catalog = "string", locales = "table" }),
     collector_voice = schema({
