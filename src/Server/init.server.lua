@@ -947,6 +947,11 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.EnemyService,
     { "Logger", "ConfigLoader" }
 )
+loader:RegisterModule(
+    "CrossroadsHosts",
+    ServerScriptService.Server.Services.CrossroadsHosts,
+    { "Logger", "ConfigLoader" }
+)
 -- Authored Crossroads arena: shared combat through the canonical enemy and reward services.
 loader:RegisterModule(
     "CrossroadsArena",

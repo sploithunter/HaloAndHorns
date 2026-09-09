@@ -326,6 +326,15 @@ local SCHEMAS = {
         sections = "table",
         language = "string",
     }),
+    crossroads_hosts = schema({
+        enabled = "boolean",
+        hosts = "table",
+        poll_seconds = "number",
+        normal_speed = "number",
+        rush_speed = "number",
+    }),
+    crossroads_host_lines = schema({ sections = "table", playbackVolumeSource = "table" }),
+    crossroads_host_voice_assets = schema({ clips = "table" }),
     crossroads_voice_assets = schema({ clips = "table" }),
     crossroads_tutorial = schema({
         enabled = "boolean",

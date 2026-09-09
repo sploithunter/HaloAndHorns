@@ -44,7 +44,7 @@ return {
                 {
                     id = "CR_A01",
                     cue = "crossroads.welcome",
-                    text = "Welcome to Crossroads, little light. Your adventures begin here. Farm and Fight is where you raise pets, gather treasure, and battle together. In Pet Siege, you hatch defenders and protect your eggs from enemy waves.",
+                    text = "Welcome to Crossroads, little light. Through my gate lies Farm and Fight: a place to farm, hatch eggs, and raise a happy team of pets. They love helping you gather treasure. There are battles too, whenever you feel ready for adventure.",
                 },
                 {
                     id = "CR_A02",
@@ -79,7 +79,7 @@ return {
                 {
                     id = "CR_D02",
                     cue = "crossroads.hell",
-                    text = "No promises. Welcome to my side of Crossroads. Explore as you please, or choose a gate: Farm and Fight for adventures with your pets, Pet Siege to defend your eggs. I will handle the introductions here.",
+                    text = "Welcome to my side of Crossroads. My gate leads to Pet Siege. Enemy waves, eggs to defend, and your tactical brilliance on public display. Hatch defenders, build your defenses, and try to keep something alive. I do adore an optimist.",
                 },
             },
         },

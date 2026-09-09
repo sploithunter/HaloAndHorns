@@ -48,7 +48,9 @@ function Narrator.new(options)
         watcher = watcher,
         volumes = lines.playbackVolumeSource,
         mixer = Mixer.new(audioConfig),
-        presentation = Presentation.new(config),
+        presentation = options.presentation or Presentation.new(config),
+        soundParent = options.soundParent,
+        soundRange = options.soundRange,
         seen = {},
         eventTimes = {},
         connections = {},
@@ -131,7 +133,12 @@ function Player:_play(cue, completion, forceEnglish)
     end
     sound.Volume = gain
     sound.SoundGroup = self.mixer.group
-    sound.Parent = SoundService
+    sound.Parent = self.soundParent and self.soundParent(line.speaker) or SoundService
+    if self.soundRange then
+        sound.RollOffMinDistance = self.soundRange.minimum
+        sound.RollOffMaxDistance = self.soundRange.maximum
+        sound.RollOffMode = Enum.RollOffMode.InverseTapered
+    end
     local now = os.clock()
     self.current = {
         cue = cue,

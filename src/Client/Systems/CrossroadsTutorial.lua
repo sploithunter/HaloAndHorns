@@ -8,6 +8,10 @@ local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Flow = require(ReplicatedStorage.Shared.Game.CrossroadsIntroFlow)
 local Narrator = require(script.Parent.TutorialNarrator)
 local config = require(ReplicatedStorage.Configs.crossroads_tutorial)
+local hostConfig = require(ReplicatedStorage.Configs.crossroads_hosts)
+local HostClient = require(script.Parent.CrossroadsHostClient)
+local HostPresentation = require(script.Parent.CrossroadsHostPresentation)
+local Hatch = require(ReplicatedStorage.Shared.Services.EggHatchingService)
 local Tutorial = {}
 local started = false
 local function rgb(value)
@@ -26,11 +30,29 @@ function Tutorial.start()
     local voiceConfig = table.clone(require(ReplicatedStorage.Configs.tutorial_voice))
     voiceConfig.audio = table.clone(voiceConfig.audio)
     voiceConfig.audio.group_name = config.group_name
+    local hosts = HostClient.new()
+    local lines = table.clone(config)
+    lines.sections = table.clone(config.sections)
+    for _, section in ipairs(require(ReplicatedStorage.Configs.crossroads_host_lines).sections) do
+        table.insert(lines.sections, section)
+    end
+    local assets = table.clone(require(ReplicatedStorage.Configs.crossroads_voice_assets).clips)
+    for cue, asset in pairs(require(ReplicatedStorage.Configs.crossroads_host_voice_assets).clips) do
+        assets[cue] = asset
+    end
     local voice = Narrator.new({
         config = voiceConfig,
-        lines = config,
-        assets = require(ReplicatedStorage.Configs.crossroads_voice_assets).clips,
+        lines = lines,
+        assets = assets,
         locales = {},
+        presentation = hostConfig.enabled and HostPresentation.new() or nil,
+        soundParent = hostConfig.enabled and function(speaker)
+            return hosts:face(speaker)
+        end or nil,
+        soundRange = hostConfig.enabled and {
+            minimum = hostConfig.minimum_hearing_distance,
+            maximum = hostConfig.hearing_radius,
+        } or nil,
     })
     local flow = Flow.new(config)
     local gui = Instance.new("ScreenGui")
@@ -72,7 +94,7 @@ function Tutorial.start()
     local footer = configuredLabel("Explore", "footer")
     footer.Text = config.ui.explore
     gui.Parent = player:WaitForChild("PlayerGui")
-    local sequence, index, elapsed, minimum, busy
+    local sequence, index, elapsed, minimum, busy, hostRequest
     local function release()
         if busy then
             busy = false
@@ -109,11 +131,28 @@ function Tutorial.start()
         local alive = humanoid and humanoid.Health > 0
         if not alive or player:GetAttribute("InCrossroads") ~= true then
             voice:cancel()
-            sequence = nil
+            sequence, hostRequest = nil, nil
             release()
             return
         end
         flow:observe(player:GetAttribute("CrossroadsAtmosphereZone"))
+        local blocked = GuiService.MenuIsOpen
+            or player:GetAttribute("LargeMenuOpen") == true
+            or not Hatch:IsHatchReady()
+        if hostConfig.enabled then
+            hosts:nextRequest(os.clock(), true) -- Observe reactions even while a hatch/menu owns the screen.
+        end
+        if
+            sequence
+            and hostRequest
+            and (
+                not hosts:valid(hostRequest)
+                or (hostRequest.activity ~= "gate" and hosts:gatePriority())
+            )
+        then
+            voice:cancel()
+            sequence, hostRequest = nil, nil
+        end
         if not sequence then
             if
                 not busy
@@ -126,6 +165,11 @@ function Tutorial.start()
                 return
             end
             sequence = flow:nextSequence()
+            hostRequest = nil
+            if not sequence and hostConfig.enabled then
+                hostRequest = hosts:nextRequest(os.clock(), blocked)
+                sequence = hostRequest and hostRequest.cues
+            end
             if not sequence then
                 player:SetAttribute("CrossroadsGuide", flow.owner)
                 release()
@@ -143,7 +187,7 @@ function Tutorial.start()
             index = 0
             nextLine()
         end
-        gui.Enabled = not GuiService.MenuIsOpen and player:GetAttribute("LargeMenuOpen") ~= true
+        gui.Enabled = not blocked
         if not GuiService.MenuIsOpen then
             elapsed += dt
         end

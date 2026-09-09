@@ -138,3 +138,13 @@ Farm's prologue, starter offer, first-Egg guidance and existing saved steps wait
 The narration channel remains reserved across the complete exchange, so a realm change cannot
 replace its middle line. New destination/gate intents wait until it finishes. Muted/unavailable
 recordings retain timed captions; existing destination localization is unchanged.
+
+## Roaming Crossroads hosts — 2026-09-09
+
+[Shared roaming heads](REALM_CROSSROADS.md#roaming-voiced-hosts--2026-09-09) reuse the
+Narrator voice channel, with an optional presentation adapter and positional Sound parent.
+Other tutorials keep their existing presentation. The 20 new English takes include warm
+angel garden/egg encouragement and mocking demon arena/gate comments. Two supersede the
+old Crossroads welcome/hell takes; generated source, alignment, hashes and upload IDs are
+preserved under `assets/audio/voices/crossroads_hosts/`. Existing voice settings/mute and
+caption fallback still apply. These new ambient lines currently fall back to English.

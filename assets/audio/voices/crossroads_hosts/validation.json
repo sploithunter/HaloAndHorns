@@ -1,0 +1,201 @@
+{
+  "complete": true,
+  "expected_clips": 20,
+  "validated_clips": 20,
+  "angel_clips": 9,
+  "demon_clips": 11,
+  "total_duration_seconds": 238.887,
+  "total_bytes": 3844005,
+  "checks": [
+    "MP3 decode",
+    "SHA-256",
+    "speaker voice IDs",
+    "canonical text and cue mapping",
+    "full input alignment and timing bounds",
+    "non-silent audio",
+    "clipping below 0.1% of samples"
+  ],
+  "limitation": "Provider alignment verifies the submitted text and timing metadata; it is not an independent transcription or a listening review.",
+  "clips": [
+    {
+      "id": "HOST_A01",
+      "duration_seconds": 17.322086,
+      "peak_dbfs": -5.89,
+      "rms_dbfs": -23.39,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A02",
+      "duration_seconds": 11.563537,
+      "peak_dbfs": -5.18,
+      "rms_dbfs": -21.82,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A03",
+      "duration_seconds": 14.071293,
+      "peak_dbfs": -5.98,
+      "rms_dbfs": -24.1,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A04",
+      "duration_seconds": 8.591383,
+      "peak_dbfs": -4.13,
+      "rms_dbfs": -20.8,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A05",
+      "duration_seconds": 10.21678,
+      "peak_dbfs": -6.21,
+      "rms_dbfs": -21.96,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A06",
+      "duration_seconds": 5.15483,
+      "peak_dbfs": -6.68,
+      "rms_dbfs": -20.65,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A07",
+      "duration_seconds": 6.222948,
+      "peak_dbfs": -5.35,
+      "rms_dbfs": -22.38,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A08",
+      "duration_seconds": 6.965986,
+      "peak_dbfs": -6.66,
+      "rms_dbfs": -22.23,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_A09",
+      "duration_seconds": 6.362268,
+      "peak_dbfs": -1.97,
+      "rms_dbfs": -20.98,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D01",
+      "duration_seconds": 23.684354,
+      "peak_dbfs": -8.48,
+      "rms_dbfs": -28.1,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D02",
+      "duration_seconds": 14.535692,
+      "peak_dbfs": -9.55,
+      "rms_dbfs": -29.39,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D03",
+      "duration_seconds": 20.154921,
+      "peak_dbfs": -8.82,
+      "rms_dbfs": -26.95,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D04",
+      "duration_seconds": 17.275646,
+      "peak_dbfs": -11.04,
+      "rms_dbfs": -28.67,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D05",
+      "duration_seconds": 16.253968,
+      "peak_dbfs": -9.03,
+      "rms_dbfs": -28.35,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D06",
+      "duration_seconds": 10.26322,
+      "peak_dbfs": -7.31,
+      "rms_dbfs": -27.85,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D07",
+      "duration_seconds": 9.148662,
+      "peak_dbfs": -11.84,
+      "rms_dbfs": -29.15,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D08",
+      "duration_seconds": 9.98458,
+      "peak_dbfs": -7.9,
+      "rms_dbfs": -27.31,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D09",
+      "duration_seconds": 6.965986,
+      "peak_dbfs": -9.06,
+      "rms_dbfs": -27.18,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D10",
+      "duration_seconds": 11.377778,
+      "peak_dbfs": -10.56,
+      "rms_dbfs": -29.33,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    },
+    {
+      "id": "HOST_D11",
+      "duration_seconds": 12.770975,
+      "peak_dbfs": -9.0,
+      "rms_dbfs": -28.46,
+      "clipped_sample_fraction": 0.0,
+      "exact_input_alignment": true,
+      "decode": "pass"
+    }
+  ]
+}

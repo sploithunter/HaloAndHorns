@@ -8909,3 +8909,5 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   but a cloud save is unverified because the desktop UI controller selects the other Studio process.
   Optional collector comments now follow the active Crossroads guide. Narrator smoke passes all
   42 existing steps plus exchange priority and stale-queue cancellation.
+
+- 2026-09-09: Added shared roaming Crossroads angel/demon hosts, gate-priority return greetings, garden/egg and arena reactions, and 20 recorded English lines. Verified movement, real mining/combat responses, audio loading, protected handoff and client queue/regression checks in Studio. See REALM_CROSSROADS.md and TUTORIAL_VOICE.md.

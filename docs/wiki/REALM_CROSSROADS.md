@@ -788,3 +788,35 @@ Both endcap prompts and Quartermaster dispatch resolved main place 7776617605499
 cross-place teleport completion cannot be tested in Studio. The older unsynced Pet Siege snapshot
 also needed existing collector_voice/BraggProgress and matching leaderboard/stats config copies
 before clean Play startup. Runtime QA stubs are discarded when Play stops.
+
+## Roaming voiced hosts — 2026-09-09
+
+`CrossroadsHosts` moves the two authored gate heads in the shared server world. It watches
+all loaded, living Crossroads players: gate visitors take priority over the demon's arena
+spectators and the angel's garden/egg visitors. Separate enter/exit radii prevent border
+jitter; greeted visitors do not starve new arrivals. Heads hurry home for gate visitors.
+Paths, offsets, speeds, hearing ranges, cooldowns and cue selection live in
+`configs/crossroads_hosts.lua`; no map art is duplicated or permanently moved.
+
+`CrossroadsHostClient` selects per-listener positional Voices audio and existing captions.
+Casual activity speech yields when a gate needs its host; the initial angel/demon exchange
+remains protected. Gate greetings occur once per visit. Activity lines are capped, spaced,
+and react to actual arena state/enemy defeats, credited garden coin payouts and successful
+egg hatch events. The client observes reactions during hatch/menu presentation and delivers
+them afterward; terminal arena reactions bypass the incidental defeat cooldown.
+
+Twenty English recordings in `assets/audio/voices/crossroads_hosts/` use the established
+angel/demon voices. `crossroads_host_lines.lua` owns runtime copy,
+`crossroads_host_voice_assets.lua` owns IDs/durations, and
+`voice_comments/crossroads_hosts.json` records generation inputs. Two new takes replace
+the original welcome/hell introduction; the original other five exchange cues remain.
+Angel copy emphasizes farming, hatching and helpful happy pets, with battles available;
+demon copy describes Pet Siege wave combat, egg defense and sarcastic arena observations.
+
+Native Studio checks: all 20 Sounds loaded; protected handoff stayed ordered; the demon
+visited the arena, reacted to a real enemy defeat, then rushed home and delivered return
+apology plus gate advice. The angel visited the garden, encouraged actual pet mining and
+visited the egg. Cosmetic hatch delivery was exercised without spending currency.
+`CrossroadsHostsSmoke` covers blocked hatch reactions, gate priority, repeat suppression
+and return visits; the 42-step TutorialVoiceSmoke regression passed. Multi-player selection
+is covered by headless candidate tests; a multi-client visual session is still untested.
