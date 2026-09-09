@@ -8887,3 +8887,5 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - 2026-09-09: Revised the garden per Jason: falling mineable chests, no free coin rain. New ImageGen/Meshy silver paw coin and blue/silver chest; shared activity-world mining gates and caller-owned spawn lifecycle. Corrected explicit floor placement before bounds alignment.
 
 - 2026-09-09 — Crossroads fishing: implemented fully client-owned cast/bite/luck/escape/reel timing per user decision, rare 100% surge, keyboard/controller/touch Hook controls and config-owned coin/gem rewards. Added server reward persistence with 24 retained attempt receipts; superseded old server-clock proposal. Native catches, replay protection, cancellation, menu blocking and phone orientations verified; 2,866 headless tests pass. Controller B virtual input unavailable; preexisting arena task.wait blocks full CI. See REALM_CROSSROADS.md.
+
+- 2026-09-09 — Fixed sideways Crossroads chests: shared garden default_orientation now compensates the imported FBX -90-degree pitch with +90 X. Both chest sizes retain random yaw and floor alignment; native visual review confirms lid-up, feet-down placement.

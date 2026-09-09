@@ -17,3 +17,5 @@ UV albedo Decal 138956208263121 resolves Image 125784646482090. Model 9597108681
 intermediate pre-repair upload and is unused. Config uses only the repaired model.
 
 Native check: final imported base is 1 × 0.839844 × 0.675782 studs; all 12 spawned targets sat exactly on the floor at Y=4.38. Pet mining released currency; unmined chests did not.
+
+Orientation correction (2026-09-09): the uploaded FBX retains -90 degrees of pitch. Garden chest config applies +90 X before spawning, for both chest and strongbox. Prior floor-only validation did not establish upright visual orientation; native lid/feet review now confirms it.

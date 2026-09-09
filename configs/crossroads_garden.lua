@@ -38,7 +38,8 @@ return {
     chest = {
         asset_id = "rbxassetid://127175449944140",
         texture_asset = "rbxassetid://125784646482090",
-        default_orientation = { x = 0, y = 0, z = 0 },
+        -- Imported FBX carries a -90-degree pitch; restore the lid-up orientation.
+        default_orientation = { x = 90, y = 0, z = 0 },
         normalize_prebaked_orientation = true,
         normalize_part_pivots = true,
         spawn = { method = "drop", height = 20, duration = 0.9 },
