@@ -8903,3 +8903,9 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   original recordings uploaded and verified with native Sound loading; native handoff, gate queue,
   deliberate retry and saved-step resume checked. Headless suite: 2,874 passes; full CI remains
   blocked by the existing CrossroadsArena.lua arrival timer architecture debt.
+
+- 2026-09-09 — Crossroads delivery: Farm Save to Roblox confirmed at 16:16 Mountain Time;
+  no publish. Pet Siege source/config changes are present in its open Edit session and boot-tested,
+  but a cloud save is unverified because the desktop UI controller selects the other Studio process.
+  Optional collector comments now follow the active Crossroads guide. Narrator smoke passes all
+  42 existing steps plus exchange priority and stale-queue cancellation.

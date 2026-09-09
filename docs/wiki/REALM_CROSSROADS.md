@@ -756,7 +756,8 @@ Each client session welcomes the player with the angel, explains Farm & Fight an
 and explicitly offers free exploration. The first hell-side crossing queues an uninterruptible
 angel → demon → angel → demon exchange after the welcome. The demon then owns hell guidance.
 Returning to heaven gives one short angel greeting. Neutral ground retains the previous guide;
-subsequent border crossings change guide without replaying the exchange. Side detection uses
+subsequent border crossings change guide without replaying the exchange. Optional Coin Pup
+comments use this same hub guide, so the angel does not take over on the hell side. Side detection uses
 RealmAtmosphere's existing hysteresis attribute, independent of CurrentRealm/level progression.
 Movement stays available and captions progress even with muted/unavailable audio.
 
