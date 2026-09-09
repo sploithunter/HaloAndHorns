@@ -189,6 +189,15 @@ return {
             },
 
             card_visuals = {
+                revive_badge = {
+                    element = "neutral",
+                    ring = "aura",
+                    position = { 0.84, 0.70 },
+                    size = 0.38,
+                    background_color = Color3.fromRGB(125, 62, 190),
+                    text_color = Color3.fromRGB(255, 255, 255),
+                    text_scale = 0.65,
+                },
                 ring_default = {
                     colors = {
                         Color3.fromRGB(115, 120, 130),

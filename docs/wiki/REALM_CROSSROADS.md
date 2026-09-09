@@ -38,6 +38,14 @@ mission clears, first-clear bonuses or Pet Siege wave counts. Studio arena rewar
 checks scaling/bounds/clear lifecycle without profile setting writes, then restores player attributes.
 Solo runtime and simulated team-density tests are not a multiplayer performance validation.
 
+## Nine Lives card identity — 2026-09-09
+
+Rainbow Kitty's inventory/equipped/trade card now carries a lower-right purple `9` badge.
+`PetBadge.createReviveBadge` resolves the variant through `PetAbilityRuntime`; the numeral is
+its configured maximum revives, not a remaining-lives counter. Basic and Golden Kitty have no
+badge. `inventory.buckets.pets.card_visuals.revive_badge` owns its palette and relative layout.
+The shared InventoryPanel card renderer supplies the same badge to trade previews.
+
 ## Live Bragg podiums — 2026-09-09
 
 Eight configured alcoves now consume canonical filtered `leaderboard.snapshot` and

@@ -8861,3 +8861,9 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   1,008 movement samples, 84 outside-territory checks, boss egg attachment, clear and
   repeated-defeat handling. Live combat and lightning were observed; abandonment cleared
   the arena on exit. Added a transient Studio QA script and pure composition tests.
+
+- 2026-09-09 — Added a lower-right Nine Lives numeral badge to the shared pet-card renderer,
+  derived from variant passive configuration (Rainbow Kitty only among the kitty variants).
+  Native 65×65 card comparison checked all three variants and numeral readability; lint/build
+  and 2,856 headless tests pass. Full CI is blocked by existing CrossroadsArena arrival task.wait
+  debt under the newly present architecture guard; the badge adds no architecture debt.
