@@ -27,6 +27,8 @@ function Display.start()
     end
     local player = Players.LocalPlayer
     local states, cache, cacheOrder = {}, {}, {}
+    local audienceSlots = {}
+    local audience = cfg.audience
     local runtime = Instance.new("Folder")
     runtime.Name = cfg.runtime_name
     runtime.Parent = workspace
@@ -50,6 +52,7 @@ function Display.start()
         return text
     end
     local function clearFigure(slot)
+        slot.wanted = false
         slot.userId = nil
         if slot.figure then
             slot.figure:Destroy()
@@ -89,6 +92,43 @@ function Display.start()
             state.requesting = false
         end)
     end
+    local function synchronizeAudience()
+        if not audience or not audience.enabled then
+            return
+        end
+        -- Old imported maps may still contain preview rigs. Suppress only the owned preview.
+        local preview = resolve(workspace, audience.preview_path)
+        if preview then
+            for _, part in ipairs(preview:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.LocalTransparencyModifier = 1
+                end
+            end
+        end
+        local stands = resolve(workspace, audience.root_path)
+        local seats = {}
+        for _, seat in ipairs(stands and stands:GetChildren() or {}) do
+            if seat:IsA("Seat") then
+                local id = seat:GetAttribute(audience.slot_attribute)
+                if id then
+                    seats[id] = seat
+                end
+            end
+        end
+        for index, seatId in ipairs(audience.reserved_slots) do
+            local seat = seats[seatId]
+            local slot = audienceSlots[index]
+            if slot and slot.anchor ~= seat then
+                clearFigure(slot)
+                audienceSlots[index] = nil
+                slot = nil
+            end
+            -- Enabled and occupied Seats are always owned by visiting players.
+            if seat and seat.Disabled and not seat.Occupant and not slot then
+                audienceSlots[index] = { anchor = seat, seated = true, retryAt = 0 }
+            end
+        end
+    end
     local function synchronize()
         local root = resolve(workspace, cfg.root_path)
         local bays = root and root:FindFirstChild(cfg.alcoves_name)
@@ -96,14 +136,27 @@ function Display.start()
         for _, definition in ipairs(cfg.boards) do
             local bay = bays and bays:FindFirstChild(definition.alcove)
             local state = states[definition.board_id]
-            if
-                state and (state.bay ~= bay or not state.slots[1].anchor:IsDescendantOf(workspace))
-            then
-                remove(state)
-                states[definition.board_id] = nil
-                state = nil
+            if not state then
+                state = {
+                    definition = definition,
+                    slots = {},
+                    retryAt = 0,
+                    snapshot = Controller.Get(definition.board_id),
+                }
+                states[definition.board_id] = state
             end
-            if not state and bay and anchors then
+            local stale = state.bay ~= bay
+            for _, slot in ipairs(state.slots) do
+                stale = stale
+                    or not slot.anchor:IsDescendantOf(workspace)
+                    or not slot.plate:IsDescendantOf(workspace)
+            end
+            if stale then
+                remove(state)
+                state.slots = {}
+            end
+            state.bay = bay
+            if #state.slots == 0 and bay and anchors then
                 local slots = {}
                 for rank = 1, cfg.ranks do
                     local name = definition.alcove .. "_Rank" .. rank .. "Anchor"
@@ -118,9 +171,7 @@ function Display.start()
                     for _, slot in ipairs(slots) do
                         slot.label = label(slot.plate)
                     end
-                    state = { bay = bay, definition = definition, slots = slots, retryAt = 0 }
-                    state.snapshot = Controller.Get(definition.board_id)
-                    states[definition.board_id] = state
+                    state.slots = slots
                 end
             end
             if state then
@@ -133,6 +184,90 @@ function Display.start()
             states[boardId].snapshot = snapshot
         end
     end)
+    local function sitCharacter(model, seat)
+        model:ScaleTo(audience.scale)
+        local root = assert(model:FindFirstChild("HumanoidRootPart"))
+        local lower = assert(model:FindFirstChild("LowerTorso"))
+        local joints = {}
+        for _, item in ipairs(model:GetDescendants()) do
+            if item:IsA("BasePart") then
+                item.Anchored = true
+                item.CanCollide, item.CanTouch, item.CanQuery = false, false, false
+            elseif item:IsA("Motor6D") then
+                table.insert(joints, {
+                    Name = item.Name,
+                    Part0 = item.Part0,
+                    Part1 = item.Part1,
+                    C0 = item.C0,
+                    C1 = item.C1,
+                    instance = item,
+                })
+            elseif item:IsA("AnimationConstraint") and item.Attachment0 and item.Attachment1 then
+                table.insert(joints, {
+                    Name = item.Name,
+                    Part0 = item.Attachment0.Parent,
+                    Part1 = item.Attachment1.Parent,
+                    C0 = item.Attachment0.CFrame,
+                    C1 = item.Attachment1.CFrame,
+                    instance = item,
+                })
+            elseif item:IsA("Humanoid") then
+                -- Roblox requires the Humanoid to render the member's clothing/body appearance.
+                item.EvaluateStateMachine = false
+                item.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+                item.BreakJointsOnDeath = false
+            elseif item:IsA("BaseScript") or item:IsA("Animator") then
+                item:Destroy()
+            end
+        end
+        -- Resolve the R15 joint tree once, then freeze it; accessories follow via their welds.
+        local frames = { [root] = seat.CFrame }
+        for _ = 1, #joints do
+            for _, joint in ipairs(joints) do
+                if frames[joint.Part0] and not frames[joint.Part1] then
+                    local angles = audience.joint_degrees[joint.Name] or {}
+                    frames[joint.Part1] = frames[joint.Part0]
+                        * joint.C0
+                        * CFrame.Angles(
+                            math.rad(angles[1] or 0),
+                            math.rad(angles[2] or 0),
+                            math.rad(angles[3] or 0)
+                        )
+                        * joint.C1:Inverse()
+                end
+            end
+        end
+        local lowerFrame = assert(frames[lower], "Missing R15 lower torso joint")
+        local desired = seat.CFrame:PointToWorldSpace(
+            Vector3.new(0, seat.Size.Y / 2 + lower.Size.Y / 2 + audience.hip_clearance, 0)
+        )
+        local offset = desired - lowerFrame.Position
+        for part, frame in pairs(frames) do
+            part.CFrame = frame + offset
+        end
+        -- AccessoryWeld endpoints can still be unset immediately after async avatar creation.
+        -- Match the authored attachment pairs directly, including layered clothing handles.
+        for _, accessory in ipairs(model:GetChildren()) do
+            if accessory:IsA("Accessory") then
+                local handle = accessory:FindFirstChild("Handle")
+                local attachment = handle and handle:FindFirstChildOfClass("Attachment")
+                if attachment then
+                    for part in pairs(frames) do
+                        local target = part:FindFirstChild(attachment.Name)
+                        if target and target:IsA("Attachment") then
+                            handle.CFrame = part.CFrame
+                                * target.CFrame
+                                * attachment.CFrame:Inverse()
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        for _, joint in ipairs(joints) do
+            joint.instance:Destroy()
+        end
+    end
     -- One appearance request at a time; cache descriptions, not hidden live rigs.
     local loading = false
     local function loadFigure(slot, winner)
@@ -165,6 +300,7 @@ function Display.start()
                     slot.userId == winner.userId
                     and slot.wanted
                     and slot.anchor:IsDescendantOf(workspace)
+                    and (not slot.seated or (slot.anchor.Disabled and not slot.anchor.Occupant))
                 then
                     model.Name = "Winner_" .. winner.userId
                     model:SetAttribute("BoardId", slot.boardId)
@@ -176,16 +312,26 @@ function Display.start()
                             part.CanTouch, part.CanQuery = false, false
                         end
                     end
-                    local placed = pcall(
-                        Podium.standCharacter,
-                        model,
-                        slot.anchor.WorldCFrame
-                            * CFrame.Angles(0, math.rad(cfg.figure_yaw_degrees), 0),
-                        config.podiums[1].dances
-                    )
+                    local placed, placementError
+                    if slot.seated then
+                        model:SetAttribute(
+                            "SpectatorSlot",
+                            slot.anchor:GetAttribute(audience.slot_attribute)
+                        )
+                        placed, placementError = pcall(sitCharacter, model, slot.anchor)
+                    else
+                        placed, placementError = pcall(
+                            Podium.standCharacter,
+                            model,
+                            slot.anchor.WorldCFrame
+                                * CFrame.Angles(0, math.rad(cfg.figure_yaw_degrees), 0),
+                            config.podiums[1].dances
+                        )
+                    end
                     if placed then
                         slot.figure = model
                     else
+                        warn("Crossroads winner placement failed: " .. tostring(placementError))
                         model:Destroy()
                     end
                 else
@@ -197,8 +343,10 @@ function Display.start()
     end
     local function update()
         synchronize()
+        synchronizeAudience()
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         local candidates = {}
+        local seatedCandidates = {}
         for boardId, state in pairs(states) do
             local snapshot = state.snapshot
             local winners = Logic.slots(snapshot and snapshot.entries, nil, cfg.ranks)
@@ -233,6 +381,41 @@ function Display.start()
                 end
             end
         end
+        for index, slot in pairs(audienceSlots) do
+            local definition = cfg.boards[math.floor((index - 1) / cfg.ranks) + 1]
+            local rank = (index - 1) % cfg.ranks + 1
+            local state = states[definition.board_id]
+            local snapshot = state and state.snapshot or Controller.Get(definition.board_id)
+            local winner = Logic.slots(snapshot and snapshot.entries, nil, cfg.ranks)[rank]
+            slot.boardId = definition.board_id
+            slot.wanted = false
+            if not winner or slot.userId ~= winner.userId then
+                clearFigure(slot)
+            end
+            local distance = root and (root.Position - slot.anchor.Position).Magnitude or math.huge
+            if
+                winner
+                and slot.anchor.Disabled
+                and not slot.anchor.Occupant
+                and distance <= audience.distance
+            then
+                table.insert(
+                    seatedCandidates,
+                    { slot = slot, winner = winner, distance = distance }
+                )
+            end
+        end
+        table.sort(seatedCandidates, function(a, b)
+            return a.distance < b.distance
+        end)
+        for i = 1, math.min(audience and audience.max_figures or 0, #seatedCandidates) do
+            seatedCandidates[i].slot.wanted = true
+        end
+        for _, slot in pairs(audienceSlots) do
+            if not slot.wanted then
+                clearFigure(slot)
+            end
+        end
         table.sort(candidates, function(a, b)
             return a.distance < b.distance
         end)
@@ -246,9 +429,17 @@ function Display.start()
                 end
             end
         end
-        for i = 1, math.min(cfg.max_figures, #candidates) do
-            local item = candidates[i]
-            if not item.slot.figure then
+        -- Load whichever visible placement is closest first, sharing the serial request budget.
+        for _, item in ipairs(seatedCandidates) do
+            if item.slot.wanted then
+                table.insert(candidates, item)
+            end
+        end
+        table.sort(candidates, function(a, b)
+            return a.distance < b.distance
+        end)
+        for _, item in ipairs(candidates) do
+            if item.slot.wanted and not item.slot.figure then
                 loadFigure(item.slot, item.winner)
             end
         end

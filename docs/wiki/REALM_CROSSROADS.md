@@ -15,7 +15,18 @@ No AwardPodium tags or duplicate platforms are created. Runtime labels identify 
 THIS SERVER, show real names/scores, and distinguish empty/loading/unavailable data.
 At most 12 nearby noncolliding dancing avatars load, one appearance request at a time;
 32 descriptions are cached. Stream-out and distance cleanup invalidate pending figures.
-Spectator stand placeholders remain a separate integration task.
+The stands now mirror these eight categories, rank 1/2/3 in configured category order,
+across the 24 explicitly reserved `PodiumSpectatorSlot` IDs. Repeated members retain each
+category placement. Eight enabled aisle visitor Seats are untouched; absent rankings leave
+reserved seats empty. The audience shares the serial appearance loader and 32-description
+cache, with its own 24-figure/150-stud budget (combined maximum 36 with podiums).
+Seated R15 poses support Motor6D and AnimationConstraint rigs, freeze their joint tree,
+and disable Humanoid state evaluation/animation. Keep the Humanoid: removing it makes
+Roblox lose the member's rendered clothing/body appearance. Accessory placement resolves
+matching attachments directly because newly created AccessoryWeld endpoints may still be unset. Streaming podium geometry
+out retains ranking state so nearby spectator seats still populate. Preview audience art is
+archived by the same binding helper; the client also hides legacy preview parts on old imports.
+Config owns reserved slots, scale, pose angles and budgets. No audience ranking writes occur.
 
 `leaderboards.bragg_tracking` registers three new lifetime counters and ordered stores:
 `siege_highest_wave_cleared`, `siege_waves_cleared`, and `bosses_defeated`.

@@ -8834,3 +8834,15 @@ Connected eight authored podium groups to canonical snapshots with real rank/nam
 ### 2026-09-09 — Studio Bragg global winner visibility
 
 Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Studio while preserving the general Studio isolation, disabled writes, and disabled score tracking. Native Play populated all five established boards with real global names, values, and 12 nearby avatars; the three newly registered recognition boards correctly remain empty until results accumulate.
+
+## 2026-09-09 — Crossroads leaderboard audience
+
+- Connected the 24 reserved spectator Seats to the eight Bragg top-three snapshots; category
+  order and pose/budgets live in leaderboard config, and eight visitor Seats remain native.
+- Reused serial appearance loading/cache and preserved snapshots across podium stream-out.
+- Static R15 posing supports Motor6D and Roblox AnimationConstraint avatars. Retain inactive
+  Humanoids for correct clothing/body rendering; remove Animators and disable state evaluation.
+- Archived authored audience placeholders through the podium binding helper.
+- Verification: full CI 2,849/2,849; fresh Studio Play showed 15 real ranked audience
+  placements (three new categories empty), noncolliding static rigs, correct accessories,
+  both animation-constraint and Motor6D posing, and native visitor-seat occupancy.
