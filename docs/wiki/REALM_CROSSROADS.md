@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-4096, 0, 0). Visual companions run; spawn routing and gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions run; spawn routing and gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
 
