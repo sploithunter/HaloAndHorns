@@ -820,3 +820,14 @@ visited the egg. Cosmetic hatch delivery was exercised without spending currency
 `CrossroadsHostsSmoke` covers blocked hatch reactions, gate priority, repeat suppression
 and return visits; the 42-step TutorialVoiceSmoke regression passed. Multi-player selection
 is covered by headless candidate tests; a multi-client visual session is still untested.
+
+### Personal guide audibility correction — 2026-09-09
+
+The shared authored heads still visit activities and prioritize gate arrivals, but speech now
+comes from a per-player companion copy of the active angel/demon. Templates cached in
+ReplicatedStorage avoid depending on a distant streamed gate. The companion remains nearby
+between lines while in Crossroads and follows a fixed visit bearing above and to one side,
+using Pet Siege's size, spacing, smoothing, speed and teleport recovery settings. Its 36.4-stud
+resting distance falls inside the 45-stud full-volume radius. Menus/hatch reveals hide the
+visual; leaving Crossroads or death hides both copies. Original gate-head distance no longer
+suppresses relevant local activity lines. No change to exclusive handoff or gate priority.

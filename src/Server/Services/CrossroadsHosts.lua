@@ -55,6 +55,22 @@ function Hosts:_bind(speaker, cfg)
     face:SetAttribute("CrossroadsHost", speaker)
     face:SetAttribute("HostActivity", "idle")
     face:SetAttribute("HostReady", true)
+    local templates = ReplicatedStorage:FindFirstChild(self.cfg.template_folder)
+    if not templates then
+        templates = Instance.new("Folder")
+        templates.Name = self.cfg.template_folder
+        templates.Parent = ReplicatedStorage
+    end
+    if not templates:FindFirstChild(speaker) then
+        local template = face:Clone()
+        template.Name = speaker
+        for _, child in ipairs(template:GetChildren()) do
+            if not child:IsA("SurfaceAppearance") then
+                child:Destroy()
+            end
+        end
+        template.Parent = templates
+    end
     self.actors[speaker] = actor
     return actor
 end

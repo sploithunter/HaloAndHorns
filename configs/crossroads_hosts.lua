@@ -2,7 +2,8 @@
 local areas = require(script.Parent.areas).crossroads
 local arena = require(script.Parent.crossroads_arena)
 local garden = require(script.Parent.crossroads_garden)
-local merge = require(script.Parent.merge_egg_prototype).gate.crossroads_entry
+local siege = require(script.Parent.merge_egg_prototype)
+local merge = siege.gate.crossroads_entry
 return {
     enabled = true,
     poll_seconds = 0.25,
@@ -20,7 +21,18 @@ return {
     egg_enter_radius = 22,
     vertical_range = 28,
     hearing_radius = 90,
-    minimum_hearing_distance = 15,
+    minimum_hearing_distance = siege.watcher.voice.rolloff_min_distance,
+    template_folder = "CrossroadsHostTemplates",
+    companion = {
+        size = siege.watcher.size,
+        distance = siege.watcher.distance,
+        height = siege.watcher.height,
+        side_offset = siege.watcher.side_offset,
+        follow_rate = siege.watcher.follow_rate,
+        max_speed = siege.watcher.max_speed,
+        turn_rate = siege.watcher.turn_rate,
+        teleport_distance = siege.watcher.teleport_distance,
+    },
     comment_interval_seconds = 25,
     reaction_interval_seconds = 10,
     reaction_expiry_seconds = 25,

@@ -40,14 +40,15 @@ function Tutorial.start()
     for cue, asset in pairs(require(ReplicatedStorage.Configs.crossroads_host_voice_assets).clips) do
         assets[cue] = asset
     end
+    local presentation = hostConfig.enabled and HostPresentation.new() or nil
     local voice = Narrator.new({
         config = voiceConfig,
         lines = lines,
         assets = assets,
         locales = {},
-        presentation = hostConfig.enabled and HostPresentation.new() or nil,
+        presentation = presentation,
         soundParent = hostConfig.enabled and function(speaker)
-            return hosts:face(speaker)
+            return presentation:voiceParent(speaker)
         end or nil,
         soundRange = hostConfig.enabled and {
             minimum = hostConfig.minimum_hearing_distance,

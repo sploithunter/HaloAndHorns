@@ -38,13 +38,11 @@ function Client:_snapshot(speaker)
     local egg = cfg.egg_part and area:FindFirstChild(cfg.egg_part)
     local activity = face:GetAttribute("HostActivity")
     local gateDistance = (root.Position - gate.Position).Magnitude
-    local nearby = (root.Position - face.Position).Magnitude <= config.hearing_radius
-    local relevant = nearby
-        and (
-            (activity == "gate" and gateDistance <= config.gate_exit_radius)
-            or (activity == "egg" and egg and (root.Position - egg.Position).Magnitude <= config.egg_enter_radius)
-            or (activity == cfg.activity and inField(field, root, config.activity_exit_radius))
-        )
+    local relevant = (
+        (activity == "gate" and gateDistance <= config.gate_exit_radius)
+        or (activity == "egg" and egg and (root.Position - egg.Position).Magnitude <= config.egg_enter_radius)
+        or (activity == cfg.activity and inField(field, root, config.activity_exit_radius))
+    )
     return {
         face = face,
         cfg = cfg,
@@ -134,17 +132,14 @@ function Client:nextRequest(now, blocked)
                     and workspace:GetServerTimeNow() - entryAt
                         < config.arena_entry_voice_grace_seconds
                 if cues and s.ready and not blocked and not entryVoice then
-                    table.insert(
-                        requests,
-                        {
-                            cues = cues,
-                            priority = priority,
-                            speaker = speaker,
-                            activity = s.activity,
-                            state = state,
-                            reaction = reaction,
-                        }
-                    )
+                    table.insert(requests, {
+                        cues = cues,
+                        priority = priority,
+                        speaker = speaker,
+                        activity = s.activity,
+                        state = state,
+                        reaction = reaction,
+                    })
                 end
             end
         end
