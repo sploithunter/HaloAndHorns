@@ -2,7 +2,10 @@
   "name": "HaloAndHorns",
   "servePort": 34872,
   "globIgnorePaths": [
-    "Packages/**/*.project.json"
+    "Packages/**/*.project.json",
+    "configs/realm_crossroads*.json",
+    "configs/crossroads_fossil.json",
+    "configs/confluence*.json"
   ],
   "tree": {
     "$className": "DataModel",

@@ -8814,3 +8814,5 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 
 - 2026-09-09: Replaced all remaining Crossroads Grass Terrain with Ground at user request, including Bragg Plaza; 960 replacements, zero Grass remaining, occupancy/water unchanged. Updated repeatable surface config and archived source.
 - 2026-09-08: Added optional Coin Pup angel/demon comments for both games in English, Spanish and Brazilian Portuguese. Real Marketplace non-ownership is required; unknown checks and all effective/previous collector benefits suppress them. Manual credited pickups trigger bounded opportunities, shared narration preserves gains/fallback, and purchases cancel queued/active comments. See TUTORIAL_VOICE.md.
+
+- 2026-09-09: Excluded Crossroads map-authoring JSON inputs from Rojo runtime config sync to prevent ConfigLoader startup failures; retained unrelated runtime JSON configuration.
