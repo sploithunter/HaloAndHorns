@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/crossroad_coin/model.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 555,
+    "edges": 1659,
+    "faces": 1106,
+    "triangles": 1106,
+    "face_components": 7,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "Mesh_0",
+      "vertices": 555,
+      "raw_vertices": 2007,
+      "welded_coincident_vertices": 1452,
+      "inspection_weld_distance": 6.070730768012671e-09,
+      "edges": 1659,
+      "faces": 1106,
+      "triangles": 1106,
+      "face_components": 7,
+      "bounds_diagonal": 0.060707307680126714,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

@@ -1596,4 +1596,20 @@ M.boost = {
     reward_xp_min_level = 5, -- preserve the tightly tuned L1-4 Answer-the-Cave graduation
 }
 
+-- Activity targets use the same preload, falling-spawn, pet mining and contribution rewards.
+do
+    local garden = require(script.Parent.crossroads_garden)
+    M.activity_worlds = { [garden.world] = { mining_area = garden.mining_area } }
+    for _, target in ipairs(garden.targets) do
+        local def = table.clone(garden.chest)
+        for key, value in pairs(target) do
+            if key ~= "id" and key ~= "weight" then
+                def[key] = value
+            end
+        end
+        def.currency = garden.currency.id
+        M.crystals[target.id] = def
+    end
+end
+
 return M

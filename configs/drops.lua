@@ -69,6 +69,7 @@ return {
     -- from the mineable node. The uploaded mesh is already horizontal, so its one-time template
     -- orientation is neutral; runtime clones use the exact same pop/rest/spin/Magnet path as gems.
     currency_pickups = {
+        crossroads_coins = require(script.Parent.crossroads_garden).pickup,
         -- Premium Gems use the existing authored amethyst geode mesh instead of the emergency
         -- neon-ball fallback. This is the same textured asset already shipped with Heaven flora;
         -- DropService handles its pop, spin, owner visibility, magnet, and collection unchanged.

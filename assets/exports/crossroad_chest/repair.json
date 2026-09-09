@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/crossroad_chest/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/crossroad_chest/model_repaired.glb",
+  "raw_vertices": 2957,
+  "weld_distance": 8.753891488249629e-08,
+  "initial_cleanup": {
+    "boundary_edges_found": 31,
+    "fill_faces_added": 2,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.0,
+  "triangles_after_fill": 2122,
+  "decimation_ratio": 1.0,
+  "final_triangles": 2122,
+  "max_triangles": 2500
+}

@@ -10730,4 +10730,16 @@ petConfig.hatching_animation = {
     },
 }
 
+-- Independent offer identity: reuses the selected egg's art/odds without changing Hall prices.
+do
+    local garden = require(script.Parent.crossroads_garden)
+    local source =
+        assert(petConfig.egg_sources[garden.egg.source], "Unknown Crossroads featured egg")
+    local offer = table.clone(source)
+    offer.cost = garden.egg.cost
+    offer.currency = garden.currency.id
+    offer.world_placeable = true
+    petConfig.egg_sources[garden.egg.id] = offer
+end
+
 return petConfig

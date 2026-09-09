@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Arena combat is connected; Pet Siege and fishing/reward activities remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Arena combat, the coin garden, and featured egg hatching are connected; Pet Siege and fishing remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
 
@@ -45,6 +45,48 @@ The thunder source is trimmed by 3.51 seconds, leaving its main impact at approx
 Only the first arrival marker carries `ThunderCue`, so a whole team makes one clap through Effects.
 Audio is preloaded and remains enabled with reduced motion; volume/mute preferences still apply.
 Source/edit provenance and upload IDs live in `assets/audio/crossroads_arena/`.
+
+## Coin garden and featured egg — 2026-09-09
+
+`configs/crossroads_garden.lua` owns the coin asset, silver HUD art/palette, wallet definition,
+spawn cadence/value/cap, collection radius, and pavilion egg source/price/height. The initial
+`crossroads_featured_egg` offer clones Wayfinder's content at 100 **Crossroad Coins**; changing
+`egg.source` selects another configured egg's art, odds, variants and hatch behavior without
+changing that egg's original shop price. Restart the server after changing the offer config.
+
+`CrossroadsGarden` binds the authored `CoinGarden` floor/field and pavilion anchor, replaces
+its visual preview at runtime, and registers the offer with the existing EggStand query. Shared
+EggService handles proximity, locks, player hatch choices, affordability, pet storage and debit.
+Crossroad Coins use the normal `Currencies` profile map and generic zero-start migration.
+
+The garden drops mineable blue-and-silver chests through the same BreakableSpawner strategy
+as Hall targets. `CrossroadChest` (120 HP / 25 base coins / 3.5 studs wide) and
+`CrossroadStrongbox` (400 HP / 75 base coins / 5 studs wide) have 3:1 weights. One falls every
+2 seconds while a loaded player is nearby, capped at 12 shared targets, with a 12-stud spacing
+budget. They are unmineable during their 0.9-second descent. No currency is emitted on spawn;
+normal pet mining, contribution credit, Boost and reward modifiers produce the silver pickups
+on destruction. Magnet and Auto Collector collect those released rewards. Empty-garden cleanup
+destroys targets without payout. Targets are shared, while awarded pickups remain owner-only.
+
+`breakables.activity_worlds` maps the dedicated `CrossroadsGarden` target folder to Spawn's
+mining unlock gate. AutoTarget respects the player's normal targeting mode/range and PetFollow
+checks that same mapped gate. Activity callers own lifetime, so automatic world fill/respawn does
+not populate the garden. `SpawnMissionBreakable` remains a compatibility wrapper around
+`SpawnActivityBreakable`. Per-target placement and explicit floor overrides are merged before
+bounds alignment; otherwise the global floor at zero buried the new chest models.
+
+CurrencyStack follows `CrossroadsAtmosphereZone` and shows only Gems and Crossroad Coins
+throughout Crossroads, restoring the ordinary area's HUD after departure. The UI icon uses a
+transparent ImageGen PNG; matching Meshy coin/chest meshes use their UV albedos, not HUD renders.
+Asset provenance lives beside `assets/exports/crossroad_coin/` and `crossroad_chest/`.
+
+Native QA confirmed a persistent wallet, a successful 100-coin egg hatch granting a Golden Pack
+Tortoise, configured hatch odds/entitlements, live pet mining, and the correct two-currency HUD.
+A controlled native check filled exactly 12 targets, observed no HP loss or free currency before
+mining, then assigned pets through BreakableService and confirmed destruction/reward. All 12
+bounds bottoms matched the authored floor at Y=4.38. All 2,860 headless tests pass, including
+the offer/wallet/content and managed-world routing contracts. Full CI remains blocked by the
+pre-existing CrossroadsArena.lua arrival task.wait architecture finding.
 
 ## Nine Lives card identity — 2026-09-09
 

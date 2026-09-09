@@ -8882,3 +8882,6 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   so Rojo's existing editor-only exclusion applies; fresh native server startup now passes.
   Native arena entry loaded/played both group-owned assets with one voice and one clap; voice
   did not repeat across rounds. Targeted lint, formatting, Rojo build and 2,856 headless tests pass.
+
+- 2026-09-09: Connected the Crossroads coin garden and configurable featured egg using shared DropService/EggService authorities, separate persisted Crossroad Coins, silver ImageGen/Meshy assets, and a Gems + Crossroad Coins HUD. Native collection/expiry/cap/debit checks and 2,859 headless tests passed. See REALM_CROSSROADS.md.
+- 2026-09-09: Revised the garden per Jason: falling mineable chests, no free coin rain. New ImageGen/Meshy silver paw coin and blue/silver chest; shared activity-world mining gates and caller-owned spawn lifecycle. Corrected explicit floor placement before bounds alignment.

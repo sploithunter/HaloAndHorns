@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local petConfig = Locations.getConfig("pets")
+local gardenConfig = require(ReplicatedStorage.Configs.crossroads_garden)
 local eggSystemConfig = Locations.getConfig("egg_system")
 local autoSystemsConfig = Locations.getConfig("auto_systems")
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
@@ -586,6 +587,9 @@ local function formatNumber(value)
 end
 
 local function getCurrencyIcon(currency)
+    if currency == gardenConfig.currency.id then
+        return gardenConfig.currency.icon
+    end
     if currency == "gems" then
         return "💎"
     elseif currency == "crystals" then
@@ -828,7 +832,8 @@ function EggInteractionService:RefreshHatchCostDisplay(eggType)
         "%s %s %s",
         getCurrencyIcon(eggData.currency),
         formatNumber(totalCost),
-        titleCaseId(eggData.currency)
+        eggData.currency == gardenConfig.currency.id and gardenConfig.currency.name
+            or titleCaseId(eggData.currency)
     )
     if hatchPanelFields.costDetail then
         hatchPanelFields.costDetail.Text =

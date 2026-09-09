@@ -2,6 +2,7 @@
 -- Define all available currencies in the game
 
 return {
+    require(script.Parent.crossroads_garden).currency,
     {
         id = "coins",
         name = "Crystals",

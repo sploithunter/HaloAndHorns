@@ -31,6 +31,7 @@ local started = false
 local PANES = {
     "gems_pane",
     "hall_coins_pane",
+    "crossroads_coins_pane",
     "grass_coins_pane",
     "desert_coins_pane",
     "lava_coins_pane",
@@ -131,12 +132,15 @@ function CurrencyStack.start()
                 local pane = panes[name]
                 if pane then
                     pane.LayoutOrder = order
-                    if inHall then
+                    if player:GetAttribute("CrossroadsAtmosphereZone") ~= nil then
+                        pane.Visible = name == "gems_pane" or name == "crossroads_coins_pane"
+                    elseif inHall then
                         -- The first-world route intentionally has one currency. Long-press does not
                         -- reveal currencies that do not participate in the Hall economy.
                         pane.Visible = name == "gems_pane" or name == "hall_coins_pane"
                     else
                         pane.Visible = name ~= "hall_coins_pane"
+                            and name ~= "crossroads_coins_pane"
                             and (
                                 not compact
                                 or expanded
@@ -218,6 +222,7 @@ function CurrencyStack.start()
         end)
         player:GetAttributeChangedSignal("CurrentArea"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("HomeArea"):Connect(applyCompactState)
+        player:GetAttributeChangedSignal("CrossroadsAtmosphereZone"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("GauntletMode"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("InMission"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(applyCompactState)

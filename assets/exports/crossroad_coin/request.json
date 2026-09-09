@@ -1,0 +1,14 @@
+{
+  "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/ui/currencies/crossroad_coin.png",
+  "source_sha256": "9f4da358f49a2fcfe4ff601c75227ebe902f45c09fe8f6b2b24012db06375d60",
+  "model_type": "smart-topology",
+  "ai_model": "meshy-t2",
+  "target_polycount": 1000,
+  "should_texture": true,
+  "target_formats": [
+    "glb",
+    "fbx"
+  ],
+  "auto_size": true,
+  "origin_at": "bottom"
+}

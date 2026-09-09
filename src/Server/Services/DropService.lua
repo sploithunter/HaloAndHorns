@@ -543,7 +543,13 @@ function DropService:_ensureCurrencyTemplate(currency)
     if not part then
         return nil
     end
-    part.Color = Color3.new(1, 1, 1)
+    part.Color = cfg.color and color3(cfg.color) or Color3.new(1, 1, 1)
+    if cfg.material then
+        part.Material = Enum.Material[cfg.material]
+    end
+    if cfg.reflectance then
+        part.Reflectance = cfg.reflectance
+    end
     part.CanQuery = false
     part.CanTouch = false
     part.Massless = true
