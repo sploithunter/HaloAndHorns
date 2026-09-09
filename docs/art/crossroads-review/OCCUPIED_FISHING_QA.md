@@ -30,3 +30,13 @@ Because proxies were deliberately noncolliding and client-local, this demonstrat
 Destroyed `OccupiedFishingQA`, restored saved player pivot and camera type/subject/CFrame, and verified original 24 Bragg reference models and 24 stand audience models remained. WalkSpeed 24 retained. Native cleanup returnedremoved=true/restored=true. Control released with Play left to the lead; no further native operations after release.
 
 Keep current pond/dock sizes for this phase. Standard 5.5-stud occupied geometry supports the intended 10+8 station count, and current bank routes remain usable. Production acceptance still needs actual concurrent clients, supported avatar/accessory envelopes, equipped rod/cast movement, shared station ownership and real device/performance tests. No terrain or map change is justified by this bounded occupied-layout check.
+
+## Opposing physical pedestrians — follow-up
+
+The next Play session tested two server-owned native R15 clones walking in opposite directions behind the occupied docks. All 18 static 5.5-stud fishing proxies were present. Pedestrians retained native rig/constraints, WalkSpeed 24 and active Humanoid physics; cloned body parts were unanchored, with Head/UpperTorso/LowerTorso colliding in Default. No jump suppression or intermediate teleport was used. This is a local two-NPC physical test, not two network clients or a crowd load certification.
+
+Heaven lanes X−161.5/−156.5 and Hell lanes X202.5/207.5 ran between Z−12 and Z28 in opposite directions. [Raw results](occupied-fishing-qa/opposing-walkers.json) contain 719 and 721 Heartbeat samples respectively. Both pairs crossed one another and continued to the opposite end, with zero lateral drift and zero sampled Jumping/Freefall/Swimming states. Minimum root separation was 5.024 studs in Heaven and 5.013 in Hell. The earlier conservative 4.246-stud body envelope therefore has space between lanes; this does not test deliberately steering into another character.
+
+The fixture used a strict 1-stud endpoint flag, which remained false: native MoveTo stopped about 1.14–1.23 studs short of requested endpoints. Those false flags are retained in the raw data. They do not erase the observed opposing crossing, but no exact-endpoint completion is claimed. Future reuse should record MoveToFinished and explicitly distinguish arrival tolerance from passage clearance.
+
+All temporary proxies and walkers were removed and cleanup verified before the focused rendering sample. Original podium/audience figures and saved map geometry were unchanged. The OS was then verified unlocked and the correct Crossroads window foreground, allowing the previously blocked desktop rendering review to proceed.
