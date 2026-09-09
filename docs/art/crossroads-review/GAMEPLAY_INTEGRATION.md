@@ -1,6 +1,6 @@
 # Crossroads gameplay integration contract
 
-2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals, local Farm gate, Bragg podiums/audience and arena combat are connected; fishing and other activities remain disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
+2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals, local Farm gate, Bragg podiums/audience and arena combat are connected; fishing is now connected through the client-timed implementation below; remaining activity stubs are disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
 
 ## Source authority and current delivery
 
@@ -61,7 +61,15 @@ The deck LineTip now matches the displayed native rod’s RodLineTip attachment.
 | Ranking | `StatsService.lua`, `LeaderboardService.lua`, `configs/stats.lua`, `configs/leaderboards.lua`, `LeaderboardScoring.lua`, `src/Client/Systems/AwardPodium.lua` and `AwardPodiumLogic.lua` | New durable cleared-wave/shared-boss counters, exact anchor adapter, bounded many-alcove avatar loading and stand audience mapping. Existing four-group usage does not prove the larger display is cheap. |
 | Fish/rod motion | Current cast rehearsal, 18 mounted native rod props and independent cosmetic AmbientField; existing land-shark code is in Merge combat | Tool grip/ownership, production fish presentation and fishing state machine. Land-shark combat AI is not an existing fishing system and should not be copied wholesale. No FishingService was identified in current source. |
 
-## Production fishing state and authority — proposed new work
+## Production fishing state and authority — superseded proposal
+
+**2026-09-09 decision:** The user explicitly chose client-owned bite timing, displayed luck and
+catch/escape, accepting exploitation to avoid network timing problems. The implemented
+`CrossroadsFishing` / `CrossroadsFishingService` and `configs/crossroads_fishing.lua` supersede
+the server timing, exclusive reservation and reaction validation proposal below. The server
+persists config-selected coin/gem rewards with bounded attempt receipts; it does not time casts.
+See [current fishing contract](../../wiki/REALM_CROSSROADS.md#client-timed-fishing--2026-09-09).
+The following paragraphs are retained as historical design notes, not implementation requirements.
 
 A server-owned station registry should register the 18 unique StationKeys and authoritative deck/Standing/Cast transforms. Validate duplicate/missing keys, water target material, root membership and supported map role before enabling any real prompt. Occupancy is transient server state keyed by station and player; do not persist a chair reservation as inventory.
 

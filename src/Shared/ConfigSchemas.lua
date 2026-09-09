@@ -38,6 +38,15 @@ local SCHEMAS = {
     build_info = schema({ version = "string", commit = "string", branch = "string" }),
     combat = schema({ auto_target = "string", group_scaling = "table" }),
     client_graphics = schema({ shadows = "table" }),
+    crossroads_fishing = schema({
+        enabled = "boolean",
+        root_name = "string",
+        timing = "table",
+        tiers = "table",
+        ui = "table",
+        cast = "table",
+        input = "table",
+    }),
     crossroads_garden = schema({
         enabled = "boolean",
         root_path = "table",

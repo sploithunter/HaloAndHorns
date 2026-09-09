@@ -958,6 +958,11 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.CrossroadsGarden,
     { "Logger", "ConfigLoader", "BreakableSpawner", "DataService" }
 )
+loader:RegisterModule(
+    "CrossroadsFishingService",
+    ServerScriptService.Server.Services.CrossroadsFishingService,
+    { "Logger", "ConfigLoader", "DataService", "RewardService", "GameAPIService" }
+)
 -- RealmAllianceService: mixed-level temporary alliances at live Heaven/Hell cave patrols.
 -- Kept separate from the homeworld spawner service and its newcomer/onramp behavior.
 loader:RegisterModule(

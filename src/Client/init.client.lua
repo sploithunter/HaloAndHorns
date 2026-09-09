@@ -438,6 +438,16 @@ do
     end
 end
 
+-- Crossroads cast/reel and luck timing run locally; only reward saving uses the API.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.CrossroadsFishing).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CrossroadsFishing", { error = tostring(err) })
+    end
+end
+
 -- Power/command hotbar (Feature 16): lower-center 20-slot bar + farming-mode cycle.
 -- Number keys 1-0 / Shift+1-0 fire slots; bindings fed by HotbarService.
 do

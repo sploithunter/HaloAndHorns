@@ -692,3 +692,35 @@ Native verification: all 225 perimeter models checked, 51 lowered, zero moves on
 69 matching non-perimeter landscape models checked against supporting surfaces with no gaps
 above 0.3 studs. Ground-level Heaven/Hell views verified trunk and bush contact.
 The saved place retains the helper, config and change report in ServerStorage.
+
+## Client-timed fishing — 2026-09-09
+
+`CrossroadsFishing` binds all 18 existing stations on both sides. It retains authored Cast/LineTip
+attachments and the local cast, bobber, ripple and reel presentation. E / controller X / on-screen
+Hook stops the last rendered luck value; Q / controller B / Cancel releases the station. The bar,
+bite delay, timeout and catch/escape roll run entirely on the client. The user explicitly accepts
+client manipulation to avoid server latency affecting timing. No reservation lease, server clock,
+minimum cast duration or reaction validation is part of this design.
+
+`configs/crossroads_fishing.lua` owns all tuning, colors, controls, copy and weighted reward bundles.
+Ordinary casts peak between 65 and 94; 2% of casts get a brief surge to 100 (0.08-second plateau).
+Higher stopped luck selects better reward tiers and lowers escape chance from 72% at zero to 2%
+at 100. Initial rewards are Crossroad Coins and gems; no separate fish inventory was introduced.
+The design adapts the link between bar control and catch quality described in
+[Stardew Valley fishing](https://stardewvalleywiki.com/Fishing) to a single timed button press.
+
+Only after a successful local hook, `fishing.claim` sends station, attempt GUID, score and caught.
+`CrossroadsFishingService` validates finite input and station proximity, selects a configured
+reward through RewardService and saves it through DataService. It trusts the local timing and
+escape result. `GameData.CrossroadsFishing` retains the latest 24 attempt receipts in the profile;
+retrying a retained attempt returns its receipt without another grant. This bounded retry window
+is not general exploit prevention or a cross-save transaction guarantee. Existing garden coin
+currency is reused. Cancellation, death, stream-out, walk-away and menu opening clean up local FX.
+
+Validation: 2,866 headless tests passed, including ordinary/rare peaks, elapsed-time scoring,
+escape odds and reward tiers. Native Heaven keyboard catch at 43 awarded 50 Crossroad Coins;
+Hell on-screen Hook at 45 awarded 2 gems. Replayed receipt did not add currency; NaN rejected.
+iPhone 17 Pro landscape and portrait HUD checked, minimum Hook height 49 pixels. Keyboard cancel,
+walk-away, timeout and menu blocking passed. Controller X cast passed; Studio's virtual input
+blocked B, so physical controller cancellation remains unverified. Full CI still encounters the
+preexisting CrossroadsArena line 185 task.wait architecture gate.
