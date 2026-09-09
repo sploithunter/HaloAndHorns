@@ -25,6 +25,29 @@ local function layer3RealmArea(id, element, displayName, order, y, centerX, cent
 end
 
 return {
+    crossroads = {
+        enabled = true,
+        area_id = "Crossroads",
+        context_area = "Spawn",
+        root_name = "RealmCrossroadsR4",
+        spawn_name = "PreviewSpawn",
+        slots_folder = "ArrivalSlots",
+        slot_prefix = "ArrivalSlot",
+        slot_size = { 2, 0.2, 2 },
+        spawn_clearance = 3.5,
+        gate_path = { "CrossroadsCraftR11", "GateRearCraft", "FarmAndFightTravelAnchor" },
+        gate_size = { 16, 9, 4 },
+        prompt_name = "ProximityPrompt",
+        prompt_action = "Enter Farm and Fight",
+        prompt_title = "Farm and Fight",
+        prompt_distance = 14,
+        prompt_hold = 0.2,
+        touch_distance = 12,
+        cooldown_seconds = 1.5,
+        stream_timeout = 2,
+        destination_area = "Spawn",
+        home_spawn_path = { "Maps", "Home", "SpawnLocation" },
+    },
     -- ZoneService fans player arrivals around the authored spawn anchor instead
     -- of placing every character on the exact same point.
     player_spawn_spread = {

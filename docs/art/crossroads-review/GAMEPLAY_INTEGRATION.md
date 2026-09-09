@@ -1,6 +1,6 @@
 # Crossroads gameplay integration contract
 
-2026-09-09. **R11 is imported and saved in Farm and Fight; gameplay remains disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
+2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals and the local Farm gate are connected; other gameplay remains disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
 
 ## Source authority and current delivery
 
@@ -152,3 +152,11 @@ The host may supply `CrossroadsFXQuality` and `CrossroadsReducedMotion` player a
 ### Decorative fish versus future catches
 
 `CrossroadsPondLife` installs local, noncolliding, nonqueryable fish from the retained original two-bone asset. Two config-owned swim loops, short surfacing arcs and pooled ripples are cosmetic. They have no prompts, catch IDs, loot tables, network events or inventory authority. A future fishing service must choose server-authorized catches independently; it must not accept one of these local models as evidence of a catch. Copy/adapt the runtime folder and client companion with the map, bind existing graphics/reduced-motion settings, and remove the Studio-only preview-time override when integrating production presentation.
+
+## First local gameplay binding — 2026-09-09
+
+`areas.crossroads` enables 24 invisible native ArrivalSlot SpawnLocations around PreviewSpawn, using the existing two-ring PlayerSpawnSpread pattern (minimum measured separation 6.1228 studs). ZoneService delegates initial/post-prologue placement to CrossroadsArrival. Per-player RespawnLocation and reserved slots avoid sharing one marker; nearby occupied positions are also considered. The existing prologue/mission placement gate retains priority. The runtime context remains Spawn until a dedicated hub area is introduced; InCrossroads records hub arrival without inventing a new currency/unlock domain.
+
+Only FarmAndFightTravelAnchor is active: enlarged transparent noncolliding touch volume, plus the existing prompt. Server checks character health, physical distance, mission/prologue state and cooldown; it requests destination streaming and rechecks before calling the existing ZoneService:TravelToZone(Spawn). Success sets the session-only CrossroadsFarmEntered flag and Home SpawnLocation. Death before entering Farm returns to the lobby; death after entry returns to Home. A new join returns to Crossroads. Pet Siege and all activity/ranking/fishing stubs remain disabled. No cross-place teleport or rewards were added.
+
+Author markers via tools/realm_crossroads/bake_arrival_slots.luau; never run this baker automatically at gameplay startup. Runtime service code is Rojo-owned. Native checks: 24 colliding test IDs received distinct pads, each over solid terrain; automatic fresh join reached ArrivalSlot5; actual character navigation through the gate reached Home; LoadCharacterAsync there returned to Home. These are solo smoke tests plus allocation simulation, not 24-client load testing.
