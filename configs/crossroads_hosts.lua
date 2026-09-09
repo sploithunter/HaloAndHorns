@@ -67,6 +67,7 @@ return {
             approach_cue = "hosts.demon.arena",
             comments = { "hosts.demon.fighting1", "hosts.demon.fighting2", "hosts.demon.fighting3" },
             defeated_cue = "hosts.demon.defeated",
+            once_per_visit = { ["hosts.demon.defeated"] = true },
             victory_cue = "hosts.demon.victory",
             retreat_cue = "hosts.demon.retreat",
         },

@@ -48,6 +48,7 @@ function Client:_snapshot(speaker)
         cfg = cfg,
         activity = activity,
         relevant = relevant,
+        inActivity = inField(field, root, config.activity_exit_radius),
         gateDistance = gateDistance,
         ready = workspace:GetServerTimeNow() >= (face:GetAttribute("HostReadyAt") or 0),
     }
@@ -73,6 +74,10 @@ function Client:nextRequest(now, blocked)
         local state = self.states[speaker] or { count = 0, nextAt = 0, rotation = 0 }
         self.states[speaker] = state
         if s then
+            state.playedThisVisit = state.playedThisVisit or {}
+            if s.inActivity == false then
+                state.playedThisVisit = {}
+            end
             if s.gateDistance > config.gate_exit_radius then
                 state.greeted = false
             end
@@ -100,13 +105,18 @@ function Client:nextRequest(now, blocked)
                     local token = s.face:GetAttribute("HostReactionToken")
                     local recipient = s.face:GetAttribute("HostReactionUserId")
                     local reactionAt = s.face:GetAttribute("HostReactionAt")
+                    local cue = s.face:GetAttribute("HostReaction")
+                    local repeated = s.cfg.once_per_visit
+                        and s.cfg.once_per_visit[cue]
+                        and state.playedThisVisit[cue]
                     if
                         token ~= state.reaction
+                        and not repeated
                         and reactionAt
                         and workspace:GetServerTimeNow() - reactionAt <= config.reaction_expiry_seconds
                         and (recipient == 0 or recipient == Players.LocalPlayer.UserId)
                     then
-                        cues, priority, reaction = { s.face:GetAttribute("HostReaction") }, 2, token
+                        cues, priority, reaction = { cue }, 2, token
                     elseif not state.approached then
                         cues, priority =
                             { s.activity == "egg" and s.cfg.egg_cue or s.cfg.approach_cue }, 3
@@ -156,6 +166,7 @@ function Client:nextRequest(now, blocked)
         if request.activity == "gate" then
             state.greeted = true
         else
+            state.playedThisVisit[request.cues[1]] = true
             state.approached = true
             state.count += 1
             state.rotation += 1

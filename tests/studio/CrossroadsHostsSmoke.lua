@@ -50,6 +50,48 @@ function Smoke.run()
     client:nextRequest(36, true)
     snapshot.relevant, snapshot.gateDistance = true, 10
     assert(client:nextRequest(37, false), "Returning visitor was not greeted")
-    return { passed = true, checks = 12 }
+    -- Use the real demon cue policy with the angel snapshot slot to avoid live arena entry audio.
+    client = Client.new()
+    snapshot.cfg, snapshot.activity, snapshot.inActivity = config.hosts.demon, "arena", true
+    snapshot.gateDistance, snapshot.relevant = 100, true
+    client._snapshot = function(_, speaker)
+        return speaker == "angel" and snapshot or nil
+    end
+    attributes.HostFightActive = false
+    client:nextRequest(0, true)
+    attributes.HostReaction, attributes.HostReactionToken = config.hosts.demon.defeated_cue, 2
+    attributes.HostReactionAt = workspace:GetServerTimeNow()
+    assert(
+        client:nextRequest(1, false).cues[1] == config.hosts.demon.defeated_cue,
+        "First defeat missing"
+    )
+    attributes.HostReactionToken = 3
+    assert(client:nextRequest(2, false) == nil, "Repeated defeat taunt")
+    snapshot.relevant = false -- Host left for another player's gate; listener stayed in arena.
+    client:nextRequest(3, true)
+    snapshot.relevant = true
+    client:nextRequest(4, true)
+    attributes.HostReactionToken = 4
+    local resumed = client:nextRequest(5, false)
+    assert(
+        not resumed or resumed.cues[1] ~= config.hosts.demon.defeated_cue,
+        "Host return reset listener visit"
+    )
+    attributes.HostReaction, attributes.HostReactionToken = config.hosts.demon.victory_cue, 5
+    assert(
+        client:nextRequest(6, false).cues[1] == config.hosts.demon.victory_cue,
+        "Defeat suppression blocked victory"
+    )
+    snapshot.inActivity, snapshot.relevant = false, false
+    client:nextRequest(7, true)
+    snapshot.inActivity, snapshot.relevant = true, true
+    client:nextRequest(8, true)
+    attributes.HostReaction, attributes.HostReactionToken = config.hosts.demon.defeated_cue, 6
+    assert(client:nextRequest(9, true) == nil, "Blocked cue consumed")
+    assert(
+        client:nextRequest(10, false).cues[1] == config.hosts.demon.defeated_cue,
+        "New visit did not rearm"
+    )
+    return { passed = true, checks = 18 }
 end
 return Smoke

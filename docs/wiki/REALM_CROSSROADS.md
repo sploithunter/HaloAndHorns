@@ -831,3 +831,12 @@ using Pet Siege's size, spacing, smoothing, speed and teleport recovery settings
 resting distance falls inside the 45-stud full-volume radius. Menus/hatch reveals hide the
 visual; leaving Crossroads or death hides both copies. Original gate-head distance no longer
 suppresses relevant local activity lines. No change to exclusive handoff or gate priority.
+
+### Defeat-taunt repetition — 2026-09-09
+
+The demon's “One down” cue is configured in `hosts.demon.once_per_visit`. Each listener
+remembers delivery until leaving the padded activity footprint. Host reassignment to another
+gate visitor does not reset that memory; blocked/queued cues are not counted as delivered.
+Other fight comments and victory reactions remain available. Native CrossroadsHostsSmoke
+now covers 18 queue checks, including repeat suppression, host departures, fresh visits,
+blocked delivery and victory after a suppressed defeat.

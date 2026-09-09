@@ -8913,3 +8913,5 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - 2026-09-09: Added shared roaming Crossroads angel/demon hosts, gate-priority return greetings, garden/egg and arena reactions, and 20 recorded English lines. Verified movement, real mining/combat responses, audio loading, protected handoff and client queue/regression checks in Studio. See REALM_CROSSROADS.md and TUTORIAL_VOICE.md.
 
 - 2026-09-09: Corrected inaudible Crossroads hosts with per-listener angel/demon companion copies above and off to the side, matching Pet Siege spacing and voice range. Shared gate visitors retain priority; native angel playback verified at 36.4 studs inside the 45-stud full-volume radius; Studio update interrupted the remaining movement/demon checks.
+
+- 2026-09-09: Limited the demon defeat taunt to once per listener's arena visit, preserving other commentary and victory lines. Native 18-check queue regression passes, including host gate detours and leaving/reentering.
