@@ -95,7 +95,7 @@ function Tutorial.start()
     local footer = configuredLabel("Explore", "footer")
     footer.Text = config.ui.explore
     gui.Parent = player:WaitForChild("PlayerGui")
-    local sequence, index, elapsed, minimum, busy, hostRequest
+    local sequence, index, elapsed, minimum, busy, hostRequest, sequenceKey
     local function release()
         if busy then
             busy = false
@@ -109,6 +109,10 @@ function Tutorial.start()
         index += 1
         local cue = sequence[index]
         if not cue then
+            if sequenceKey then
+                Signals.CrossroadsIntroCompleted:FireServer(sequenceKey)
+                sequenceKey = nil
+            end
             sequence = nil
             return
         end
@@ -136,6 +140,14 @@ function Tutorial.start()
             release()
             return
         end
+        if player:GetAttribute(config.progress.ready_attribute) ~= true then
+            return
+        end
+        local progress = {}
+        for key, attribute in pairs(config.progress.attributes) do
+            progress[key] = player:GetAttribute(attribute) == true
+        end
+        flow:sync(progress)
         flow:observe(player:GetAttribute("CrossroadsAtmosphereZone"))
         local blocked = GuiService.MenuIsOpen
             or player:GetAttribute("LargeMenuOpen") == true
@@ -166,6 +178,7 @@ function Tutorial.start()
                 return
             end
             sequence = flow:nextSequence()
+            sequenceKey = flow.sequenceKey
             hostRequest = nil
             if not sequence and hostConfig.enabled then
                 hostRequest = hosts:nextRequest(os.clock(), blocked)

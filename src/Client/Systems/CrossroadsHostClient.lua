@@ -30,6 +30,9 @@ function Client:_snapshot(speaker)
     local player = Players.LocalPlayer
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     local cfg = config.hosts[speaker]
+    if player:GetAttribute(cfg.visited_attribute) == true then
+        return nil
+    end
     local face, gate, area = self:face(speaker), resolve(cfg.gate_path), resolve(cfg.activity_path)
     if not (root and face and gate and area and face:GetAttribute("HostReady")) then
         return

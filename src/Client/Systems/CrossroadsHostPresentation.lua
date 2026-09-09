@@ -56,6 +56,13 @@ function Presentation:_follow(dt)
         and humanoid.Health > 0
         and player:GetAttribute("InCrossroads") == true
     local speaker = active and (self.speaker or player:GetAttribute("CrossroadsGuide") or "angel")
+    if
+        speaker
+        and not self.speaker
+        and player:GetAttribute(config.hosts[speaker].visited_attribute) == true
+    then
+        speaker = nil
+    end
     local face = speaker and self:voiceParent(speaker)
     local visible = active
         and player:GetAttribute("ClientUIReady") == true

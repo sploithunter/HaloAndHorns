@@ -840,3 +840,20 @@ gate visitor does not reset that memory; blocked/queued cues are not counted as 
 Other fight comments and victory reactions remain available. Native CrossroadsHostsSmoke
 now covers 18 queue checks, including repeat suppression, host departures, fresh visits,
 blocked delivery and victory after a suppressed defeat.
+
+### Persistent introductory guidance — 2026-09-09
+
+`GameData.CrossroadsIntroduction` stores completed welcome, hell_handoff and heaven_return
+sequences plus farm_visited/siege_visited. CrossroadsIntroduction starts with TutorialService
+in both places, restores replicated progress before hub narration starts, records Farm only
+after successful local gate travel and Siege on successful destination profile load. Failed
+outgoing teleports cannot mark a destination visited. `CrossroadsIntroCompleted` records only
+the three cosmetic sequence milestones after the final line completes; it cannot grant
+rewards, finish destination tutorials or mark visits. Normal profile persistence is reused.
+
+Completed sequences do not replay on subsequent sessions. Visiting Farm suppresses angel
+hub commentary and the idle angel companion; visiting Siege does the same for the demon.
+The other destination remains available for guidance. Active protected conversations finish
+in order. Existing Farm/Siege tutorials and their saved progress remain independent.
+These flags begin tracking with this version; prior visits without a stored flag are not
+inferred from player level. Both place snapshots need this version for destination tracking.

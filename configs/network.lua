@@ -1218,6 +1218,17 @@ return {
                 arguments = { { name = "snapshot", type = "table" } },
             },
         },
+        CrossroadsIntroCompleted = {
+            name = "CrossroadsIntroCompleted",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 10,
+            handler = "CrossroadsIntroduction.Completed",
+            schema = { kind = "tuple", arguments = { { name = "sequence", type = "string" } } },
+        },
         CrossroadsDialogueActive = {
             name = "CrossroadsDialogueActive",
             transport = "reliable_event",

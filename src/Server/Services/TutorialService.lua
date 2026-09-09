@@ -60,6 +60,7 @@ end
 
 function TutorialService:Start()
     require(script.Parent.CrossroadsDialogue).start()
+    require(script.Parent.CrossroadsIntroduction).start(self._dataService)
     require(script.Parent.Parent.TutorialVoiceTemplates).start(
         self._configLoader:LoadConfig("tutorial_voice")
     )

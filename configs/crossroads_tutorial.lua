@@ -1,6 +1,16 @@
 -- Spoken copy and routing for the optional Crossroads introduction.
 return {
     enabled = true,
+    progress = {
+        ready_attribute = "CrossroadsIntroReady",
+        attributes = {
+            welcome = "CrossroadsWelcomeSeen",
+            hell_handoff = "CrossroadsExchangeSeen",
+            heaven_return = "CrossroadsReturnSeen",
+            farm_visited = "CrossroadsFarmVisited",
+            siege_visited = "CrossroadsSiegeVisited",
+        },
+    },
     dialogue_timeout_seconds = 150,
     caption_min_seconds = 3,
     caption_characters_per_second = 18,
