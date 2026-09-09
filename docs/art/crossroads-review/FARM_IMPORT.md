@@ -35,3 +35,12 @@ Terrain GrassLength was changed through Studio Properties from 0.7 to 0.25 (glob
 Native Play review confirmed clear central paving and shortened grass. All 72,742 occupied cells / 744 water cells remain at the midpoint; previous location has zero occupied cells. Heaven/Hell and old Merge had zero client BaseParts, while Home/FuturePath still retained 1,360/230; increased distance must not be reported as a memory-unloading fix. Full CI passed 2,842/2,842 tests; both new tools passed StyLua/Selene.
 
 2026-09-09 follow-up: user requested complete temporary removal of Grass Terrain after residual grass remained in the Bragg court. Surface config now sets replace_all_grass=true for the bounded Crossroads region. Replaced the remaining 960 voxels with Ground; zero Grass remains. Occupancy stays 72,742, Water 744, rerun changes zero. Existing geometry and outside maps are unchanged; original Terrain backup remains available.
+
+### Final-terrain foliage pass
+
+After importing and completing Terrain changes, run `tools/realm_crossroads/ground_foliage.luau`
+with `(Workspace.RealmCrossroadsR4, decoded configs/crossroads_foliage_grounding.json)` in Edit.
+It operates in the imported models' world coordinates and only lowers floating perimeter models.
+Use a fresh ModuleScript instance when refreshing the helper source. Its optional third `true`
+argument audits without mutation. The 2026-09-09 pass lowered 51 of 225 models; a second pass
+moved none. Keep the original-pivot attributes for rollback and save the place after verification.

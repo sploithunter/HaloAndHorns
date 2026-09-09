@@ -628,3 +628,17 @@ in its dedicated original archive. All 32 Seats and the 12-stud pond passage sta
 in place. Direct up/down/underpass movement passed without sampled jumping,
 falling or swimming. The latest 17,695-instance save passes source/runtime/cache
 validation; its hash and precise limits are in IMPLEMENTATION_STATUS.md.
+
+## Final-terrain foliage grounding — 2026-09-09
+
+The imported perimeter retained old raised-ground elevations in 51 placements after the side
+terrain was flattened: 25 Heaven and 26 Hell, with a maximum 7.8-stud air gap. The Edit-only
+`tools/realm_crossroads/ground_foliage.luau` post-import pass consumes
+`configs/crossroads_foliage_grounding.json` and lowers only floating models under
+`CrossroadsLandscapeR8.PerimeterFlora` onto final Terrain with a 0.35-stud root embed. It preserves
+scale, yaw, X/Z positions and original pivots as attributes. Raised-bed/platform decor is excluded.
+Run after terrain/import edits; fixed-height terrain rays and the positive-gap gate prevent drift.
+Native verification: all 225 perimeter models checked, 51 lowered, zero moves on second run;
+69 matching non-perimeter landscape models checked against supporting surfaces with no gaps
+above 0.3 studs. Ground-level Heaven/Hell views verified trunk and bush contact.
+The saved place retains the helper, config and change report in ServerStorage.

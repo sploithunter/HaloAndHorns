@@ -8869,3 +8869,8 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   debt under the newly present architecture guard; the badge adds no architecture debt.
 
 - 2026-09-09 — Crossroads side music now reuses Heaven_2_Grass / Hell_2_Grass through the atmosphere zones; the neutral center retains its normal area bed. Native side/center checks loaded all three tracks, and Jason confirmed the transitions work. Targeted lint, format, build and wiki checks pass.
+
+- 2026-09-09 — Fixed 51 floating Crossroads perimeter placements (25 Heaven, 26 Hell; maximum
+  7.8-stud gap). Audited 225 perimeter and 69 other matching landscaping models; final support
+  checks and zero-movement replay passed. Added a config-owned Edit repair with original-pivot
+  retention. Native ground-level views, helper lint/format and wiki checks passed.
