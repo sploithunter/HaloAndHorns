@@ -8867,3 +8867,5 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
   Native 65×65 card comparison checked all three variants and numeral readability; lint/build
   and 2,856 headless tests pass. Full CI is blocked by existing CrossroadsArena arrival task.wait
   debt under the newly present architecture guard; the badge adds no architecture debt.
+
+- 2026-09-09 — Crossroads side music now reuses Heaven_2_Grass / Hell_2_Grass through the atmosphere zones; the neutral center retains its normal area bed. Native side/center checks loaded all three tracks, and Jason confirmed the transitions work. Targeted lint, format, build and wiki checks pass.

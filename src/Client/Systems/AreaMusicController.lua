@@ -168,7 +168,12 @@ function AreaMusicController.start()
         if inCombat and combatKey then
             return combatKey, music[combatKey]
         end
-        local area = localPlayer:GetAttribute("CurrentArea")
+        -- Share the atmosphere's spatial zones and neutral exclusions, without changing gameplay
+        -- area/realm attributes. An unmapped center (or leaving Crossroads) keeps normal area music.
+        local zone = localPlayer:GetAttribute("CrossroadsAtmosphereZone")
+        local spatialArea = sounds.crossroads_music_areas and sounds.crossroads_music_areas[zone]
+        local area = spatialArea
+            or localPlayer:GetAttribute("CurrentArea")
             or localPlayer:GetAttribute("HomeArea")
             or "Spawn"
         return trackForArea(area)
@@ -313,6 +318,7 @@ function AreaMusicController.start()
     end)
     localPlayer:GetAttributeChangedSignal("CurrentArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("HomeArea"):Connect(apply)
+    localPlayer:GetAttributeChangedSignal("CrossroadsAtmosphereZone"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("InCombat"):Connect(onCombatChanged)
     localPlayer:GetAttributeChangedSignal("InPrologue"):Connect(onCombatChanged)
     localPlayer:GetAttributeChangedSignal("CombatMusicCue"):Connect(onCombatMusicCueChanged)

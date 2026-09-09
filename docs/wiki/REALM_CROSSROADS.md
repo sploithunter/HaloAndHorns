@@ -104,6 +104,12 @@ Classification uses config bounds rather than streamed geometry or camera positi
 Native QA: 12 region/boundary assertions; Heaven/Hell sky and light changes; Bragg east
 edge restores base sky/tint; Homeworld clears the override. Full CI: 2,846 tests pass.
 
+Crossroads ambient music follows the same `CrossroadsAtmosphereZone` attribute and neutral
+exclusions. `sounds.crossroads_music_areas` references `Heaven_2_Grass` (Grass Meadow) and
+`Hell_2_Grass` (Lava Homeworld B), so edits to those source mappings carry through. The neutral
+center/Bragg area keeps its normal area music. AreaMusicController retains its existing fade,
+music-volume bus, combat priority and load fallback; leaving the hub restores normal area music.
+
 ## R8: realm landscape and outer safety boundary
 
 Heaven occupies negative X (left) and Hell positive X (right), matching the gates.
