@@ -518,4 +518,7 @@ function AwardPodium.start()
     task.spawn(spawnPodiums)
 end
 
+AwardPodium.standCharacter = standCharacter
+AwardPodium.formatScore = formatScore
+
 return AwardPodium

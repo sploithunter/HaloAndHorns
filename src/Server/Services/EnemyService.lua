@@ -1654,6 +1654,18 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
             awardOptions
         )
     end)
+    local braggCfg = require(ReplicatedStorage.Configs.leaderboards).bragg_tracking
+    local resolvedDef = rewardDef or entry.def
+    if braggCfg.boss_tiers[resolvedDef and resolvedDef.tier] then
+        entry.braggReceipt = entry.braggReceipt or HttpService:GenerateGUID(false)
+        require(script.Parent.BraggProgress).record(
+            self._dataServiceInstance,
+            self._statsService,
+            player,
+            "boss",
+            "boss:" .. entry.braggReceipt
+        )
+    end
     fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
     if self._statsService then
         pcall(function() -- mission counter (Origin Story combat beats)

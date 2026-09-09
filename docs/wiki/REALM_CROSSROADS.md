@@ -4,6 +4,37 @@ Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root:
 
 
 
+## Live Bragg podiums — 2026-09-09
+
+Eight configured alcoves now consume canonical filtered `leaderboard.snapshot` and
+`LeaderboardUpdated` data through `CrossroadsPodiums`; the six garden/relic alcoves stay art.
+All 24 authored rank attachments and nameplates are reused. Original preview figures and
+168 PREVIEW letters are archived under `CrossroadsAuthoringR11.BeforeLivePodiums`.
+Replay `tools/realm_crossroads/bind_live_podiums.luau` with leaderboard config after importing R11.
+No AwardPodium tags or duplicate platforms are created. Runtime labels identify GLOBAL or
+THIS SERVER, show real names/scores, and distinguish empty/loading/unavailable data.
+At most 12 nearby noncolliding dancing avatars load, one appearance request at a time;
+32 descriptions are cached. Stream-out and distance cleanup invalidate pending figures.
+Spectator stand placeholders remain a separate integration task.
+
+`leaderboards.bragg_tracking` registers three new lifetime counters and ordered stores:
+`siege_highest_wave_cleared`, `siege_waves_cleared`, and `bosses_defeated`.
+The Merge successful-settlement boundary records clears with a unique wave-attempt GUID;
+overruns and escaped final objectives do not clear. Replayed successful attempts add totals.
+EnemyService's existing credited kill-award boundary counts boss/archvillain tiers. Farm team
+eligibility is unchanged; Merge retains its durable Full-mode pet owner plus completed Combat
+Training requirement for broader kill-stat credit. NPC hatchers, nearby spectators, and escapes
+receive no boss credit. Both modes use one boss boundary, not an extra Merge callback.
+
+`BraggProgress` mutates counters and a bounded 512-receipt deduplication queue in the same
+owned profile, schedules the existing debounced save, and signals leaderboard updates.
+Online/offline provenance totals live in `GameData.BraggProgress`; offline actors use their
+leased profile. No history is inferred from reached-wave records. Studio tracking is disabled.
+These changes must be deployed to both places before both contribute new production scores.
+Native QA covered all 24 labels, temporary client-display avatar fixtures, cap-height/facing,
+and memory-only offline facade save/signals. Full CI includes deduplication, replay, provenance,
+invalid outcome, bounded receipts and no-backfill tests. No fabricated score was persisted.
+
 ## Spatial atmosphere — 2026-09-09
 
 `RealmAtmosphere` is the sole global lighting/sky controller. `areas.crossroads.atmosphere`

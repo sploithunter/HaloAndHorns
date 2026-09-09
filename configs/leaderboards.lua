@@ -117,6 +117,53 @@ end
 
 return {
     version = "2.0.0",
+    crossroads_podiums = {
+        enabled = true,
+        root_path = { "RealmCrossroadsR4", "BraggRotundaR6" },
+        alcoves_name = "PodiumAlcoves",
+        anchors_name = "BraggCraftsmanshipR1",
+        runtime_name = "CrossroadsWinners",
+        plate_prefix = "Nameplate",
+        gui_name = "WinnerSurface",
+        ranks = 3,
+        max_figures = 12,
+        distance = 150,
+        poll_seconds = 0.5,
+        retry_seconds = 30,
+        cache_size = 32,
+        canvas = { 800, 160 },
+        text_color = { 255, 241, 210 },
+        font = "GothamBold",
+        light_influence = 0,
+        brightness = 1.4,
+        face = "Back",
+        figure_yaw_degrees = 180,
+        empty_text = "No ranked player",
+        loading_text = "Loading leaders…",
+        unavailable_text = "Leaderboard unavailable",
+        source_labels = { global = "GLOBAL", server = "THIS SERVER" },
+        boards = {
+            { alcove = "Alcove01", board_id = "most_dragons" },
+            { alcove = "Alcove03", board_id = "crystal_crusher" },
+            { alcove = "Alcove05", board_id = "enemies_defeated" },
+            { alcove = "Alcove07", board_id = "team_power" },
+            { alcove = "Alcove08", board_id = "eggs_hatched" },
+            { alcove = "Alcove10", board_id = "siege_highest_wave_cleared" },
+            { alcove = "Alcove12", board_id = "siege_waves_cleared" },
+            { alcove = "Alcove14", board_id = "bosses_defeated" },
+        },
+    },
+    bragg_tracking = {
+        enabled = true,
+        studio_tracking = false,
+        receipt_limit = 512,
+        boss_counter = "bosses_defeated",
+        total_counter = "siege_waves_cleared",
+        highest_counter = "siege_highest_wave_cleared",
+        boss_tiers = { boss = true, archvillain = true },
+        save_reason = "bragg_progress",
+        save_debounce_seconds = 20,
+    },
 
     -- Never enumerate player profiles. Each player replaces only their own ordered key when
     -- joining, changing a relevant score, and leaving. Servers read one cached top-100 page and
@@ -150,6 +197,46 @@ return {
     -- can be appended here.
 
     boards = {
+        {
+            id = "siege_highest_wave_cleared",
+            display_name = "Highest Wave Cleared",
+            subtitle = "Lifetime • tracked from September 2026",
+            score = { kind = "counter", counter = "siege_highest_wave_cleared" },
+            sort = "desc",
+            max_entries = 10,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_SiegeHighestClear_v1",
+            },
+        },
+        {
+            id = "siege_waves_cleared",
+            display_name = "Total Waves Cleared",
+            subtitle = "Lifetime • tracked from September 2026",
+            score = { kind = "counter", counter = "siege_waves_cleared" },
+            sort = "desc",
+            max_entries = 10,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_SiegeTotalClears_v1",
+            },
+        },
+        {
+            id = "bosses_defeated",
+            display_name = "Bosses Defeated",
+            subtitle = "Lifetime • tracked from September 2026",
+            score = { kind = "counter", counter = "bosses_defeated" },
+            sort = "desc",
+            max_entries = 10,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_AllRealmBossDefeats_v1",
+            },
+        },
+
         {
             id = "most_dragons",
             status_title = "Dragonlord",

@@ -164,3 +164,7 @@ Author markers via tools/realm_crossroads/bake_arrival_slots.luau; never run thi
 ### 2026-09-09 — Homeworld return portal
 
 Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Crossroads. Merge delegates this hook to CrossroadsArrival when the imported map is enabled; its cross-place handler is not bound. Dedicated Pet Siege return gates are unchanged. Config-owned text lives in areas.crossroads. The return validates living character, proximity, mission/prologue ownership and cooldown before and after destination streaming, then uses ZoneService to reset the Farm-entered session flag and assign a spaced Crossroads respawn slot. Native Play verified Crossroads → Home via gate touch and Home → Crossroads via the actual proximity prompt, with ArrivalSlot5 restored. Full CI: 2,846/2,846 tests, 323 specs.
+
+### Implemented: Bragg podiums and tracking — 2026-09-09
+
+The earlier proposal above is now implemented for all eight podium categories. `CrossroadsPodiums` reuses the 24 rank attachments/nameplates; `BraggProgress` supplies three new lifetime counters with same-profile receipts. See `docs/wiki/REALM_CROSSROADS.md` for the exact credit rules, budgets, Studio isolation, and two-place deployment requirement. Preview figures and lettering are archived. Spectator audience mapping remains deferred.

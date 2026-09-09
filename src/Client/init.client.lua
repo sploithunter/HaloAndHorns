@@ -774,6 +774,15 @@ do
     end
 end
 
+task.spawn(function()
+    local ok, err = pcall(function()
+        require(script.Systems.CrossroadsPodiums).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CrossroadsPodiums", { error = tostring(err) })
+    end
+end)
+
 -- RealmAtmosphere: retints Lighting to the player's current realm (heaven/hell skin on the
 -- same map, World S3) — driven by the server-published CurrentRealm attribute.
 do

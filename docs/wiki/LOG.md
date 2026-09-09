@@ -8826,3 +8826,7 @@ Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Cro
 ### 2026-09-09 — Crossroads Heaven/Purgatory/Hell atmosphere
 
 Added config-driven spatial selection to the existing RealmAtmosphere client: left Heaven 1, right Hell 2, neutral center/Bragg/approaches. Lighting tweens, sky swaps, boundary hysteresis and outside-map restoration verified in native Play. Twelve spatial assertions and full CI (2,846 tests) passed. See REALM_CROSSROADS.md for region dimensions.
+
+### 2026-09-09 — Bragg leaderboard integration and recognition tracking
+
+Connected eight authored podium groups to canonical snapshots with real rank/name/score labels and bounded avatar loading. Archived preview figures/text. Added successful Pet Siege clear counters and shared credited boss defeats, per-profile receipt deduplication and offline provenance. No backfill or Studio counter publication. Native figure placement and memory-only offline facade checks passed; see REALM_CROSSROADS.md for credit rules and deployment limits.

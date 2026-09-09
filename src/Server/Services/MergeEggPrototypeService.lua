@@ -13000,6 +13000,14 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         return
     end
     local waveCount = self:_waveCount(record)
+    require(script.Parent.BraggProgress).record(
+        self._dataService,
+        self._modules and self._modules.StatsService,
+        record.player,
+        "wave",
+        record.braggWaveReceipt,
+        record.waveIndex
+    )
     self:_analytics(record, "wave_cleared", record.waveIndex)
     if record.waveIndex < waveCount then
         if self._powerLessonRuntime.tryStart(self, record) then
@@ -13860,6 +13868,7 @@ function MergeEggPrototypeService:_spawnNextWaveInternal(record)
     end
 
     record.waveIndex = waveIndex
+    record.braggWaveReceipt = "wave:" .. HttpService:GenerateGUID(false)
     self:_analytics(record, "wave_started", record.waveIndex)
     self:_recordHighestWave(record)
     record.nextWaveOverride = nil
