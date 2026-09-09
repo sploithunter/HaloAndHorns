@@ -30,5 +30,6 @@
   "edge_margin": 2,
   "buried_depth": 8,
   "grass_length": 0.25,
-  "previous_grass_length": 0.7
+  "previous_grass_length": 0.7,
+  "replace_all_grass": true
 }

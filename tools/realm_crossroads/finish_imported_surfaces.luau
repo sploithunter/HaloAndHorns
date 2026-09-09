@@ -21,6 +21,18 @@ return function(cfg)
     end
     local materials, occupancy = workspace.Terrain:ReadVoxels(region, 4)
     local changed = 0
+    if cfg.replace_all_grass then
+        for x, column in ipairs(materials) do
+            for y, row in ipairs(column) do
+                for z, material in ipairs(row) do
+                    if material == Enum.Material.Grass then
+                        materials[x][y][z] = Enum.Material[cfg.replacement_material]
+                        changed += 1
+                    end
+                end
+            end
+        end
+    end
     for _, p in ipairs(root:GetDescendants()) do
         if p:IsA("BasePart") and names[p.Name] then
             local half = p.Size / 2

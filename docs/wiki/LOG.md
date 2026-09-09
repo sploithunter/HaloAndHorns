@@ -8811,3 +8811,5 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 - 2026-09-09: Imported R11 into existing Farm and Fight at X -4096 with bounded native Terrain, four visual clients, translated FX/fish origins and bulwark pivots, and inert source archives. Geometry/Terrain counts and hash match source; cosmetic Play smoke passed after streaming, but player profile timed out. Saved to Roblox (not published). See art/crossroads-review/FARM_IMPORT.md.
 
 - 2026-09-09: Crossroads relocated to X -8192 between Home and legacy Merge at user request; cleared previous-location Terrain from original empty backup and translated visual origins/bulwark pivots. Replaced 438 Grass voxels beneath paving with Ground, preserving occupancy (rerun zero changes). Studio GrassLength 0.7 → 0.25. No distant-map hiding client added. See FARM_IMPORT.md.
+
+- 2026-09-09: Replaced all remaining Crossroads Grass Terrain with Ground at user request, including Bragg Plaza; 960 replacements, zero Grass remaining, occupancy/water unchanged. Updated repeatable surface config and archived source.
