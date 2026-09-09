@@ -1,6 +1,6 @@
 # Crossroads gameplay integration contract
 
-2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals and the local Farm gate are connected; other gameplay remains disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
+2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals, local Farm gate, Bragg podiums/audience and arena combat are connected; fishing and other activities remain disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
 
 ## Source authority and current delivery
 
@@ -168,3 +168,12 @@ Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Cro
 ### Implemented: Bragg podiums and tracking — 2026-09-09
 
 The earlier proposal above is now implemented for all eight podium categories. `CrossroadsPodiums` reuses the 24 rank attachments/nameplates; `BraggProgress` supplies three new lifetime counters with same-profile receipts. See `docs/wiki/REALM_CROSSROADS.md` for the exact credit rules, budgets, Studio isolation, and two-place deployment requirement. Preview figures and lettering are archived. Spectator audience mapping is now implemented: the same eight categories in config order, each rank 1/2/3, fill the 24 reserved slot IDs; repeated members appear for every earned category placement. See the current wiki contract; the earlier proposal above is historical.
+
+
+## Arena implementation — 2026-09-09
+
+The earlier arena proposal is now implemented by `CrossroadsArena` and
+`configs/crossroads_arena.lua`. The outer `CombatBounds` floor footprint is authoritative;
+EnemyService clamps body-inset movement and excludes spectators from targeting/credit.
+Level/menu-scaled teams arrive with lightning and use ordinary combat plus Trials boss egg
+rewards. See the current wiki contract for timing, scope, Studio reward isolation and QA.

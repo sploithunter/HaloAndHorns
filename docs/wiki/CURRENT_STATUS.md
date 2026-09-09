@@ -2218,3 +2218,9 @@ local/GitHub CI (2,781 tests / 314 specs) and a fresh Merge Studio boot/runtime 
 an active bay and live Hell strikes. Merged feature branches and the redundant Auto Dog worktree
 were pruned; broader product-design questions remain tracked separately, not discarded.
 This reconciliation did not publish either Roblox place. Save authored Studio map edits separately.
+
+## 2026-09-09 — Crossroads arena
+
+The Crossroads branch now runs level/menu-scaled pet combat inside the authored arena
+outer floor edge, with lightning arrivals and Trials boss egg chances. Spectators remain
+outside targeting/credit; Studio rewards default off. See REALM_CROSSROADS.md.

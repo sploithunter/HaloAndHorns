@@ -79,6 +79,7 @@ return {
     -- without another UI/service change. Boss and titan anchors never scale in count.
     player_tuning = {
         group_scale = {
+            label = "Trial / Arena Enemy Group Size",
             default = 1.0,
             min = 0.25,
             max = 2.0,

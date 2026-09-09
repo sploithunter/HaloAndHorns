@@ -8846,3 +8846,18 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - Verification: full CI 2,849/2,849; fresh Studio Play showed 15 real ranked audience
   placements (three new categories empty), noncolliding static rigs, correct accessories,
   both animation-constraint and Motor6D posing, and native visitor-seat occupancy.
+
+## 2026-09-09 — Crossroads arena combat
+
+- Added one shared, level-appropriate arena encounter using authored outer CombatBounds,
+  the existing Trials population/density/boss ladder, and player/team-lead level offset.
+- Config owns rosters, onramp scaling, a 24-enemy cap, lightning arrivals and round lifecycle.
+  Existing group-size menu now identifies both Trials and Arena.
+- EnemyService clamps body-inset spawn/chase/fear/knockback/scripted positions, excludes
+  spectators from targeting and shared credit, and sizes HP from inside teammates only.
+- Boss egg rewards reuse the Trials definitions and normal defeated-enemy award path.
+  Studio arena rewards are disabled; no new save fields or synthetic mission/Siege clears.
+- Native checks covered low-level −3/25% and level-16 +3/200% settings,
+  1,008 movement samples, 84 outside-territory checks, boss egg attachment, clear and
+  repeated-defeat handling. Live combat and lightning were observed; abandonment cleared
+  the arena on exit. Added a transient Studio QA script and pure composition tests.

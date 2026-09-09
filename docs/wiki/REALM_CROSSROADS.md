@@ -1,8 +1,42 @@
 # Realm Crossroads
 
-Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Pet Siege and activity gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Arena combat is connected; Pet Siege and fishing/reward activities remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
+
+## Arena combat — 2026-09-09
+
+`CrossroadsArena` starts one shared encounter when a loaded player with a live squad enters
+`CrossroadsActivitiesR7.PatrolGrove.CombatBounds`. That authored 64×102 outer floor footprint
+is the boundary; the surrounding promenades, stands and gathering terrace are outside it.
+`configs/crossroads_arena.lua` owns teams, early-level stat scaling, spawn grid, timing and FX.
+The first eligible entrant opens the round; their team lead supplies effective level and menu
+settings. Nearby strangers can fight inside, but do not inflate the opener's team count.
+Only the opener's eligible teammates inside the floor contribute population/HP team scaling.
+Menu changes apply to later encounters; the existing level-offset path also applies during spawn.
+
+Composition uses `MissionPopulation` and `PackScale`: the Trial / Arena Enemy Group Size slider
+controls density, extra bosses and the max-slider villain chance. Species keep their combat kits;
+rank uses the Trials ladder and EnemyService's numerical level offset. The early Woodland team
+is available at levels 1–4; Frostlight/Blight teams cover 5–50. All teams have a frontline boss.
+Arrival bolts use `EnchantLightning` client-side at server-timed markers (12 segments per bolt,
+no second core, 220-stud visibility, no strike under Crossroads reduced motion). An encounter
+caps at 24 enemies. It rests 12 seconds after clear and cancels after 8 seconds with no eligible
+fighters, after 10 minutes, or when its authored map hooks disappear.
+
+EnemyService's per-spawn movement leash clamps chase, retreat, loiter, knockback and scripted
+moves. An extra conservative body-radius inset keeps the mesh inside the outer edge during yaw;
+oversize enemies fail closed. Territory and targeting exclude owners outside the floor, including
+assist selection and spectator team-credit sharing. These flags are opt-in; ordinary Trials and
+Home leashes keep their contracts. Physical visitor access and bulwark visuals stay authored.
+
+Normal play uses the existing contributor/team combat award path and actual defeat deduplication.
+Bosses receive the source Trials egg definition: 0.5% Celestial/Obsidian per credited player;
+archvillains use the existing 2% premium and event modifiers still apply. There are no fabricated
+mission clears, first-clear bonuses or Pet Siege wave counts. Studio arena rewards default off.
+`tools/realm_crossroads/arena_combat_qa.luau` runs only as a temporary Server Script in Play,
+checks scaling/bounds/clear lifecycle without profile setting writes, then restores player attributes.
+Solo runtime and simulated team-density tests are not a multiplayer performance validation.
 
 ## Live Bragg podiums — 2026-09-09
 

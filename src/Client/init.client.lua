@@ -777,6 +777,7 @@ end
 task.spawn(function()
     local ok, err = pcall(function()
         require(script.Systems.CrossroadsPodiums).start()
+        require(script.Systems.CrossroadsArenaFX).start()
     end)
     if not ok then
         Logger:Warn("Failed to start CrossroadsPodiums", { error = tostring(err) })
