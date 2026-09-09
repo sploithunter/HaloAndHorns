@@ -400,13 +400,24 @@ function LeaderboardService:_trimEntries(entries, limit)
     return trimmed
 end
 
-function LeaderboardService:RequestSnapshot(boardId)
+function LeaderboardService:_studioPreviewMayReadGlobal(player)
+    local preview = (self._config.crossroads_podiums or {}).studio_global_preview or {}
+    if not RunService:IsStudio() or preview.enabled ~= true or not player then
+        return false
+    end
+    if preview.internal_accounts_only == true then
+        return self._excluded[player.UserId] == true
+    end
+    return true
+end
+
+function LeaderboardService:RequestSnapshot(boardId, player)
     local board = self._boardsById[boardId]
     if not board then
         return { ok = false, reason = "unknown_board" }
     end
     if not self._cachedGlobal[boardId] then
-        self:_readGlobalBoard(board)
+        self:_readGlobalBoard(board, self:_studioPreviewMayReadGlobal(player))
     end
     return self:GetSnapshot(boardId)
 end
@@ -530,7 +541,7 @@ function LeaderboardService:_openGlobalStore(board)
     return self._globalStores[storeName] or nil
 end
 
-function LeaderboardService:_getGlobalReadStore(board)
+function LeaderboardService:_getGlobalReadStore(board, allowStudioPreview)
     local global = board.global or {}
     if global.enabled ~= true then
         return nil
@@ -539,6 +550,7 @@ function LeaderboardService:_getGlobalReadStore(board)
         RunService:IsStudio()
         and global.studio_enabled ~= true
         and not self:_studioMayReadGlobal()
+        and allowStudioPreview ~= true
     then
         return nil
     end
@@ -645,9 +657,9 @@ function LeaderboardService:_nameForUserId(userId)
     return name
 end
 
-function LeaderboardService:_readGlobalBoard(board)
+function LeaderboardService:_readGlobalBoard(board, allowStudioPreview)
     local requestedRoundStart = self:_challengeRoundStart(board, os.time())
-    local store = self:_getGlobalReadStore(board)
+    local store = self:_getGlobalReadStore(board, allowStudioPreview)
     if not store then
         self:_broadcast(board.id)
         return

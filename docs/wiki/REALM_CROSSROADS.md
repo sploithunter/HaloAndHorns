@@ -29,7 +29,9 @@ receive no boss credit. Both modes use one boss boundary, not an extra Merge cal
 `BraggProgress` mutates counters and a bounded 512-receipt deduplication queue in the same
 owned profile, schedules the existing debounced save, and signals leaderboard updates.
 Online/offline provenance totals live in `GameData.BraggProgress`; offline actors use their
-leased profile. No history is inferred from reached-wave records. Studio tracking is disabled.
+leased profile. No history is inferred from reached-wave records. General Studio global reads,
+score tracking, and writes remain disabled. An internal-account-only, read-only Crossroads preview
+can fetch the eight displayed boards so authorized map reviews show the real public winners.
 These changes must be deployed to both places before both contribute new production scores.
 Native QA covered all 24 labels, temporary client-display avatar fixtures, cap-height/facing,
 and memory-only offline facade save/signals. Full CI includes deduplication, replay, provenance,

@@ -8830,3 +8830,7 @@ Added config-driven spatial selection to the existing RealmAtmosphere client: le
 ### 2026-09-09 — Bragg leaderboard integration and recognition tracking
 
 Connected eight authored podium groups to canonical snapshots with real rank/name/score labels and bounded avatar loading. Archived preview figures/text. Added successful Pet Siege clear counters and shared credited boss defeats, per-profile receipt deduplication and offline provenance. No backfill or Studio counter publication. Native figure placement and memory-only offline facade checks passed; see REALM_CROSSROADS.md for credit rules and deployment limits.
+
+### 2026-09-09 — Studio Bragg global winner visibility
+
+Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Studio while preserving the general Studio isolation, disabled writes, and disabled score tracking. Native Play populated all five established boards with real global names, values, and 12 nearby avatars; the three newly registered recognition boards correctly remain empty until results accumulate.

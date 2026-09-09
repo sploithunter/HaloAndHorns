@@ -119,6 +119,10 @@ return {
     version = "2.0.0",
     crossroads_podiums = {
         enabled = true,
+        studio_global_preview = {
+            enabled = true,
+            internal_accounts_only = true,
+        },
         root_path = { "RealmCrossroadsR4", "BraggRotundaR6" },
         alcoves_name = "PodiumAlcoves",
         anchors_name = "BraggCraftsmanshipR1",
