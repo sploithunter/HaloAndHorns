@@ -20,6 +20,10 @@ return function(world, cfg)
     terrainRay.FilterType = Enum.RaycastFilterType.Include
     terrainRay.FilterDescendantsInstances = { terrain }
     terrainRay.IgnoreWater = false
+    local bedRay = RaycastParams.new()
+    bedRay.FilterType = Enum.RaycastFilterType.Include
+    bedRay.FilterDescendantsInstances = { terrain }
+    bedRay.IgnoreWater = true
     local clearRay = RaycastParams.new()
     clearRay.FilterType = Enum.RaycastFilterType.Exclude
     clearRay.FilterDescendantsInstances = { root }
@@ -107,8 +111,20 @@ return function(world, cfg)
                         end
                         post:SetAttribute("FishingPolishBaseCFrame", postBase)
                         post:SetAttribute("FishingStationOwner", pond.name .. ":" .. n)
-                        post.CFrame = postBase + offset
-                        post.Size = V.new(g.post_width, post.Size.Y, g.post_width)
+                        local originalSize = post:GetAttribute("FishingPolishOriginalSize")
+                        local anchor = postBase + offset
+                        local top = anchor.Position.Y + originalSize.Y / 2
+                        local bottom = anchor.Position.Y - originalSize.Y / 2
+                        local bed = workspace:Raycast(
+                            anchor.Position + V.new(0, g.sample_height, 0),
+                            V.new(0, -g.sample_depth, 0),
+                            bedRay
+                        )
+                        assert(bed, "Missing terrain bed under fishing post")
+                        bottom = math.min(bottom, bed.Position.Y - g.post_bed_embed)
+                        local height = top - bottom
+                        post.CFrame = anchor + V.new(0, (top + bottom) / 2 - anchor.Position.Y, 0)
+                        post.Size = V.new(g.post_width, height, g.post_width)
                         post.Color = rgb(pond.frame)
                         if offset.Magnitude > 0 then
                             report.postsMoved += 1

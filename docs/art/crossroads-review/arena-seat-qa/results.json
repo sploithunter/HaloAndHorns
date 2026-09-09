@@ -1,0 +1,100 @@
+{
+  "method": "Native Seat:Sit then Jump/ChangeState; report includes limits",
+  "seats": [
+    {
+      "seat": "Seat_01_04",
+      "position": [
+        164,
+        7.75,
+        0
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 11.086789
+    },
+    {
+      "seat": "Seat_01_05",
+      "position": [
+        164,
+        7.75,
+        16
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 11.086789
+    },
+    {
+      "seat": "Seat_02_04",
+      "position": [
+        174,
+        9.75,
+        0
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 13.086789
+    },
+    {
+      "seat": "Seat_02_05",
+      "position": [
+        174,
+        9.75,
+        16
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 13.086789
+    },
+    {
+      "seat": "Seat_03_04",
+      "position": [
+        184,
+        11.75,
+        0
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 15.086789
+    },
+    {
+      "seat": "Seat_03_05",
+      "position": [
+        184,
+        11.75,
+        16
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 15.086789
+    },
+    {
+      "seat": "Seat_04_04",
+      "position": [
+        194,
+        13.75,
+        0
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 17.086789
+    },
+    {
+      "seat": "Seat_04_05",
+      "position": [
+        194,
+        13.75,
+        16
+      ],
+      "seated": true,
+      "jumpExited": true,
+      "eyeY": 17.086789
+    }
+  ],
+  "captured_views": [
+    "row1-col4.jpg",
+    "row2-col5.jpg",
+    "row3-col4.jpg",
+    "row4-col5.jpg"
+  ],
+  "visibility_grid_complete": false
+}

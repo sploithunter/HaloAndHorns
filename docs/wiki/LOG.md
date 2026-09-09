@@ -8796,3 +8796,5 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 - Added four-seat Heaven fishing rest shelter, two inert dry pet/display bays, three native backdrop trees and retained two bushes; lead verified one Humanoid sit/exit in Play. Roof topY14.2 and18 material-only spur cells verified with unchanged occupancy.
 - Installed physical fishing approach signs and version2 textured fossil (config-owned provenance); eight Bragg emblems await final facing correction/review. Registry now13 passes, superseding the earlier nine-pass note.
 - Updated implementation/native QA/integration documents and Crossroads wiki. Latest native export refresh pending; retained checkpoint link without stale hash/count claims. Whole-map/device/art acceptance and east-annulus collision-query ambiguity remain explicit.
+
+- 2026-09-08: Crossroads follow-up fits arena stone floor/crest/receiver faces within unchanged bounds, composes native fossil backdrop and closes22underwater pier-footing gaps. All8visitorSeats pass native sit/jump smoke; measured sightline work keeps tier changes provisional until rendered target evidence.

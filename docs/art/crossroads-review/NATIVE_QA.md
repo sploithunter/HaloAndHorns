@@ -71,3 +71,15 @@ These additions do not resolve the east-annulus double collision-query hit, cert
 ### Final R11 source/native checkpoint
 
 Revision4 wave medal pivot corrected and close screenshot inspected facing the court. Native export/deserialize validation passes:17,471instances,18rods,18stations,16enabled visitorSeats,Terrain and cosmetic scripts retained. Checkpoint2,564,444bytes; SHA256 `71e9adec234ab717cafba3ab6b7c00dfac0c14c6db8d6daa5c117e32249989cf`. No duplicate Studio opened. Additional native screenshots09–11 show fossil,shelter and wave heraldry. Broad crowd/device QA and the previously recorded east-annulus collision-query ambiguity remain open.
+
+### Pier footing follow-up
+
+The fishing finish now samples solid Terrain beneath every post with water ignored, retains each original top and X/Z anchor, and extends the bottom to at least0.3stud into the bed. Native application extended22of72posts; all72nowhavebedgap≤−0.3stud. Deck elevations and station capacity are unchanged. The algorithm starts from retained original size/pivot, preventing cumulative growth on reapplication.
+
+### Rendered seat follow-up and profiling limit
+
+Sixteen native target screenshots cover8seat overviews and8focused cases. Center/entrance targets support holding currenttiers. Lowernear-edge occlusion remains; full per-pixel56view acceptance was notperformed. AllQAfixtures removed. The10-second frame probe is invalid forforeground acceptance because theMac was independently confirmedlocked; median966.30ms/p95983.71ms cannotbeusedasmapregressionevidence. Unlockedfocused/device profiling remains outstanding.
+
+### Follow-up checkpoint
+
+Saved native checkpoint round-trip passes with17,548instances,18rods,18stations,16visitorSeats, bothnewfinishroots and noArenaSightlineQA. File2,639,848bytes; SHA256 `112fa7027bfa7e06c6f1953db137167c3d268829d85400e1c10b2b00b09f19d4`. Earlier checkpoint hashes above are historical.

@@ -426,7 +426,7 @@ fitted two-realm arrival inlay, a supported garden arch pavilion with four Seats
 Two source-first Blender rods are uploaded and mounted, with actual tip anchors.
 The retained map remains a local PlaceId0 preview; production content is unchanged.
 
-`configs/realm_crossroads_polish.json` lists thirteen authoring passes in application
+`configs/realm_crossroads_polish.json` lists fifteen authoring passes in application
 order. The native exporter refreshes their embedded modules/configs from disk,
 without rebaking serialized CSG/terrain. Apply core before heraldry and fishing
 polish before rod placement/interaction setup. Source and uploaded rod provenance
@@ -459,7 +459,7 @@ passed native smoke checks; the integrated cast and water contact were viewed.
 The R11 lossless native checkpoint is retained under
 `assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl`, named by the polish
 registry and deliberately absent from production Rojo mappings. It retains Terrain, cached source assets, authoring modules and cosmetic scripts.
-The latest additions are saved in the native checkpoint; round-trip verifies17,471instances,18rods,18stations and16enabled visitorSeats.
+The latest additions are saved in the native checkpoint; round-trip verifies17,548instances,18rods,18stations and16enabled visitorSeats.
 The dry-bank route finish changes only SolidMaterial, verifies both occupancies
 unchanged, and widens the Heaven dock-wall passage to12.3studs without reducing
 the64-stud coin field. Both bank passages passed native navigation.
@@ -473,3 +473,10 @@ textured fossil is placed using `configs/crossroads_fossil.json`; eight Bragg
 category emblems are installed; the corrected wave medal orientation passed a native close view. Remaining
 whole-map/device QA and the east-annulus collision-query ambiguity are retained
 in the linked status/audit. Pet bays perform no automatic pet placement.
+
+The follow-up arena floor pass replaces only the measured64×102Playfield with
+fitted stone and a cut crest, preserving top4.38 and a hidden authoring-bounds proxy.
+The fossil setting adds12cached grounded meshes; pier posts now extend into sampled
+solid bed while preserving their tops. Temporary sightline fixtures are isolated in
+`arena_sightline_qa.luau` and excluded from the saved authoring registry. Native Seat
+smoke tests cover all8visitor slots; rendered target visibility is a separate check.

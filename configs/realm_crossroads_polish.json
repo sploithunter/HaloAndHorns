@@ -68,6 +68,18 @@
       "source_key": "bake_source"
     },
     {
+      "config": "configs/realm_crossroads_arena_floor.json",
+      "module": "CrossroadsArenaFloor",
+      "config_value": "CrossroadsArenaFloorConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fossil_setting.json",
+      "module": "CrossroadsFossilSetting",
+      "config_value": "CrossroadsFossilSettingConfig",
+      "source_key": "bake_source"
+    },
+    {
       "config": "configs/realm_crossroads_visual_fx.json",
       "module": "CrossroadsVisualFXInstaller",
       "config_value": "CrossroadsVisualFXConfig",
