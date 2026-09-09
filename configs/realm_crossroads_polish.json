@@ -80,9 +80,21 @@
       "source_key": "bake_source"
     },
     {
+      "config": "configs/realm_crossroads_interaction_bindings.json",
+      "module": "CrossroadsInteractionBindings",
+      "config_value": "CrossroadsInteractionBindingsConfig",
+      "source_key": "bake_source"
+    },
+    {
       "config": "configs/realm_crossroads_visual_fx.json",
       "module": "CrossroadsVisualFXInstaller",
       "config_value": "CrossroadsVisualFXConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_pond_life.json",
+      "module": "CrossroadsPondLifeInstaller",
+      "config_value": "CrossroadsPondLifeConfig",
       "source_key": "bake_source"
     },
     {
@@ -92,7 +104,7 @@
       "source_key": "installer_source"
     }
   ],
-  "note": "Apply in listed order to native R10 baseline. FX additionally consumes bundle_source; interaction installer consumes client_source; fishing wayfinding consumes font_source and existing native letter cache. Authoring modules never run automatically at game startup.",
+  "note": "Apply in listed order to native R10 baseline. FX additionally consumes bundle_source; interaction installer consumes client_source; fishing wayfinding consumes font_source and existing native letter cache. Authoring modules never run automatically at game startup. Pond-life installer consumes client_source after the visual FX bundle; its source asset config and native fish cache are retained with the checkpoint.",
   "native_checkpoint": "assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl",
   "native_checkpoint_note": "Lossless isolated Studio checkpoint; not mapped into any production Rojo place. Open only if no existing editable preview is already open."
 }

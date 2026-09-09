@@ -1,0 +1,13 @@
+# All-station access and social-seat QA plan
+
+Prepared2026-09-08 from read-only Edit native survey. **No Play invocation, mode change or capacity test yet.** Earlier49-call route sweep remains separate evidence. [Prepared route data](prepared-route.json) retains all18 actual Standing Attachment coordinates, deck transforms/directions, sampled back-point elevations and eight enabled social Seats.
+
+For each pond, reset only once to its initial back point+4Y, then use character_navigation atWalkSpeed24 for every listed point. Heaven visits1→10→1; Hell starts5 (known stand-side passage), visits6/7/8/1/2/3/4→5. Every station sequence is back→Standing→same back. Only then move along the bank to the next station. No chord from one Standing directly to another, which could cross the water.
+
+Back points are derived from each **actual rotated deck CFrame**, localZ=deck half-depth6+8, not an ideal ellipse. This includes Hell station5's corrected+2X placement: backX203, StandingX218. Hell station1 backX287 has actual terrainY4.9; all other back points approximatelyY4. Terrain-only rays sampled every≤2 studs along all18 consecutive back-to-back segments (including loop closures), with no Water/missing hits. This validates dry centerlines only, not full width, obstacles, avatar clearance or successful future pathfinding. Preserve source geometry while observing failures.
+
+Capture actual endpoints and settled Humanoid state/support height. On a failed segment stop that loop, inspect the actual obstruction and capture before suggesting changes. Navigation may jump; report unexpected elevations rather than claiming jump-free access. Do not count reaching the nearest shore as reaching the original deck's Standing attachment. Record horizontal tolerance and support under the character; no fishing/casting/reward interaction needed.
+
+This is one-player sequential station-access coverage, **not10+8 simultaneous capacity proof**. Physical ten/eight capacity still needs crowd/occupancy gameplay testing later.
+
+Social-seat pass: four enabled `RestSeat_1_1/1_2/2_1/2_2` in shelter and four enabled `VisitorSeat` instances in garden. Garden names are duplicates: resolve under the exact pavilion group by X−133/−129/−111/−107, not FindFirstChild('VisitorSeat') repeatedly. Shelter nativeX−216.5/−219.5/−206.5/−209.5, Z−87.5; gardenZ−70. Test each native Seat:Sit with the current Humanoid and jump exit; confirm both Occupant/SeatPart. Document these as scripted sit/jump smoke, not manual entry or every device/avatar. Preserve all chairs and dummies. Parent will explicitly authorize Play/player control before execution.

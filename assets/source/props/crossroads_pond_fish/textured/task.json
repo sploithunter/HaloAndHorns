@@ -1,0 +1,30 @@
+{
+  "id": "01a08385-b005-72d9-8454-e723fd37185d",
+  "type": "retexture",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 10,
+  "created_at": 1788912972611,
+  "started_at": 1788912972615,
+  "finished_at": 1788913005239,
+  "expires_at": 1789172205239,
+  "task_error": null,
+  "request": {
+    "model": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/repaired/model.glb",
+    "model_sha256": "ce7469c60dd1b6062c452bcc04ce474316a277ff5a184ae93405f14f1d89ff43",
+    "style_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/concept-v1.png",
+    "style_image_sha256": "3082944d4fc0a8735e1b027939df9398f71a4aaf2f7cc95796c384dbc63c6f04",
+    "ai_model": "latest",
+    "enable_original_uv": false,
+    "enable_pbr": false,
+    "texture_resolution": "2k",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

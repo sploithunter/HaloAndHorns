@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "name": "CrossroadsPearlPondFish",
+  "status": "native_import_dimensions_texture_bones_verified",
+  "source_dir": "assets/source/props/crossroads_pond_fish",
+  "generator": "assets/source/props/crossroads_pond_fish/prepare_asset.py",
+  "concept": "assets/source/props/crossroads_pond_fish/concept-v1.png",
+  "source_choice": "original_ImageGen_Meshy_Blender",
+  "creator_group": 15872767,
+  "cosmetic_only": true,
+  "dimensions_xyz": [
+    0.85,
+    1.2,
+    3
+  ],
+  "max_dimensions_xyz": [
+    0.9,
+    1.3,
+    3.01
+  ],
+  "max_triangles": 5000,
+  "texture_resolution": 1024,
+  "material_roughness": 0.6,
+  "material_metallic": 0,
+  "source_rotation_z_degrees": -90,
+  "pivot": "body_bounds_center",
+  "expected_native_forward": "-Z",
+  "expected_native_up": "+Y",
+  "rig": {
+    "type": "two_bone_skin",
+    "body_bone": "Root",
+    "tail_bone": "Tail",
+    "body_tip_blender_y": 0.3,
+    "tail_hinge_blender_y": -0.66,
+    "tail_tip_blender_y": -1.48,
+    "blend_start_blender_y": -0.45,
+    "blend_end_blender_y": -0.8,
+    "wag_local_axis": "Z",
+    "review_wag_degrees": 12,
+    "animation_clips": [],
+    "native_bone_verification": "Root and Tail retained in native ServerPlay import"
+  },
+  "integration": {
+    "preview_only": true,
+    "native_surface_y": 0,
+    "suggested_center_y": [
+      -0.9,
+      -1.3
+    ],
+    "suggested_max_fish_per_pond": 3,
+    "water_changes_allowed": false,
+    "catchable": false,
+    "loot_connected": false,
+    "controller_implemented": true,
+    "controller_config": "configs/realm_crossroads_pond_life.json",
+    "native_review": "Native -Z facing, texture and surfacing visibility reviewed in both ponds; tail transform/motion/quality/cleanup checks pass. Natural real-time foreground review remains subject to unlocked Studio."
+  },
+  "model_asset_id": 107641909625364,
+  "triangles": 4716,
+  "fbx": "assets/source/props/crossroads_pond_fish/final/PearlPondFish.fbx",
+  "blend": "assets/source/props/crossroads_pond_fish/final/PearlPondFish.blend",
+  "preview": "assets/source/props/crossroads_pond_fish/final/side.png",
+  "mesh_asset_id": 86628776776675,
+  "texture_asset_id": 92346256478119
+}

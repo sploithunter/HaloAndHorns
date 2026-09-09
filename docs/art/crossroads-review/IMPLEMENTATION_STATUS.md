@@ -1,6 +1,6 @@
 # Crossroads implementation status
 
-2026-09-08. **All five craft passes are applied to the existing isolated preview and have received lead screenshot review. Production gameplay remains disconnected.** This is a first construction pass, not completion of all 160 design recommendations. Evidence below combines inspected source with the lead's explicit native results; section agents did not independently repeat Studio tests.
+2026-09-08. **The current craft passes are applied to the existing isolated preview. Production gameplay remains disconnected.** This is a first construction pass, not completion of all 160 design recommendations. Evidence below combines inspected source with the lead's explicit native results; section agents did not independently repeat Studio tests.
 
 | Review section | Actually implemented and native result | Native checks still needed | Remaining art priorities |
 | --- | --- | --- | --- |
@@ -40,14 +40,14 @@ See [Gameplay integration contract](GAMEPLAY_INTEGRATION.md) for exact anchors, 
 - Bragg floor is now three independently authored solids (outer court, viewing annulus, inner court). Native rendering is clean; a localized east-side collision query reports both outer court and annulus despite the explicit subtraction. This remaining query ambiguity is documented in NATIVE_QA, rather than described as a confirmed visible overlap.
 
 - Both revised bank passages passed native character navigation: Heaven(-158,27)→(-158,-12), Hell(205,30)→(205,-20). The garden VisitorSeat accepted the Humanoid. Shore routes paint500dry top-solid cells as Cobblestone; both occupancy channels remain unchanged. Heaven wall westface−152.7 leaves12.3studs behind station1 while preserving the64-stud field. Six planter/flower items are archived.
-- Lossless [R11 checkpoint](../../../assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl) remains the retained artifact path. Refresh/export of the latest additions is pending; earlier byte/hash measurements do not describe this delivery. No duplicate Studio was opened.
+- Lossless [R11 checkpoint](../../../assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl) remains the retained artifact path. The latest saved geometry checkpoint and its historical hashes are recorded in NATIVE_QA.md. No duplicate Studio was opened.
 
 ## Latest native completion additions
 
 - Heaven rest shelter applied: four native Seats, two inert dry pet/display bays, bowed timber roof top Y14.2, 18 material-only spur cells and unchanged terrain occupancy. Three cached native backdrop trees frame the shelter; two small bushes remain. Lead reviewed the composition and verified `HeavenFishingRestShelterR11.RestSeat_1_1` accepted the player Humanoid and allowed exit in Play. This is one sampled Seat, not all-seat/avatar acceptance.
 - Both physical FISHING signs are installed from `realm_crossroads_fishing_wayfinding.json` / `fishing_wayfinding.luau`, using sculpted glyph geometry and rod emblems rather than BillboardGui. They are cosmetic wayfinding, with no interaction or reward authority.
 - The version 2 fossil is placed: Model `116671594170630`, texture `105991804065229`; provenance and placement remain in `configs/crossroads_fossil.json`. All eight Bragg category emblems are present. Revision4 corrected the generated wave medals’ pivot; a native close view confirms the medal faces inward.
-- The authoring registry now contains **15 passes**. The refreshed native checkpoint round-trip passes: 17,548 instances,18rods,18stations,16enabled visitorSeats, Terrain and visual scripts retained. Whole-map/device QA, fish art and the east-annulus collision-query ambiguity remain open.
+- The authoring registry now contains **17 passes**. The refreshed native checkpoint round-trip passes: 17,593 instances,18rods,18stations,16enabled visitorSeats, Terrain and visual scripts retained. Whole-map/device QA, fish art and the east-annulus collision-query ambiguity remain open.
 
 ## Follow-up construction and seating review
 
@@ -60,3 +60,15 @@ All8enabled stand Seats passed native sit/jump-exit checks. Four reconstructed e
 Rendered baseline review completed with16images:8all-target seat views and8focused views. Current tier heights are retained because center and actual entrance middle/upper targets remain readable. Closest-edge lower body remains partially occluded by the native bulwark; this is recorded, not hidden by an unproven tier change. AlltemporaryQAgeometry was removed.
 
 A10-second local frame probe returned21samples, median966.30ms/p95983.71ms, with4,914.52MB total shared Studio memory. The Mac was then independently reported locked by the native UI tool; foreground activation was unavailable. This is an invalid foreground/device acceptance sample, not evidence of a quantified map regression or a performance pass. Repeat in an unlocked focused session and later supported target devices.
+
+## Route and interaction readiness
+
+The native route sweep completed 49 navigation checks at WalkSpeed 24, with actual end positions retained in [ROUTE_QA.md](ROUTE_QA.md). Three independent reset boundaries are explicit. Both gates, the gallery, a clean eight-point fountain loop, both activity areas, stand aisle, Heaven shore/shelter, and Hell rear passage/north shore were reached. Tight fountain chords produced jump states; the wider loop is the verified walking route. This does not certify every perimeter route or controller/device behavior.
+
+All 37 bulwark pieces now have stable, config-owned IDs and side/segment metadata, including four entrance pieces. No collision or movement behavior was enabled. The [interaction audit](INTERACTION_STUB_AUDIT.md) records existing anchors and the later binding contract.
+
+## Pond life and final access coverage
+
+All 18 fishing stations passed sequential back→Standing→back access checks and both full bank loops closed. All eight garden/shelter Seats passed sit/jump smoke. The initial same-location navigation error is retained in [station-access results](fishing-capacity-qa/RESULTS.md); this is one-player access coverage, not concurrent crowd proof.
+
+An original pearl/gold fish now swims in both ponds with a skinned tail and occasional short surface leaps. Native appearance, 96 water/bed samples, quality/distance/reduced-motion controls, ripple triggering and cleanup pass. [Pond-fish implementation](IMPLEMENTED_POND_FISH.md) records asset provenance and the cosmetic-only boundary. The water appearance was preserved. Foreground timing/performance acceptance remains pending because the Mac was locked.

@@ -1,0 +1,22 @@
+{
+  "fbx_reimport": true,
+  "bones": [
+    "Root",
+    "Tail"
+  ],
+  "skin_weights_normalized": true,
+  "uv_conflicting_vertices": 0,
+  "embedded_images": [
+    {
+      "name": "texture_0.png",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "tail_local_axis": "Z",
+  "tail_pose_max_vertex_displacement": 0.17560933592558448,
+  "tail_pose_max_world_x_displacement": 0.17471029981970787,
+  "clips": 0
+}

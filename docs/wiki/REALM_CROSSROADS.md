@@ -426,7 +426,7 @@ fitted two-realm arrival inlay, a supported garden arch pavilion with four Seats
 Two source-first Blender rods are uploaded and mounted, with actual tip anchors.
 The retained map remains a local PlaceId0 preview; production content is unchanged.
 
-`configs/realm_crossroads_polish.json` lists fifteen authoring passes in application
+`configs/realm_crossroads_polish.json` lists seventeen authoring passes in application
 order. The native exporter refreshes their embedded modules/configs from disk,
 without rebaking serialized CSG/terrain. Apply core before heraldry and fishing
 polish before rod placement/interaction setup. Source and uploaded rod provenance
@@ -459,7 +459,7 @@ passed native smoke checks; the integrated cast and water contact were viewed.
 The R11 lossless native checkpoint is retained under
 `assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl`, named by the polish
 registry and deliberately absent from production Rojo mappings. It retains Terrain, cached source assets, authoring modules and cosmetic scripts.
-The latest additions are saved in the native checkpoint; round-trip verifies17,548instances,18rods,18stations and16enabled visitorSeats.
+The latest additions are saved in the native checkpoint; round-trip verifies17,593instances,18rods,18stations and16enabled visitorSeats.
 The dry-bank route finish changes only SolidMaterial, verifies both occupancies
 unchanged, and widens the Heaven dock-wall passage to12.3studs without reducing
 the64-stud coin field. Both bank passages passed native navigation.
@@ -480,3 +480,18 @@ The fossil setting adds12cached grounded meshes; pier posts now extend into samp
 solid bed while preserving their tops. Temporary sightline fixtures are isolated in
 `arena_sightline_qa.luau` and excluded from the saved authoring registry. Native Seat
 smoke tests cover all8visitor slots; rendered target visibility is a separate check.
+
+A native route sweep reached 49 recorded endpoints at speed 24, including the
+larger fountain walking loop and both fishing connectors. All 37 bulwarks now
+have stable config-owned side/segment IDs for future containment binding; this
+adds no gameplay. The outer 12-wall collision loop passed 1,080 radial samples
+at three heights, with no sampled gap. See ROUTE_QA.md, BOUNDARY_QA.md and
+INTERACTION_STUB_AUDIT.md under the section-review directory for evidence and limits.
+
+Original pearl/gold pond fish are retained through ImageGen→Meshy→Blender source,
+with a two-bone skin and native texture verification. `realm_crossroads_pond_life.json`
+owns the shallow paths, local tail/surfacing motion and quality controls. The companion
+reuses RBX-FX-GEN WaterRipple; visual FX must be installed before pond life. Both ponds
+passed appearance and lifecycle checks without water changes. All18station approaches
+and eight social Seats also passed sequential native checks. Decorative fish are not
+catch targets; future catches remain server-authorized integration work.

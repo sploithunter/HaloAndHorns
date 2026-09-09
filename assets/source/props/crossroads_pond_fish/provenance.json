@@ -1,0 +1,83 @@
+{
+  "source": "original ImageGen concept then Meshy Smart Topology/retexture; no Polyfork source or derivative",
+  "tasks": [
+    {
+      "stage": "geometry",
+      "record": "assets/source/props/crossroads_pond_fish/geometry/task.json",
+      "task_id": "01a08384-6271-73c5-b67b-99d9de2fcac9",
+      "consumed_credits": 5
+    },
+    {
+      "stage": "geometry_4500",
+      "record": "assets/source/props/crossroads_pond_fish/geometry_4500/task.json",
+      "task_id": "01a08384-cd3d-7724-a46d-fda050824166",
+      "consumed_credits": 5
+    },
+    {
+      "stage": "textured",
+      "record": "assets/source/props/crossroads_pond_fish/textured/task.json",
+      "task_id": "01a08385-b005-72d9-8454-e723fd37185d",
+      "consumed_credits": 10
+    }
+  ],
+  "files": [
+    {
+      "path": "assets/source/props/crossroads_pond_fish/concept-v1.png",
+      "sha256": "3082944d4fc0a8735e1b027939df9398f71a4aaf2f7cc95796c384dbc63c6f04",
+      "bytes": 1490525
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/repaired/model.glb",
+      "sha256": "ce7469c60dd1b6062c452bcc04ce474316a277ff5a184ae93405f14f1d89ff43",
+      "bytes": 366152
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/textured_closed/model.glb",
+      "sha256": "300b7854fb810a1eadef5dc04764d655c130c634db313012d0c605d1b84eb952",
+      "bytes": 3323608
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/final/PearlPondFish.blend",
+      "sha256": "fe9ca52d3a4dd2d91a37bc6b2f4ba38f6973d8d279b13640b31471bb917a33e1",
+      "bytes": 2078983
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/final/PearlPondFish.fbx",
+      "sha256": "0f5cc9e30895e83ed9a8a8b270df79e3fac2af3df56c80dbf20d63877a986177",
+      "bytes": 1989612
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/final/PearlPondFish.glb",
+      "sha256": "6810284663cdcb07647db2c0f6e2a3e8440923b6b71fa04249595cc7b8f356ff",
+      "bytes": 1994992
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/final/texture_0.png",
+      "sha256": "5199bba6f217b40ff5d01eb6edf298676653eeba1f59e2db598ad0125c22a890",
+      "bytes": 1747425
+    },
+    {
+      "path": "assets/source/props/crossroads_pond_fish/final/side.png",
+      "sha256": "b2a418e94ca4ed52fbe57cb06f01d4469c500caf4d0f6bf6b3106781f4334fa1",
+      "bytes": 750892
+    }
+  ],
+  "native_checks": {
+    "context": "lead temporary ServerPlay import; temporary model destroyed",
+    "mesh_id": 86628776776675,
+    "texture_id": 92346256478119,
+    "mesh_parts": 1,
+    "dimensions_xyz": [
+      0.85000002,
+      1.19999981,
+      3
+    ],
+    "bones": [
+      "Root",
+      "Tail"
+    ],
+    "underwater_visibility": "pending",
+    "native_forward_axis": "pending",
+    "tail_motion": "pending"
+  }
+}

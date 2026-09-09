@@ -1,0 +1,1281 @@
+[
+  {
+    "label": "Spawn to Heaven approach",
+    "target": [
+      -40,
+      1,
+      48
+    ],
+    "actual": "-39.5824,3.8463,48.6077",
+    "result": "Success",
+    "reset": [
+      0,
+      4,
+      100
+    ]
+  },
+  {
+    "label": "Heaven threshold",
+    "target": [
+      -38.8646,
+      3,
+      43.6465
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-38.962623596191409,3.846318244934082,44.32033920288086]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Return spawn",
+    "target": [
+      0,
+      1,
+      100
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-0.627204954624176,3.846318244934082,100.10363006591797]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell threshold",
+    "target": [
+      38.8646,
+      3,
+      43.6465
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[38.07246398925781,3.846240758895874,43.41934585571289]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Central gallery approach",
+    "target": [
+      0,
+      1,
+      -48
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[0.3664516508579254,7.846317291259766,-47.18951416015625]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Gallery entry",
+    "target": [
+      0,
+      4,
+      -62
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[0.021109838038682939,7.846317291259766,-61.14650344848633]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Fountain south",
+    "target": [
+      0,
+      4,
+      -72
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[0.001275460235774517,7.846317291259766,-71.34314727783203]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Fountain east",
+    "target": [
+      16,
+      4,
+      -88
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[15.321507453918457,7.846317768096924,-87.4264907836914]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Fountain north",
+    "target": [
+      0,
+      4,
+      -104
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[0.10971634835004807,14.960392951965332,-103.45352935791016]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Fountain west",
+    "target": [
+      -16,
+      4,
+      -88
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-15.501687049865723,14.045536041259766,-88.10948944091797]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Fountain loop close",
+    "target": [
+      0,
+      4,
+      -72
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-0.8329005241394043,11.569331169128418,-73.037109375]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop south clear",
+    "target": [
+      0,
+      4,
+      -66
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-0.07129374891519547,7.846318244934082,-66.66173553466797]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop southeast",
+    "target": [
+      16,
+      4,
+      -72
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[15.232686042785645,7.846317768096924,-71.74508666992188]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop east clear",
+    "target": [
+      22,
+      4,
+      -88
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[21.672143936157228,7.846317291259766,-87.21247100830078]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop northeast",
+    "target": [
+      16,
+      4,
+      -104
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[16.22281265258789,7.846317291259766,-103.34056854248047]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop north clear",
+    "target": [
+      0,
+      4,
+      -110
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[0.7218120694160461,7.846317291259766,-109.7037124633789]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop northwest",
+    "target": [
+      -16,
+      4,
+      -104
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-15.203099250793457,7.846317291259766,-104.27182006835938]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop west clear",
+    "target": [
+      -22,
+      4,
+      -88
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-21.727121353149415,7.846317291259766,-88.6532974243164]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop southwest",
+    "target": [
+      -16,
+      4,
+      -72
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-16.278039932250978,7.846317291259766,-72.80847930908203]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Loop close clear",
+    "target": [
+      0,
+      4,
+      -66
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-0.8195791840553284,7.846317291259766,-66.3427963256836]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Coin stair foot",
+    "target": [
+      -60,
+      0,
+      -18
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-59.218116760253909,3.846318244934082,-17.993896484375]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Coin activity entrance",
+    "target": [
+      -88,
+      4,
+      -18
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-87.17330932617188,7.8683180809021,-17.999826431274415]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Coin north field exit",
+    "target": [
+      -120,
+      4,
+      -35
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-119.42615509033203,7.82131814956665,-34.702816009521487]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven north connector",
+    "target": [
+      -156,
+      4,
+      -61
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-155.21432495117188,8.006317138671875,-60.72167205810547]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven shore connector",
+    "target": [
+      -188,
+      4,
+      -61
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-187.23419189453126,7.406318187713623,-60.99350357055664]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven north shore",
+    "target": [
+      -213,
+      4,
+      -63
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-212.2316436767578,7.406318187713623,-62.94016647338867]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Shelter approach",
+    "target": [
+      -213,
+      4,
+      -78
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-212.960205078125,7.406317710876465,-77.22052764892578]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Shelter interior",
+    "target": [
+      -213,
+      4,
+      -84
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-212.99600219726563,7.406317710876465,-83.31986999511719]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Return Heaven bank",
+    "target": [
+      -213,
+      4,
+      -63
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-212.99986267089845,7.406317710876465,-63.83085632324219]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "reset": [
+      60,
+      4,
+      -18
+    ],
+    "label": "Independent east activity segment reset"
+  },
+  {
+    "label": "Arena west stair top",
+    "target": [
+      80,
+      4,
+      -18
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[79.17127227783203,7.646317958831787,-18.000011444091798]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Arena actual west entrance",
+    "target": [
+      88,
+      4,
+      -18
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[87.325927734375,7.915318012237549,-18.000001907348634]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Arena interior",
+    "target": [
+      120,
+      4,
+      8
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[119.89615631103516,7.786318778991699,7.179790019989014]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Arena actual front entrance",
+    "target": [
+      120,
+      4,
+      59
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[120.11396789550781,7.8193182945251469,58.15196990966797]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Stand front aisle",
+    "target": [
+      157,
+      4,
+      8
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[158.09320068359376,9.049196243286133,8.498159408569336]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Stand aisle row2",
+    "target": [
+      174,
+      8,
+      8
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[173.1914520263672,10.406317710876465,8.025322914123536]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Stand aisle rear",
+    "target": [
+      194,
+      12,
+      8
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[193.23228454589845,14.506318092346192,8.000935554504395]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Stand aisle descend",
+    "target": [
+      157,
+      4,
+      8
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[157.74888610839845,9.132317543029786,8.000017166137696]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Stand south end",
+    "target": [
+      157,
+      4,
+      51
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[156.929931640625,7.835849761962891,50.057857513427737]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell south connector start",
+    "target": [
+      190,
+      4,
+      51
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[189.7361602783203,7.406318187713623,51.78160858154297]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell south connector",
+    "target": [
+      205,
+      4,
+      51
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[204.2807159423828,7.406318187713623,51.03682327270508]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell rear passage south",
+    "target": [
+      205,
+      4,
+      30
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[205.37550354003907,7.406317710876465,30.70117950439453]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell rear passage north",
+    "target": [
+      205,
+      4,
+      -20
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[205.00570678710938,7.406317710876465,-19.227527618408204]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell north connector",
+    "target": [
+      205,
+      4,
+      -35
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[205.00027465820313,7.406317710876465,-34.310848236083987]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell northwest shore",
+    "target": [
+      211,
+      4,
+      -54
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[210.5058135986328,7.406317710876465,-53.50611114501953]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Hell north shore",
+    "target": [
+      244,
+      4,
+      -57
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[243.1510467529297,7.406317710876465,-56.911441802978519]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Independent Heaven east shore reset",
+    "reset": [
+      -158,
+      8,
+      82
+    ]
+  },
+  {
+    "label": "Heaven east passage south",
+    "target": [
+      -158,
+      4,
+      50
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-157.8808135986328,7.738317966461182,50.66963195800781]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven east passage mid",
+    "target": [
+      -158,
+      4,
+      10
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-157.9977569580078,7.738317966461182,10.767207145690918]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven east passage north",
+    "target": [
+      -158,
+      4,
+      -20
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-157.9999542236328,7.82131814956665,-19.132369995117189]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "label": "Heaven east passage connector",
+    "target": [
+      -156,
+      4,
+      -61
+    ],
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Success"
+        }
+      ],
+      "isError": false
+    },
+    "actual": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[-156.37754821777345,7.526318073272705,-60.492252349853519]"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

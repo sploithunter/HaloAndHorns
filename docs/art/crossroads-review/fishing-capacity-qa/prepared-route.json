@@ -1,0 +1,1200 @@
+{
+  "status": "prepared_edit_read_only_not_executed_in_play",
+  "walk_speed": 24,
+  "independent_resets": [
+    "Heaven station1 back +4Y",
+    "Hell station5 back +4Y"
+  ],
+  "survey": {
+    "HeavenFishingPond": {
+      "stations": [
+        {
+          "back": [
+            -157,
+            3.999998092651367,
+            8
+          ],
+          "index": 1,
+          "standing": [
+            -172,
+            4.5,
+            8
+          ],
+          "name": "FishingStation1",
+          "look": [
+            -1,
+            0
+          ],
+          "deck": [
+            -171,
+            4.25,
+            8
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -168.26797485351562,
+            3.999998092651367,
+            49.73271179199219
+          ],
+          "index": 2,
+          "standing": [
+            -180.40325927734375,
+            4.5,
+            40.91597366333008
+          ],
+          "name": "FishingStation2",
+          "look": [
+            -0.8090190887451172,
+            -0.5877823829650879
+          ],
+          "deck": [
+            -179.59423828125,
+            4.25,
+            41.50375747680664
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -197.76795959472656,
+            3.999998092651367,
+            75.5250015258789
+          ],
+          "index": 3,
+          "standing": [
+            -202.40325927734375,
+            4.5,
+            61.25917053222656
+          ],
+          "name": "FishingStation3",
+          "look": [
+            -0.30902034044265747,
+            -0.9510554075241089
+          ],
+          "deck": [
+            -202.09423828125,
+            4.25,
+            62.21022415161133
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -234.23204040527344,
+            3.9999961853027344,
+            75.5250015258789
+          ],
+          "index": 4,
+          "standing": [
+            -229.59674072265625,
+            4.5,
+            61.25917053222656
+          ],
+          "name": "FishingStation4",
+          "look": [
+            0.30902034044265747,
+            -0.9510554075241089
+          ],
+          "deck": [
+            -229.90576171875,
+            4.25,
+            62.21022415161133
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -263.7320251464844,
+            4,
+            49.73271179199219
+          ],
+          "index": 5,
+          "standing": [
+            -251.59674072265625,
+            4.5,
+            40.91597366333008
+          ],
+          "name": "FishingStation5",
+          "look": [
+            0.8090190887451172,
+            -0.5877823829650879
+          ],
+          "deck": [
+            -252.40576171875,
+            4.25,
+            41.50375747680664
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -275,
+            3.999998092651367,
+            8
+          ],
+          "index": 6,
+          "standing": [
+            -260,
+            4.5,
+            8
+          ],
+          "name": "FishingStation6",
+          "look": [
+            1,
+            0
+          ],
+          "deck": [
+            -261,
+            4.25,
+            8
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -263.7320251464844,
+            3.9999961853027344,
+            -33.732730865478516
+          ],
+          "index": 7,
+          "standing": [
+            -251.59674072265625,
+            4.5,
+            -24.91597557067871
+          ],
+          "name": "FishingStation7",
+          "look": [
+            0.8090181946754456,
+            0.587783694267273
+          ],
+          "deck": [
+            -252.40576171875,
+            4.25,
+            -25.503759384155273
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -234.23204040527344,
+            3.999998092651367,
+            -59.525001525878906
+          ],
+          "index": 8,
+          "standing": [
+            -229.59674072265625,
+            4.5,
+            -45.25917053222656
+          ],
+          "name": "FishingStation8",
+          "look": [
+            0.30902034044265747,
+            0.9510554075241089
+          ],
+          "deck": [
+            -229.90576171875,
+            4.25,
+            -46.21022415161133
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -197.76795959472656,
+            3.9999961853027344,
+            -59.525001525878906
+          ],
+          "index": 9,
+          "standing": [
+            -202.40325927734375,
+            4.5,
+            -45.25917053222656
+          ],
+          "name": "FishingStation9",
+          "look": [
+            -0.30902034044265747,
+            0.9510554075241089
+          ],
+          "deck": [
+            -202.09423828125,
+            4.25,
+            -46.21022415161133
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            -168.2679901123047,
+            3.999998092651367,
+            -33.732730865478516
+          ],
+          "index": 10,
+          "standing": [
+            -180.40325927734375,
+            4.5,
+            -24.91597557067871
+          ],
+          "name": "FishingStation10",
+          "look": [
+            -0.8090181946754456,
+            0.587783694267273
+          ],
+          "deck": [
+            -179.59423828125,
+            4.25,
+            -25.503759384155273
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        }
+      ],
+      "bank_segments": [
+        {
+          "to": 2,
+          "from": 1,
+          "samples": 23,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 3,
+          "from": 2,
+          "samples": 21,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 4,
+          "from": 3,
+          "samples": 20,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 5,
+          "from": 4,
+          "samples": 21,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 6,
+          "from": 5,
+          "samples": 23,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 7,
+          "from": 6,
+          "samples": 23,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 8,
+          "from": 7,
+          "samples": 21,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 9,
+          "from": 8,
+          "samples": 20,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 10,
+          "from": 9,
+          "samples": 21,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 1,
+          "from": 10,
+          "samples": 23,
+          "bad": [],
+          "dry": true
+        }
+      ]
+    },
+    "seats": [
+      {
+        "path": "Workspace.RealmCrossroadsR4.HeavenFishingRestShelterR11.RestSeat_1_1",
+        "position": [
+          -216.5,
+          5.525000095367432,
+          -87.5
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.HeavenFishingRestShelterR11.RestSeat_1_2",
+        "position": [
+          -219.5,
+          5.525000095367432,
+          -87.5
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.HeavenFishingRestShelterR11.RestSeat_2_1",
+        "position": [
+          -206.5,
+          5.525000095367432,
+          -87.5
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.HeavenFishingRestShelterR11.RestSeat_2_2",
+        "position": [
+          -209.5,
+          5.525000095367432,
+          -87.5
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1.VisitorSeat",
+        "position": [
+          -133,
+          6.150000095367432,
+          -70
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1.VisitorSeat",
+        "position": [
+          -129,
+          6.150000095367432,
+          -70
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1.VisitorSeat",
+        "position": [
+          -111,
+          6.150000095367432,
+          -70
+        ]
+      },
+      {
+        "path": "Workspace.RealmCrossroadsR4.CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1.VisitorSeat",
+        "position": [
+          -107,
+          6.150000095367432,
+          -70
+        ]
+      }
+    ],
+    "HellFishingPool": {
+      "stations": [
+        {
+          "back": [
+            287,
+            4.899999618530273,
+            8
+          ],
+          "index": 1,
+          "standing": [
+            272,
+            4.5,
+            8
+          ],
+          "name": "FishingStation1",
+          "look": [
+            -1,
+            0
+          ],
+          "deck": [
+            273,
+            4.25,
+            8
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            274.40545654296875,
+            3.999998092651367,
+            52.54783630371094
+          ],
+          "index": 2,
+          "standing": [
+            263.7989807128906,
+            4.5,
+            41.94111633300781
+          ],
+          "name": "FishingStation2",
+          "look": [
+            -0.707099199295044,
+            -0.7071144580841064
+          ],
+          "deck": [
+            264.5060729980469,
+            4.25,
+            42.648231506347656
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            244,
+            3.999998092651367,
+            71
+          ],
+          "index": 3,
+          "standing": [
+            244,
+            4.5,
+            56
+          ],
+          "name": "FishingStation3",
+          "look": [
+            0,
+            -1
+          ],
+          "deck": [
+            244,
+            4.25,
+            57
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            213.5944061279297,
+            3.999998092651367,
+            52.547725677490234
+          ],
+          "index": 4,
+          "standing": [
+            224.2010040283203,
+            4.5,
+            41.941123962402344
+          ],
+          "name": "FishingStation4",
+          "look": [
+            0.7071067690849304,
+            -0.7071067690849304
+          ],
+          "deck": [
+            223.493896484375,
+            4.25,
+            42.648231506347656
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            203,
+            3.999998092651367,
+            8
+          ],
+          "index": 5,
+          "standing": [
+            218,
+            4.5,
+            8
+          ],
+          "name": "FishingStation5",
+          "look": [
+            1,
+            0
+          ],
+          "deck": [
+            217,
+            4.25,
+            8
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            213.5944061279297,
+            3.999998092651367,
+            -36.5477294921875
+          ],
+          "index": 6,
+          "standing": [
+            224.2010040283203,
+            4.5,
+            -25.941125869750977
+          ],
+          "name": "FishingStation6",
+          "look": [
+            0.7071067690849304,
+            0.7071067690849304
+          ],
+          "deck": [
+            223.493896484375,
+            4.25,
+            -26.64823341369629
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            244,
+            3.999998092651367,
+            -55
+          ],
+          "index": 7,
+          "standing": [
+            244,
+            4.5,
+            -40
+          ],
+          "name": "FishingStation7",
+          "look": [
+            0,
+            1
+          ],
+          "deck": [
+            244,
+            4.25,
+            -41
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        },
+        {
+          "back": [
+            274.40545654296875,
+            4,
+            -36.54783630371094
+          ],
+          "index": 8,
+          "standing": [
+            263.7989807128906,
+            4.5,
+            -25.941118240356445
+          ],
+          "name": "FishingStation8",
+          "look": [
+            -0.707099199295044,
+            0.7071144580841064
+          ],
+          "deck": [
+            264.5060729980469,
+            4.25,
+            -26.64823341369629
+          ],
+          "size": [
+            10,
+            0.5,
+            12
+          ]
+        }
+      ],
+      "bank_segments": [
+        {
+          "to": 2,
+          "from": 1,
+          "samples": 25,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 3,
+          "from": 2,
+          "samples": 19,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 4,
+          "from": 3,
+          "samples": 19,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 5,
+          "from": 4,
+          "samples": 24,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 6,
+          "from": 5,
+          "samples": 24,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 7,
+          "from": 6,
+          "samples": 19,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 8,
+          "from": 7,
+          "samples": 19,
+          "bad": [],
+          "dry": true
+        },
+        {
+          "to": 1,
+          "from": 8,
+          "samples": 25,
+          "bad": [],
+          "dry": true
+        }
+      ]
+    }
+  },
+  "loops": [
+    {
+      "pond": "HeavenFishingPond",
+      "order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "points": [
+        {
+          "label": "FishingStation1_back_arrive",
+          "position": [
+            -157,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation1_Standing",
+          "position": [
+            -172,
+            4.5,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation1_back_return",
+          "position": [
+            -157,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation2_back_arrive",
+          "position": [
+            -168.26797485351562,
+            3.999998092651367,
+            49.73271179199219
+          ]
+        },
+        {
+          "label": "FishingStation2_Standing",
+          "position": [
+            -180.40325927734375,
+            4.5,
+            40.91597366333008
+          ]
+        },
+        {
+          "label": "FishingStation2_back_return",
+          "position": [
+            -168.26797485351562,
+            3.999998092651367,
+            49.73271179199219
+          ]
+        },
+        {
+          "label": "FishingStation3_back_arrive",
+          "position": [
+            -197.76795959472656,
+            3.999998092651367,
+            75.5250015258789
+          ]
+        },
+        {
+          "label": "FishingStation3_Standing",
+          "position": [
+            -202.40325927734375,
+            4.5,
+            61.25917053222656
+          ]
+        },
+        {
+          "label": "FishingStation3_back_return",
+          "position": [
+            -197.76795959472656,
+            3.999998092651367,
+            75.5250015258789
+          ]
+        },
+        {
+          "label": "FishingStation4_back_arrive",
+          "position": [
+            -234.23204040527344,
+            3.9999961853027344,
+            75.5250015258789
+          ]
+        },
+        {
+          "label": "FishingStation4_Standing",
+          "position": [
+            -229.59674072265625,
+            4.5,
+            61.25917053222656
+          ]
+        },
+        {
+          "label": "FishingStation4_back_return",
+          "position": [
+            -234.23204040527344,
+            3.9999961853027344,
+            75.5250015258789
+          ]
+        },
+        {
+          "label": "FishingStation5_back_arrive",
+          "position": [
+            -263.7320251464844,
+            4,
+            49.73271179199219
+          ]
+        },
+        {
+          "label": "FishingStation5_Standing",
+          "position": [
+            -251.59674072265625,
+            4.5,
+            40.91597366333008
+          ]
+        },
+        {
+          "label": "FishingStation5_back_return",
+          "position": [
+            -263.7320251464844,
+            4,
+            49.73271179199219
+          ]
+        },
+        {
+          "label": "FishingStation6_back_arrive",
+          "position": [
+            -275,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation6_Standing",
+          "position": [
+            -260,
+            4.5,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation6_back_return",
+          "position": [
+            -275,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation7_back_arrive",
+          "position": [
+            -263.7320251464844,
+            3.9999961853027344,
+            -33.732730865478516
+          ]
+        },
+        {
+          "label": "FishingStation7_Standing",
+          "position": [
+            -251.59674072265625,
+            4.5,
+            -24.91597557067871
+          ]
+        },
+        {
+          "label": "FishingStation7_back_return",
+          "position": [
+            -263.7320251464844,
+            3.9999961853027344,
+            -33.732730865478516
+          ]
+        },
+        {
+          "label": "FishingStation8_back_arrive",
+          "position": [
+            -234.23204040527344,
+            3.999998092651367,
+            -59.525001525878906
+          ]
+        },
+        {
+          "label": "FishingStation8_Standing",
+          "position": [
+            -229.59674072265625,
+            4.5,
+            -45.25917053222656
+          ]
+        },
+        {
+          "label": "FishingStation8_back_return",
+          "position": [
+            -234.23204040527344,
+            3.999998092651367,
+            -59.525001525878906
+          ]
+        },
+        {
+          "label": "FishingStation9_back_arrive",
+          "position": [
+            -197.76795959472656,
+            3.9999961853027344,
+            -59.525001525878906
+          ]
+        },
+        {
+          "label": "FishingStation9_Standing",
+          "position": [
+            -202.40325927734375,
+            4.5,
+            -45.25917053222656
+          ]
+        },
+        {
+          "label": "FishingStation9_back_return",
+          "position": [
+            -197.76795959472656,
+            3.9999961853027344,
+            -59.525001525878906
+          ]
+        },
+        {
+          "label": "FishingStation10_back_arrive",
+          "position": [
+            -168.2679901123047,
+            3.999998092651367,
+            -33.732730865478516
+          ]
+        },
+        {
+          "label": "FishingStation10_Standing",
+          "position": [
+            -180.40325927734375,
+            4.5,
+            -24.91597557067871
+          ]
+        },
+        {
+          "label": "FishingStation10_back_return",
+          "position": [
+            -168.2679901123047,
+            3.999998092651367,
+            -33.732730865478516
+          ]
+        },
+        {
+          "label": "loop_close",
+          "position": [
+            -157,
+            3.999998092651367,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "pond": "HellFishingPool",
+      "order": [
+        5,
+        6,
+        7,
+        8,
+        1,
+        2,
+        3,
+        4
+      ],
+      "points": [
+        {
+          "label": "FishingStation5_back_arrive",
+          "position": [
+            203,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation5_Standing",
+          "position": [
+            218,
+            4.5,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation5_back_return",
+          "position": [
+            203,
+            3.999998092651367,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation6_back_arrive",
+          "position": [
+            213.5944061279297,
+            3.999998092651367,
+            -36.5477294921875
+          ]
+        },
+        {
+          "label": "FishingStation6_Standing",
+          "position": [
+            224.2010040283203,
+            4.5,
+            -25.941125869750977
+          ]
+        },
+        {
+          "label": "FishingStation6_back_return",
+          "position": [
+            213.5944061279297,
+            3.999998092651367,
+            -36.5477294921875
+          ]
+        },
+        {
+          "label": "FishingStation7_back_arrive",
+          "position": [
+            244,
+            3.999998092651367,
+            -55
+          ]
+        },
+        {
+          "label": "FishingStation7_Standing",
+          "position": [
+            244,
+            4.5,
+            -40
+          ]
+        },
+        {
+          "label": "FishingStation7_back_return",
+          "position": [
+            244,
+            3.999998092651367,
+            -55
+          ]
+        },
+        {
+          "label": "FishingStation8_back_arrive",
+          "position": [
+            274.40545654296875,
+            4,
+            -36.54783630371094
+          ]
+        },
+        {
+          "label": "FishingStation8_Standing",
+          "position": [
+            263.7989807128906,
+            4.5,
+            -25.941118240356445
+          ]
+        },
+        {
+          "label": "FishingStation8_back_return",
+          "position": [
+            274.40545654296875,
+            4,
+            -36.54783630371094
+          ]
+        },
+        {
+          "label": "FishingStation1_back_arrive",
+          "position": [
+            287,
+            4.899999618530273,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation1_Standing",
+          "position": [
+            272,
+            4.5,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation1_back_return",
+          "position": [
+            287,
+            4.899999618530273,
+            8
+          ]
+        },
+        {
+          "label": "FishingStation2_back_arrive",
+          "position": [
+            274.40545654296875,
+            3.999998092651367,
+            52.54783630371094
+          ]
+        },
+        {
+          "label": "FishingStation2_Standing",
+          "position": [
+            263.7989807128906,
+            4.5,
+            41.94111633300781
+          ]
+        },
+        {
+          "label": "FishingStation2_back_return",
+          "position": [
+            274.40545654296875,
+            3.999998092651367,
+            52.54783630371094
+          ]
+        },
+        {
+          "label": "FishingStation3_back_arrive",
+          "position": [
+            244,
+            3.999998092651367,
+            71
+          ]
+        },
+        {
+          "label": "FishingStation3_Standing",
+          "position": [
+            244,
+            4.5,
+            56
+          ]
+        },
+        {
+          "label": "FishingStation3_back_return",
+          "position": [
+            244,
+            3.999998092651367,
+            71
+          ]
+        },
+        {
+          "label": "FishingStation4_back_arrive",
+          "position": [
+            213.5944061279297,
+            3.999998092651367,
+            52.547725677490234
+          ]
+        },
+        {
+          "label": "FishingStation4_Standing",
+          "position": [
+            224.2010040283203,
+            4.5,
+            41.941123962402344
+          ]
+        },
+        {
+          "label": "FishingStation4_back_return",
+          "position": [
+            213.5944061279297,
+            3.999998092651367,
+            52.547725677490234
+          ]
+        },
+        {
+          "label": "loop_close",
+          "position": [
+            203,
+            3.999998092651367,
+            8
+          ]
+        }
+      ]
+    }
+  ]
+}

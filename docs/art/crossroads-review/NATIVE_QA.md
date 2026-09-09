@@ -83,3 +83,9 @@ Sixteen native target screenshots cover8seat overviews and8focused cases. Center
 ### Follow-up checkpoint
 
 Saved native checkpoint round-trip passes with17,548instances,18rods,18stations,16visitorSeats, bothnewfinishroots and noArenaSightlineQA. File2,639,848bytes; SHA256 `112fa7027bfa7e06c6f1953db137167c3d268829d85400e1c10b2b00b09f19d4`. Earlier checkpoint hashes above are historical.
+
+### Pond-life and integration checkpoint
+
+The saved native checkpoint round-trip passes with 17,593 instances, the two-bone fish template/client companion, all 37 bulwark IDs, 18 rods/stations and 16 visitor Seats. File size 2,670,016 bytes; SHA256 `920912cdac2efbb3f0d163321ac1b8e54fa450de0a73c30a8909790a744f10a9`.
+
+Pond life passed 96 water/bed samples. Native motion, tail transform changes, entry ripple, full/reduced/off/far counts, frozen submerged reduced-motion pose, cleanup and repeated cleanup were checked. Both shore surfacing views and underwater asset appearance were inspected. The final console was empty. Foreground animation/performance remains an unlocked-session acceptance item.

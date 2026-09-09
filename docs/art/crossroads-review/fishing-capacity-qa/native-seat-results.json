@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "[{\"seated\":true,\"x\":-219.5,\"name\":\"RestSeat_1_2\",\"z\":-87.5,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-216.5,\"name\":\"RestSeat_1_1\",\"z\":-87.5,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-209.5,\"name\":\"RestSeat_2_2\",\"z\":-87.5,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-206.5,\"name\":\"RestSeat_2_1\",\"z\":-87.5,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-133,\"name\":\"VisitorSeat\",\"z\":-70,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-129,\"name\":\"VisitorSeat\",\"z\":-70,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-111,\"name\":\"VisitorSeat\",\"z\":-70,\"state\":\"Running\",\"jumpExited\":true},{\"seated\":true,\"x\":-107,\"name\":\"VisitorSeat\",\"z\":-70,\"state\":\"Running\",\"jumpExited\":true}]"
+    }
+  ],
+  "isError": false
+}

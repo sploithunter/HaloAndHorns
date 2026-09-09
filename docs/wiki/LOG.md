@@ -8798,3 +8798,5 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 - Updated implementation/native QA/integration documents and Crossroads wiki. Latest native export refresh pending; retained checkpoint link without stale hash/count claims. Whole-map/device/art acceptance and east-annulus collision-query ambiguity remain explicit.
 
 - 2026-09-08: Crossroads follow-up fits arena stone floor/crest/receiver faces within unchanged bounds, composes native fossil backdrop and closes22underwater pier-footing gaps. All8visitorSeats pass native sit/jump smoke; measured sightline work keeps tier changes provisional until rendered target evidence.
+
+- 2026-09-08: Crossroads route sweep reaches49 endpoints at24studs/sec; native boundary audit finds no sampled gaps in12walls. Added37stable bulwark side/segment IDs as inert integration metadata. Decorative original pond-fish asset and local motion are being authored separately from fishing rewards.
