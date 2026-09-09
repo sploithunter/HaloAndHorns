@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R4 terrain, R5 sculpted gates and R6 Bragg Rotunda authored in the existing isolated Studio preview (2026-09-08). Rankings remain disconnected.
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-4096, 0, 0). Visual companions run; spawn routing and gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
 
