@@ -1,0 +1,205 @@
+{
+  "root": "HeavenFishingRestShelterR11",
+  "backup": "CrossroadsFishingShelterBackup",
+  "bake_source": "tools/realm_crossroads/fishing_shelter.luau",
+  "center": [
+    -213,
+    4,
+    -85
+  ],
+  "width": 22,
+  "depth": 14,
+  "palette": {
+    "timber": [
+      205,
+      192,
+      152
+    ],
+    "frame": [
+      143,
+      126,
+      88
+    ],
+    "bronze": [
+      157,
+      129,
+      62
+    ],
+    "stone": [
+      217,
+      209,
+      184
+    ],
+    "seat": [
+      176,
+      185,
+      143
+    ]
+  },
+  "roof": {
+    "eave_height": 8.6,
+    "bow_rise": 1.5,
+    "thickness": 0.2,
+    "slat_width": 1.0,
+    "slat_count": 10,
+    "segments": 10,
+    "rib_width": 0.32,
+    "rib_height": 0.3,
+    "max_world_y": 16
+  },
+  "posts": {
+    "x": 9.5,
+    "z": 5.5,
+    "width": 0.6,
+    "foot_width": 1.2,
+    "foot_height": 0.4,
+    "support_width": 0.45,
+    "support_height": 0.35,
+    "brace_run": 1.6,
+    "brace_drop": 1.7,
+    "brace_width": 0.25
+  },
+  "benches": {
+    "centers_x": [
+      -5,
+      5
+    ],
+    "center_z": -2.5,
+    "width": 6.4,
+    "seat_offsets_x": [
+      -1.5,
+      1.5
+    ],
+    "seat_size": [
+      2.8,
+      0.35,
+      2.6
+    ],
+    "seat_top_height": 1.7,
+    "frame_height": 0.25,
+    "frame_depth": 2.8,
+    "leg_width": 0.3,
+    "leg_offset_x": 2.65,
+    "leg_offset_z": 0.95,
+    "back_height": 2.2,
+    "back_thickness": 0.22,
+    "back_slats": 3,
+    "arm_height": 0.65,
+    "arm_width": 0.18
+  },
+  "pet_bays": [
+    {
+      "name": "WestDryDisplayBay",
+      "offset": [
+        -8,
+        0,
+        3
+      ],
+      "size": [
+        5,
+        6
+      ]
+    },
+    {
+      "name": "EastDryDisplayBay",
+      "offset": [
+        8,
+        0,
+        3
+      ],
+      "size": [
+        5,
+        6
+      ]
+    }
+  ],
+  "flora": {
+    "cache": "CrossroadsLandscapeAssets",
+    "entries": [
+      {
+        "name": "field_flower_bush",
+        "offset": [
+          -9.5,
+          0,
+          -5.5
+        ],
+        "height": 1.5
+      },
+      {
+        "name": "field_flower_bush",
+        "offset": [
+          9.5,
+          0,
+          -5.5
+        ],
+        "height": 1.5
+      },
+      {
+        "name": "cherry_heaven_tree_1",
+        "offset": [
+          -14,
+          0,
+          -21
+        ],
+        "height": 18,
+        "max_width": 18,
+        "backdrop": true,
+        "display_name": "WestCherryBackdrop"
+      },
+      {
+        "name": "cloud_sapling",
+        "offset": [
+          5,
+          0,
+          -25
+        ],
+        "height": 14,
+        "max_width": 14,
+        "backdrop": true,
+        "display_name": "CloudBackdrop"
+      },
+      {
+        "name": "cherry_heaven_tree_1",
+        "offset": [
+          20,
+          0,
+          -19
+        ],
+        "height": 20,
+        "max_width": 18,
+        "backdrop": true,
+        "display_name": "EastCherryBackdrop"
+      }
+    ],
+    "max_width": 2,
+    "embed": 0.12,
+    "backdrop_rear_clearance": 2
+  },
+  "spur": {
+    "material": "Cobblestone",
+    "x_min": -218,
+    "x_max": -208,
+    "z_min": -89,
+    "z_max": -63,
+    "resolution": 4,
+    "y_min": 0,
+    "y_max": 12,
+    "height_min": 3.8,
+    "height_max": 4.2,
+    "sample_inset": 0.08,
+    "allowed_materials": [
+      "LeafyGrass",
+      "Grass",
+      "Ground",
+      "Cobblestone"
+    ]
+  },
+  "survey": {
+    "ray_y": 24,
+    "ray_depth": 40,
+    "min_y": 3.8,
+    "max_y": 4.2,
+    "head_clearance": 7
+  },
+  "note": "Small open pond-facing timber rest shelter, four genuine Seats, no counters or vendor text. Native terrain material spur only; ground/pond/occupancy unchanged. No pet relocation or gameplay."
+}

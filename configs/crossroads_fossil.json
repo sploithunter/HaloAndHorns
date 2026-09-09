@@ -1,0 +1,62 @@
+{
+  "name": "CrossroadsFossil",
+  "status": "uploaded_native_dimensions_verified",
+  "source_dir": "assets/source/props/crossroads_fossil",
+  "concept": "assets/source/props/crossroads_fossil/concept-v1.png",
+  "generator": "assets/source/props/crossroads_fossil/prepare_asset.py",
+  "creator_group": 15872767,
+  "max_size_xyz": [
+    8,
+    7,
+    5
+  ],
+  "max_triangles": 9990,
+  "texture_resolution": 1024,
+  "placement_candidate_xz": [
+    280,
+    77
+  ],
+  "placement_status": "placed_native_preview",
+  "cosmetic_only": true,
+  "description": "Friendly horned fish fossil in low charcoal stone, bone and restrained sulfur accents. No gameplay or rewards.",
+  "geometry_input": "assets/source/props/crossroads_fossil/repaired/model.glb",
+  "dimensions_xyz": [
+    8.0,
+    5.218751907348633,
+    3.5781280994415283
+  ],
+  "placement_alternative_xz": [
+    278,
+    -61
+  ],
+  "placement_candidate_ground_y": 4,
+  "placement_facing": "west/northwest toward main pond approach; verify native front axis",
+  "model_asset_id": 116671594170630,
+  "mesh_triangles": 6952,
+  "material_count": 1,
+  "fbx": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.fbx",
+  "blend": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.blend",
+  "preview": "assets/source/props/crossroads_fossil/final_v2/front.png",
+  "mesh_color": [
+    255,
+    255,
+    255
+  ],
+  "can_collide": false,
+  "can_touch": false,
+  "can_query": false,
+  "bake_source": "tools/realm_crossroads/place_fossil.luau",
+  "placement": {
+    "root": "SulfurPoolFossilR11",
+    "cache": "CrossroadsLandmarkAssets",
+    "template": "SulfurFishFossil",
+    "position": [
+      280,
+      4,
+      77
+    ],
+    "yaw": 85,
+    "embed": 0.2
+  },
+  "native_texture_id": 105991804065229
+}

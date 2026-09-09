@@ -19,8 +19,8 @@ return function(world, cfg)
     out.Name = cfg.output_name .. "Preparing"
     out.Parent = workspace
     local stats = { sealParts = 0, emblems = 0, skipped = {} }
-    local function part(name, size, cf, color, material)
-        local p = Instance.new("Part")
+    local function part(name, size, cf, color, material, class)
+        local p = Instance.new(class or "Part")
         p.Name = name
         p.Size = V.new(unpack(size))
         p.CFrame = cf
@@ -62,6 +62,9 @@ return function(world, cfg)
                 item:IsA("LuaSourceContainer")
                 or item:IsA("ProximityPrompt")
                 or item:IsA("LayerCollector")
+                or item:IsA("Humanoid")
+                or item:IsA("AnimationController")
+                or item:IsA("Animator")
             then
                 item:Destroy()
             end
@@ -70,6 +73,110 @@ return function(world, cfg)
             game:GetService("CollectionService"):RemoveTag(m, tag)
         end
         return m
+    end
+    local function reliefTemplate(key)
+        local ec = cfg.emblems
+        local mc = ec.medal
+        local data = assert(ec.relief_geometry[key], "Run Blender wave heraldry recipe first")
+        local model = Instance.new("Model")
+        model.Name = key
+        model.Parent = out
+        local function disk(name, radius, depth, color)
+            local p = part(
+                name,
+                { depth, radius * 2, radius * 2 },
+                C.Angles(0, math.pi / 2, 0),
+                color,
+                "Metal"
+            )
+            p.Shape = Enum.PartType.Cylinder
+            return p
+        end
+        local outer = disk("MedalOuterTemporary", mc.radius, mc.rim_depth, "gold")
+        local cutter = disk("MedalInnerTemporary", mc.inner_radius, mc.cutter_depth, "gold")
+        local rim =
+            outer:SubtractAsync({ cutter }, Enum.CollisionFidelity.Box, Enum.RenderFidelity.Precise)
+        finish(rim, "BronzeMedalRim", "gold", "Metal", false)
+        rim.Parent = model
+        outer:Destroy()
+        cutter:Destroy()
+        local face = disk("RecessedMedalFace", mc.face_radius, mc.face_depth, "hell")
+        face.Parent = model
+        local pieces = {}
+        local function triangle(a, b, c)
+            local ab, ac, bc = b - a, c - a, c - b
+            if ab:Dot(ab) > ac:Dot(ac) and ab:Dot(ab) > bc:Dot(bc) then
+                c, a = a, c
+            elseif ac:Dot(ac) > bc:Dot(bc) then
+                a, b = b, a
+            end
+            ab, ac, bc = b - a, c - a, c - b
+            if ac:Cross(ab).Magnitude < 0.000001 then
+                return
+            end
+            local right = ac:Cross(ab).Unit
+            local up = bc:Cross(right).Unit
+            local back = bc.Unit
+            local h = math.abs(ab:Dot(up))
+            if h < 0.001 then
+                return
+            end
+            local l1, l2 = math.abs(ab:Dot(back)), math.abs(ac:Dot(back))
+            if l1 > 0.001 then
+                table.insert(
+                    pieces,
+                    part(
+                        "WaveTriangleTemporary",
+                        { mc.relief_depth, h, l1 },
+                        C.fromMatrix((a + b) / 2, right, up, back),
+                        "gold",
+                        "Metal",
+                        "WedgePart"
+                    )
+                )
+            end
+            if l2 > 0.001 then
+                table.insert(
+                    pieces,
+                    part(
+                        "WaveTriangleTemporary",
+                        { mc.relief_depth, h, l2 },
+                        C.fromMatrix((a + c) / 2, -right, up, -back),
+                        "gold",
+                        "Metal",
+                        "WedgePart"
+                    )
+                )
+            end
+        end
+        for _, tri in ipairs(data.triangles) do
+            triangle(
+                V.new(tri[1][1], tri[1][2] + mc.staging_y, 0),
+                V.new(tri[2][1], tri[2][2] + mc.staging_y, 0),
+                V.new(tri[3][1], tri[3][2] + mc.staging_y, 0)
+            )
+        end
+        assert(#pieces > 1, "Empty Blender relief geometry")
+        local first = table.remove(pieces, 1)
+        local glyph =
+            first:UnionAsync(pieces, Enum.CollisionFidelity.Box, Enum.RenderFidelity.Precise)
+        finish(glyph, "BlenderWaveRelief", "gold", "Metal", false)
+        glyph.CFrame = C.new(0, -mc.staging_y, mc.relief_z) * glyph.CFrame
+        glyph.Parent = model
+        first:Destroy()
+        for _, piece in ipairs(pieces) do
+            piece:Destroy()
+        end
+        -- Models can inherit the first CSG rim's rotated basis when first populated.
+        -- Author a canonical XY medal / +Z face frame explicitly WITHOUT moving parts.
+        -- Later PivotTo(identity) must normalize location, not turn the medal sideways.
+        model.PrimaryPart = nil
+        model.WorldPivot = C.new()
+        local _, canonicalSize = model:GetBoundingBox()
+        assert(canonicalSize.X > canonicalSize.Z * 2, "Wave medal is not in the canonical XY plane")
+        model:SetAttribute("GeometrySource", ec.relief_recipe.source)
+        model:SetAttribute("AuthoredFront", "+Z")
+        return model
     end
     local ok, err = pcall(function()
         local s = cfg.seal
@@ -204,11 +311,15 @@ return function(world, cfg)
             local cornice = bay and bay:FindFirstChild("Cornice")
             local header = bay and bay:FindFirstChild("SculptedHeader")
             local template
-            for _, folderName in ipairs(ec.caches) do
-                local folder = storage:FindFirstChild(folderName)
-                template = folder and folder:FindFirstChild(spec.model)
-                if template then
-                    break
+            if spec.relief then
+                template = reliefTemplate(spec.relief)
+            else
+                for _, folderName in ipairs(ec.caches) do
+                    local folder = storage:FindFirstChild(folderName)
+                    template = folder and folder:FindFirstChild(spec.model)
+                    if template then
+                        break
+                    end
                 end
             end
             if
@@ -220,6 +331,9 @@ return function(world, cfg)
                     and template:IsA("Model")
                 )
             then
+                if spec.relief and template then
+                    template:Destroy()
+                end
                 table.insert(
                     stats.skipped,
                     spec.board_id .. ": missing semantic native asset or supported header/cornice"
@@ -243,10 +357,16 @@ return function(world, cfg)
                 or cornice.Size.Z < ec.minimum_cornice_depth
                 or corniceTop < headerTop + ec.header_clearance
             then
+                if spec.relief and template then
+                    template:Destroy()
+                end
                 table.insert(stats.skipped, spec.board_id .. ": insufficient clear mount envelope")
                 continue
             end
             local m = strippedClone(template)
+            if spec.relief then
+                template:Destroy()
+            end
             m:PivotTo(C.new())
             local size = m:GetExtentsSize()
             if size.X <= 0 or size.Y <= 0 or size.Z <= 0 then

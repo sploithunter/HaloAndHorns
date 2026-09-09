@@ -57,3 +57,17 @@ At root direction, replaced the compound disconnected court boolean with three i
 Root applied revision3 and the independent Edit query was repeated before the root's Play/FX test. Radius20 east now hits only `FittedInnerCourt`; radius45 east hits only `CircularCourt`; radius35 west/north/south each hits only `FittedViewingPromenade`. Radius35 east still reports both outer court and runner atY4.4400015. This persists despite separate connected geometry and the source's full radius38 tall cylindrical subtraction. The inspected rendered ring remains visually continuous, with no obvious missing strip. The remaining double **collision-query** hit is therefore recorded as unresolved engine/geometry ambiguity, not silently upgraded to a confirmed render defect or a clean test. No further native changes were made by the auditor. Root may proceed to its Play test; this document does not claim full absence of z-fighting everywhere.
 
 Focused audit complete: confirmed seal coplanar skin, rail contact gap and two passage props were corrected and remeasured. Garden support dimensions, seat/dock inventories, limited flat-Part overlap screen and submerged-post limitations are recorded above. Outstanding item is the localized east-annulus collision query; full crowding, motion/performance and traversal belong to root verification.
+
+## Lead-reported later checkpoint verification
+
+The following records explicit lead results, not a repeated independent audit:
+
+- Rest shelter applied with four genuine Seats, roof top Y14.2 and 18 dry Cobblestone spur cells; both terrain occupancy channels stayed unchanged. Native screenshots showed the bowed roof/benches, followed by three existing native backdrop trees and the retained two small bushes. `HeavenFishingRestShelterR11.RestSeat_1_1` accepted the Humanoid and the player exited in Play. Remaining three Seats, supported avatar sizes and controller/touch egress are not covered by that sample.
+- Physical fishing signs were installed on both approaches. Version 2 fossil Model116671594170630 with texture105991804065229 was placed. Eight category emblems still await lead orientation correction and final visual acceptance; their count does not establish correct facing.
+- Registry contains13 authoring passes. Latest [native checkpoint](../../../assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl) refresh is pending; retain the artifact link without stale size/hash/instance totals.
+
+These additions do not resolve the east-annulus double collision-query hit, certify temporal absence of z-fighting, or substitute for aggregate FX/CSG/avatar performance, whole-route traversal and device coverage. No production gameplay was activated.
+
+### Final R11 source/native checkpoint
+
+Revision4 wave medal pivot corrected and close screenshot inspected facing the court. Native export/deserialize validation passes:17,471instances,18rods,18stations,16enabled visitorSeats,Terrain and cosmetic scripts retained. Checkpoint2,564,444bytes; SHA256 `71e9adec234ab717cafba3ab6b7c00dfac0c14c6db8d6daa5c117e32249989cf`. No duplicate Studio opened. Additional native screenshots09–11 show fossil,shelter and wave heraldry. Broad crowd/device QA and the previously recorded east-annulus collision-query ambiguity remain open.

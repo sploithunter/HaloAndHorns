@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.fbx",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 3538,
+    "edges": 10428,
+    "faces": 6952,
+    "triangles": 6952,
+    "face_components": 31,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "CrossroadsFossil",
+      "vertices": 3538,
+      "raw_vertices": 5767,
+      "welded_coincident_vertices": 2229,
+      "inspection_weld_distance": 1.01999202039265e-06,
+      "edges": 10428,
+      "faces": 6952,
+      "triangles": 6952,
+      "face_components": 31,
+      "bounds_diagonal": 10.199920203926501,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

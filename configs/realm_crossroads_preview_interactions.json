@@ -16,9 +16,9 @@
     "bob_amplitude": 0.08,
     "bob_period": 2.5,
     "bobber_size": [
-      0.24,
-      0.38,
-      0.24
+      0.5,
+      0.7,
+      0.5
     ],
     "bobber_color": [
       222,

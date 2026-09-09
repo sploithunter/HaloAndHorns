@@ -50,6 +50,24 @@
       "source_key": "bake_source"
     },
     {
+      "config": "configs/realm_crossroads_fishing_shelter.json",
+      "module": "CrossroadsFishingShelter",
+      "config_value": "CrossroadsFishingShelterConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fishing_wayfinding.json",
+      "module": "CrossroadsFishingWayfinding",
+      "config_value": "CrossroadsFishingWayfindingConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/crossroads_fossil.json",
+      "module": "CrossroadsFossilPlacement",
+      "config_value": "CrossroadsFossilConfig",
+      "source_key": "bake_source"
+    },
+    {
       "config": "configs/realm_crossroads_visual_fx.json",
       "module": "CrossroadsVisualFXInstaller",
       "config_value": "CrossroadsVisualFXConfig",
@@ -62,7 +80,7 @@
       "source_key": "installer_source"
     }
   ],
-  "note": "Apply in listed order to the native R10 baseline. FX installer additionally consumes its config-named bundle; preview installer consumes client_source. These are authoring modules, never automatic game startup code.",
+  "note": "Apply in listed order to native R10 baseline. FX additionally consumes bundle_source; interaction installer consumes client_source; fishing wayfinding consumes font_source and existing native letter cache. Authoring modules never run automatically at game startup.",
   "native_checkpoint": "assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl",
   "native_checkpoint_note": "Lossless isolated Studio checkpoint; not mapped into any production Rojo place. Open only if no existing editable preview is already open."
 }

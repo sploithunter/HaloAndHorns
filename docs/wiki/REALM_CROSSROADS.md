@@ -426,7 +426,7 @@ fitted two-realm arrival inlay, a supported garden arch pavilion with four Seats
 Two source-first Blender rods are uploaded and mounted, with actual tip anchors.
 The retained map remains a local PlaceId0 preview; production content is unchanged.
 
-`configs/realm_crossroads_polish.json` lists ten authoring passes in application
+`configs/realm_crossroads_polish.json` lists thirteen authoring passes in application
 order. The native exporter refreshes their embedded modules/configs from disk,
 without rebaking serialized CSG/terrain. Apply core before heraldry and fishing
 polish before rod placement/interaction setup. Source and uploaded rod provenance
@@ -458,8 +458,18 @@ passed native smoke checks; the integrated cast and water contact were viewed.
 
 The R11 lossless native checkpoint is retained under
 `assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl`, named by the polish
-registry and deliberately absent from production Rojo mappings. Its17,200instances
-include Terrain, cached source assets, authoring modules and cosmetic scripts.
+registry and deliberately absent from production Rojo mappings. It retains Terrain, cached source assets, authoring modules and cosmetic scripts.
+The latest additions are saved in the native checkpoint; round-trip verifies17,471instances,18rods,18stations and16enabled visitorSeats.
 The dry-bank route finish changes only SolidMaterial, verifies both occupancies
 unchanged, and widens the Heaven dock-wall passage to12.3studs without reducing
 the64-stud coin field. Both bank passages passed native navigation.
+
+The latest native additions include a22×14 bowed timber fishing shelter with four
+genuine Seats, two inert dry pet/display bays, two small bushes and three cached
+backdrop trees. Its roof tops atY14.2; the18-cell material spur changes neither
+terrain occupancy channel. Lead verified RestSeat_1_1 Humanoid sit and exit in Play.
+Both pond approaches now have physical sculpted FISHING signs. The version2
+textured fossil is placed using `configs/crossroads_fossil.json`; eight Bragg
+category emblems are installed; the corrected wave medal orientation passed a native close view. Remaining
+whole-map/device QA and the east-annulus collision-query ambiguity are retained
+in the linked status/audit. Pet bays perform no automatic pet placement.

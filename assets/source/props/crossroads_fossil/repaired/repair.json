@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/geometry/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/repaired/model.glb",
+  "raw_vertices": 20556,
+  "weld_distance": 4.8861884081675027e-08,
+  "initial_cleanup": {
+    "boundary_edges_found": 73,
+    "fill_faces_added": 6,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.0,
+  "triangles_after_fill": 6952,
+  "decimation_ratio": 1.0,
+  "final_triangles": 6952,
+  "max_triangles": 8000
+}

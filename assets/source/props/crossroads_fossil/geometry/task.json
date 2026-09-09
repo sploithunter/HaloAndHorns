@@ -1,0 +1,34 @@
+{
+  "id": "01a0836a-2461-75b4-bd86-b464b80f67a1",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 5,
+  "created_at": 1788911167508,
+  "started_at": 1788911167515,
+  "finished_at": 1788911179999,
+  "expires_at": 1789170379999,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/concept-v1.png",
+    "source_sha256": "5add3d1ffd1b61cfd94a7de0eac82b14296ae8a2e8a0dfc4a85affc89393adae",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 6500,
+    "should_texture": false,
+    "target_formats": [
+      "glb"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

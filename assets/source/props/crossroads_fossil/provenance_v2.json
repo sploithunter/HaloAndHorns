@@ -1,0 +1,92 @@
+{
+  "version": 2,
+  "previous_record": "provenance.json",
+  "meshy_additional_credits": 0,
+  "fix": "Save scaled PNG, load new image datablock, rebind material nodes, pack fresh bytes; verify saved blend and embedded FBX independently.",
+  "files": [
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.blend",
+      "bytes": 2244101,
+      "sha256": "a86aeadceefada5960c4d0f69173f423ad86cf3501b79b2a6190caa45e8bcc71"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.fbx",
+      "bytes": 2150652,
+      "sha256": "9f4239152d009f87149715b801d560aef5083030b06d74807f66701bebf36143"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.glb",
+      "bytes": 2053696,
+      "sha256": "6214942ff4405239cc078a17faa2fb31c8b1f973628e14d91261b32c81195434"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/texture_0.png",
+      "bytes": 1826053,
+      "sha256": "04152a90789b3500c903d0b79acb666d98e4020fdd93bfe83b4925aec6c724fb"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/front.png",
+      "bytes": 1015497,
+      "sha256": "84d5c066497c597c51a946c20485506632a6b607c154066901051710a0fefc92"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/report.json",
+      "bytes": 511,
+      "sha256": "77b7c4503d21f4b6c5dc7703f46ae8156192df26a46f6e7cdb3677184ffb11f9"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/packed_texture_check.json",
+      "bytes": 164,
+      "sha256": "5631e73d5841f6ae19e32dce847ae5ddf1e2c76878d2d71f65e22661208893f0"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/embedded_fbx_texture_check.json",
+      "bytes": 140,
+      "sha256": "7e9bbfc8bb46b4860274dd78ff7cefcab3772022af5fcfc6d935ecfdf70b9b33"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/geometry_equivalence.json",
+      "bytes": 540,
+      "sha256": "65f2f278718f67d60bde7a10fe4725eb98ee6485af8abb729058fdb5bc38dc98"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/integrity_fbx.json",
+      "bytes": 1082,
+      "sha256": "1040119676c9e8813a6579aa34623b314e581607d8ddf5cb6a7486b17943761c"
+    },
+    {
+      "path": "assets/source/props/crossroads_fossil/final_v2/uv_guard.json",
+      "bytes": 99,
+      "sha256": "17ca7e9fecd7425352d94ba3148c3c97cff940d8ce02209373f901445daed6cf"
+    }
+  ],
+  "native_checks": {
+    "reported_by": "integrating_lead",
+    "mesh_parts": 1,
+    "texture_id": 105991804065229,
+    "mesh_id": 116191368702768,
+    "dimensions_xyz": [
+      8,
+      5.21875,
+      3.57813
+    ],
+    "placement_xyz": [
+      280,
+      4,
+      77
+    ],
+    "yaw_degrees": 85,
+    "ground_embed": 0.2,
+    "production_published": false
+  },
+  "reproduction_check": {
+    "rebuild_from_retained_blend_passed": true,
+    "geometry_normal_uv_index_buffers_identical": true,
+    "triangles": 6952,
+    "reopened_packed_texture": [
+      1024,
+      1024
+    ]
+  },
+  "generator_sha256": "a1dc7459393f33075e016da75a7ad703a6e3a69ac93f0fb5004ddb39a5f5dec5"
+}
