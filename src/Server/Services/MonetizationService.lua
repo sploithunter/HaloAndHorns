@@ -25,6 +25,8 @@ local FoundersChoice = require(ReplicatedStorage.Shared.Game.FoundersChoice)
 local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
+local CollectorCommentPolicy = require(ReplicatedStorage.Shared.Game.CollectorCommentPolicy)
+local collectorCommentConfig = require(ReplicatedStorage.Configs.collector_voice)
 
 local MonetizationService = {}
 MonetizationService.__index = MonetizationService
@@ -43,6 +45,7 @@ function MonetizationService:Init()
     self._inventoryService = self._modules.InventoryService -- capacity refresh after async pass apply
     self._foundersChoiceService = self._modules.FoundersChoiceService
     self._passSources = {}
+    self._collectorCommentOwners = {}
     -- NetworkConfig removed - using Signals instead
 
     -- Validate dependencies
@@ -148,6 +151,7 @@ function MonetizationService:Start()
             self._speedPassApplied[player.UserId] = nil
         end
         self._passSources[player.UserId] = nil
+        self._collectorCommentOwners[player.UserId] = nil
     end)
 
     self._logger:Info("MonetizationService started")
@@ -570,6 +574,8 @@ function MonetizationService:SetCreatorPassBenefitsEnabled(player, enabled)
 end
 
 function MonetizationService:CheckPlayerPasses(player)
+    player:SetAttribute(collectorCommentConfig.eligibility_attribute, false)
+    local collectorOwnership
     local passes = self._productIdMapper:GetAllPasses()
     local creatorGate = self:GetCreatorPassGateState(player)
     local creatorOwnsAll = creatorGate.active
@@ -593,6 +599,14 @@ function MonetizationService:CheckPlayerPasses(player)
                     local success, result = pcall(function()
                         return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
                     end)
+                    if passConfig.id == collectorCommentConfig.pass_id then
+                        collectorOwnership = success and result
+                        if not success then
+                            collectorOwnership = nil
+                        elseif result == true then
+                            self._collectorCommentOwners[player.UserId] = true
+                        end
+                    end
                     if success and result == true then
                         sourceSets.marketplace[passConfig.id] = true
                     else
@@ -656,6 +670,17 @@ function MonetizationService:CheckPlayerPasses(player)
 
     self._passSources[player.UserId] = passSources
     self._dataService:SetOwnedPasses(player, ownedPasses)
+
+    -- Reuse the real Marketplace result. Creator/test bypasses and failed checks stay silent.
+    -- The session ownership latch also protects against an overlapping check after a purchase.
+    player:SetAttribute(
+        collectorCommentConfig.eligibility_attribute,
+        CollectorCommentPolicy.eligible(
+            collectorOwnership,
+            player:GetAttribute("AutoCollectorEnabled"),
+            self._collectorCommentOwners[player.UserId]
+        )
+    )
 
     -- Pass benefits land AFTER the join-time equip restore (ownership checks
     -- are async) — recompute equip capacity so a paid slot is visible the
@@ -761,6 +786,8 @@ function MonetizationService:_applyPassBenefits(player, passConfig, options)
     -- AUTO COLLECTOR: entitlement manifests a passive pet through DropService. It owns no
     -- inventory record, squad slot, offense, aggro, or player-radius modifier.
     if benefits.features and benefits.features.auto_collect_enabled then
+        self._collectorCommentOwners[player.UserId] = true
+        player:SetAttribute(collectorCommentConfig.eligibility_attribute, false)
         player:SetAttribute("AutoCollectorEnabled", true)
     end
 

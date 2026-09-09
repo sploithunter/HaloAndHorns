@@ -104,3 +104,28 @@ settings live in `configs/voice_pilots/spanish_portuguese.json`; recordings are 
 The full implementation reuses all 12 original MP3s and extends coverage to 344 localized
 recordings across both games. See [Tutorial Localization](TUTORIAL_LOCALIZATION.md#spoken-tutorials)
 for routing, English fallback, generation provenance and runtime verification.
+
+## Optional Coin Pup comments — 2026-09-08
+
+`collector_voice.lua` configures an optional angel encouragement / demon tease in both games.
+Six recordings (English, Spanish, Brazilian Portuguese) and provenance live under
+`assets/audio/voices/collector_comments/`; canonical copy is `configs/voice_comments/collector.json`.
+Shared TutorialNarrator preserves the existing 1.2/2.34 gains, Voices preference, world faces,
+language selection, per-line English fallback, and tutorial priority.
+
+The server sets `CollectorCommentEligible` only after the existing real Marketplace check
+successfully confirms **no Auto Collector pass**, with no effective collector benefit. Unknown,
+failed, creator-bypassed or test-bypassed checks stay silent. Positive ownership or a Founder/
+creator/test benefit latches suppression for the server session. Acquisition clears eligibility
+immediately, cancelling queued/active speech; no extra ownership polling is introduced.
+
+DropService counts credited manual coin pickups, excluding pet pickups, forced expiry/cap
+collections, failed grants, gems and offline actors. Eight pickups permit a notification, with a
+90-second minimum interval and at most three opportunities per server session. The client speaks
+at most once per session; a pending opportunity expires after 20 seconds. Tutorials, menus,
+combat, death, transitions and other narration block speech; changing realm cancels the old face.
+No store opens and no purchase prompt is triggered. Progress is ephemeral and weakly keyed.
+
+`collector_comments.spec.luau`, `collector_ownership_runtime.luau`, the actual DropService
+`auto_collector_runtime.luau` harness, and native `CollectorCommentsSmoke` cover ownership
+failures/benefit sources, pickup exclusions, throttling, speaker choice and cancellation.

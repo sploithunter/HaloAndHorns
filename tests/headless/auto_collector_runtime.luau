@@ -41,6 +41,9 @@ end
 local events = {}
 local service = luau.load(fs.readFile("src/Server/Services/DropService.lua"), {
     environment = {
+        typeof = function(value)
+            return value == player and "Instance" or typeof(value)
+        end,
         Vector3 = Vector3,
         CFrame = CFrame,
         game = {
@@ -51,6 +54,10 @@ local service = luau.load(fs.readFile("src/Server/Services/DropService.lua"), {
         require = function(path)
             if tostring(path):match("AutoCollectorPickup$") then
                 return policy
+            elseif tostring(path):match("CollectorCommentPolicy$") then
+                return pure("src/Shared/Game/CollectorCommentPolicy.lua")
+            elseif tostring(path):match("collector_voice$") then
+                return pure("configs/collector_voice.lua")
             elseif tostring(path):match("FireGameEvent$") then
                 return function(owner, kind)
                     assert(owner == player)
@@ -92,6 +99,7 @@ local state =
     { position = Vector3.zero, nextTargetAt = 0, model = { SetAttribute = function() end } }
 local runtime = setmetatable({
     _config = cfg,
+    _collectorCommentProgress = {},
     _active = {},
     _autoCollectors = { [42] = state },
     _moduleLoader = {
@@ -194,4 +202,50 @@ runtime:_stepAutoCollectors(8, 0)
 assert(counts.potion == 3, "reentrant grant duplicated")
 print(
     "PASS: actual Auto Collector movement, canonical grants, duplicate guard, owner isolation, entitlement, reach, exclusions, and currency"
+)
+
+-- Exercise the actual currency grant path, including forced/passive and failed grants.
+local commentConfig = pure("configs/collector_voice.lua")
+local paid = true
+grants.EconomyService.AddCurrency = function()
+    return paid
+end
+local function coin(force, collector)
+    local r = drop(nil)
+    r.currency = "coins"
+    runtime:_collect(r, force, collector)
+end
+player.attrs.AutoCollectorEnabled = false
+player.attrs.CollectorCommentEligible = true
+local before = #events
+for _ = 1, commentConfig.manual_pickups do
+    coin(true, false)
+    coin(false, true)
+end
+assert(#events == before and runtime._collectorCommentProgress[player] == nil)
+paid = false
+coin()
+assert(runtime._collectorCommentProgress[player] == nil, "Failed payout counted")
+paid = true
+for _ = 1, commentConfig.manual_pickups do
+    coin()
+end
+assert(
+    #events == before + 1 and events[#events] == commentConfig.event,
+    "Manual collection never notified"
+)
+for _ = 1, 100 do
+    coin()
+end
+assert(#events == before + 1, "Notification flooded")
+for _, attrs in { { false, false }, { true, true } } do
+    runtime._collectorCommentProgress = {}
+    player.attrs.CollectorCommentEligible, player.attrs.AutoCollectorEnabled = attrs[1], attrs[2]
+    for _ = 1, commentConfig.manual_pickups do
+        coin()
+    end
+    assert(#events == before + 1, "Ineligible/owner received comment")
+end
+print(
+    "PASS: collector comments only after credited manual coins; forced, passive, failed, unverified and entitled excluded"
 )

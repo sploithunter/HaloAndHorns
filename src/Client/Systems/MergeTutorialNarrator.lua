@@ -56,6 +56,13 @@ function Controller.update(world, observing, menuOpen)
     local modeNotice = playerGui and playerGui:FindFirstChild("MergeDefenseModeNotice")
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     player:SetAttribute("MergeTutorialMenuOpen", observing == true and menuOpen == true)
+    player:SetAttribute(
+        "MergeTutorialVoiceLessonActive",
+        observing == true
+            and world ~= nil
+            and world:GetAttribute("ActivePlayer") == player.Name
+            and world:GetAttribute("MergeEggTutorialActive") == true
+    )
     if not config.enabled then
         return
     end

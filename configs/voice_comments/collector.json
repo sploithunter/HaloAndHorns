@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "voices": {
+    "angel": "thfYL0Elyru2qqTtNQsE",
+    "demon": "NxGA8X3YhTrnf3TRQf6Q"
+  },
+  "voice_settings": {
+    "angel": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.25,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    },
+    "demon": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.3,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    }
+  },
+  "sections": [
+    {
+      "locale": "en",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "EN_COIN_ANGEL",
+          "cue": "collector_comment.angel",
+          "locale": "en",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "You work so hard, little light. If you'd like a helping paw, a Coin Pup can gather coins and other treasures while you explore. The choice is yours.",
+          "english_meaning": "You work so hard, little light. If you'd like a helping paw, a Coin Pup can gather coins and other treasures while you explore. The choice is yours."
+        }
+      ]
+    },
+    {
+      "locale": "en",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "EN_COIN_DEMON",
+          "cue": "collector_comment.demon",
+          "locale": "en",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "Still gathering every coin yourself? Such admirable stubbornness. A Coin Pup could fetch the loot for you. Though I admit, watching you run in circles has its charms.",
+          "english_meaning": "Still gathering every coin yourself? Such admirable stubbornness. A Coin Pup could fetch the loot for you. Though I admit, watching you run in circles has its charms."
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "ES_COIN_ANGEL",
+          "cue": "collector_comment.angel",
+          "locale": "es",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "Te esfuerzas tanto, pequeña luz. Si quieres una patita de ayuda, un Coin Pup puede recoger monedas y otros tesoros mientras exploras. Tú decides.",
+          "english_meaning": "You work so hard, little light. If you'd like a helping paw, a Coin Pup can gather coins and other treasures while you explore. The choice is yours."
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "ES_COIN_DEMON",
+          "cue": "collector_comment.demon",
+          "locale": "es",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "¿Sigues recogiendo cada moneda por tu cuenta? Qué terquedad tan admirable. Un Coin Pup podría traerte el botín. Aunque admito que verte correr en círculos tiene su encanto.",
+          "english_meaning": "Still gathering every coin yourself? Such admirable stubbornness. A Coin Pup could fetch the loot for you. Though I admit, watching you run in circles has its charms."
+        }
+      ]
+    },
+    {
+      "locale": "pt-br",
+      "speaker": "angel",
+      "lines": [
+        {
+          "id": "BR_COIN_ANGEL",
+          "cue": "collector_comment.angel",
+          "locale": "pt-br",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "Você se esforça tanto, minha luzinha. Se quiser uma patinha de ajuda, um Coin Pup pode recolher moedas e outros tesouros enquanto você explora. Você escolhe.",
+          "english_meaning": "You work so hard, little light. If you'd like a helping paw, a Coin Pup can gather coins and other treasures while you explore. The choice is yours."
+        }
+      ]
+    },
+    {
+      "locale": "pt-br",
+      "speaker": "demon",
+      "lines": [
+        {
+          "id": "BR_COIN_DEMON",
+          "cue": "collector_comment.demon",
+          "locale": "pt-br",
+          "usage": "optional ambient hint for confirmed non-owner after manual coin pickups",
+          "text": "Ainda recolhendo cada moeda por conta própria? Que teimosia admirável. Um Coin Pup poderia buscar o saque para você. Mas confesso que ver você correndo em círculos tem seu encanto.",
+          "english_meaning": "Still gathering every coin yourself? Such admirable stubbornness. A Coin Pup could fetch the loot for you. Though I admit, watching you run in circles has its charms."
+        }
+      ]
+    }
+  ]
+}
