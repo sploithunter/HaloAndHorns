@@ -4,6 +4,20 @@ Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root:
 
 
 
+## Spatial atmosphere — 2026-09-09
+
+`RealmAtmosphere` is the sole global lighting/sky controller. `areas.crossroads.atmosphere`
+owns the imported origin, bounds, 1.2-second lighting tween, polling, and neutral exclusions.
+Negative local X uses Heaven 1; positive X uses Hell 2, matching the existing Merge looks.
+The 40-stud center corridor, 66-stud Bragg radius, and both side-ramp approaches remain
+Purgatory (captured base sky/light). Exclusions win over side selection; a two-stud
+neutral exit margin prevents boundary chatter. All outer side activities inherit their side.
+Sky textures switch at the boundary; lighting, tint and atmospheric haze tween. No second
+Sky or competing controller is added. Leaving the map restores CurrentLayer behavior.
+Classification uses config bounds rather than streamed geometry or camera position.
+Native QA: 12 region/boundary assertions; Heaven/Hell sky and light changes; Bragg east
+edge restores base sky/tint; Homeworld clears the override. Full CI: 2,846 tests pass.
+
 ## R8: realm landscape and outer safety boundary
 
 Heaven occupies negative X (left) and Hell positive X (right), matching the gates.

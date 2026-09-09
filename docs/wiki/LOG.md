@@ -8822,3 +8822,7 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 ### 2026-09-09 — Homeworld return portal
 
 Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Crossroads. Merge delegates this hook to CrossroadsArrival when the imported map is enabled; its cross-place handler is not bound. Dedicated Pet Siege return gates are unchanged. Config-owned text lives in areas.crossroads. The return validates living character, proximity, mission/prologue ownership and cooldown before and after destination streaming, then uses ZoneService to reset the Farm-entered session flag and assign a spaced Crossroads respawn slot. Native Play verified Crossroads → Home via gate touch and Home → Crossroads via the actual proximity prompt, with ArrivalSlot5 restored. Full CI: 2,846/2,846 tests, 323 specs.
+
+### 2026-09-09 — Crossroads Heaven/Purgatory/Hell atmosphere
+
+Added config-driven spatial selection to the existing RealmAtmosphere client: left Heaven 1, right Hell 2, neutral center/Bragg/approaches. Lighting tweens, sky swaps, boundary hysteresis and outside-map restoration verified in native Play. Twelve spatial assertions and full CI (2,846 tests) passed. See REALM_CROSSROADS.md for region dimensions.

@@ -26,6 +26,39 @@ local TINT_NAME = "RealmTint"
 
 local RealmAtmosphere = {}
 
+-- Pure, config-owned spatial classification; independent of streamed map instances.
+function RealmAtmosphere.crossroadsZone(cfg, position, previous)
+    local x, y, z =
+        position.X - cfg.origin[1], position.Y - cfg.origin[2], position.Z - cfg.origin[3]
+    local lo, hi = cfg.bounds_min, cfg.bounds_max
+    if x < lo[1] or x > hi[1] or y < lo[2] or y > hi[2] or z < lo[3] or z > hi[3] then
+        return nil
+    end
+    -- Neutral exclusions take priority even when leaving a Heaven/Hell zone.
+    local margin = 0
+    if previous == "purgatory" then
+        margin = cfg.hysteresis
+    end
+    local dx, dz = x - cfg.bragg_center[1], z - cfg.bragg_center[2]
+    if
+        dx * dx + dz * dz <= (cfg.bragg_radius + margin) ^ 2
+        or math.abs(x) <= cfg.neutral_half_width + margin
+    then
+        return "purgatory"
+    end
+    for _, rect in ipairs(cfg.neutral_rects) do
+        if
+            x >= rect[1] - margin
+            and x <= rect[2] + margin
+            and z >= rect[3] - margin
+            and z <= rect[4] + margin
+        then
+            return "purgatory"
+        end
+    end
+    return x < 0 and "heaven" or "hell"
+end
+
 local function loadAtmosphere()
     local configs = ReplicatedStorage:FindFirstChild("Configs")
     local mod = configs and configs:FindFirstChild("layers")
@@ -83,6 +116,9 @@ function RealmAtmosphere.start()
             legacyTint:Destroy()
         end
     end
+    local crossroads = not merge and require(ReplicatedStorage.Configs.areas).crossroads
+    crossroads = crossroads and crossroads.enabled and crossroads.atmosphere or nil
+    crossroads = crossroads and crossroads.enabled and crossroads or nil
     local themes = loadAtmosphere()
     local maxDepth = tonumber(themes.max_depth) or 5
     local tweenInfo = TweenInfo.new(
@@ -154,6 +190,9 @@ function RealmAtmosphere.start()
             SunTextureId = sky.SunTextureId,
             MoonTextureId = sky.MoonTextureId,
             CelestialBodiesShown = sky.CelestialBodiesShown,
+            StarCount = sky.StarCount,
+            SunAngularSize = sky.SunAngularSize,
+            MoonAngularSize = sky.MoonAngularSize,
         }
     end
 
@@ -320,6 +359,43 @@ function RealmAtmosphere.start()
         RunService.Heartbeat:Connect(function(dt)
             elapsed += dt
             if elapsed >= merge.poll_seconds then
+                elapsed = 0
+                update()
+            end
+        end)
+    elseif crossroads then
+        local currentZone, currentLayer
+        local elapsed = 0
+        local function update()
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if not root then
+                return
+            end
+            local zone = RealmAtmosphere.crossroadsZone(crossroads, root.Position, currentZone)
+            local layer = zone and crossroads.layers[zone]
+                or player:GetAttribute("CurrentLayer")
+                or "base"
+            if zone ~= currentZone or layer ~= currentLayer then
+                currentZone, currentLayer = zone, layer
+                tweenInfo = TweenInfo.new(
+                    zone and crossroads.tween_seconds or themes.tween_seconds,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                )
+                refresh(false, layer)
+                player:SetAttribute("CrossroadsAtmosphereZone", zone)
+            end
+        end
+        refresh(false)
+        update()
+        player:GetAttributeChangedSignal("CurrentLayer"):Connect(update)
+        player.CharacterAdded:Connect(function()
+            currentLayer = nil
+        end)
+        RunService.Heartbeat:Connect(function(dt)
+            elapsed += dt
+            if elapsed >= crossroads.poll_seconds then
                 elapsed = 0
                 update()
             end
