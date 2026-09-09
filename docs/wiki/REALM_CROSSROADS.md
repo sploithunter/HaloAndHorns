@@ -495,3 +495,30 @@ reuses RBX-FX-GEN WaterRipple; visual FX must be installed before pond life. Bot
 passed appearance and lifecycle checks without water changes. All18station approaches
 and eight social Seats also passed sequential native checks. Decorative fish are not
 catch targets; future catches remain server-authorized integration work.
+
+The completion audit and dimensioned as-built drawing now live in the review
+folder. All 18 standard-body fishing proxies fit simultaneously; both rear-bank
+loops remained navigable. These noncolliding fixtures establish layout clearance,
+not multiplayer load or server reservation correctness. The 17 finishing passes
+also replayed twice on the existing authored preview. Retained landscape grounding
+uses a fixed world-height ray to prevent small cumulative vertical shifts on rerun.
+A replay still requires the original native geometry and cached assets; it is not
+an empty-place build. See REBUILD_QA.md for inputs and verification limits.
+
+Checkpoint saving now archives the ordered registry and supplementary glyph,
+FX-bundle and client sources in inert `ServerStorage.CrossroadsAuthoringInputs`
+StringValues. This does not rerun installers or refresh installed runtime code.
+`tools/realm_crossroads/validate_checkpoint.luau` compares both source archives and
+installed runtime sources/configs, native caches and accepted paving count, and
+rejects temporary whole-world QA backups. Use explicit input/output paths from
+`tools/realm_crossroads/CHECKPOINT_WORKFLOW.md`; the legacy wrapper defaults still
+name R4. Five deliberately broken checkpoint fixtures verify stale/missing input
+rejection without altering the saved map.
+
+The alternate spectator access is now built: two 8-stud-clear, 1:8 flights reach
+existing tier Y12 from ground Y4, with a 7.5-stud-clear underpass. It is pass 18,
+after arena polish; two interfering native flora and two end rails are retained
+in its dedicated original archive. All 32 Seats and the 12-stud pond passage stay
+in place. Direct up/down/underpass movement passed without sampled jumping,
+falling or swimming. The latest 17,695-instance save passes source/runtime/cache
+validation; its hash and precise limits are in IMPLEMENTATION_STATUS.md.

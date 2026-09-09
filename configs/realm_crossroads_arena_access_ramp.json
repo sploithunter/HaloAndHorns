@@ -1,0 +1,238 @@
+{
+  "revision": 1,
+  "bake_source": "tools/realm_crossroads/arena_access_ramp.luau",
+  "output_name": "ArenaAccessRampR1",
+  "backup_name": "CrossroadsArenaAccessBackup",
+  "stand_path": [
+    "CrossroadsLeisureR9",
+    "ArenaSpectatorStands"
+  ],
+  "rail_path": [
+    "ArenaPolishR11",
+    "FinishedGuardRails"
+  ],
+  "flora_path": [
+    "CrossroadsLandscapeR8",
+    "PerimeterFlora"
+  ],
+  "expected_seats": 32,
+  "expected_visitor_seats": 8,
+  "tolerance": 0.025,
+  "max_x": 199,
+  "floor_y": 4,
+  "upper_y": 12,
+  "width": 8,
+  "slab_depth": 0.5,
+  "rail_height": 3,
+  "rail_width": 0.22,
+  "post_width": 0.32,
+  "rail_offset": 0.32,
+  "post_spacing": 8,
+  "midrail_height": 1.5,
+  "support_width": 0.7,
+  "stringer_depth": 0.8,
+  "material": {
+    "stone": "Slate",
+    "trim": "Limestone",
+    "metal": "Metal"
+  },
+  "palette": {
+    "stone": [
+      79,
+      66,
+      61
+    ],
+    "trim": [
+      150,
+      121,
+      86
+    ],
+    "metal": [
+      46,
+      43,
+      41
+    ]
+  },
+  "flights": [
+    {
+      "name": "LowerFlight",
+      "a": [
+        182,
+        4,
+        -44
+      ],
+      "b": [
+        182,
+        8,
+        -76
+      ]
+    },
+    {
+      "name": "UpperFlight",
+      "a": [
+        194,
+        8,
+        -76
+      ],
+      "b": [
+        194,
+        12,
+        -44
+      ]
+    }
+  ],
+  "landings": [
+    {
+      "name": "TurnLanding",
+      "center": [
+        188,
+        8,
+        -80
+      ],
+      "size": [
+        20,
+        8
+      ]
+    },
+    {
+      "name": "UpperBridge",
+      "center": [
+        194,
+        12,
+        -36
+      ],
+      "size": [
+        8,
+        16
+      ]
+    }
+  ],
+  "end_rails": [
+    {
+      "name": "EndRail",
+      "position": [
+        194,
+        13.5,
+        -28
+      ],
+      "size": [
+        9.66,
+        0.24,
+        0.24
+      ]
+    },
+    {
+      "name": "EndRail",
+      "position": [
+        194,
+        15,
+        -28
+      ],
+      "size": [
+        9.66,
+        0.24,
+        0.24
+      ]
+    }
+  ],
+  "opening_x": [
+    190,
+    198
+  ],
+  "archive_flora": [
+    {
+      "name": "lava_eye_tree",
+      "position": [
+        172.799331665,
+        26.36793518,
+        -79.409217834
+      ]
+    },
+    {
+      "name": "bone_rock",
+      "position": [
+        172.817810059,
+        14.00519371,
+        -79.010025024
+      ]
+    }
+  ],
+  "terrain_samples": [
+    [
+      182,
+      -44
+    ],
+    [
+      182,
+      -60
+    ],
+    [
+      182,
+      -76
+    ],
+    [
+      188,
+      -80
+    ],
+    [
+      194,
+      -76
+    ],
+    [
+      194,
+      -60
+    ],
+    [
+      194,
+      -44
+    ]
+  ],
+  "route": [
+    [
+      182,
+      4,
+      -42
+    ],
+    [
+      182,
+      4,
+      -44
+    ],
+    [
+      182,
+      8,
+      -76
+    ],
+    [
+      182,
+      8,
+      -80
+    ],
+    [
+      194,
+      8,
+      -80
+    ],
+    [
+      194,
+      8,
+      -76
+    ],
+    [
+      194,
+      12,
+      -44
+    ],
+    [
+      194,
+      12,
+      -28
+    ],
+    [
+      194,
+      12,
+      -24
+    ]
+  ],
+  "note": "Alternative1:8switchback. NorthpromenadeZ-42..-28passesbeneathflatupperbridge;noexpansionortierchange. MaxcraftX198.48preservesHellpassageX199..211."
+}

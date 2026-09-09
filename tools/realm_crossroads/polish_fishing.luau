@@ -469,7 +469,10 @@ return function(world, cfg)
                 and position.Z >= l.ground_z_min
                 and position.Z <= l.ground_z_max
             then
-                local ground = dryGround(position)
+                -- Keep the Terrain ray identical on every replay. Starting it
+                -- relative to the previously grounded model can change the
+                -- voxel intersection slightly and make plants creep vertically.
+                local ground = dryGround(V.new(position.X, 0, position.Z))
                 if ground then
                     local delta = ground - l.ground_embed - (position.Y - size.Y / 2)
                     if math.abs(delta) <= l.max_ground_shift then

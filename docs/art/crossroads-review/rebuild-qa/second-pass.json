@@ -1,0 +1,223 @@
+[
+  {
+    "index": 1,
+    "module": "CrossroadsCorePolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"gateBacks\":2,\"plants\":36,\"pavers\":300}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 2,
+    "module": "CrossroadsBraggPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"cornerClosures\":13,\"figures\":24,\"floor\":\"three_disjoint_court_solids\",\"warnings\":[],\"bays\":14}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 3,
+    "module": "CrossroadsFishingPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"stations\":18,\"approaches\":17,\"postsMoved\":4,\"skippedApproaches\":{\"1\":\"HellFishingPool:5\"},\"flora\":27,\"passagePropsArchived\":0,\"grounded\":119}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 4,
+    "module": "CrossroadsGardenPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"seats\":4,\"nativePlants\":10,\"replaced\":0,\"warnings\":[]}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 5,
+    "module": "CrossroadsArenaPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"enabledSeats\":8,\"seats\":32,\"ornaments\":4,\"facadeBays\":8,\"steps\":16}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 6,
+    "module": "CrossroadsHeraldryPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"skipped\":[],\"emblems\":8,\"sealParts\":3}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 7,
+    "module": "CrossroadsFishingRodsInstaller",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"lineTips\":18,\"rods\":18}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 8,
+    "module": "CrossroadsShoreRoutesPolish",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"occupancyVerifiedUnchanged\":true,\"proposedHeavenClearance\":12.3,\"plans\":{\"1\":{\"existingApproaches\":10,\"blockedStructure\":139,\"blockedField\":0,\"hull\":{\"20\":{\"1\":-267,\"2\":13},\"19\":{\"1\":-260.19879150390627,\"2\":40.985355377197269},\"18\":{\"1\":-254.3209686279297,\"2\":49.07554626464844},\"9\":{\"1\":-171.80120849609376,\"2\":-24.985370635986329},\"1\":{\"1\":-267,\"2\":3},\"15\":{\"1\":-204.99539184570313,\"2\":69.46165466308594},\"3\":{\"1\":-254.32095336914063,\"2\":-33.07555389404297},\"2\":{\"1\":-260.19879150390627,\"2\":-24.985370635986329},\"5\":{\"1\":-227.00460815429688,\"2\":-53.4616584777832},\"4\":{\"1\":-236.51516723632813,\"2\":-50.37145233154297},\"7\":{\"1\":-195.48483276367188,\"2\":-50.37145233154297},\"6\":{\"1\":-204.99539184570313,\"2\":-53.4616584777832},\"14\":{\"1\":-195.48483276367188,\"2\":66.37145233154297},\"8\":{\"1\":-177.67904663085938,\"2\":-33.07555389404297},\"16\":{\"1\":-227.00460815429688,\"2\":69.46165466308594},\"17\":{\"1\":-236.51516723632813,\"2\":66.37145233154297},\"13\":{\"1\":-177.6790313720703,\"2\":49.07554626464844},\"12\":{\"1\":-171.80120849609376,\"2\":40.985355377197269},\"11\":{\"1\":-165,\"2\":13},\"10\":{\"1\":-165,\"2\":3}},\"proposedCells\":0,\"blockedGround\":0,\"alreadyPainted\":233,\"blockers\":{\"1\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.softglow_bloom.softglow_bloom\",\"3\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.pearl_quartz.pearl_quartz\",\"2\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HeavenFishingPond.CraftedStation6.DryBankApproach\",\"5\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.FishingStation5\",\"4\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.FishingStation7\",\"7\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HeavenFishingPond.CraftedStation8.DryBankApproach\",\"6\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.field_flower_bush.field_flower_bush\",\"9\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.FishingStation4\",\"8\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.FishingStation8\",\"12\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HeavenFishingPond.FishingStation9\",\"11\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HeavenFishingPond.BankCluster_3_1.field_flower_bush\",\"10\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HeavenFishingPond.CraftedStation4.DryBankApproach\"},\"pond\":\"HeavenFishingPond\",\"stations\":10},\"2\":{\"existingApproaches\":7,\"blockedStructure\":65,\"blockedField\":0,\"hull\":{\"1\":{\"1\":211,\"2\":3},\"15\":{\"1\":215.71572875976563,\"2\":43.35533905029297},\"3\":{\"1\":222.7867889404297,\"2\":-34.42640686035156},\"2\":{\"1\":215.71572875976563,\"2\":-27.35533905029297},\"5\":{\"1\":249,\"2\":-47},\"4\":{\"1\":239,\"2\":-47},\"7\":{\"1\":272.28424072265627,\"2\":-27.355424880981447},\"6\":{\"1\":265.2131042480469,\"2\":-34.426414489746097},\"9\":{\"1\":279,\"2\":13},\"8\":{\"1\":279,\"2\":3},\"16\":{\"1\":211,\"2\":13},\"14\":{\"1\":222.7867889404297,\"2\":50.42640686035156},\"13\":{\"1\":239,\"2\":63},\"12\":{\"1\":249,\"2\":63},\"11\":{\"1\":265.2131042480469,\"2\":50.426414489746097},\"10\":{\"1\":272.28424072265627,\"2\":43.35542297363281}},\"proposedCells\":0,\"blockedGround\":0,\"alreadyPainted\":267,\"blockers\":{\"1\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.FishingStation5\",\"3\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.FishingStation6\",\"2\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.CraftedStation6.DryBankApproach\",\"5\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.CraftedStation4.DryBankApproach\",\"4\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.FishingStation4\",\"7\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.BankCluster_6_1.bone_rock\",\"6\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.pearl_quartz.pearl_quartz\",\"9\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.CraftedStation3.DryBankApproach\",\"8\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.CraftedStation7.DryBankApproach\",\"12\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.dead_brush.dead_brush\",\"11\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.FishingPolishR11.HellFishingPool.BankCluster_2_1.bone_rock\",\"10\":\"Workspace.RealmCrossroadsR4.CrossroadsFishingR10.HellFishingPool.bone_rock.bone_rock\"},\"pond\":\"HellFishingPool\",\"stations\":8}},\"material\":\"Cobblestone\",\"structuralArchiveCount\":0,\"dryRun\":false}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 9,
+    "module": "CrossroadsFishingShelter",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"seats\":4,\"materialCells\":0,\"roofTopY\":14.2,\"occupancyVerifiedUnchanged\":true}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 10,
+    "module": "CrossroadsFishingWayfinding",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"physicalText\":\"FISHING\",\"signs\":2}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 11,
+    "module": "CrossroadsFossilPlacement",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"landmark\":\"SulfurPoolFossilR11\",\"size\":\"8, 5.218751907348633, 3.5781280994415283\"}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 12,
+    "module": "CrossroadsArenaFloor",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"foundations\":10,\"medalParts\":4,\"receiverFaces\":2,\"cutPanels\":6,\"floorTop\":4.380000025033951,\"panels\":28,\"coverPartsPreserved\":4}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 13,
+    "module": "CrossroadsFossilSetting",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"models\":12,\"samples\":{\"1\":{\"name\":\"RearBoneCradle\",\"ground_min\":4.229866027832031,\"ground_max\":4.685386657714844},\"3\":{\"name\":\"RearDryBrush\",\"ground_min\":4.4512481689453129,\"ground_max\":4.9862518310546879},\"2\":{\"name\":\"RearShardSpire\",\"ground_min\":4.2097320556640629,\"ground_max\":4.745796203613281},\"5\":{\"name\":\"SouthAshNest\",\"ground_min\":4.159019470214844,\"ground_max\":4.260459899902344},\"4\":{\"name\":\"RearAshNest\",\"ground_min\":4.4781646728515629,\"ground_max\":4.884330749511719},\"7\":{\"name\":\"SouthLowAsh\",\"ground_min\":4,\"ground_max\":4},\"6\":{\"name\":\"SouthBoneFragment\",\"ground_min\":4,\"ground_max\":4.055229187011719},\"9\":{\"name\":\"NorthBoneFragment\",\"ground_min\":4,\"ground_max\":4.000007629394531},\"8\":{\"name\":\"NorthDryBrush\",\"ground_min\":4.127410888671875,\"ground_max\":4.247596740722656},\"12\":{\"name\":\"FossilBackdropSapling\",\"ground_min\":4.691680908203125,\"ground_max\":4.933326721191406},\"11\":{\"name\":\"SouthForegroundAsh\",\"ground_min\":4,\"ground_max\":4.000007629394531},\"10\":{\"name\":\"NorthLowAsh\",\"ground_min\":4,\"ground_max\":4}},\"base_parts\":12,\"terrain_changed\":false}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 14,
+    "module": "CrossroadsInteractionBindings",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"entrances\":4,\"perimeter\":33,\"revision\":1,\"bound\":37}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 15,
+    "module": "CrossroadsVisualFXInstaller",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"hellMistRate\":4,\"fields\":2,\"client\":\"StarterPlayer.StarterPlayerScripts.CrossroadsVisualFXClient\",\"nativeVerification\":\"Pending Play: replacement count, appearance, quality/distance and cleanup\",\"originalMistArchived\":false,\"runtime\":\"ReplicatedStorage.CrossroadsVisualFX\",\"hellMistSources\":20}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 16,
+    "module": "CrossroadsPondLifeInstaller",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"gameplayConnected\":false,\"ponds\":2,\"pathSamples\":96}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "index": 17,
+    "module": "CrossroadsPreviewInstaller",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"gameplayConnected\":false,\"fishingStations\":18}"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

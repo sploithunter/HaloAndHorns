@@ -4,7 +4,7 @@ Bounded native Play check in existing Studio `3c01a32c-1ba9-4e11-b43e-133bdf27da
 
 ## Sitting and jumping out
 
-The current player character was moved above each Seat, then native `Seat:Sit(Humanoid)` was invoked. After0.65s, both Occupant and Humanoid.SeatPart matched. Jump/state change was requested, then after0.7s both were clear. These are native scripted seat/jump smoke tests, not manual touch-entry, controller input, walking egress or all-avatar tests.
+The current player character was moved above each Seat, then native `Seat:Sit(Humanoid)` was invoked. After 0.65s, both Occupant and Humanoid.SeatPart matched. Jump/state change was requested, then after 0.7s both were clear. These are native scripted seat/jump smoke tests, not manual touch-entry, controller input, walking egress or all-avatar tests.
 
 | Seat | Position | Sampled eye Y (Head +0.25) | Sit | Jump exit |
 | --- | --- | --- | --- | --- |
@@ -21,10 +21,10 @@ Eye X was approximately Seat.X+0.198 (first sample+0.187); eye Z matched seat Z.
 
 ## Captured views and findings
 
-- [Row1 / column4](arena-seat-qa/row1-col4.jpg): center ground and the arena's depth are legible. The near bulwark fills much of the lower view and hides a strip of the near fighting edge. No chair ahead of this first row obstructs the center.
-- [Row2 / column5](arena-seat-qa/row2-col5.jpg): center remains visible above the fence. The chair immediately ahead and adjacent dummy visibly occupy the lower foreground; the center-floor view is narrower than a simple collision ray suggests.
-- [Row3 / column4](arena-seat-qa/row3-col4.jpg): central aisle provides a useful view corridor, but the chair ahead and adjacent dummy heads/backs obstruct portions of the lower/side field. Bulwark remains between audience and near arena edge.
-- [Row4 / column5](arena-seat-qa/row4-col5.jpg): more arena depth is visible, but the chair directly ahead still masks lower portions; adjacent audience occupies side sightlines. Higher tier does not by itself prove all fighting targets visible.
+- [Row 1 / column 4](arena-seat-qa/row1-col4.jpg): center ground and the arena's depth are legible. The near bulwark fills much of the lower view and hides a strip of the near fighting edge. No chair ahead of this first row obstructs the center.
+- [Row 2 / column 5](arena-seat-qa/row2-col5.jpg): center remains visible above the fence. The chair immediately ahead and adjacent dummy visibly occupy the lower foreground; the center-floor view is narrower than a simple collision ray suggests.
+- [Row 3 / column 4](arena-seat-qa/row3-col4.jpg): central aisle provides a useful view corridor, but the chair ahead and adjacent dummy heads/backs obstruct portions of the lower/side field. Bulwark remains between audience and near arena edge.
+- [Row 4 / column 5](arena-seat-qa/row4-col5.jpg): more arena depth is visible, but the chair directly ahead still masks lower portions; adjacent audience occupies side sightlines. Higher tier does not by itself prove all fighting targets visible.
 
 All four views show broad field identity and center activity space. They do **not** establish that a5×7 target is fully visible at all positions or entrances. No speculative tier-height adjustment was made.
 
@@ -38,19 +38,19 @@ A diagnostic grid sampled nine target points (X offsets−2.5/0/+2.5, Y4.5/7.5/1
 | Rear boundary proxy(120,−43) | 3/9 | Six hits on native PerimeterBulwark mesh |
 | Front entrance center(120,59) | 6/9 | Three hits on FieldKerb |
 
-The first diagnostic labeled the rear proxy “NorthEntrance.” Source verification afterward establishes this was **incorrect**: the north/rear boundary is fenced. `bake_activities.luau` places the other actual entrance on west side X88, Z−18, with14-stud width; that entrance was not sampled. The front entrance atX120,Z59 is the correct second opening. Do not use the rear-proxy result as entrance acceptance.
+The first diagnostic labeled the rear proxy “NorthEntrance.” Source verification afterward establishes this was **incorrect**: the north/rear boundary is fenced. `bake_activities.luau` places the other actual entrance on west side X88, Z−18, with 14-stud width; that entrance was not sampled. The front entrance atX 120,Z59 is the correct second opening. Do not use the rear-proxy result as entrance acceptance.
 
-Native rays omit parts with CanQuery=false and use collision geometry for queryable meshes. They therefore cannot quantify visual chair/audience occlusion or prove a9/9 center silhouette is unobstructed. The screenshots visibly demonstrate this limitation. A complete rendered5×7 target visibility grid across center, near/far fighting edges and **both actual entrances**, from all eight visitor seats, remains undone. Four other seated-eye views and actual third-person camera behavior also remain untested.
+Native rays omit parts with CanQuery=false and use collision geometry for queryable meshes. They therefore cannot quantify visual chair/audience occlusion or prove a9/9 center silhouette is unobstructed. The screenshots visibly demonstrate this limitation. A complete rendered 5×7 target visibility grid across center, near/far fighting edges and **both actual entrances**, from all eight visitor seats, remains undone. Four other seated-eye views and actual third-person camera behavior also remain untested.
 
 ## Handoff
 
-**Native sit/jump smoke:8/8 passed. Sightlines: partial review with visible foreground obstruction; not a full pass.** Lead should judge the saved compositions and target-based visibility before changing rows, chair backs, audience spacing or bulwarks. Retain32 Seats/24 dummy occupants/eight visitor seats and the existing pond-side clearance while deciding. No more native work was performed after control release.
+**Native sit/jump smoke:8/8 passed. Sightlines: partial review with visible foreground obstruction; not a full pass.** Lead should judge the saved compositions and target-based visibility before changing rows, chair backs, audience spacing or bulwarks. Retain 32 Seats/24 dummy occupants/eight visitor seats and the existing pond-side clearance while deciding. No more native work was performed after control release.
 
 ## Rendered checker-target baseline — completed follow-up
 
-**Recommendation: hold current deck heights6/8/10/12.** The rendered tests do not establish a center/entrance torso visibility defect that warrants rebuilding the tiers. This supersedes the earlier statement that no rendered target grid was performed; the remaining scope limits below still apply.
+**Recommendation: hold current deck heights 6/8/10/12.** The rendered tests do not establish a center/entrance torso visibility defect that warrants rebuilding the tiers. This supersedes the earlier statement that no rendered target grid was performed; the remaining scope limits below still apply.
 
-After the lead applied the field atY4.38, the client-only helper rendered all seven5×7-stud targets as35 distinct checker cells each. Panels were visible in the actual native capture, unlike earlier particle-capture limitations. Captured eight all-target overviews at the existing sampled eye offsets, then eight focused single-target follow-ups to distinguish geometry occlusion from panel overlap/off-screen positions. Target baseline extendsY4.38–11.38, rows1–7 bottom to top. All24 existing audience models and chair/bulwark geometry remained. Player body was locally hidden during captures, restored afterward. Camera projection/FOV was retained; focused follow-ups rotate toward their target without moving the eye.
+After the lead applied the field atY 4.38, the client-only helper rendered all seven 5×7-stud targets as 35 distinct checker cells each. Panels were visible in the actual native capture, unlike earlier particle-capture limitations. Captured eight all-target overviews at the existing sampled eye offsets, then eight focused single-target follow-ups to distinguish geometry occlusion from panel overlap/off-screen positions. Target baseline extendsY 4.38–11.38, rows 1–7 bottom to top. All 24 existing audience models and chair/bulwark geometry remained. Player body was locally hidden during captures, restored afterward. Camera projection/FOV was retained; focused follow-ups rotate toward their target without moving the eye.
 
 | Seat / overview | Visible action finding |
 | --- | --- |
@@ -65,7 +65,7 @@ After the lead applied the field atY4.38, the client-only helper rendered all se
 
 ### Focused evidence
 
-- [Front-row center](arena-seat-qa/targets/Seat_01_04_Center.jpg) and [rear-row center](arena-seat-qa/targets/Seat_04_04_Center.jpg): all seven rows are visually readable; foreground chairs do not mask this5×7 center target.
+- [Front-row center](arena-seat-qa/targets/Seat_01_04_Center.jpg) and [rear-row center](arena-seat-qa/targets/Seat_04_04_Center.jpg): all seven rows are visually readable; foreground chairs do not mask this 5×7 center target.
 - [Front-row west entrance](arena-seat-qa/targets/Seat_01_04_WestEntrance.jpg) and [rear-row west entrance](arena-seat-qa/targets/Seat_04_05_WestEntrance.jpg): true opening at(88,−18), target middle/upper clear, lower cells also visible in these focused compositions.
 - [Front-row front entrance](arena-seat-qa/targets/Seat_01_05_FrontEntrance.jpg) and [rear-row front entrance](arena-seat-qa/targets/Seat_04_04_FrontEntrance.jpg): true opening at(120,59), target remains readable above/through the opening. Close adjacent dummy is outside the target silhouette.
 - [Rear-row near south](arena-seat-qa/targets/Seat_04_04_NearSouth.jpg) and [rear-row near north](arena-seat-qa/targets/Seat_04_05_NearNorth.jpg): upper cells remain visible; lower cells encounter audience heads/chair/bulwark silhouettes. This is localized oblique near-edge loss, not disappearance of the whole target.
@@ -74,6 +74,6 @@ The closest centerline target at(148,8) consistently has roughly its lower three
 
 ### Acceptance limits and cleanup
 
-Eight all-target views plus eight individual follow-ups are **16 native screenshots**, not56 independent seat×target captures or an automated pixel-completeness result. Some targets overlap or leave the center-facing frame; follow-ups cover the critical center/true entrances at front/rear and oblique rear corners. Mid-row individual entrance silhouettes, mobile/controller cameras, variable-height fighters, crowds and dynamic effects remain outside this bounded check. No raised-tier comparison was constructed.
+Eight all-target views plus eight individual follow-ups are **16 native screenshots**, not 56 independent seat×target captures or an automated pixel-completeness result. Some targets overlap or leave the center-facing frame; follow-ups cover the critical center/true entrances at front/rear and oblique rear corners. Mid-row individual entrance silhouettes, mobile/controller cameras, variable-height fighters, crowds and dynamic effects remain outside this bounded check. No raised-tier comparison was constructed.
 
-Native cleanup returned `qaRemoved=true`, `dummies=24`, `cameraRestored=true`. Temporary `ArenaSightlineQA` was destroyed before releasing control. Play was left running for the lead; no Edit geometry, Seat/tier height, map terrain, character position or gameplay state was changed by this follow-up. The earlier8/8 native Sit/Jump pass remains valid as its separately scoped check.
+Native cleanup returned `qaRemoved=true`, `dummies=24`, `cameraRestored=true`. Temporary `ArenaSightlineQA` was destroyed before releasing control. Play was left running for the lead; no Edit geometry, Seat/tier height, map terrain, character position or gameplay state was changed by this follow-up. The earlier 8/8 native Sit/Jump pass remains valid as its separately scoped check.

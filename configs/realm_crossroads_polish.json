@@ -32,6 +32,12 @@
       "source_key": "bake_source"
     },
     {
+      "config": "configs/realm_crossroads_arena_access_ramp.json",
+      "module": "CrossroadsArenaAccessRamp",
+      "config_value": "CrossroadsArenaAccessRampConfig",
+      "source_key": "bake_source"
+    },
+    {
       "config": "configs/realm_crossroads_polish_heraldry.json",
       "module": "CrossroadsHeraldryPolish",
       "config_value": "CrossroadsHeraldryPolishConfig",

@@ -5,6 +5,19 @@ local serde = require("@lune/serde")
 local r = require("@lune/roblox")
 local cfg = serde.decode("json", fs.readFile("configs/realm_crossroads_terrain.json"))
 local places = require("../../configs/places")
+local process = require("@lune/process")
+local payloads = require("./authoring_payloads")
+local function argument(name, fallback)
+    for index, value in ipairs(process.args) do
+        if value == name then
+            return assert(process.args[index + 1], "Missing " .. name .. " value")
+        end
+    end
+    return fallback
+end
+local inputPath = argument("--input", "output/realm_crossroads/native-r4-export.rbxm")
+local outputPath = argument("--output", "output/realm_crossroads/RealmCrossroads-R4-Terrain.rbxl")
+local placeInput = argument("--place-input", nil)
 local function new(class, name, parent)
     local i = r.Instance.new(class)
     i.Name = name
@@ -18,7 +31,7 @@ local world = new("Workspace", "Workspace", game)
 world.FallenPartsDestroyHeight = cfg.voxel.bottom - 40
 local player = new("StarterPlayer", "StarterPlayer", game)
 player.CharacterWalkSpeed = places.roles.merge.walk_speed
-local instances = r.deserializeModel(fs.readFile("output/realm_crossroads/native-r4-export.rbxm"))
+local instances = placeInput and {} or r.deserializeModel(fs.readFile(inputPath))
 for _, top in ipairs(instances) do
     if top.ClassName == "Terrain" then
         top.Parent = world
@@ -42,10 +55,17 @@ for _, top in ipairs(instances) do
         end
     end
 end
+if placeInput then
+    -- Source archive refresh for an existing native checkpoint; no geometry/runtime replay.
+    game = r.deserializePlace(fs.readFile(placeInput))
+    world = game.Workspace
+end
 local light = game:FindFirstChild("Lighting")
-light.ClockTime = cfg.lighting.clock_time
-light.Brightness = cfg.lighting.brightness
-light.Ambient = r.Color3.fromRGB(unpack(cfg.lighting.ambient))
+if not placeInput then
+    light.ClockTime = cfg.lighting.clock_time
+    light.Brightness = cfg.lighting.brightness
+    light.Ambient = r.Color3.fromRGB(unpack(cfg.lighting.ambient))
+end
 assert(world:FindFirstChild("Terrain"), "Missing native terrain")
 assert(world:FindFirstChild(cfg.root), "Missing authored geometry")
 game.ServerStorage.CrossroadsTerrainBake.Source = fs.readFile(cfg.bake_source)
@@ -61,17 +81,15 @@ game.ServerStorage.CrossroadsLandscapeConfig.Value = serde.encode("json", landsc
 -- Keep the saved authoring modules/configuration synchronized with checked-in source.
 -- This does not rebake the serialized native CSG, terrain or uploaded meshes.
 if cfg.polish_source then
-    local polish = serde.decode("json", fs.readFile(cfg.polish_source))
-    for _, pass in ipairs(polish.application_order) do
-        local config = serde.decode("json", fs.readFile(pass.config))
-        local source = assert(config[pass.source_key], "Missing authoring source: " .. pass.config)
-        local module = game.ServerStorage:FindFirstChild(pass.module)
-            or new("ModuleScript", pass.module, game.ServerStorage)
-        module.Source = fs.readFile(source)
-        local value = game.ServerStorage:FindFirstChild(pass.config_value)
-            or new("StringValue", pass.config_value, game.ServerStorage)
-        value.Value = serde.encode("json", config)
-    end
+    local passes, supplemental = payloads.sync(game.ServerStorage, cfg.polish_source)
+    print(
+        "Archived authoring inputs: "
+            .. passes
+            .. " passes, "
+            .. supplemental
+            .. " supplemental payloads"
+    )
 end
-fs.writeFile("output/realm_crossroads/RealmCrossroads-R4-Terrain.rbxl", r.serializePlace(game))
-print("Saved baked R4 place from native Studio export: " .. #game:GetDescendants() .. " instances")
+fs.writeFile(outputPath, r.serializePlace(game))
+print("Saved native checkpoint: " .. outputPath .. " (" .. #game:GetDescendants() .. " instances)")
+print("Authoring source archive refreshed only. Installers and runtime clients were NOT replayed.")
