@@ -8818,3 +8818,7 @@ Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure 
 - 2026-09-09: Excluded Crossroads map-authoring JSON inputs from Rojo runtime config sync to prevent ConfigLoader startup failures; retained unrelated runtime JSON configuration.
 
 - 2026-09-09: Connected Crossroads arrivals (24 assigned native spawn slots) and Farm gate (server-validated prompt/touch to existing Home Spawn). Preserved prologue/mission priority; session Farm entry switches respawn to Home, fresh joins use Crossroads. Native allocation, automatic join, walking gate and Home respawn checks passed. Brought current main/Coin Pup work into branch and excluded map-authoring JSON from runtime sync via separate template fix.
+
+### 2026-09-09 — Homeworld return portal
+
+Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Crossroads. Merge delegates this hook to CrossroadsArrival when the imported map is enabled; its cross-place handler is not bound. Dedicated Pet Siege return gates are unchanged. Config-owned text lives in areas.crossroads. The return validates living character, proximity, mission/prologue ownership and cooldown before and after destination streaming, then uses ZoneService to reset the Farm-entered session flag and assign a spaced Crossroads respawn slot. Native Play verified Crossroads → Home via gate touch and Home → Crossroads via the actual proximity prompt, with ArrivalSlot5 restored. Full CI: 2,846/2,846 tests, 323 specs.

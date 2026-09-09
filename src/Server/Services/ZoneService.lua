@@ -1329,7 +1329,10 @@ function ZoneService:_sealDisabledHallEntryHook(hook)
                 -- This sealed in-place Hall route also hosts the cross-place Merge doorway.
                 -- Do not repaint its public-release title if ZoneService binds after Merge.
                 local gate = self._mergeGateConfig or {}
-                if hook.Name == gate.hook_name and (gate.access or {}).public == true then
+                if hook.Name == gate.hook_name and self._crossroads:IsEnabled() then
+                    local cfg = self._areasConfig.crossroads
+                    descendant.Text = cfg.home_gate_title .. "\n" .. cfg.home_gate_subtitle
+                elseif hook.Name == gate.hook_name and (gate.access or {}).public == true then
                     descendant.Text = gate.title
                 else
                     descendant.Text = "COMING SOON"

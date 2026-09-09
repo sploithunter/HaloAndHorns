@@ -143,6 +143,78 @@ function CrossroadsArrival:Travel(player)
     return true
 end
 
+-- The existing Home doorway keeps one owner; Merge delegates its binding here.
+function CrossroadsArrival:BindHomeGate(hook, gateConfig)
+    local prompt = hook:FindFirstChild(gateConfig.prompt_name)
+    if not prompt then
+        prompt = Instance.new("ProximityPrompt")
+        prompt.Name = gateConfig.prompt_name
+        prompt.Parent = hook
+    end
+    prompt.ActionText = self.cfg.home_gate_action
+    prompt.ObjectText = self.cfg.home_gate_title
+    prompt.MaxActivationDistance = self.cfg.prompt_distance
+    prompt.HoldDuration = self.cfg.prompt_hold
+    prompt.RequiresLineOfSight = false
+    prompt.Enabled = true
+    local title = hook.Parent:FindFirstChild("HallOfWorldsGateTitle")
+    if title then
+        for _, label in ipairs(title:GetDescendants()) do
+            if label:IsA("TextLabel") or label:IsA("TextButton") then
+                label.Text = self.cfg.home_gate_title .. "\n" .. self.cfg.home_gate_subtitle
+            end
+        end
+    end
+    prompt.Triggered:Connect(function(player)
+        self:ReturnFromHome(player, hook)
+    end)
+    return prompt
+end
+
+function CrossroadsArrival:ReturnFromHome(player, hook)
+    local character = player.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local function valid()
+        return self:IsEnabled()
+            and player.Character == character
+            and hrp
+            and hrp.Parent
+            and humanoid
+            and humanoid.Health > 0
+            and not player:GetAttribute("InMission")
+            and not player:GetAttribute("InPrologue")
+            and (hrp.Position - hook.Position).Magnitude <= self.cfg.prompt_distance
+    end
+    if
+        not valid()
+        or self.busy[player]
+        or os.clock() - (self.lastTravel[player] or -math.huge) < self.cfg.cooldown_seconds
+    then
+        return false
+    end
+    local _, anchor, slots = self:_markers()
+    if not anchor or not slots then
+        return false
+    end
+    self.busy[player] = true
+    local ok, result = pcall(function()
+        pcall(function()
+            player:RequestStreamAroundAsync(anchor.Position, self.cfg.stream_timeout)
+        end)
+        if not valid() then
+            return { ok = false }
+        end
+        return self.zone:TravelToZone(player, self.cfg.area_id, hook)
+    end)
+    self.busy[player] = nil
+    if ok and result.ok then
+        self.lastTravel[player] = os.clock()
+        return true
+    end
+    return false
+end
+
 function CrossroadsArrival:Start()
     if not self:IsEnabled() then
         return

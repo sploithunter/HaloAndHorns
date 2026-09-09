@@ -46,6 +46,9 @@ return {
         cooldown_seconds = 1.5,
         stream_timeout = 2,
         destination_area = "Spawn",
+        home_gate_action = "Return to Crossroads",
+        home_gate_title = "CROSSROADS",
+        home_gate_subtitle = "Farm & Fight • Pet Siege",
         home_spawn_path = { "Maps", "Home", "SpawnLocation" },
     },
     -- ZoneService fans player arrivals around the authored spawn anchor instead

@@ -11755,6 +11755,12 @@ function MergeEggPrototypeService:_bindRestrictedHallGate()
     hook.CanTouch = false
     hook.CanQuery = true
 
+    local crossroads = self._zoneService and self._zoneService._crossroads
+    if crossroads and crossroads:IsEnabled() then
+        self._gatePrompt = crossroads:BindHomeGate(hook, gateCfg)
+        return hook
+    end
+
     local title = hook.Parent and hook.Parent:FindFirstChild("HallOfWorldsGateTitle")
     if title then
         for _, descendant in ipairs(title:GetDescendants()) do

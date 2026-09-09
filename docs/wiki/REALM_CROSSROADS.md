@@ -1,6 +1,6 @@
 # Realm Crossroads
 
-Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Pet Siege and activity gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
+Status: R11 imported into Farm and Fight and saved to Roblox (2026-09-09). Root: `Workspace.RealmCrossroadsR4`, translated (-8192, 0, 0). Visual companions, spaced Crossroads arrivals and the local Farm gate run. Homeworld’s former Merge doorway now returns locally to Crossroads using its existing E prompt. Pet Siege and activity gameplay remain disconnected. See [import contract](../art/crossroads-review/FARM_IMPORT.md).
 
 
 
