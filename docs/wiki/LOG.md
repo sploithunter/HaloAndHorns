@@ -8889,3 +8889,9 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - 2026-09-09 — Crossroads fishing: implemented fully client-owned cast/bite/luck/escape/reel timing per user decision, rare 100% surge, keyboard/controller/touch Hook controls and config-owned coin/gem rewards. Added server reward persistence with 24 retained attempt receipts; superseded old server-clock proposal. Native catches, replay protection, cancellation, menu blocking and phone orientations verified; 2,866 headless tests pass. Controller B virtual input unavailable; preexisting arena task.wait blocks full CI. See REALM_CROSSROADS.md.
 
 - 2026-09-09 — Fixed sideways Crossroads chests: shared garden default_orientation now compensates the imported FBX -90-degree pitch with +90 X. Both chest sizes retain random yaw and floor alignment; native visual review confirms lid-up, feet-down placement.
+
+- 2026-09-09 — Trail Pup replaced with an ImageGen/Meshy adult German Shepherd (normal/Golden art, transparent icons; Rainbow shares normal geometry). Name, stats and egg slot remain. Closed 4,958-triangle mesh passes both final integrity gates. Scale 3.4 matches the user's AutoDog reference height. Dedicated config-owned collector visual preserves the original dog independently; native source/size/appearance checks and 2,867 headless tests pass. See REALM_CROSSROADS.md and assets/exports/trail_pup_shepherd/README.md.
+
+- 2026-09-09 — Trail Pup sizing correction: user explicitly rejected height matching because AutoDog has short legs, and considered the original 4.4 preview too small. Final scale is 5.2, using body breadth; supersedes the earlier 3.4 scale note.
+
+- 2026-09-09 — User approved the final 5.2-scale Trail Pup shepherd size after side-by-side body-width comparison with AutoDog.

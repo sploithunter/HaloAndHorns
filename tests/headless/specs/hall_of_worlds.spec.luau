@@ -618,11 +618,12 @@ return function()
 
         it("scales Hall pets to the established ~3-stud world silhouette", function()
             local count = 0
-            for _, pet in pairs(pets.pets) do
+            for petId, pet in pairs(pets.pets) do
                 if pet.category == "hall" then
                     count += 1
                     expect(pet.asset_transform).to.be.ok()
-                    expect(pet.asset_transform.scale).to.equal(3.2)
+                    -- Adult shepherd is sized by body breadth, not the short-legged collector height.
+                    expect(pet.asset_transform.scale).to.equal(petId == "trail_pup" and 5.2 or 3.2)
                 end
             end
             expect(count).to.equal(20)

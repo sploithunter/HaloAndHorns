@@ -1,0 +1,13 @@
+{
+  "model": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/trail_pup_shepherd/model_solid.glb",
+  "model_sha256": "8ace8980b01ddead29ea1914158e5d69cee3dc282ff576f9a94e2e5664fcaf2d",
+  "style_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/concepts/pets/trail_pup_shepherd/basic.png",
+  "style_image_sha256": "1c3305d92f0db0d6c703967dfa500db7e73315c8692bed3f5031ad75d64fdba0",
+  "ai_model": "latest",
+  "enable_original_uv": false,
+  "enable_pbr": false,
+  "texture_resolution": "2k",
+  "target_formats": [
+    "glb"
+  ]
+}

@@ -12,6 +12,15 @@ end
 
 return function()
     describe("Auto Collector pickup eligibility", function()
+        it("keeps its original dog art independent of hatchable Trail Pup", function()
+            local pets = loadModule("configs/pets.lua")
+            expect(cfg.visual.mesh_asset == pets.pets.trail_pup.variants.basic.mesh_asset).to.equal(
+                false
+            )
+            expect(cfg.visual.mesh_asset).to.equal("rbxassetid://130310262461103")
+            expect(cfg.visual.texture_asset).to.equal("rbxassetid://76308987762920")
+        end)
+
         it("opts currency, enhancements and potions in through configuration", function()
             expect(Pickup.eligible(record(nil), 42, cfg.pickup_kinds)).to.equal(true)
             expect(Pickup.eligible(record("enhancement"), 42, cfg.pickup_kinds)).to.equal(true)

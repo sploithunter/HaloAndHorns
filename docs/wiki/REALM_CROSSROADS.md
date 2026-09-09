@@ -724,3 +724,21 @@ iPhone 17 Pro landscape and portrait HUD checked, minimum Hook height 49 pixels.
 walk-away, timeout and menu blocking passed. Controller X cast passed; Studio's virtual input
 blocked B, so physical controller cancellation remains unverified. Full CI still encounters the
 preexisting CrossroadsArena line 185 task.wait architecture gate.
+
+## Trail Pup shepherd replacement — 2026-09-09
+
+Trail Pup keeps its catalog ID, name, stats and Wayfinder/Crossroads egg weights, but now uses an
+adult German Shepherd with a trail pack, authored via ImageGen and Meshy. Basic/Rainbow share
+new shepherd geometry and texture; Golden uses the corresponding new Golden source. Flat card
+icons were updated in both pet configs and thumbnail overrides. The final closed 4,958-triangle
+mesh passed integrity checks before and after retexturing. Provenance and group-owned IDs live in
+`assets/exports/trail_pup_shepherd/README.md`. Config scale 5.2 follows the user's body-width reference: the shepherd must be taller than the
+short-legged AutoDog. The user rejected both the 3.4 height match and the original 4.4 preview as
+too small. Final shepherd bounds are 1.893 × 3.797 × 5.2 studs.
+
+`drops.auto_collector.visual` independently retains the original dog mesh/texture/scale.
+DropService prebuilds that visual through MeshAssembly and clones it outside PlayerPets; it no
+longer derives collector appearance from the hatchable Trail Pup. Missing dedicated assets do
+not silently substitute the egg dog. Old configs without a dedicated visual keep their template
+fallback. No inventory species or hatch variants were added. Native Basic/Golden/Rainbow prototype
+sources and original auto dog verified; 2,867 headless tests pass, including collector separation.
