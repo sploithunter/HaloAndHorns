@@ -769,10 +769,10 @@ The dedicated Pet Siege place keeps its own existing onboarding.
 
 The shared narrator reserves the voice channel for the entire conversation, including gaps.
 Other tutorial speech retains only its latest deferred cue; obsolete/cleared lessons are dropped.
-`CrossroadsDialogueActive` is a bounded cosmetic client-to-server signal. While narration owns
-the channel, each player may queue one gate intent. Completion releases it, after rechecking the
-character, life and gate proximity; disconnection clears it. A config-owned 150-second deadline
-releases a stalled client. This signal does not grant pets, currency or tutorial completion.
+Gate travel does not wait for narration (2026-09-10). Both Farm travel and Pet Siege
+transit start immediately through their normal validation/debounce path. Leaving Crossroads
+cancels its local speech; protected narration only prevents overlapping voices, never travel.
+The legacy `CrossroadsDialogueActive` signal no longer gates either route.
 
 The Crossroads Pet Siege marker routes to the configured merge place. A per-character touch
 latch survives failed teleports: waiting inside never repeats attempts, leaving the padded gate
@@ -780,8 +780,9 @@ volume rearms touch, and E permits a deliberate retry after the five-second cool
 Siege endcaps and the Quartermaster return to the main place's Crossroads arrival. Their visible
 copy says Crossroads; the existing internal `main` role and `farm_fight` action remain compatible.
 
-Native Studio verification: all seven Sounds loaded; the four handoff cues ran in order; a gate
-entered during the demon's final line made zero attempts during speech and one after completion.
+Historical Studio verification (the narration wait below was removed 2026-09-10): all seven
+Sounds loaded; the four handoff cues ran in order; a gate entered during the demon's final line
+made zero attempts during speech and one after completion.
 Standing inside after simulated failure stayed at one; an explicit prompt retry made the second.
 The Farm gate resumed saved tutorial step 6; returning to Crossroads hid that guidance again.
 Both endcap prompts and Quartermaster dispatch resolved main place 77766176054993; actual
@@ -853,7 +854,7 @@ rewards, finish destination tutorials or mark visits. Normal profile persistence
 
 Completed sequences do not replay on subsequent sessions. Visiting Farm suppresses angel
 hub commentary and the idle angel companion; visiting Siege does the same for the demon.
-The other destination remains available for guidance. Active protected conversations finish
-in order. Existing Farm/Siege tutorials and their saved progress remain independent.
+The other destination remains available for guidance. Protected conversations stay ordered while the player remains in Crossroads; gate travel may
+interrupt them. Existing Farm/Siege tutorials and their saved progress remain independent.
 These flags begin tracking with this version; prior visits without a stored flag are not
 inferred from player level. Both place snapshots need this version for destination tracking.

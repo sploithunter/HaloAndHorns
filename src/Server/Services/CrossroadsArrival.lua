@@ -109,13 +109,6 @@ function CrossroadsArrival:Travel(player)
     then
         return false
     end
-    if
-        require(script.Parent.CrossroadsDialogue).defer(player, function()
-            self:Travel(player)
-        end)
-    then
-        return false
-    end
     local destination =
         self.zone._worldBindingService:GetSpawnCFrameForZone(self.cfg.destination_area)
     if not destination then

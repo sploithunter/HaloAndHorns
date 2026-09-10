@@ -11662,27 +11662,6 @@ function MergeEggPrototypeService:_stepPortalTransits(now)
 end
 
 function MergeEggPrototypeService:_teleportToRole(player, role)
-    local character = player.Character
-    if
-        require(script.Parent.CrossroadsDialogue).defer(player, function()
-            local root = character and character:FindFirstChild("HumanoidRootPart")
-            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            local gate = self._crossroadsGate
-            if
-                player.Character == character
-                and root
-                and humanoid
-                and humanoid.Health > 0
-                and gate
-                and (root.Position - gate.Position).Magnitude
-                    <= self._config.gate.crossroads_entry.max_distance
-            then
-                self:_teleportToRole(player, role)
-            end
-        end)
-    then
-        return true, "dialogue_pending"
-    end
     local placeId = PlaceRuntime.placeIdForRole(self._placesConfig, role)
     if not placeId then
         return false, "place_role_unconfigured"

@@ -8919,3 +8919,5 @@ Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Stu
 - 2026-09-09: Added durable Crossroads introduction milestones and server-observed destination visits. Completed exchanges no longer replay across sessions; visited destinations stop their host commentary. Destination tutorials remain separate.
 
 - 2026-09-09: Native persistent-intro validation passed: completed exchange survived rejoin, successful Farm gate marked Farm, actual Siege profile load marked Siege, and return to Crossroads restored both visits with idle guidance hidden. Headless 2886/2886 and Rojo build pass.
+
+- 2026-09-10: Removed the narration wait from Farm and Pet Siege gate travel at the user’s request. Gate validation/debounce remains; leaving Crossroads cancels local narration.
