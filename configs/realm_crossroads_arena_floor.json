@@ -1,0 +1,208 @@
+{
+  "revision": 1,
+  "activity_root": "CrossroadsActivitiesR7",
+  "arena_name": "PatrolGrove",
+  "source_name": "Playfield",
+  "source_archive_name": "OriginalPlayfield",
+  "output_name": "ArenaFloorCraftR1",
+  "backup_name": "CrossroadsArenaFloorBackup",
+  "bake_source": "tools/realm_crossroads/arena_floor.luau",
+  "expected_center": [
+    120,
+    4.23,
+    8
+  ],
+  "expected_size": [
+    64,
+    0.3,
+    102
+  ],
+  "expected_top": 4.38,
+  "validation_tolerance": 0.001,
+  "finish_depth": 0.12,
+  "mortar_recess": 0.12,
+  "joint_width": 0.08,
+  "border_width": 1.5,
+  "rows": 7,
+  "column_cuts": [
+    [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    [
+      0,
+      0.23,
+      0.49,
+      0.76,
+      1
+    ]
+  ],
+  "stone_variations": [
+    0.97,
+    1,
+    1.025,
+    0.99
+  ],
+  "receivers": {
+    "west_center_local_z": -26,
+    "south_center_local_x": 0,
+    "clear_span": 14,
+    "guide_width": 0.35,
+    "recess": 0.035
+  },
+  "medal": {
+    "radius": 10,
+    "inner_radius": 9.4,
+    "cutter_height": 4,
+    "motif_scale": 2,
+    "cross_span": 6.65,
+    "cross_width": 0.13,
+    "diamond_size": 0.85,
+    "stroke_width": 0.22,
+    "feather_segments": [
+      [
+        [
+          -2.9,
+          -0.5
+        ],
+        [
+          -1.5,
+          -1.65
+        ]
+      ],
+      [
+        [
+          -2.65,
+          -1.1
+        ],
+        [
+          -1.6,
+          -1.95
+        ]
+      ],
+      [
+        [
+          -2.25,
+          -1.8
+        ],
+        [
+          -1.7,
+          -2.2
+        ]
+      ]
+    ],
+    "horn_segments": [
+      [
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          1.55,
+          -1.5
+        ]
+      ],
+      [
+        [
+          1.55,
+          -1.5
+        ],
+        [
+          2.35,
+          -1.2
+        ]
+      ],
+      [
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          1.0,
+          -2.1
+        ]
+      ],
+      [
+        [
+          1.0,
+          -2.1
+        ],
+        [
+          1.4,
+          -2.6
+        ]
+      ],
+      [
+        [
+          2.35,
+          -1.2
+        ],
+        [
+          2.85,
+          -2.0
+        ]
+      ],
+      [
+        [
+          2.85,
+          -2.0
+        ],
+        [
+          2.55,
+          -2.35
+        ]
+      ]
+    ],
+    "pattern_reference": "Existing shared compass/feather/horn motif from realm_crossroads_polish_heraldry.json; geometry embedded here for standalone authoring"
+  },
+  "palette": {
+    "stone": [
+      83,
+      73,
+      68
+    ],
+    "mortar": [
+      53,
+      48,
+      46
+    ],
+    "foundation": [
+      108,
+      91,
+      74
+    ],
+    "iron": [
+      57,
+      54,
+      52
+    ],
+    "bronze": [
+      128,
+      104,
+      70
+    ],
+    "heaven": [
+      92,
+      87,
+      78
+    ],
+    "hell": [
+      76,
+      64,
+      59
+    ]
+  },
+  "note": "Floor finish only; exact64x102bounds andtop4.38 preserved. Both existing14-stud gateways remain walkable; no gameplay or terrain edit.",
+  "materials": {
+    "stone": "Slate",
+    "mortar": "Slate",
+    "foundation": "Slate",
+    "iron": "Metal",
+    "bronze": "Metal",
+    "heaven": "Slate",
+    "hell": "Slate"
+  }
+}

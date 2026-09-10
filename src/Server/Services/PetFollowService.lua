@@ -23,6 +23,8 @@ local Players = game:GetService("Players")
 local ElementResonance = require(game:GetService("ReplicatedStorage").Shared.Game.ElementResonance)
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local BreakableWorld = require(ReplicatedStorage.Shared.Game.BreakableWorld)
+local activityBreakables = require(ReplicatedStorage.Configs.breakables)
 local Workspace = game:GetService("Workspace")
 
 local PetFormation = require(ReplicatedStorage.Shared.Game.PetFormation)
@@ -627,6 +629,7 @@ end
 local HttpService = game:GetService("HttpService")
 local _unlockCache = setmetatable({}, { __mode = "k" })
 local function zoneUnlockedFor(player, zoneId)
+    zoneId = BreakableWorld.area(activityBreakables, zoneId)
     if not player or type(zoneId) ~= "string" or zoneId == "" then
         return true
     end

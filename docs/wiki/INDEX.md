@@ -54,6 +54,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md) — how Rojo systems bind to Studio-authored worlds.
 - [Hall of Worlds](HALL_OF_WORLDS.md) — the authored but release-disabled Hall route, Homeworld
   rollback contract, and the relocated Lava Range / Desert Training Ground fixtures.
+- [Realm Crossroads](REALM_CROSSROADS.md) — proposed shared arrival courtyard and reproducible
+  local Roblox walkthrough blockout; production spawn and routing remain unchanged.
 - [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md) — Phase 6: a permanent Studio-authored ten-bay
   Heaven/Hell realm around a sunken public mall, opposing lava/water plazas and a central
   convergence landmark, random empty-bay allocation,

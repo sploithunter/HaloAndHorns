@@ -132,6 +132,24 @@ function DropService:Init()
     -- its OWN mesh+texture pair (every Meshy gem gen has its own UV layout — there is no shared mesh),
     -- so forms come from the per-colour texture table.
     task.spawn(function()
+        local visual = (self._config.auto_collector or {}).visual
+        if visual then
+            local template, err = MeshAssembly.build(visual.mesh_asset, visual.texture_asset, {
+                modelName = "AutoCollectorTemplate",
+            })
+            if template then
+                template:PivotTo(CFrame.identity)
+                template:ScaleTo(visual.scale)
+                local orientation = visual.orientation
+                template:SetAttribute("OrientationX", orientation.x)
+                template:SetAttribute("OrientationY", orientation.y)
+                template:SetAttribute("OrientationZ", orientation.z)
+                template.Parent = self._templateHolder
+                self._autoCollectorTemplate = template
+            else
+                self._logger:Warn("Auto collector visual could not load", { error = tostring(err) })
+            end
+        end
         for color, forms in pairs(self._gems.textures or {}) do
             for form in pairs(forms) do
                 self:_ensureTemplate(color, form)
@@ -186,18 +204,21 @@ end
 
 -- The Game Pass collector is deliberately manifested outside PlayerPets. That gives it the same
 -- authored pet presentation without inventory/equip records, HUD slots, combat enumeration, aggro,
--- or offense. The normal pet prototype is already normalized by AssetPreloadService, so cloning it
--- here preserves the exact Hall visual and variant treatment.
+-- or offense. A dedicated config-owned visual decouples its appearance from hatchable pets;
+-- configurations without that visual retain the normal preloaded pet prototype path.
 function DropService:_cloneAutoCollectorModel(player)
     local cfg = self._config.auto_collector or {}
     local models = ModelTemplateStore.root()
     local pets = models and models:FindFirstChild("Pets")
     local typeFolder = pets and pets:FindFirstChild(tostring(cfg.pet or "trail_pup"))
-    local prototype = typeFolder
-        and (
-            typeFolder:FindFirstChild(tostring(cfg.variant or "basic"))
-            or typeFolder:FindFirstChild("basic")
-        )
+    local prototype = self._autoCollectorTemplate
+    if not cfg.visual then
+        prototype = typeFolder
+            and (
+                typeFolder:FindFirstChild(tostring(cfg.variant or "basic"))
+                or typeFolder:FindFirstChild("basic")
+            )
+    end
     if not prototype then
         return nil
     end
@@ -543,7 +564,13 @@ function DropService:_ensureCurrencyTemplate(currency)
     if not part then
         return nil
     end
-    part.Color = Color3.new(1, 1, 1)
+    part.Color = cfg.color and color3(cfg.color) or Color3.new(1, 1, 1)
+    if cfg.material then
+        part.Material = Enum.Material[cfg.material]
+    end
+    if cfg.reflectance then
+        part.Reflectance = cfg.reflectance
+    end
     part.CanQuery = false
     part.CanTouch = false
     part.Massless = true

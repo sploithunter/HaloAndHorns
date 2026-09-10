@@ -1,0 +1,187 @@
+# Crossroads gameplay integration contract
+
+2026-09-09. **R11 is imported into Farm and Fight. Crossroads arrivals, local Farm gate, Bragg podiums/audience and arena combat are connected; fishing is now connected through the client-timed implementation below; remaining activity stubs are disconnected.** See [Farm import](FARM_IMPORT.md) for placement, companions and verification. This document specifies future gameplay integration. Local fishing cast/reel rehearsal, cosmetic particles and native sitting are distinct from server-authorized fishing, travel, catches, ranking updates or combat. `PreviewOnly`, `GameplayConnected=false`, `FishingConnected=false` and untagged hooks remain meaningful boundaries.
+
+## Source authority and current delivery
+
+Contracts below were checked against all five `realm_crossroads_polish_*.json` configs and their named `polish_*.luau` scripts, `realm_crossroads_preview_interactions.json`, both `preview_interactions*.luau` files, fishing/activities/leisure/Bragg original bakers, visual FX config/installer, and production services listed below. The older wiki accurately describes the R10 baseline but does not by itself establish the new craft pass's native acceptance. Section delivery notes record source scope and outstanding checks. The lead has since applied and visually reviewed all five craft passes in the existing preview. Confirmed native smoke checks and remaining gaps are recorded in [Implementation status](IMPLEMENTATION_STATUS.md); none of those checks establishes production gameplay.
+
+All paths in the anchor inventory are relative to **`Workspace.RealmCrossroadsR4`**, unless fully qualified. The imported Farm root uses the same name, translated by (-8192, 0, 0); resolve actual world transforms rather than source coordinates. Art positions are config-owned, authored in Edit and measured in native space. A future binding adapter should resolve names/attributes once, validate counts and required classes, fail closed on mismatch, and attach behavior without regenerating geometry. Do not move this preview under `Workspace.Maps` simply to make existing broad scanners discover its specimens.
+
+## Exact authored anchor inventory
+
+| Area | Current path / identity | Current meaning and required future binding |
+| --- | --- | --- |
+| Farm & Fight gate | `ExistingMergeArches.FarmAndFight.Arch`; presentation `GateCrestR5` | Existing gate art. No new portal destination authority follows from its mesh or title. |
+| Pet Siege gate | `ExistingMergeArches.Merge.Arch`; presentation `GateCrestR5` | Player-facing Pet Siege retains internal `Merge` key. Do not rename the backend/place key to match signage. |
+| Gate interaction hosts | `CrossroadsCraftR11.GateRearCraft.FarmAndFightTravelAnchor` and `MergeTravelAnchor` | Transparent BaseParts, `Destination=FarmAndFight/Merge`, `StubAction=travel_preview`, `GameplayConnected=false`. Child default-named `ProximityPrompt`, action Enter, hold 0.3s, range 10, **disabled**. Host transforms use each Arch's X/Z and rotation with ground Y0, local `(0,3,2)`. |
+| Coin activity | `CrossroadsActivitiesR7.CoinGarden.CoinDropField` | Inert marker, `IntendedBinding="SpawnZone / shared Hall breakables"`, `GameplayConnected=false`. Preserve the 64×90 collection lawn; the string is not a CollectionService tag or installed spawner. |
+| Existing egg location | `CrossroadsActivitiesR7.CoinGarden.WeeklyEggAnchor`, `hall_egg_stand`, `wayfinder_egg` | Marker intended for existing EggStand/rotating EggId. Existing egg and stand remain static native specimens; no rotating schedule, prices or loot definitions have been supplied. |
+| New egg presentation | `CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1.WeeklyEggPresentationHost` | Transparent host with `IntendedBinding=WeeklyEggInspectPreview`, `GameplayConnected=false`, `PreviewOnly=true`. Child `WeeklyEggPreviewPrompt` is disabled. Attachments **PresentationCamera** and **PresentationFocus** are world-composed from config offsets; consume their WorldCFrame/WorldPosition, not assumptions about parent pivot. |
+| Pavilion seats | `CrossroadsActivitiesR7.CoinGarden.CelestialPavilionCraftR1` descendants of class Seat | Four new native Seats. Discover by class/count inside this exact output group rather than decorative chair parts. Native sitting works independently of egg/coin integration. |
+| Heaven fishing | `CrossroadsFishingR10.HeavenFishingPond.FishingStation1` … `FishingStation10` | Original deck BaseParts/colliders remain the canonical station hosts. Each has `StationKey=HeavenFishingPond:n`, numeric `StationIndex`, `FishingConnected=false`, `StubAction=fishing_preview`; pond has `AnglerCapacity=10`. |
+| Hell fishing | `CrossroadsFishingR10.HellFishingPool.FishingStation1` … `FishingStation8` | Same contract with `StationKey=HellFishingPool:n`, capacity 8. Station 5 receives +2 world X from saved base CFrame; never infer its transform from the original ellipse alone. |
+| Every fishing deck | Children **Standing**, **Cast**, **LineTip** Attachments; **Standing.PreviewCast** ProximityPrompt | Standing local `(0,0.25,-1)`. Fishing polish initially supplies LineTip `(0.7,5,-4.7)`, then the rod installer replaces it with the actual mounted rod tip (`Source=ActualRodTip`); the original local offset is retained in `RodDisplayOriginalLineTip`. Cast starts 18 studs into the pool along deck.LookVector, then the interaction installer raycasts actual Terrain water and corrects it to hit Y+0.18. `PreviewWaterY` records that sampled surface. Prompt carries StationKey and StubAction and is disabled in authored geometry. |
+| Mounted fishing rods | `FishingRodDisplaysR11.heavenRod_1` … `_10` and `hellRod_1` … `_8` | Each deck’s **RodDisplay** ObjectValue references its model. Resolve descendant **RodGrip** and **RodLineTip** Attachments by name/class, not the unnamed first MeshPart parent. Eighteen props are anchored and FishingConnected=false; asset IDs/source transforms belong to `realm_crossroads_fishing_rods.json`. |
+| Fishing rest shelter | `HeavenFishingRestShelterR11.RestSeat_1_1` … `RestSeat_2_2` | Four enabled native Seats with `RestSeat=true`; discover within this root, which has `GameplayConnected=false`. One sampled Seat passed Humanoid sit/exit. Native sitting is social furniture, not a fishing reservation or pet assignment. |
+| Shelter dry display bays | `HeavenFishingRestShelterR11.WestDryDisplayBay` and `.EastDryDisplayBay` marker Parts | Two invisible noncolliding 5×6 spaces, `DisplayOnly=true`, `AutomaticPetPlacement=false`. Their names/positions are config-owned. A future companion display adapter must explicitly opt in, preserve seating/egress, and clean up on departure; no automatic pet relocation or inventory binding exists. |
+| Fishing wayfinding and fossil | `FishingWayfindingR11`; config-owned fossil placement | Physical signs and static art only. No prompt, catch table, vendor or reward contract follows from these props. |
+| Fishing decoration | `CrossroadsFishingR10.FishingPolishR11` | Separate generated piers/approaches/plant detail. Not a reservation registry. Keep the original invisible deck colliders and station metadata when replacing art. |
+| Patrol field | `CrossroadsActivitiesR7.PatrolGrove.CombatBounds` | Inert 64×102 floor footprint with vertical marker depth; intended area/patrol leash. This is not a gameplay trigger installed by its name. |
+| Arena floor authoring proxy and receivers | `CrossroadsActivitiesR7.PatrolGrove.Playfield`; `.ArenaFloorCraftR1` | Playfield is now an invisible noncolliding/nonqueryable 64×0.3×102 authoring proxy, not the visible floor collider. Two direct children named RetractedGateReceiver expose GatewaySide=west/south and ClearSpan=14; select by attribute, not FindFirstChild alone. They are visual finish, not triggers. |
+| Patrol route/encounter | `CrossroadsActivitiesR7.PatrolGrove.PatrolRouteDesign.Waypoint1` … `Waypoint4`; sibling `PatrolEncounterAnchor` | Four map-authored patrol references and encounter/pavilion reference. Existing `IntendedBinding` text describes future patrol/spawner/alliance reuse; no active patrol is attached. |
+| Arena bulwarks | `CrossroadsActivitiesR7.PatrolGrove.CombatBulwarks` | `VisualOnly=true`, `ContainmentEnabled=false`; retain individual deployed/retracted transforms from the activity baker. Both 14-stud openings and current native Impaler visuals remain. |
+| Arena semantic anchors | `ArenaPolishR11.IntegrationAnchors.Battle.Battle`, `.Alliance.Alliance`, `.Stand.Stand` | Outer name is transparent Part, inner name an Attachment. Battle `(120,5,8)` = bounded server encounter reference; Alliance `(120,5,79)` = future outside-combat opt-in; Stand `(157,5,8)` = arrival hint. Parts have `GameplayConnected=false` and descriptive IntendedBinding, with no prompts/tags. |
+| Spectator seats | `CrossroadsLeisureR9.ArenaSpectatorStands.Seat_rr_cc` (two-digit row/column) | 32 native Seats, `PodiumSpectatorSlot=(row−1)*8+column`, four rows/eight columns. Current 24 static audience copies reserve 24 disabled Seats; eight aisle-side visitor Seats remain enabled. Decorative shells in `ArenaPolishR11` are not seat authority. |
+| Bragg groups | `BraggRotundaR6.PodiumAlcoves.Alcove01` … `Alcove14` | Each has BoardId and `RankingsConnected=false`; eight initial ranked-looking groups, six scenic reserve exhibits. Every display is still preview. |
+| Existing Bragg hooks | Initial alcove's **AwardPodiumHook** | Transparent BasePart, BoardId, PreviewOnly. Deliberately **untagged**; adding `AwardPodium` would be a future production binding action, not polish. |
+| New Bragg cap anchors | `BraggRotundaR6.BraggCraftsmanshipR1.AlcoveNN_RankRAnchorHost.AlcoveNN_RankRAnchor` | 24 Attachments across eight initial alcoves/three ranks, with `BoardId`, `Rank`, `IntendedBinding=LeaderboardDisplayOnly`, `PreviewOnly=true`. World transforms match cap tops. Preserve visitor-facing 2/1/3 order; these anchor names are not automatically read by production AwardPodium. |
+
+Inspect actual native counts and transforms before a production importer is accepted. Do not serialize live user IDs, balances or winner avatars into the art template.
+
+## What the local interaction rehearsal does
+
+`preview_interactions.luau` installs `ReplicatedStorage.CrossroadsInteractionPreview.Config` plus a same-named StarterPlayerScripts LocalScript, in stopped PlaceId0 Edit only. It raycasts the 18 Cast attachments against Terrain and asserts Water. The client independently refuses execution outside Studio/PlaceId0 when `studio_only=true`.
+
+Only prompts whose StubAction is `fishing_preview` are enabled locally. A trigger creates one local `PreviewBobber` and `PreviewFishingLine` Beam; a second trigger on the same prompt reels/clears it. Switching stations clears the old line. Cast motion takes 0.65s, with a configured arc and gentle bob; release occurs on leaving 14 studs, character removal, missing deck/prompt, 25-second timeout or script destruction. Prompt activation is 9 studs. Values belong to preview config and are **not** accepted production fishing rules.
+
+Lead native rehearsal verified 18 enabled local fishing prompts, cast producing a bobber/line, second-trigger reel cleanup and walk-away cleanup. The sampled water surface was **Y0** in the current native preview, despite older config nominal Y2; use the raycast-corrected Cast/PreviewWaterY, not the nominal number.
+
+The deck LineTip now matches the displayed native rod’s RodLineTip attachment. These are anchored art props, not equipped Tool rods; Tool grip/ownership and moving hand-held line binding remain future work. There is no server reservation, shared occupancy, caught fish, timing minigame, server RNG, reward, inventory mutation, purchase, XP or stats publication. Two local clients can currently rehearse the same pier. Gate and weekly egg prompts are not enabled by this controller. No preview travel is executed.
+
+## Existing service reuse versus required new work
+
+| Capability | Source-backed existing seam | Work still required |
+| --- | --- | --- |
+| Place/realm travel | `src/Shared/Game/PlaceRuntime.lua`, `configs/places.lua`; cross-place TeleportAsync paths in `MergeEggPrototypeService.lua`; within-world `WorldTravelService` Prepare/Travel/Select and `RealmPortalService` prompt validation | Choose the main-place arrival integration and exact destination mapping; preserve profile readiness, tutorial/zone permission and place-role checks. Reuse the applicable existing seam rather than a client teleporter. Do not call a private Merge function as an undocumented public API. |
+| Coin field | `BreakableSpawner.lua` already handles world/area spawning and Hall-style logic; `DropService.lua` has physical currency pickups, owner collection, Magnet radius and timeout/cap collection behavior | Adapt the authored CoinDropField into a supported Farm & Fight area config/marker registration. Choose catalog, density and eligibility explicitly; do not reactivate Hall routing or copy Hall's entire experience. |
+| Egg inspection/hatching | `EggStandPlacement.server.lua` scans authored Models with UIanchor in recognized `Workspace.Maps` worlds, stamps EggId/EggStand; `EggStandResolver`, `HallEggStand`, `EggService.lua` and existing client hatch presentation | Deliberate weekly-display mapping and offer definition, safe existing hatch UI entry, price/currency/eligibility supplied by approved config. Pavilion specimen names alone do not satisfy the full placement contract. Preserve original mesh/art while supplying explicit anchors. |
+| Inventory and consumables | Existing EggService, inventory SSOT, EconomyService and DropService reward paths | Select approved reward kinds/IDs and appropriate grant methods after reviewing their transaction semantics. Fishing settlement adapter and receipt contract are new. Never call combat-only drop methods with fake defeated enemies just to obtain a reward. |
+| Patrol combat/alliance | `EnemyService.lua`, `RealmAllianceService.lua`, `src/Shared/Game/AllianceRules.lua`, authored area/leash conventions | Bind a bounded encounter with owner/participant rules, recruitment/engagement/chase radii, escape/defeat cleanup, and an opt-in surface where needed. Existing RealmAllianceService auto-forms at live patrols; the new Alliance attachment does not itself implement opt-in. |
+| Ranking | `StatsService.lua`, `LeaderboardService.lua`, `configs/stats.lua`, `configs/leaderboards.lua`, `LeaderboardScoring.lua`, `src/Client/Systems/AwardPodium.lua` and `AwardPodiumLogic.lua` | New durable cleared-wave/shared-boss counters, exact anchor adapter, bounded many-alcove avatar loading and stand audience mapping. Existing four-group usage does not prove the larger display is cheap. |
+| Fish/rod motion | Current cast rehearsal, 18 mounted native rod props and independent cosmetic AmbientField; existing land-shark code is in Merge combat | Tool grip/ownership, production fish presentation and fishing state machine. Land-shark combat AI is not an existing fishing system and should not be copied wholesale. No FishingService was identified in current source. |
+
+## Production fishing state and authority — superseded proposal
+
+**2026-09-09 decision:** The user explicitly chose client-owned bite timing, displayed luck and
+catch/escape, accepting exploitation to avoid network timing problems. The implemented
+`CrossroadsFishing` / `CrossroadsFishingService` and `configs/crossroads_fishing.lua` supersede
+the server timing, exclusive reservation and reaction validation proposal below. The server
+persists config-selected coin/gem rewards with bounded attempt receipts; it does not time casts.
+See [current fishing contract](../../wiki/REALM_CROSSROADS.md#client-timed-fishing--2026-09-09).
+The following paragraphs are retained as historical design notes, not implementation requirements.
+
+A server-owned station registry should register the 18 unique StationKeys and authoritative deck/Standing/Cast transforms. Validate duplicate/missing keys, water target material, root membership and supported map role before enabling any real prompt. Occupancy is transient server state keyed by station and player; do not persist a chair reservation as inventory.
+
+Proposed lifecycle: **Available → Reserved → Casting → Waiting → Resolved/Cancelled → Available**. The server issues a short-lived session/attempt ID, validates alive character, distance, permitted area and at most one active station per player, and atomically reserves an unclaimed station. Concurrent requests for one station yield one owner. Scope updates to interested clients; public effects never decide ownership. Define cast timing/lease/timeout in config during gameplay implementation, rather than adopting preview numbers silently.
+
+The owner client may predict line/rod visuals, with server acknowledgement/cancellation reconciling them. Replace the fixed LineTip proxy with a real equipped rod's named Attachment and preserve authored Cast as the target constraint. Keep an accessibility-compatible visual indication and optional sound/haptic cue for a future bite; decorative bubbles must never masquerade as a bite acknowledgement. Controller/touch prompts use existing semantic input paths. Releasing input or muting FX cannot grant a catch.
+
+The server selects any eligible outcome from an approved config-owned catch table, using server timing and RNG. The client submits only an action/session token, never a fish ID, reward quantity, successful timing timestamp to trust, or currency amount. Validate stale/out-of-order requests and apply rate limits. Settlement records a unique attempt receipt with the reward mutation in the authoritative profile transaction; repeated callbacks/requests/reconnects must not duplicate grants. A replayed cosmetic catch animation has zero authority. Do not increment combat kills, egg hatches or reward stats for unrelated fishing presentations.
+
+Cancel and release on death, disconnect, map/anchor removal, invalid distance, equipment change when required, lease expiry and server shutdown. Graceful reconnect may display the saved result receipt if one exists; it must not reroll/grant an already settled attempt. Define offline fishing separately if ever requested; legitimate Merge offline combat does not automatically authorize offline fishing.
+
+Current possible reward discussions mention Enhancements, potions and eggs, but **no catch table, economic balance, prices, rarity, XP or payout frequency is approved here**. Fish are art/presentation candidates, not an invented inventory class. Server reward adapters and finite accounting tests precede any live activation.
+
+## Coin garden and Egg of the Week scope
+
+Retain the 64×90 open collection field and native stand/Wayfinder specimen. Coin decoration was intentionally removed after the earlier scale review; filling the lawn with mock giant coins is not gameplay integration. Breakable/drop counts, collection radius and spawn cadence belong to approved activity config. Confirm DropService's owner-only collection and cap/timeout behavior fits the activity; do not create a second Magnet loop or direct currency increment from a local pickup animation.
+
+“Egg of the Week” is the current physical title, not an implemented weekly rotation system. Define which existing egg IDs are eligible, schedule source/time zone, offer lifetime, cost and fallback separately. Bind inspect/presentation first, then existing EggService hatch authority after the offer is approved. Preserve the server hatch lock, inventory source of truth and existing eligibility/currency validation; client inspect and ornamental egg movement do not debit or grant anything. Four pavilion Seats are social furniture and remain independent of an offer.
+
+## Bragg categories, records and duplicate rules
+
+| Alcove | Authored category / BoardId | Backend status |
+| --- | --- | --- |
+| 01 | Most Dragons / `most_dragons` | Existing ranking source; preview hook unbound |
+| 03 | Crystal Crusher / `crystal_crusher` | Existing ranking source; preview hook unbound |
+| 05 | Enemies Defeated / `enemies_defeated` | Existing Stats counter/board; preview hook unbound |
+| 07 | Team Power / `team_power` | Existing derived board; preview hook unbound |
+| 08 | Eggs Hatched / `eggs_hatched` | Existing counter/board; preview hook unbound |
+| 10 | Highest Wave Cleared / `siege_highest_wave_cleared` | New tracking proposed; absent from current production stats/board config |
+| 12 | Total Waves Cleared / `siege_waves_cleared` | New tracking proposed; absent from current production stats/board config |
+| 14 | Bosses Defeated / `bosses_defeated`, ALL REALMS | New shared tracking proposed; absent from current production stats/board config |
+
+Alcoves 02/04/06/09/11/13 are currently Heaven/Hell exhibits, even where config retains a possible future Range/Training/Gifting board ID. Do not populate them merely because BoardId is nonempty. Eight initial groups mean 24 rank anchors, not 42 live winners.
+
+**Reached versus cleared:** `MergeWaveRecord.best` and `MergeEggPrototypeService` maintain `progress.highest_wave`/`MergeHighestWave` as an all-time reached-wave record. They can use checkpoint/playstate/eligible historical award lower bounds. Do not relabel this as a clear. The existing `_resolveEnemy` marks target IDs resolved once, waits for zero live/pending enemies, handles objective/whole-team overruns, then emits `wave_cleared` analytics. A proposed durable clear update belongs at that authoritative successful boundary, before tutorial/next-wave branches can make it ambiguous. Analytics itself is not the durable record, and offline simulation suppresses online analytics.
+
+For each uniquely settled wave attempt, proposed `siege_highest_wave_cleared=max(old,waveIndex)` and `siege_waves_cleared+=1`. Failed/overrun waves, starting a wave, restoring checkpoints and duplicate callbacks give no clear credit. A genuinely replayed and completed attempt increments total again but only increases highest if it beats the record. Ordinary escaped enemies follow the existing successful-wave rule; a perfect/no-escape metric would require its own definition. Run-local `eggsCreated` and `eggsMerged` are explicitly reset in the service and cannot be used as lifetime counters without new durable accumulation.
+
+**Global bosses:** Count actual credited boss defeats across Farm & Fight and Pet Siege, per resolved configuration rank; not every tenth wave, not lieutenants, not a completed boss-containing wave. Multiple actual bosses in one wave count separately. An escaped boss gives no defeat, and a later wave failure does not undo a prior actual defeat. Review `EnemyService:_awardCombatDefeat` and each mode's ownership/credit route, including durable shared-pet owner rules. `enemies_defeated` is existing general kill tracking, not proof that `bosses_defeated` exists.
+
+Use a unique enemy-defeat receipt and eligible owner as the shared boss credit key. Select **one** canonical credit boundary: a Merge defeat acknowledgement plus EnemyService award callback must not each increment the same boss. Preserve existing team/ownership eligibility; do not assign every spectator or nearby client credit. The current per-run `resolvedTargets` guard helps runtime deduplication but is not a durable reconnect/retry receipt by itself. Register new counters and board definitions through existing config; atomically persist counter mutations and bounded receipts, respecting DataService profile ownership/fencing rather than forcing a DataStore write per kill.
+
+Proposed legitimate online/offline combat eligibility follows the earlier Bragg plan, but offline facade compatibility and lease handoff still require implementation/tests. Do not assume a Player-only StatsService call accepts an offline actor. Preserve online/offline provenance, exclude synthetic Studio/debug runs from live credit, and publish the canonical owner score after meaningful update/next join. Start new counters at observed eligible results unless a durable old receipt proves the event; reached-wave maxima do not justify backfilled clears or fabricated lifetime totals.
+
+Reuse existing publication/debounce/refresh/filtering rules from LeaderboardService/config, score/user-ID sorting, positive-value filtering and internal-account exclusion for public/award rosters. Do not query every profile to build a board. Preserve Studio isolation and the existing distinct challenge-window reward cadence; these new lifetime recognition boards do not imply cash, egg awards or daily resets.
+
+## Winner avatars and spectator seats
+
+The current 24 podium figures and 24 seated audience copies are placeholders. PREVIEW labels remain until real snapshots and truthful empty/loading states exist. Implement a display adapter from server-filtered BoardId snapshots to cap anchors, retaining 2/1/3 placement and authored orientation. The existing AwardPodium client explicitly builds local stand parts as well as winner characters. Add an authored-anchor mode that reuses these finished podiums; blindly tagging AwardPodiumHook can otherwise create a second set of platforms. Verify pose/height expectations and do not tag every cap host indiscriminately.
+
+The earlier plan's initial ceiling of four nearby groups/twelve animated winner figures is a **proposed budget**, not a renderer capability already implemented. Reuse/cap appearance and username requests, cache bounded immutable appearance templates, cancel stale loads on category/rank change and clean models when leaving relevance. Test blocked/deleted users and unavailable avatars; never display an arbitrary fallback person as a winner. Physical winner bodies need not collide with navigation.
+
+For future stand audience loading, use `PodiumSpectatorSlot` to choose the 24 already reserved seats and an explicitly approved category/rank ordering. There is no automatic rule today connecting Bragg rank 1 to seat slot 1. Decide whether repeated users across categories appear once or multiple times before loading; reuse appearance data regardless. Preserve eight visitor Seats, their native occupancy and exit paths, and never replace an actively occupied visitor seat with a champion. Static low-cost display rigs may be preferable to 24 extra animated Humanoids; measure aggregate costs with nearby podiums before choosing. Sitting does not create ranking or alliance participation.
+
+## Arena authority and shared movement constraints
+
+Existing RealmAllianceService works with live patrol/cave records and proximity policies. Registering the new field requires a real encounter contract and bounded recruitment/engagement/chase radii. The compact court must not recruit bystanders in stands, fishing or the garden based on broad realm defaults. Battle is a placement reference, Alliance is a proposed outside-combat opt-in reference, and Stand is a wayfinding reference; none is a validated gameplay tag.
+
+Containment applies to participating combatants only. Keep the two 14-stud entrances, eight-stud stand aisle and native spectator access. The island's invisible safety boundary has a separate purpose and remains independent of arena engagement. Do not make visual Impaler meshes collidable for every player as a shortcut. Preserve the stand's rear X≤199 surface and corrected Hell station 5 rear edge X211: nominal clearance is 12 studs, subject to actual rails/decor/avatar camera measurement. Neither section's source establishes a completed two-way crowd test.
+
+Server authority owns encounter start/end, target eligibility, damage, rewards and cancellation. Cosmetic FX can follow acknowledged events; no ambient particle, decorative fish, seating pose or preview prompt submits a win/kill. Existing cover/route bounds remain source-of-truth until gameplay measurements justify change.
+
+## Cosmetic companions and installation boundaries
+
+`ReplicatedStorage.CrossroadsVisualFX` embeds AmbientField/AmbientConfig siblings and ConfigJSON; StarterPlayerScripts.CrossroadsVisualFXClient owns local mist/embers and one interval-gated update connection. Old server-authored GreenPoolMist is archived in ServerStorage.CrossroadsVisualFXOriginals, preventing double emission. Full near-camera Hell preset preserves 20 sources×4/s with 5–8s lifetime. Gate emitters resolve the Merge Arch's rotation and configured ground-relative offsets. No Heaven petal placeholder is enabled.
+
+The host may supply `CrossroadsFXQuality` and `CrossroadsReducedMotion` player attributes; the standalone controller also reads Roblox saved quality. Bridging the production game's own graphics preferences is **new integration work**, not automatically provided by attribute names. Copy/rebind the companion intentionally during production import, or keep the old authored mist until replacement is ready; never run both. Confluence's existing surface-flow client is independent and must be preserved when moving that fountain. Global Terrain WaterColor remains unchanged.
+
+## Recommended activation sequence and acceptance
+
+1. **Native contract audit:** inventory all anchors/attributes/classes/counts, raycast all cast targets, check the 18 platforms/4 pavilion Seats/4 shelter Seats/32 spectator Seats/24 Bragg cap anchors and disabled gate/egg prompts. Preserve local snapshots. No live gameplay tags yet.
+2. **Read-only adapters:** bind local test snapshots to Bragg with bounded avatar loading; wire inspect-only egg presentation; exercise travel destination resolution without teleport. Use isolated profile/board fixtures.
+3. **Authority units:** implement/test fishing reservation/settlement, durable wave/boss counters and encounter participation independently of artwork. Tests cover concurrent claim, stale token, disconnect, duplicate grant/defeat, reached-but-failed wave, true replay clear, multiple bosses, escaped boss, shared owner, offline lease loss and legacy profiles.
+4. **Controlled gameplay binding:** register explicit map-role/area definitions; wire existing travel, EggService and coin/drop paths only after their choices are approved. Connect server acknowledgements to cosmetic clients. Retain preview rejection outside its intended environment.
+5. **Integrated acceptance:** two-player station contention, safe seat entry/exit, bounded arena bystanders, controller/touch input, low-graphics/reduced-motion cues, streaming/re-entry cleanup, combined FX/avatars performance, leaderboard internal filtering and no production-store access in local tests. Run `mise run ci` plus native checks; lint/build are not visual or multiplayer evidence.
+6. **Production cutover, separate change:** choose Farm & Fight placement and spawn/tutorial integration, migrate required authored assets/companions, remove preview-only rehearsal from shipping startup, and use repository review/release process. This document authorizes no publishing, production routing or reward activation.
+
+## Source pointers
+
+- [Realm Crossroads wiki](../../wiki/REALM_CROSSROADS.md), [Map integration contract](../../wiki/MAP_INTEGRATION_CONTRACT.md), [Bragg recording plan](../../REALM_CROSSROADS_BRAGG_PLAN.md).
+- [Fishing construction delivery](IMPLEMENTED_FISHING.md), [Garden delivery](IMPLEMENTED_GARDEN.md), [Arena delivery](IMPLEMENTED_ARENA.md), [Bragg delivery](IMPLEMENTED_BRAGG.md).
+- Runtime source identifiers cited above are repository-relative exact filenames; inspect their current public APIs before adding an adapter. This is a source audit/design contract, not a claim those services already bind Crossroads.
+
+## Latest bounded native stub audit
+
+[Interaction stub audit](INTERACTION_STUB_AUDIT.md) records the read-only Server inventory, exact board/slot mapping, rod-tip agreement and authoring-order limits. All requested anchor categories were present. Bulwark piece names repeat; a source-ready `interaction_bindings.luau` companion assigns config-owned BulwarkId/BulwarkSide/BulwarkSegment/GatewaySegment after validating all37 measured pieces. Confirm application before consuming these IDs; future containment still requires explicit behavior mapping. Apply fishing polish before rods and the water-correcting interaction installer last. Rerunning fishing polish alone resets attachments and requires both downstream passes again. Rebuilding Bragg/core/garden recreates their output anchors; runtime adapters must bind after authoring is complete, not retain destroyed Instance references.
+
+### Decorative fish versus future catches
+
+`CrossroadsPondLife` installs local, noncolliding, nonqueryable fish from the retained original two-bone asset. Two config-owned swim loops, short surfacing arcs and pooled ripples are cosmetic. They have no prompts, catch IDs, loot tables, network events or inventory authority. A future fishing service must choose server-authorized catches independently; it must not accept one of these local models as evidence of a catch. Copy/adapt the runtime folder and client companion with the map, bind existing graphics/reduced-motion settings, and remove the Studio-only preview-time override when integrating production presentation.
+
+## First local gameplay binding — 2026-09-09
+
+`areas.crossroads` enables 24 invisible native ArrivalSlot SpawnLocations around PreviewSpawn, using the existing two-ring PlayerSpawnSpread pattern (minimum measured separation 6.1228 studs). ZoneService delegates initial/post-prologue placement to CrossroadsArrival. Per-player RespawnLocation and reserved slots avoid sharing one marker; nearby occupied positions are also considered. The existing prologue/mission placement gate retains priority. The runtime context remains Spawn until a dedicated hub area is introduced; InCrossroads records hub arrival without inventing a new currency/unlock domain.
+
+Only FarmAndFightTravelAnchor is active: enlarged transparent noncolliding touch volume, plus the existing prompt. Server checks character health, physical distance, mission/prologue state and cooldown; it requests destination streaming and rechecks before calling the existing ZoneService:TravelToZone(Spawn). Success sets the session-only CrossroadsFarmEntered flag and Home SpawnLocation. Death before entering Farm returns to the lobby; death after entry returns to Home. A new join returns to Crossroads. Pet Siege and all activity/ranking/fishing stubs remain disabled. No cross-place teleport or rewards were added.
+
+Author markers via tools/realm_crossroads/bake_arrival_slots.luau; never run this baker automatically at gameplay startup. Runtime service code is Rojo-owned. Native checks: 24 colliding test IDs received distinct pads, each over solid terrain; automatic fresh join reached ArrivalSlot5; actual character navigation through the gate reached Home; LoadCharacterAsync there returned to Home. These are solo smoke tests plus allocation simulation, not 24-client load testing.
+
+### 2026-09-09 — Homeworld return portal
+
+Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Crossroads. Merge delegates this hook to CrossroadsArrival when the imported map is enabled; its cross-place handler is not bound. Dedicated Pet Siege return gates are unchanged. Config-owned text lives in areas.crossroads. The return validates living character, proximity, mission/prologue ownership and cooldown before and after destination streaming, then uses ZoneService to reset the Farm-entered session flag and assign a spaced Crossroads respawn slot. Native Play verified Crossroads → Home via gate touch and Home → Crossroads via the actual proximity prompt, with ArrivalSlot5 restored. Full CI: 2,846/2,846 tests, 323 specs.
+
+### Implemented: Bragg podiums and tracking — 2026-09-09
+
+The earlier proposal above is now implemented for all eight podium categories. `CrossroadsPodiums` reuses the 24 rank attachments/nameplates; `BraggProgress` supplies three new lifetime counters with same-profile receipts. See `docs/wiki/REALM_CROSSROADS.md` for the exact credit rules, budgets, Studio isolation, and two-place deployment requirement. Preview figures and lettering are archived. Spectator audience mapping is now implemented: the same eight categories in config order, each rank 1/2/3, fill the 24 reserved slot IDs; repeated members appear for every earned category placement. See the current wiki contract; the earlier proposal above is historical.
+
+
+## Arena implementation — 2026-09-09
+
+The earlier arena proposal is now implemented by `CrossroadsArena` and
+`configs/crossroads_arena.lua`. The outer `CombatBounds` floor footprint is authoritative;
+EnemyService clamps body-inset movement and excludes spectators from targeting/credit.
+Level/menu-scaled teams arrive with lightning and use ordinary combat plus Trials boss egg
+rewards. See the current wiki contract for timing, scope, Studio reward isolation and QA.

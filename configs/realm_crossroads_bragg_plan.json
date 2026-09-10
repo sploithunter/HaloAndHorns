@@ -1,0 +1,513 @@
+{
+  "status": "authored_preview_rankings_not_connected",
+  "revision": 6,
+  "name": "Bragg Rotunda",
+  "center": [
+    0,
+    -88
+  ],
+  "court_elevation": 4,
+  "outer_radius": 58,
+  "podium_radius": 47,
+  "alcove_width": 18,
+  "alcove_depth": 10,
+  "fountain_radius": 9,
+  "fountain_height_limit": 8,
+  "angular_slots": 16,
+  "entrance_slots": 2,
+  "entrance_width": 26,
+  "stair_risers": 8,
+  "stair_rise": 0.5,
+  "stair_tread": 2,
+  "ramp_rise": 4,
+  "ramp_run": 32,
+  "ramp_width": 16,
+  "figure_budget_initial": 12,
+  "tracking_schema_proposal": {
+    "highest": "siege_highest_wave_cleared",
+    "total": "siege_waves_cleared",
+    "boss": "bosses_defeated",
+    "period": "lifetime",
+    "eligibility": "normal server-resolved combat, including legitimate offline combat; separate play-mode provenance",
+    "awards": "not_enabled",
+    "boss_scope": "all_realms_actual_boss_defeats"
+  },
+  "bays": [
+    {
+      "number": 1,
+      "name": "Most Dragons",
+      "board_id": "most_dragons",
+      "phase": "initial",
+      "source": "existing",
+      "title_lines": [
+        "MOST",
+        "DRAGONS"
+      ],
+      "scope": "ALL REALMS"
+    },
+    {
+      "number": 2,
+      "name": "The Range",
+      "board_id": "range_current",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "name": "Crystal Crusher",
+      "board_id": "crystal_crusher",
+      "phase": "initial",
+      "source": "existing",
+      "title_lines": [
+        "CRYSTAL",
+        "CRUSHER"
+      ],
+      "scope": "ALL REALMS"
+    },
+    {
+      "number": 4,
+      "name": "Training Ground",
+      "board_id": "training_ground_current",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "name": "Enemies Defeated",
+      "board_id": "enemies_defeated",
+      "phase": "initial",
+      "source": "existing",
+      "title_lines": [
+        "ENEMIES",
+        "DEFEATED"
+      ],
+      "scope": "ALL REALMS"
+    },
+    {
+      "number": 6,
+      "name": "Exclusives Gifted",
+      "board_id": "gift_exclusives",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "name": "Team Power",
+      "board_id": "team_power",
+      "phase": "initial",
+      "source": "existing",
+      "title_lines": [
+        "TEAM",
+        "POWER"
+      ],
+      "scope": "ALL REALMS"
+    },
+    {
+      "number": 8,
+      "name": "Eggs Hatched",
+      "board_id": "eggs_hatched",
+      "phase": "initial",
+      "source": "existing_backend",
+      "title_lines": [
+        "EGGS",
+        "HATCHED"
+      ],
+      "scope": "ALL REALMS"
+    },
+    {
+      "number": 9,
+      "name": "Secrets Gifted",
+      "board_id": "gift_secrets",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "name": "Highest Wave Cleared",
+      "board_id": "siege_highest_wave_cleared",
+      "phase": "initial",
+      "source": "new_tracking",
+      "title_lines": [
+        "HIGHEST WAVE",
+        "CLEARED"
+      ],
+      "scope": "PET SIEGE"
+    },
+    {
+      "number": 11,
+      "name": "Mythicals Gifted",
+      "board_id": "gift_mythicals",
+      "phase": "reserve",
+      "source": "existing_backend",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "heaven",
+      "display_name": "Heaven Garden",
+      "props": [
+        {
+          "model": "crystal_bloom",
+          "height": 6.8,
+          "position": [
+            0,
+            2.25,
+            -0.7
+          ],
+          "yaw": 0
+        },
+        {
+          "model": "field_flower_bush",
+          "height": 3.6,
+          "position": [
+            -4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": 35
+        },
+        {
+          "model": "softglow_bloom",
+          "height": 3.5,
+          "position": [
+            4.3,
+            2.25,
+            0.3
+          ],
+          "yaw": -25
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "name": "Total Waves Cleared",
+      "board_id": "siege_waves_cleared",
+      "phase": "initial",
+      "source": "new_tracking",
+      "title_lines": [
+        "TOTAL WAVES",
+        "CLEARED"
+      ],
+      "scope": "PET SIEGE"
+    },
+    {
+      "number": 13,
+      "name": "Future Champion",
+      "phase": "reserve",
+      "source": "future",
+      "title_lines": [],
+      "scope": "ALL REALMS",
+      "decoration": "hell",
+      "display_name": "Hell Relics",
+      "props": [
+        {
+          "model": "animal_skull",
+          "height": 7,
+          "position": [
+            0,
+            2.25,
+            -0.3
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            -5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        },
+        {
+          "model": "hell_skull_lantern",
+          "height": 4.4,
+          "position": [
+            5,
+            2.25,
+            0.2
+          ],
+          "yaw": 180
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "name": "Bosses Defeated",
+      "board_id": "bosses_defeated",
+      "phase": "initial",
+      "source": "new_shared_tracking",
+      "title_lines": [
+        "BOSSES",
+        "DEFEATED"
+      ],
+      "scope": "ALL REALMS"
+    }
+  ],
+  "entrance_apron": {
+    "half_width": 35,
+    "far_offset": 54,
+    "near_offset": 62
+  },
+  "bake_source": "tools/realm_crossroads/bake_bragg.luau",
+  "art": {
+    "wall_height": 12,
+    "column_height": 15,
+    "podium_heights": [
+      2.7,
+      4.1,
+      2.1
+    ],
+    "palette": {
+      "floor": [
+        203,
+        198,
+        176
+      ],
+      "stone": [
+        149,
+        149,
+        135
+      ],
+      "light_stone": [
+        222,
+        217,
+        195
+      ],
+      "trim": [
+        173,
+        132,
+        64
+      ],
+      "ink": [
+        65,
+        52,
+        36
+      ],
+      "water": [
+        78,
+        170,
+        185
+      ],
+      "plant": [
+        88,
+        123,
+        68
+      ],
+      "rank1": [
+        223,
+        176,
+        67
+      ],
+      "rank2": [
+        182,
+        201,
+        205
+      ],
+      "rank3": [
+        173,
+        109,
+        69
+      ],
+      "blossom_white": [
+        235,
+        227,
+        242
+      ],
+      "blossom_blue": [
+        135,
+        185,
+        232
+      ],
+      "blossom_coral": [
+        237,
+        129,
+        94
+      ],
+      "blossom_gold": [
+        245,
+        193,
+        74
+      ],
+      "leaf_dark": [
+        54,
+        87,
+        65
+      ],
+      "hell_stone": [
+        54,
+        43,
+        49
+      ],
+      "ember": [
+        244,
+        94,
+        35
+      ]
+    },
+    "ring_segments": 64,
+    "jet_count": 6,
+    "jet_width": 0.13,
+    "water_transparency": 0.3,
+    "existing_decor": {
+      "source_place": "Merge",
+      "template_folder": "CrossroadsExistingDecor",
+      "models": {
+        "field_flower_bush": 79157049690801,
+        "softglow_bloom": 86094061836178,
+        "crystal_bloom": 124705018772609,
+        "animal_skull": 72200416872370,
+        "hell_skull_lantern": 101289093060410
+      }
+    }
+  },
+  "replacement_fountain": {
+    "model_name": "ConfluenceFountain",
+    "template_name": "ConfluenceNativeTemplate",
+    "surface_offset": 0.44,
+    "asset_config": "configs/confluence_fountain.json"
+  }
+}

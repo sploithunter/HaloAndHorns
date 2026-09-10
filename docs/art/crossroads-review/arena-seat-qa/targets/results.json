@@ -1,0 +1,22 @@
+{
+  "floor_y": 4.38,
+  "deck_tops": [
+    6,
+    8,
+    10,
+    12
+  ],
+  "overview_captures": 8,
+  "individual_captures": 8,
+  "recommendation": "hold_current_tiers",
+  "center_and_actual_entrances": "middle_upper_readable_in_inspected_overviews_and_focused_front_rear_views",
+  "near_edge": "lower_approximately_three_rows_partly_obscured_by_bulwark",
+  "oblique_near_corners": "partial_lower_cell_audience_occlusion",
+  "pixel_percentages_measured": false,
+  "all_56_individual_combinations_captured": false,
+  "cleanup": {
+    "qaRemoved": true,
+    "dummies": 24,
+    "cameraRestored": true
+  }
+}

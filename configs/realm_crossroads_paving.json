@@ -1,0 +1,80 @@
+{
+  "bake_source": "tools/realm_crossroads/trim_paving.luau",
+  "groups": [
+    "PathsAndLandings",
+    "BraggRotundaR6.TerraceAndEntry",
+    "CrossroadsActivitiesR7.CoinGarden",
+    "CrossroadsActivitiesR7.PatrolGrove"
+  ],
+  "priorities": {
+    "FarmAndFightLanding": 95,
+    "MergeLanding": 95,
+    "ArrivalWalk": 90,
+    "ModeApproach1": 80,
+    "ModeApproach2": 80,
+    "GardenConnection": 70,
+    "GardenRampConnection": 70,
+    "OverlookApproach": 70,
+    "OverlookLanding": 70,
+    "PavilionFloor": 95,
+    "Playfield": 90,
+    "GatheringTerrace": 85,
+    "RampLandingLink": 70,
+    "PavilionApproach": 70,
+    "GatheringLink": 70
+  },
+  "height_tolerance": 0.3,
+  "cutter_height": 4,
+  "overlap_epsilon": 0.001,
+  "arrival": {
+    "start_z": 6,
+    "end_z": 120,
+    "width": 20,
+    "border_width": 0.6,
+    "surface_y": 0.44,
+    "thickness": 0.3,
+    "stone_color": [
+      202,
+      196,
+      178
+    ],
+    "edge_color": [
+      136,
+      126,
+      106
+    ],
+    "tile_columns": 4,
+    "tile_rows": 19,
+    "tile_colors": [
+      [
+        202,
+        196,
+        178
+      ],
+      [
+        193,
+        187,
+        169
+      ],
+      [
+        210,
+        204,
+        185
+      ],
+      [
+        197,
+        192,
+        176
+      ]
+    ],
+    "joint": 0
+  },
+  "finish_source": "tools/realm_crossroads/finish_arrival.luau",
+  "side_junction": {
+    "bake_source": "tools/realm_crossroads/repair_side_junctions.luau",
+    "inner_x": 16,
+    "outer_x": 48,
+    "center_z": 80,
+    "width": 16
+  }
+}

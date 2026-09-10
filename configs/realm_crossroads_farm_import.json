@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "source_root": "RealmCrossroadsR4",
+  "destination_root": "RealmCrossroadsR4",
+  "destination_place_id": 77766176054993,
+  "translation": [
+    -8192,
+    0,
+    0
+  ],
+  "terrain_min_cell": [
+    -80,
+    -16,
+    -48
+  ],
+  "terrain_max_cell": [
+    80,
+    32,
+    48
+  ],
+  "authoring_archive": "CrossroadsAuthoringR11",
+  "runtime_folders": [
+    "CrossroadsVisualFX",
+    "CrossroadsPondLife"
+  ],
+  "visual_clients": [
+    "CrossroadsCrestLight",
+    "ConfluenceSurfaceFlow",
+    "CrossroadsVisualFXClient",
+    "CrossroadsPondLife"
+  ],
+  "pond_cosmetics_enabled": true,
+  "enable_spawn": false,
+  "gameplay_connected": false,
+  "source_note": "Copy from the explicitly selected open R11 Edit place. Retain source; relocate geometry and bounded Terrain together. Do not overwrite Farm maps, global Lighting, water settings, game scripts, spawn routing, or generic preview GUI/configs. Source authoring backups remain inert and use original coordinates."
+}

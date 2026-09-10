@@ -1,5 +1,16 @@
 return {
     counters = {
+        siege_highest_wave_cleared = {
+            display_name = "Highest Wave Cleared",
+            scope = "lifetime",
+            default = 0,
+        },
+        siege_waves_cleared = {
+            display_name = "Total Waves Cleared",
+            scope = "lifetime",
+            default = 0,
+        },
+        bosses_defeated = { display_name = "Bosses Defeated", scope = "lifetime", default = 0 },
         taps = {
             display_name = "Taps",
             scope = "lifetime",

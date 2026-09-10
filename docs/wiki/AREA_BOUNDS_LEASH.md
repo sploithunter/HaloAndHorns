@@ -47,6 +47,15 @@ never trails the player across the map.
 - **Legacy caveat:** box/circle regions are still axis-aligned/analytic. Prefer `surface` for irregular
   authored MeshParts.
 
+## Crossroads arena
+
+The arena supplies `movementLeash` from its live `CombatBounds` outer floor rectangle.
+`bodyInset` adds the model's conservative horizontal radius to the configured margin and rejects
+oversize spawns. `restrictEngagement` plus the configured vertical band excludes spectators from
+territory, target selection and nearby teammate credit. `SetScriptedMove` now passes through the
+same movement clamp as chase/fear/knockback; it cannot move an arena enemy outside the floor.
+See [Realm Crossroads](REALM_CROSSROADS.md) for encounter and verification details.
+
 ## Possibility (not implemented): confine the PLAYER to an area
 
 Reuse the same union clamp to keep the **player** inside an area's bounds — the motivating case is a

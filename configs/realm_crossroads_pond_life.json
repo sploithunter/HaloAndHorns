@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "preview_only": true,
+  "world": "RealmCrossroadsR4",
+  "bake_source": "tools/realm_crossroads/pond_life.luau",
+  "client_source": "tools/realm_crossroads/pond_life.client.luau",
+  "asset_source": "configs/realm_crossroads_pond_fish.json",
+  "asset_cache": "CrossroadsPondFishAssets",
+  "asset_template": "PondFish",
+  "runtime_root": "CrossroadsPondLife",
+  "local_root": "CrossroadsLocalPondLife",
+  "template_name": "FishTemplate",
+  "update_interval": 0.05,
+  "far_distance": 160,
+  "angular_speed": 0.14,
+  "depth": 1.1,
+  "vertical_drift": 0.08,
+  "yaw_correction_degrees": 0,
+  "quality_attribute": "CrossroadsFXQuality",
+  "reduced_motion_attribute": "CrossroadsReducedMotion",
+  "default_quality": "full",
+  "graphics_tiers": [
+    {
+      "maximum": 3,
+      "quality": "minimal"
+    },
+    {
+      "maximum": 6,
+      "quality": "reduced"
+    },
+    {
+      "maximum": 10,
+      "quality": "full"
+    }
+  ],
+  "count_by_quality": {
+    "full": 2,
+    "reduced": 1,
+    "minimal": 0,
+    "off": 0
+  },
+  "phases": [
+    0,
+    3.141592653589793
+  ],
+  "max_size": [
+    3.2,
+    1.3,
+    3.2
+  ],
+  "survey": {
+    "samples": 48,
+    "origin_y": 20,
+    "depth": 50,
+    "water_tolerance": 0.05,
+    "bed_clearance": 0.15,
+    "surface_clearance": 0.2
+  },
+  "ponds": [
+    {
+      "id": "heaven",
+      "owner": "HeavenFishingPond",
+      "center_xz": [
+        -190,
+        8
+      ],
+      "radii": [
+        5,
+        14
+      ]
+    },
+    {
+      "id": "hell",
+      "owner": "HellFishingPool",
+      "center_xz": [
+        231,
+        8
+      ],
+      "radii": [
+        4,
+        14
+      ]
+    }
+  ],
+  "notes": "Decorative swimming only. No bites, catch targets, prompts, loot, collision, water changes or production fish population authority. Brief periodic surfacing arcs make fish visible from shore; reduced motion keeps them submerged. Asset direction must pass native review before installation. Schools favor the entrance-facing shallow-water views; center_xz is swim-loop center, not the whole pond center.",
+  "tail": {
+    "bone": "Tail",
+    "amplitude_degrees": 14,
+    "angular_speed": 9,
+    "axis": "Z"
+  },
+  "breach": {
+    "center_angle": 1.5707963267948966,
+    "half_width": 0.14,
+    "height": 2.5
+  },
+  "ripple_runtime": "CrossroadsVisualFX",
+  "preview_time_attribute": "CrossroadsPondLifePreviewTime"
+}

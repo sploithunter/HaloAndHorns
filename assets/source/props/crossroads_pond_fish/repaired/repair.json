@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/geometry_4500/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/repaired/model.glb",
+  "raw_vertices": 14058,
+  "weld_distance": 2.052941989199487e-08,
+  "initial_cleanup": {
+    "boundary_edges_found": 5,
+    "fill_faces_added": 1,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 1,
+    "nonmanifold_faces_removed": 1,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.0,
+  "triangles_after_fill": 4726,
+  "decimation_ratio": 1.0,
+  "final_triangles": 4724,
+  "max_triangles": 5000
+}

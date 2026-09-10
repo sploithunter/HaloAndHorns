@@ -1,0 +1,36 @@
+{
+  "id": "01a0880d-d4d8-72eb-85bf-747229ac6258",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 15,
+  "created_at": 1788989004466,
+  "started_at": 1788989004474,
+  "finished_at": 1788989071507,
+  "expires_at": 1789248271507,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/concepts/pets/trail_pup_shepherd/basic.png",
+    "source_sha256": "1c3305d92f0db0d6c703967dfa500db7e73315c8692bed3f5031ad75d64fdba0",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 4000,
+    "should_texture": true,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "fbx": "model.fbx",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

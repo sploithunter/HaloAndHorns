@@ -1,0 +1,712 @@
+[
+  {
+    "section": "01-arrival",
+    "path": "after-screenshots/01-arrival-1.png",
+    "cp": [
+      0,
+      150,
+      85
+    ],
+    "lp": [
+      0,
+      0,
+      65
+    ],
+    "before_path": "screenshots/01-arrival-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "01-arrival",
+    "path": "after-screenshots/01-arrival-2.png",
+    "cp": [
+      0,
+      7,
+      108
+    ],
+    "lp": [
+      0,
+      6,
+      40
+    ],
+    "before_path": "screenshots/01-arrival-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "01-arrival",
+    "path": "after-screenshots/01-arrival-3.png",
+    "cp": [
+      35,
+      12,
+      135
+    ],
+    "lp": [
+      0,
+      0,
+      93
+    ],
+    "before_path": "screenshots/01-arrival-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "01-arrival",
+    "path": "after-screenshots/01-arrival-4.png",
+    "cp": [
+      -25,
+      7,
+      80
+    ],
+    "lp": [
+      0,
+      2,
+      105
+    ],
+    "before_path": "screenshots/01-arrival-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "02-heaven-gate",
+    "path": "after-screenshots/02-heaven-gate-1.png",
+    "cp": [
+      -70,
+      60,
+      82
+    ],
+    "lp": [
+      -40,
+      6,
+      42
+    ],
+    "before_path": "screenshots/02-heaven-gate-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "02-heaven-gate",
+    "path": "after-screenshots/02-heaven-gate-2.png",
+    "cp": [
+      -17,
+      7,
+      86
+    ],
+    "lp": [
+      -40,
+      10,
+      42
+    ],
+    "before_path": "screenshots/02-heaven-gate-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "02-heaven-gate",
+    "path": "after-screenshots/02-heaven-gate-3.png",
+    "cp": [
+      -64,
+      9,
+      62
+    ],
+    "lp": [
+      -40,
+      12,
+      42
+    ],
+    "before_path": "screenshots/02-heaven-gate-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "02-heaven-gate",
+    "path": "after-screenshots/02-heaven-gate-4.png",
+    "cp": [
+      -58,
+      12,
+      13
+    ],
+    "lp": [
+      -40,
+      8,
+      42
+    ],
+    "before_path": "screenshots/02-heaven-gate-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "03-hell-gate",
+    "path": "after-screenshots/03-hell-gate-1.png",
+    "cp": [
+      70,
+      60,
+      82
+    ],
+    "lp": [
+      40,
+      6,
+      42
+    ],
+    "before_path": "screenshots/03-hell-gate-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "03-hell-gate",
+    "path": "after-screenshots/03-hell-gate-2.png",
+    "cp": [
+      17,
+      7,
+      86
+    ],
+    "lp": [
+      40,
+      10,
+      42
+    ],
+    "before_path": "screenshots/03-hell-gate-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "03-hell-gate",
+    "path": "after-screenshots/03-hell-gate-3.png",
+    "cp": [
+      64,
+      9,
+      62
+    ],
+    "lp": [
+      40,
+      12,
+      42
+    ],
+    "before_path": "screenshots/03-hell-gate-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "03-hell-gate",
+    "path": "after-screenshots/03-hell-gate-4.png",
+    "cp": [
+      58,
+      12,
+      13
+    ],
+    "lp": [
+      40,
+      8,
+      42
+    ],
+    "before_path": "screenshots/03-hell-gate-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-1.png",
+    "cp": [
+      0,
+      130,
+      -87
+    ],
+    "lp": [
+      0,
+      4,
+      -88
+    ],
+    "before_path": "screenshots/04-bragg-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-2.png",
+    "cp": [
+      0,
+      9,
+      -20
+    ],
+    "lp": [
+      0,
+      8,
+      -88
+    ],
+    "before_path": "screenshots/04-bragg-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-3.png",
+    "cp": [
+      37,
+      12,
+      -65
+    ],
+    "lp": [
+      0,
+      8,
+      -88
+    ],
+    "before_path": "screenshots/04-bragg-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-4.png",
+    "cp": [
+      -12,
+      10,
+      -107
+    ],
+    "lp": [
+      -43,
+      10,
+      -110
+    ],
+    "before_path": "screenshots/04-bragg-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-5.png",
+    "cp": [
+      0,
+      10,
+      -142
+    ],
+    "lp": [
+      0,
+      7,
+      -88
+    ],
+    "before_path": "screenshots/04-bragg-5.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "05-coin-garden",
+    "path": "after-screenshots/05-coin-garden-1.png",
+    "cp": [
+      -120,
+      110,
+      18
+    ],
+    "lp": [
+      -120,
+      4,
+      17
+    ],
+    "before_path": "screenshots/05-coin-garden-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "05-coin-garden",
+    "path": "after-screenshots/05-coin-garden-2.png",
+    "cp": [
+      -83,
+      10,
+      82
+    ],
+    "lp": [
+      -120,
+      7,
+      15
+    ],
+    "before_path": "screenshots/05-coin-garden-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "05-coin-garden",
+    "path": "after-screenshots/05-coin-garden-3.png",
+    "cp": [
+      -120,
+      10,
+      -20
+    ],
+    "lp": [
+      -120,
+      10,
+      -61
+    ],
+    "before_path": "screenshots/05-coin-garden-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "05-coin-garden",
+    "path": "after-screenshots/05-coin-garden-4.png",
+    "cp": [
+      -150,
+      9,
+      -35
+    ],
+    "lp": [
+      -119,
+      7,
+      -61
+    ],
+    "before_path": "screenshots/05-coin-garden-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "06-arena",
+    "path": "after-screenshots/06-arena-1.png",
+    "cp": [
+      142,
+      125,
+      10
+    ],
+    "lp": [
+      142,
+      4,
+      8
+    ],
+    "before_path": "screenshots/06-arena-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "06-arena",
+    "path": "after-screenshots/06-arena-2.png",
+    "cp": [
+      92,
+      9,
+      75
+    ],
+    "lp": [
+      135,
+      7,
+      8
+    ],
+    "before_path": "screenshots/06-arena-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "06-arena",
+    "path": "after-screenshots/06-arena-3.png",
+    "cp": [
+      134,
+      20,
+      55
+    ],
+    "lp": [
+      183,
+      10,
+      8
+    ],
+    "before_path": "screenshots/06-arena-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "06-arena",
+    "path": "after-screenshots/06-arena-4.png",
+    "cp": [
+      194,
+      16,
+      8
+    ],
+    "lp": [
+      120,
+      6,
+      8
+    ],
+    "before_path": "screenshots/06-arena-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "06-arena",
+    "path": "after-screenshots/06-arena-5.png",
+    "cp": [
+      211,
+      12,
+      52
+    ],
+    "lp": [
+      171,
+      8,
+      8
+    ],
+    "before_path": "screenshots/06-arena-5.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "07-heaven-fishing",
+    "path": "after-screenshots/07-heaven-fishing-1.png",
+    "cp": [
+      -216,
+      125,
+      9
+    ],
+    "lp": [
+      -216,
+      0,
+      8
+    ],
+    "before_path": "screenshots/07-heaven-fishing-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "07-heaven-fishing",
+    "path": "after-screenshots/07-heaven-fishing-2.png",
+    "cp": [
+      -164,
+      9,
+      58
+    ],
+    "lp": [
+      -216,
+      2,
+      8
+    ],
+    "before_path": "screenshots/07-heaven-fishing-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "07-heaven-fishing",
+    "path": "after-screenshots/07-heaven-fishing-3.png",
+    "cp": [
+      -265,
+      9,
+      32
+    ],
+    "lp": [
+      -216,
+      2,
+      8
+    ],
+    "before_path": "screenshots/07-heaven-fishing-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "07-heaven-fishing",
+    "path": "after-screenshots/07-heaven-fishing-4.png",
+    "cp": [
+      -220,
+      9,
+      -58
+    ],
+    "lp": [
+      -216,
+      2,
+      8
+    ],
+    "before_path": "screenshots/07-heaven-fishing-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "08-hell-fishing",
+    "path": "after-screenshots/08-hell-fishing-1.png",
+    "cp": [
+      244,
+      110,
+      9
+    ],
+    "lp": [
+      244,
+      0,
+      8
+    ],
+    "before_path": "screenshots/08-hell-fishing-1.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "08-hell-fishing",
+    "path": "after-screenshots/08-hell-fishing-2.png",
+    "cp": [
+      213,
+      10,
+      55
+    ],
+    "lp": [
+      244,
+      2,
+      8
+    ],
+    "before_path": "screenshots/08-hell-fishing-2.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "08-hell-fishing",
+    "path": "after-screenshots/08-hell-fishing-3.png",
+    "cp": [
+      281,
+      10,
+      40
+    ],
+    "lp": [
+      244,
+      3,
+      8
+    ],
+    "before_path": "screenshots/08-hell-fishing-3.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "08-hell-fishing",
+    "path": "after-screenshots/08-hell-fishing-4.png",
+    "cp": [
+      236,
+      10,
+      -50
+    ],
+    "lp": [
+      244,
+      2,
+      8
+    ],
+    "before_path": "screenshots/08-hell-fishing-4.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "08-hell-fishing",
+    "path": "after-screenshots/08-hell-fishing-5.png",
+    "cp": [
+      218,
+      18,
+      65
+    ],
+    "lp": [
+      244,
+      3,
+      8
+    ],
+    "before_path": "screenshots/08-hell-fishing-5.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "04-bragg",
+    "path": "after-screenshots/04-bragg-6.png",
+    "cp": [
+      16,
+      13,
+      -72
+    ],
+    "lp": [
+      0,
+      8,
+      -88
+    ],
+    "before_path": "screenshots/04-bragg-6.png",
+    "fov": 70,
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "00-whole",
+    "path": "after-screenshots/00-whole-map.png",
+    "cp": [
+      0,
+      240,
+      100
+    ],
+    "lp": [
+      0,
+      0,
+      0
+    ],
+    "fov": 100,
+    "note": "Distant capture omits outer scenery; local captures and config are authoritative.",
+    "before_path": "screenshots/00-whole-map.png",
+    "matched_manifest_camera": true
+  },
+  {
+    "section": "09-low-angle-seams",
+    "path": "after-screenshots/09-arrival-branch-west.png",
+    "cp": [
+      -21,
+      2,
+      61
+    ],
+    "lp": [
+      -27,
+      0.4,
+      52
+    ],
+    "fov": 70,
+    "matched_manifest_camera": false
+  },
+  {
+    "section": "09-low-angle-seams",
+    "path": "after-screenshots/09-arrival-branch-east.png",
+    "cp": [
+      21,
+      2,
+      61
+    ],
+    "lp": [
+      27,
+      0.4,
+      52
+    ],
+    "fov": 70,
+    "matched_manifest_camera": false
+  },
+  {
+    "section": "09-low-angle-seams",
+    "path": "after-screenshots/09-bragg-east-annulus.png",
+    "cp": [
+      31,
+      5.7,
+      -74
+    ],
+    "lp": [
+      37,
+      4.44,
+      -88
+    ],
+    "fov": 70,
+    "matched_manifest_camera": false
+  },
+  {
+    "section": "09-low-angle-seams",
+    "path": "after-screenshots/09-arena-crest.png",
+    "cp": [
+      120,
+      5.8,
+      25
+    ],
+    "lp": [
+      120,
+      4.38,
+      8
+    ],
+    "fov": 70,
+    "matched_manifest_camera": false
+  },
+  {
+    "section": "09-low-angle-seams",
+    "path": "after-screenshots/09-arena-access-ramp.png",
+    "cp": [
+      224,
+      35,
+      -99
+    ],
+    "lp": [
+      185,
+      8,
+      -55
+    ],
+    "fov": 70,
+    "matched_manifest_camera": false
+  }
+]

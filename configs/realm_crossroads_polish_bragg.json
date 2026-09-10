@@ -1,0 +1,134 @@
+{
+  "revision": 3,
+  "root_name": "BraggRotundaR6",
+  "output_name": "BraggCraftsmanshipR1",
+  "backup_name": "BraggCraftsmanshipBackup",
+  "bake_source": "tools/realm_crossroads/polish_bragg.luau",
+  "preview_only": true,
+  "floor": {
+    "enabled": true,
+    "center": [
+      0,
+      4.23,
+      -88
+    ],
+    "thickness": 0.42,
+    "inner_radius": 34,
+    "outer_radius": 38,
+    "cutter_height": 4,
+    "inner_cutter_height": 8
+  },
+  "architecture": {
+    "column_base_size": [
+      1.9,
+      0.65,
+      1.9
+    ],
+    "column_collar_size": [
+      1.48,
+      0.18,
+      1.48
+    ],
+    "collar_offset": 1.05,
+    "corner_max_gap": 6,
+    "wall_endpoint_half_span": 9,
+    "wall_height": 11.7,
+    "wall_depth": 1.25,
+    "joint_end_clearance": 0.04,
+    "connector_depth": 2.7,
+    "connector_height": 0.9,
+    "wall_local_z": 5.1,
+    "bay_count": 14
+  },
+  "podium": {
+    "base_height": 0.18,
+    "base_width": 4.85,
+    "anchor_host_size": [
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "exhibits": {
+    "foot_size": [
+      2.2,
+      0.55,
+      3.6
+    ],
+    "foot_x": 5.1,
+    "foot_y": 0.52,
+    "foot_z": 0.2
+  },
+  "figures": {
+    "folder_name": "PodiumHeightDummies",
+    "expected_count": 24,
+    "body_material": "SmoothPlastic"
+  },
+  "palette": {
+    "stone": [
+      178,
+      170,
+      150
+    ],
+    "light_stone": [
+      222,
+      217,
+      195
+    ],
+    "runner": [
+      161,
+      153,
+      132
+    ],
+    "bronze": [
+      149,
+      112,
+      57
+    ],
+    "ink": [
+      65,
+      52,
+      36
+    ],
+    "hell_stone": [
+      62,
+      49,
+      52
+    ],
+    "figure_skin": [
+      191,
+      173,
+      141
+    ],
+    "figure_shirt": [
+      124,
+      143,
+      153
+    ],
+    "figure_legs": [
+      82,
+      94,
+      109
+    ],
+    "figure_hands": [
+      191,
+      173,
+      141
+    ],
+    "rank1": [
+      223,
+      176,
+      67
+    ],
+    "rank2": [
+      182,
+      201,
+      205
+    ],
+    "rank3": [
+      173,
+      109,
+      69
+    ]
+  }
+}

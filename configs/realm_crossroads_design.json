@@ -1,0 +1,79 @@
+{
+  "revision": "R2",
+  "status": "Architectural proposal for review; not baked into Roblox",
+  "island": [
+    360,
+    320
+  ],
+  "walkable_terrace": [
+    290,
+    270
+  ],
+  "spawn": [
+    0,
+    100
+  ],
+  "gates": [
+    [
+      -26,
+      54
+    ],
+    [
+      26,
+      54
+    ]
+  ],
+  "gate_yaw": [
+    29.5,
+    -29.5
+  ],
+  "door_opening": [
+    10,
+    12
+  ],
+  "gate_structure": [
+    18,
+    18,
+    6
+  ],
+  "avatar_height": 9,
+  "avatar_base_height": 19,
+  "player_height_reference": 5.5,
+  "primary_path_width": 18,
+  "landmark": [
+    0,
+    0
+  ],
+  "landmark_diameter": 20,
+  "gallery": [
+    0,
+    -102,
+    120,
+    28,
+    22
+  ],
+  "garden_reserves": [
+    [
+      -105,
+      -18,
+      48,
+      44
+    ],
+    [
+      105,
+      -18,
+      48,
+      44
+    ]
+  ],
+  "levels": {
+    "court": 0,
+    "garden": 4,
+    "rear_terrace": 12,
+    "cliff_base": -16
+  },
+  "maximum_ramp_slope": "1:8",
+  "walk_speed_reference": 16,
+  "reference_image": "docs/art/realm_crossroads/approved-concept.png",
+  "drawing_source": "tools/realm_crossroads/draw_architecture.py"
+}

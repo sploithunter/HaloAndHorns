@@ -1057,7 +1057,7 @@ function SettingsPanel:_createCombatSettings()
 
     local groupRules = PackScale.rules((missionsConfig.player_tuning or {}).group_scale)
     self:_createSliderSetting(
-        "Trial Enemy Group Size",
+        missionsConfig.player_tuning.group_scale.label,
         self:_getTrialGroupScale(),
         groupRules.min,
         groupRules.max,

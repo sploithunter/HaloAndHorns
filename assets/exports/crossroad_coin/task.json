@@ -1,0 +1,36 @@
+{
+  "id": "01a087d8-dd3c-704e-804c-267aaadc07c0",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 15,
+  "created_at": 1788985533411,
+  "started_at": 1788985533423,
+  "finished_at": 1788985652785,
+  "expires_at": 1789244852785,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/ui/currencies/crossroad_coin.png",
+    "source_sha256": "9f4da358f49a2fcfe4ff601c75227ebe902f45c09fe8f6b2b24012db06375d60",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 1000,
+    "should_texture": true,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "fbx": "model.fbx",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

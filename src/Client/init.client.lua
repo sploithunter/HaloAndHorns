@@ -438,6 +438,16 @@ do
     end
 end
 
+-- Crossroads cast/reel and luck timing run locally; only reward saving uses the API.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.CrossroadsFishing).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CrossroadsFishing", { error = tostring(err) })
+    end
+end
+
 -- Power/command hotbar (Feature 16): lower-center 20-slot bar + farming-mode cycle.
 -- Number keys 1-0 / Shift+1-0 fire slots; bindings fed by HotbarService.
 do
@@ -734,6 +744,7 @@ do
         require(script.Systems.TopHudStack).start()
         require(script.Systems.HotbarFlank).start()
         require(script.Systems.HoverboardController).start()
+        require(script.Systems.CrossroadsTutorial).start()
         require(script.Systems.StarterPetController).start()
         require(script.Systems.FoundersChoiceController).start()
         require(script.Systems.TutorialController).start()
@@ -773,6 +784,16 @@ do
         Logger:Warn("Failed to report retention context", { error = tostring(err) })
     end
 end
+
+task.spawn(function()
+    local ok, err = pcall(function()
+        require(script.Systems.CrossroadsPodiums).start()
+        require(script.Systems.CrossroadsArenaFX).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CrossroadsPodiums", { error = tostring(err) })
+    end
+end)
 
 -- RealmAtmosphere: retints Lighting to the player's current realm (heaven/hell skin on the
 -- same map, World S3) — driven by the server-published CurrentRealm attribute.

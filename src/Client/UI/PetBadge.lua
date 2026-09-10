@@ -393,4 +393,64 @@ function PetBadge.create(parent, opts)
     return { holder = holder, disc = disc, ring = ring }
 end
 
+-- Permanent ability identity on inventory/equipped/trade cards, not a live lives counter.
+-- Resolve the actual variant passive so ordinary/golden kitties never inherit this badge.
+function PetBadge.createReviveBadge(parent, petType, variant, zIndex)
+    local pets = require(ReplicatedStorage.Configs.pets)
+    local runtime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
+    local passive = runtime.resolve(pets, petType, variant).passive
+    if not passive.revive_on_death or type(passive.max_revives) ~= "number" then
+        return nil
+    end
+    local count = math.floor(passive.max_revives)
+    if count <= 0 then
+        return nil
+    end
+    local inventory = require(ReplicatedStorage.Configs.inventory)
+    local cfg = inventory.buckets.pets.card_visuals.revive_badge
+    local holder = Instance.new("Frame")
+    holder.Name = "NineLivesBadge"
+    holder.AnchorPoint = Vector2.new(0.5, 0.5)
+    holder.Position = UDim2.fromScale(cfg.position[1], cfg.position[2])
+    holder.Size = UDim2.fromScale(cfg.size, cfg.size)
+    holder.BackgroundTransparency = 1
+    holder.ZIndex = zIndex
+    holder.Parent = parent
+    local aspect = Instance.new("UIAspectRatioConstraint")
+    aspect.AspectRatio = 1
+    aspect.Parent = holder
+    local badge = PetBadge.create(holder, {
+        element = cfg.element,
+        ring = cfg.ring,
+        zIndex = zIndex,
+    })
+    badge.disc.Visible = false
+    local number = Instance.new("TextLabel")
+    number.Name = "Revives"
+    number.AnchorPoint = Vector2.new(0.5, 0.5)
+    number.Position = UDim2.fromScale(0.5, 0.5)
+    number.Size = badge.disc.Size
+    number.BackgroundColor3 = cfg.background_color
+    number.BorderSizePixel = 0
+    number.Text = ""
+    number.ZIndex = zIndex
+    number.Parent = badge.holder
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = number
+    local label = Instance.new("TextLabel")
+    label.Name = "Count"
+    label.AnchorPoint = Vector2.new(0.5, 0.5)
+    label.Position = UDim2.fromScale(0.5, 0.5)
+    label.Size = UDim2.fromScale(cfg.text_scale, cfg.text_scale)
+    label.BackgroundTransparency = 1
+    label.Text = tostring(count)
+    label.TextColor3 = cfg.text_color
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = true
+    label.ZIndex = zIndex + 2
+    label.Parent = number
+    return holder
+end
+
 return PetBadge

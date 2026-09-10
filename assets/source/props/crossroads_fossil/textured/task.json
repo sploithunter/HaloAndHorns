@@ -1,0 +1,30 @@
+{
+  "id": "01a0836c-f763-71d7-af1a-241e5df5ec6a",
+  "type": "retexture",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 10,
+  "created_at": 1788911352636,
+  "started_at": 1788911352639,
+  "finished_at": 1788911393422,
+  "expires_at": 1789170593422,
+  "task_error": null,
+  "request": {
+    "model": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/repaired/model.glb",
+    "model_sha256": "96cca4e20bb8f8a19dd9d90691332f1495800015eb83d2478c228283301bb391",
+    "style_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/concept-v1.png",
+    "style_image_sha256": "5add3d1ffd1b61cfd94a7de0eac82b14296ae8a2e8a0dfc4a85affc89393adae",
+    "ai_model": "latest",
+    "enable_original_uv": false,
+    "enable_pbr": false,
+    "texture_resolution": "2k",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "files": {
+    "glb": "model.glb",
+    "preview": "preview.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

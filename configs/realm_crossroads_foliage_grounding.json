@@ -1,0 +1,10 @@
+{
+  "bake_source": "tools/realm_crossroads/ground_foliage.luau",
+  "target_path": ["CrossroadsLandscapeR8", "PerimeterFlora"],
+  "ray_origin_y": 150,
+  "ray_length": 220,
+  "float_tolerance": 0.1,
+  "root_embed": 0.35,
+  "max_lowering": 10,
+  "original_pivot_attribute": "BeforeTerrainGroundingPivot"
+}

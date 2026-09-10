@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "name": "Crossroads_Friendly_Fish_Fossil_v2",
+  "model_asset_id": 116671594170630,
+  "creator_group": 15872767,
+  "supersedes_model_asset_id": 77687797463306,
+  "native_validation": "placed_preview_dimensions_verified",
+  "texture_id": 105991804065229,
+  "packed_texture_resolution": [
+    1024,
+    1024
+  ],
+  "triangles": 6952,
+  "upload_method": "scripts/upload_models.js embedded FBX",
+  "production_published": false,
+  "mesh_id": 116191368702768,
+  "native_checks": {
+    "reported_by": "integrating_lead",
+    "mesh_parts": 1,
+    "texture_id": 105991804065229,
+    "mesh_id": 116191368702768,
+    "dimensions_xyz": [
+      8,
+      5.21875,
+      3.57813
+    ],
+    "placement_xyz": [
+      280,
+      4,
+      77
+    ],
+    "yaw_degrees": 85,
+    "ground_embed": 0.2,
+    "production_published": false
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "revision": 7,
+  "root": "CrossroadsActivitiesR7",
+  "bake_source": "tools/realm_crossroads/bake_activities.luau",
+  "preview_only": true,
+  "ground_y": 4,
+  "areas": [
+    {
+      "key": "CoinGarden",
+      "name": "COIN GARDEN",
+      "center": [
+        -120,
+        4,
+        18
+      ],
+      "field_size": [
+        64,
+        90
+      ],
+      "pavilion_center": [
+        -120,
+        4,
+        -61
+      ],
+      "egg_title": "EGG OF THE WEEK",
+      "intent": "Hall drop-style breakables, shared DropService/Magnet, weekly egg via existing hatch system",
+      "currency": "hall_coins"
+    },
+    {
+      "key": "PatrolGrove",
+      "name": "PATROL GROVE",
+      "center": [
+        120,
+        4,
+        8
+      ],
+      "field_size": [
+        64,
+        102
+      ],
+      "pavilion_center": [
+        120,
+        4,
+        -67
+      ],
+      "intent": "Existing roaming patrol packs and RealmAllianceService; bounded shared combat with gathering terrace"
+    }
+  ],
+  "palette": {
+    "stone": [
+      206,
+      201,
+      180
+    ],
+    "light": [
+      230,
+      222,
+      201
+    ],
+    "trim": [
+      177,
+      137,
+      64
+    ],
+    "grass": [
+      103,
+      141,
+      86
+    ],
+    "soil": [
+      89,
+      96,
+      77
+    ],
+    "dark": [
+      67,
+      58,
+      58
+    ],
+    "ink": [
+      62,
+      49,
+      34
+    ],
+    "water": [
+      91,
+      177,
+      192
+    ],
+    "ember": [
+      201,
+      98,
+      56
+    ],
+    "energy": [
+      110,
+      199,
+      245
+    ],
+    "energy_gate": [
+      205,
+      168,
+      250
+    ]
+  },
+  "models": {
+    "hall_egg_stand": 124799395948890,
+    "wayfinder_egg": 85917855243799,
+    "WaycoinBag": 110554935395608,
+    "GoldFernNugget": 120014016368053,
+    "WaycoinTrove": 95705960346519,
+    "GildedWaycache": 127252019339192,
+    "cloud_sapling": 127768158768789,
+    "heaven_compass_banner": 99405485005665,
+    "hell_skull_banner": 101805985194472,
+    "hell_skull_lantern": 101289093060410,
+    "pearl_quartz": 76377133605544,
+    "bone_rock": 80112726228834,
+    "field_flower_bush": 79157049690801,
+    "softglow_bloom": 86094061836178,
+    "animal_skull": 72200416872370
+  },
+  "copy": [
+    "COIN GARDEN",
+    "EGG OF THE WEEK",
+    "PATROL GROVE",
+    "GATHER FIGHT SHARE"
+  ],
+  "coin_examples": [],
+  "patrol_loop": [
+    [
+      -21,
+      -32
+    ],
+    [
+      21,
+      -32
+    ],
+    [
+      21,
+      28
+    ],
+    [
+      -21,
+      28
+    ]
+  ],
+  "cover": [
+    [
+      -18,
+      -10,
+      6,
+      3,
+      4
+    ],
+    [
+      18,
+      10,
+      6,
+      3,
+      4
+    ]
+  ],
+  "note": "Layout and static specimen assets only. Weekly egg roster, refresh and price are not selected by this art pass.",
+  "barrier": {
+    "family": "impaler_palisade",
+    "tier": 2,
+    "model_asset_id": 98392384350392,
+    "canonical_size": [
+      10.0,
+      4.53651,
+      2.62357
+    ],
+    "segment_length": 10,
+    "entry_width": 14,
+    "retraction_depth": 5
+  },
+  "terrace_extension": {
+    "region_min": [
+      132,
+      -8,
+      -116
+    ],
+    "region_max": [
+      180,
+      24,
+      124
+    ],
+    "flat_end": 160,
+    "rim_end": 176,
+    "floor": 4,
+    "rim": 12,
+    "z_flat_min": -100,
+    "z_flat_max": 108,
+    "z_blend": 16
+  }
+}

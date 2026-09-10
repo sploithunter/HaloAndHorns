@@ -1,0 +1,126 @@
+{
+  "revision": "R3 doorway study",
+  "status": "Measured in Merge Server during Play on 2026-09-08; not rebuilt in Crossroads",
+  "preferred_family": "bay_end_arches",
+  "trial_uniform_scale": 0.3,
+  "face_height": 5,
+  "face_center_height": 6.5,
+  "face_collidable": false,
+  "interaction_proposal": "Talk / Enter prompt plus optional threshold crossing; no mandatory dialogue",
+  "candidates": [
+    {
+      "key": "heaven-bay",
+      "name": "Heaven bay-end arch",
+      "path": "Workspace.GeneratedMap_MergeEggVoxel.HeavenGates.HeavenGateCrisp_01",
+      "size": [
+        99.4535675,
+        94.0146561,
+        40.0144577
+      ],
+      "mesh": "rbxassetid://95514248222984",
+      "surface": {
+        "color": "rbxassetid://79792850876507",
+        "normal": "rbxassetid://134344480146657",
+        "rough": "rbxassetid://97896988658239",
+        "metal": "rbxassetid://124392107212176"
+      },
+      "floor_clear_width_sample": 20,
+      "widest_center_clear_width_sample": 32,
+      "center_blocked_above_sample": 45
+    },
+    {
+      "key": "hell-bay",
+      "name": "Hell bay-end arch",
+      "path": "Workspace.GeneratedMap_MergeEggVoxel.HellGates.HellGateCrisp_01",
+      "size": [
+        99.7785416,
+        93.5423889,
+        43.3607712
+      ],
+      "mesh": "rbxassetid://97471372553641",
+      "surface": {
+        "color": "rbxassetid://90828953723712",
+        "normal": "rbxassetid://134047470740588",
+        "rough": "rbxassetid://138893329004416",
+        "metal": "rbxassetid://133419312108758"
+      },
+      "floor_clear_width_sample": 18,
+      "widest_center_clear_width_sample": 32,
+      "center_blocked_above_sample": 45
+    },
+    {
+      "key": "heaven-return",
+      "name": "Celestial return portal",
+      "path": "Workspace.Meshy_AI_Celestial_Marble_Gate_0903140522_texture",
+      "size": [
+        23.5774765,
+        23.9993362,
+        22.0775166
+      ],
+      "mesh": "rbxassetid://91356934775498",
+      "surface": {
+        "color": "rbxassetid://113145674828423",
+        "normal": "rbxassetid://96839200572555",
+        "rough": "rbxassetid://132113503964384",
+        "metal": "rbxassetid://111672435765602"
+      },
+      "lightning_ring_diameter": 15
+    },
+    {
+      "key": "hell-return",
+      "name": "Infernal return portal",
+      "path": "Workspace.Meshy_AI_Infernal_Eclipse_Gate_0903140501_texture",
+      "size": [
+        34.6594429,
+        34.9323349,
+        31.998579
+      ],
+      "mesh": "rbxassetid://84348911136607",
+      "surface": {
+        "color": "rbxassetid://104136057051205",
+        "normal": "rbxassetid://70551465365037",
+        "rough": "rbxassetid://84746130286837",
+        "metal": "rbxassetid://106921252406985"
+      },
+      "lightning_ring_diameter": 20
+    }
+  ],
+  "sampling_note": "Raycasts through each isolated native MeshPart, local X in 1-stud steps, local Y in 2-stud steps starting 1 above bottom; current Default collision. Widths approximate collision clearance, not exact visible mesh aperture or a character walk test.",
+  "hazards": [
+    "Hell Model bounds include high lightning hooks and report 414 studs tall; use visible mesh bounds for scaling.",
+    "Preserve SurfaceAppearance maps; these meshes have empty TextureID.",
+    "Clone art only; never clone Merge bay tags, enemy spawns, return prompts, or lightning hooks into the hub.",
+    "Do not assume the return portal LightningRing equals its visible opening."
+  ],
+  "layout_proposal": {
+    "spawn": [
+      0,
+      100
+    ],
+    "gates": [
+      [
+        -40,
+        42
+      ],
+      [
+        40,
+        42
+      ]
+    ],
+    "gate_yaw": [
+      34.59,
+      -34.59
+    ],
+    "gate_separation": 80,
+    "gate_outer_lighting_radius": 26,
+    "gate_full_lighting_radius": 10,
+    "neutral_gap_between_lighting_zones": 28,
+    "walk_speed_reference": 24,
+    "walk_speed_source": "configs/places.lua roles.merge.walk_speed (default, without buffs)",
+    "light_blend": "smooth distance-based fade, scoped to local player; neutral at spawn and gallery",
+    "island": [
+      360,
+      320
+    ]
+  }
+}

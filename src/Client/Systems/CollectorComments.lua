@@ -71,7 +71,9 @@ function Comments:snapshot()
     return {
         eligible = p:GetAttribute(config.eligibility_attribute),
         collector = p:GetAttribute(collectorAttribute),
-        side = p:GetAttribute("InMergeEggPrototype") == true and p:GetAttribute("MergeEggBaySide")
+        side = p:GetAttribute("InCrossroads") == true
+                and (p:GetAttribute("CrossroadsGuide") == "demon" and "hell" or "heaven")
+            or (p:GetAttribute("InMergeEggPrototype") == true and p:GetAttribute("MergeEggBaySide"))
             or p:GetAttribute("CurrentRealm"),
         blocked = (
             p:GetAttribute("InMergeEggPrototype") == true

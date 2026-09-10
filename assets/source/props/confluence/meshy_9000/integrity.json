@@ -1,0 +1,431 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/meshy_9000/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 4965,
+    "edges": 13070,
+    "faces": 8295,
+    "triangles": 8295,
+    "face_components": 133,
+    "boundary_edges": 1261,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 6,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 4965,
+      "raw_vertices": 24690,
+      "welded_coincident_vertices": 19725,
+      "inspection_weld_distance": 9.571152441519917e-07,
+      "edges": 13070,
+      "faces": 8295,
+      "triangles": 8295,
+      "face_components": 133,
+      "bounds_diagonal": 9.571152441519917,
+      "boundary_edges": 1261,
+      "boundary_components": [
+        {
+          "edge_count": 151,
+          "vertex_count": 150,
+          "closed_loop": false,
+          "perimeter": 48.76876990497112,
+          "perimeter_to_mesh_diagonal": 5.095391615894747
+        },
+        {
+          "edge_count": 69,
+          "vertex_count": 67,
+          "closed_loop": false,
+          "perimeter": 22.080686181783676,
+          "perimeter_to_mesh_diagonal": 2.307003917939606
+        },
+        {
+          "edge_count": 42,
+          "vertex_count": 42,
+          "closed_loop": true,
+          "perimeter": 20.241676822304726,
+          "perimeter_to_mesh_diagonal": 2.114863068578428
+        },
+        {
+          "edge_count": 63,
+          "vertex_count": 61,
+          "closed_loop": false,
+          "perimeter": 19.615204270929098,
+          "perimeter_to_mesh_diagonal": 2.0494088241493067
+        },
+        {
+          "edge_count": 36,
+          "vertex_count": 36,
+          "closed_loop": true,
+          "perimeter": 18.81208972632885,
+          "perimeter_to_mesh_diagonal": 1.965498913664931
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 10.131955593824387,
+          "perimeter_to_mesh_diagonal": 1.058593064495733
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 9.003088561818004,
+          "perimeter_to_mesh_diagonal": 0.9406483301595284
+        },
+        {
+          "edge_count": 11,
+          "vertex_count": 12,
+          "closed_loop": false,
+          "perimeter": 7.2585109770298,
+          "perimeter_to_mesh_diagonal": 0.7583737717458333
+        },
+        {
+          "edge_count": 11,
+          "vertex_count": 11,
+          "closed_loop": true,
+          "perimeter": 6.23467031121254,
+          "perimeter_to_mesh_diagonal": 0.651402257910591
+        },
+        {
+          "edge_count": 37,
+          "vertex_count": 36,
+          "closed_loop": false,
+          "perimeter": 4.501113247126341,
+          "perimeter_to_mesh_diagonal": 0.47027913040026303
+        },
+        {
+          "edge_count": 25,
+          "vertex_count": 25,
+          "closed_loop": true,
+          "perimeter": 4.496405050158501,
+          "perimeter_to_mesh_diagonal": 0.46978721503305854
+        },
+        {
+          "edge_count": 24,
+          "vertex_count": 24,
+          "closed_loop": true,
+          "perimeter": 3.498504713177681,
+          "perimeter_to_mesh_diagonal": 0.3655259629970027
+        },
+        {
+          "edge_count": 21,
+          "vertex_count": 21,
+          "closed_loop": true,
+          "perimeter": 3.263781152665615,
+          "perimeter_to_mesh_diagonal": 0.3410018984241902
+        },
+        {
+          "edge_count": 19,
+          "vertex_count": 19,
+          "closed_loop": true,
+          "perimeter": 3.2540282532572746,
+          "perimeter_to_mesh_diagonal": 0.33998290938729725
+        },
+        {
+          "edge_count": 20,
+          "vertex_count": 20,
+          "closed_loop": true,
+          "perimeter": 3.1344075612723827,
+          "perimeter_to_mesh_diagonal": 0.32748486458905807
+        },
+        {
+          "edge_count": 18,
+          "vertex_count": 18,
+          "closed_loop": true,
+          "perimeter": 3.1006379798054695,
+          "perimeter_to_mesh_diagonal": 0.3239565975728083
+        },
+        {
+          "edge_count": 28,
+          "vertex_count": 28,
+          "closed_loop": true,
+          "perimeter": 3.0627993419766426,
+          "perimeter_to_mesh_diagonal": 0.3200031930000547
+        },
+        {
+          "edge_count": 30,
+          "vertex_count": 30,
+          "closed_loop": true,
+          "perimeter": 3.0336702652275562,
+          "perimeter_to_mesh_diagonal": 0.31695976882234295
+        },
+        {
+          "edge_count": 28,
+          "vertex_count": 28,
+          "closed_loop": true,
+          "perimeter": 3.0216938592493534,
+          "perimeter_to_mesh_diagonal": 0.3157084664267977
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 3.000629462301731,
+          "perimeter_to_mesh_diagonal": 0.3135076450443856
+        },
+        {
+          "edge_count": 26,
+          "vertex_count": 26,
+          "closed_loop": true,
+          "perimeter": 2.976301182061434,
+          "perimeter_to_mesh_diagonal": 0.31096581109189725
+        },
+        {
+          "edge_count": 34,
+          "vertex_count": 34,
+          "closed_loop": true,
+          "perimeter": 2.918336048722267,
+          "perimeter_to_mesh_diagonal": 0.3049095776661593
+        },
+        {
+          "edge_count": 24,
+          "vertex_count": 24,
+          "closed_loop": true,
+          "perimeter": 2.7605948708951473,
+          "perimeter_to_mesh_diagonal": 0.2884286806382492
+        },
+        {
+          "edge_count": 24,
+          "vertex_count": 24,
+          "closed_loop": true,
+          "perimeter": 2.7605259343981743,
+          "perimeter_to_mesh_diagonal": 0.28842147810988134
+        },
+        {
+          "edge_count": 24,
+          "vertex_count": 24,
+          "closed_loop": true,
+          "perimeter": 2.7303299345076084,
+          "perimeter_to_mesh_diagonal": 0.2852665811343014
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 2.7267442792654037,
+          "perimeter_to_mesh_diagonal": 0.28489194962946296
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 2.597501803189516,
+          "perimeter_to_mesh_diagonal": 0.27138861480478393
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 2.5884990245103836,
+          "perimeter_to_mesh_diagonal": 0.2704479988513614
+        },
+        {
+          "edge_count": 20,
+          "vertex_count": 20,
+          "closed_loop": true,
+          "perimeter": 2.5874989107251167,
+          "perimeter_to_mesh_diagonal": 0.2703435063368625
+        },
+        {
+          "edge_count": 21,
+          "vertex_count": 21,
+          "closed_loop": true,
+          "perimeter": 2.5505650117993355,
+          "perimeter_to_mesh_diagonal": 0.266484629451195
+        },
+        {
+          "edge_count": 21,
+          "vertex_count": 21,
+          "closed_loop": true,
+          "perimeter": 2.539221078157425,
+          "perimeter_to_mesh_diagonal": 0.26529940816136366
+        },
+        {
+          "edge_count": 21,
+          "vertex_count": 21,
+          "closed_loop": true,
+          "perimeter": 2.533289350569248,
+          "perimeter_to_mesh_diagonal": 0.2646796575488413
+        },
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 2.530827023088932,
+          "perimeter_to_mesh_diagonal": 0.2644223920319288
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 2.1605148762464523,
+          "perimeter_to_mesh_diagonal": 0.22573194706147198
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 2.1218829602003098,
+          "perimeter_to_mesh_diagonal": 0.2216956602838676
+        },
+        {
+          "edge_count": 14,
+          "vertex_count": 14,
+          "closed_loop": true,
+          "perimeter": 2.06504188477993,
+          "perimeter_to_mesh_diagonal": 0.2157568691333055
+        },
+        {
+          "edge_count": 11,
+          "vertex_count": 11,
+          "closed_loop": true,
+          "perimeter": 1.818214450031519,
+          "perimeter_to_mesh_diagonal": 0.1899681842015237
+        },
+        {
+          "edge_count": 13,
+          "vertex_count": 13,
+          "closed_loop": true,
+          "perimeter": 1.8082718215882778,
+          "perimeter_to_mesh_diagonal": 0.1889293721562668
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 1.7805384621024132,
+          "perimeter_to_mesh_diagonal": 0.18603177339213503
+        },
+        {
+          "edge_count": 14,
+          "vertex_count": 14,
+          "closed_loop": true,
+          "perimeter": 1.7631569504737854,
+          "perimeter_to_mesh_diagonal": 0.18421574217386436
+        },
+        {
+          "edge_count": 13,
+          "vertex_count": 13,
+          "closed_loop": true,
+          "perimeter": 1.7572222724556923,
+          "perimeter_to_mesh_diagonal": 0.18359568329857695
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 13,
+          "closed_loop": false,
+          "perimeter": 1.7396482303738594,
+          "perimeter_to_mesh_diagonal": 0.18175953637800382
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 1.6751096695661545,
+          "perimeter_to_mesh_diagonal": 0.1750165071344474
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 1.1482095904648304,
+          "perimeter_to_mesh_diagonal": 0.11996565695515059
+        },
+        {
+          "edge_count": 17,
+          "vertex_count": 17,
+          "closed_loop": true,
+          "perimeter": 1.1465216465294361,
+          "perimeter_to_mesh_diagonal": 0.11978929951588634
+        },
+        {
+          "edge_count": 16,
+          "vertex_count": 16,
+          "closed_loop": true,
+          "perimeter": 1.1462899558246136,
+          "perimeter_to_mesh_diagonal": 0.11976509232597496
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 1.1404297165572643,
+          "perimeter_to_mesh_diagonal": 0.11915281085797458
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 1.1134397312998772,
+          "perimeter_to_mesh_diagonal": 0.11633288029869272
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 1.0910096615552902,
+          "perimeter_to_mesh_diagonal": 0.11398937256734737
+        },
+        {
+          "edge_count": 15,
+          "vertex_count": 15,
+          "closed_loop": true,
+          "perimeter": 1.0872585698962212,
+          "perimeter_to_mesh_diagonal": 0.11359745616208809
+        },
+        {
+          "edge_count": 16,
+          "vertex_count": 16,
+          "closed_loop": true,
+          "perimeter": 1.0859889797866344,
+          "perimeter_to_mesh_diagonal": 0.11346480859249353
+        },
+        {
+          "edge_count": 11,
+          "vertex_count": 11,
+          "closed_loop": true,
+          "perimeter": 0.919681005179882,
+          "perimeter_to_mesh_diagonal": 0.09608884727300769
+        },
+        {
+          "edge_count": 3,
+          "vertex_count": 3,
+          "closed_loop": true,
+          "perimeter": 0.5402405112981796,
+          "perimeter_to_mesh_diagonal": 0.056444666888242394
+        },
+        {
+          "edge_count": 10,
+          "vertex_count": 11,
+          "closed_loop": false,
+          "perimeter": 0.49772630259394646,
+          "perimeter_to_mesh_diagonal": 0.0520027557428504
+        },
+        {
+          "edge_count": 3,
+          "vertex_count": 3,
+          "closed_loop": true,
+          "perimeter": 0.28134964406490326,
+          "perimeter_to_mesh_diagonal": 0.029395586977008215
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 6,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 1261 exceed allowed 0",
+    "wire/3+-face edges 6 exceed allowed 0"
+  ]
+}

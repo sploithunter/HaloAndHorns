@@ -1,0 +1,38 @@
+{
+  "root": "RealmCrossroadsR4",
+  "installer_source": "tools/realm_crossroads/preview_interactions.luau",
+  "client_source": "tools/realm_crossroads/preview_interactions.client.luau",
+  "runtime_folder": "CrossroadsInteractionPreview",
+  "studio_only": true,
+  "fishing": {
+    "action": "Cast line",
+    "reel_action": "Reel in",
+    "object": "Fishing",
+    "distance": 9,
+    "release_distance": 14,
+    "cast_seconds": 0.65,
+    "arc_height": 4,
+    "water_offset": 0.18,
+    "bob_amplitude": 0.08,
+    "bob_period": 2.5,
+    "bobber_size": [
+      0.5,
+      0.7,
+      0.5
+    ],
+    "bobber_color": [
+      222,
+      187,
+      81
+    ],
+    "line_color": [
+      214,
+      224,
+      213
+    ],
+    "line_width": 0.025,
+    "max_seconds": 25
+  },
+  "integration_plan": "docs/art/crossroads-review/GAMEPLAY_INTEGRATION.md",
+  "ripple_runtime": "CrossroadsVisualFX"
+}

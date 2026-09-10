@@ -12,6 +12,8 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local BreakableWorld = require(ReplicatedStorage.Shared.Game.BreakableWorld)
+local activityBreakables = require(ReplicatedStorage.Configs.breakables)
 local RunService = game:GetService("RunService")
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
@@ -133,6 +135,7 @@ local function syncBoolSetFolder(parent, name, values)
 end
 
 local function getWorldShort(world)
+    world = BreakableWorld.area(activityBreakables, world)
     if world == "SpawnWorld" then
         return "Spawn"
     end

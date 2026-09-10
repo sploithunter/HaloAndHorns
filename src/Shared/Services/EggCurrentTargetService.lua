@@ -18,6 +18,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local eggSystemConfig = Locations.getConfig("egg_system")
 local petConfig = Locations.getConfig("pets")
+local gardenConfig = require(ReplicatedStorage.Configs.crossroads_garden)
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local HallEggStand = require(ReplicatedStorage.Shared.Game.HallEggStand)
 local InputGlyphs = require(ReplicatedStorage.Shared.Game.InputGlyphs)
@@ -124,6 +125,9 @@ local function titleCaseId(value)
 end
 
 local function getCurrencyIcon(currency)
+    if currency == gardenConfig.currency.id then
+        return gardenConfig.currency.icon
+    end
     if currency == "gems" then
         return "💎"
     elseif currency == "crystals" then
@@ -345,7 +349,10 @@ function EggCurrentTargetService:GetEggDisplayData(eggType)
             .. " "
             .. self:FormatNumber(totalCost)
             .. " "
-            .. titleCaseId(currency),
+            .. (
+                currency == gardenConfig.currency.id and gardenConfig.currency.name
+                or titleCaseId(currency)
+            ),
         detailText = table.concat(detailParts, " • "),
     }
 end

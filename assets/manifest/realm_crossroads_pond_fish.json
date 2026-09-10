@@ -1,0 +1,49 @@
+{
+  "name": "Crossroads_Pearl_Pond_Fish",
+  "model_asset_id": 107641909625364,
+  "creator_group": 15872767,
+  "mesh_id": 86628776776675,
+  "texture_id": 92346256478119,
+  "native_verified": true,
+  "method": "scripts/upload_models.js embedded rigged FBX",
+  "status": "native_import_verified_underwater_review_pending",
+  "config": "configs/realm_crossroads_pond_fish.json",
+  "source": "assets/source/props/crossroads_pond_fish/README.md",
+  "triangles": 4716,
+  "dimensions_xyz": [
+    0.85,
+    1.2,
+    3
+  ],
+  "packed_texture_resolution": 1024,
+  "bone_names": [
+    "Root",
+    "Tail"
+  ],
+  "tail_lateral_axis": "local_Z",
+  "animation_clips": [],
+  "geometry_integrity": "assets/source/props/crossroads_pond_fish/final/integrity_fbx.json",
+  "export_validation": "assets/source/props/crossroads_pond_fish/final/export_validation.json",
+  "provenance": "assets/source/props/crossroads_pond_fish/provenance.json",
+  "meshy_credits": 20,
+  "cosmetic_only": true,
+  "map_installed": false,
+  "native_checks": {
+    "context": "lead temporary ServerPlay import; temporary model destroyed",
+    "mesh_id": 86628776776675,
+    "texture_id": 92346256478119,
+    "mesh_parts": 1,
+    "dimensions_xyz": [
+      0.85000002,
+      1.19999981,
+      3
+    ],
+    "bones": [
+      "Root",
+      "Tail"
+    ],
+    "underwater_visibility": "pending",
+    "native_forward_axis": "pending",
+    "tail_motion": "pending"
+  }
+}

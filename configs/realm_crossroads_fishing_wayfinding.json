@@ -1,0 +1,98 @@
+{
+  "bake_source": "tools/realm_crossroads/fishing_wayfinding.luau",
+  "root": "FishingWayfindingR11",
+  "font_source": "configs/realm_crossroads_glyphs.json",
+  "text": "FISHING",
+  "text_height": 0.8,
+  "text_width": 5.7,
+  "text_y": 2.45,
+  "text_z": 0.53,
+  "base_size": [
+    7.2,
+    0.3,
+    1.9
+  ],
+  "body_size": [
+    6.8,
+    2.9,
+    0.85
+  ],
+  "body_y": 1.8,
+  "cap_size": [
+    7.2,
+    0.18,
+    1.05
+  ],
+  "cap_y": 3.34,
+  "post_size": [
+    0.4,
+    0.9,
+    0.5
+  ],
+  "post_x": 2.4,
+  "post_y": 0.65,
+  "edge_width": 0.09,
+  "sites": [
+    {
+      "name": "HeavenFishing",
+      "position": [
+        -162,
+        4,
+        71
+      ],
+      "yaw": 40,
+      "stone": [
+        213,
+        207,
+        184
+      ],
+      "metal": [
+        145,
+        112,
+        56
+      ],
+      "letters": [
+        85,
+        71,
+        47
+      ],
+      "rod_theme": "heaven"
+    },
+    {
+      "name": "HellFishing",
+      "position": [
+        201,
+        4,
+        77
+      ],
+      "yaw": -45,
+      "stone": [
+        73,
+        64,
+        60
+      ],
+      "metal": [
+        150,
+        111,
+        63
+      ],
+      "letters": [
+        229,
+        199,
+        142
+      ],
+      "rod_theme": "hell"
+    }
+  ],
+  "letter_spacing": 0.12,
+  "rod_emblem": {
+    "scale": 0.65,
+    "position": [
+      -1.6,
+      1.0,
+      0.65
+    ],
+    "roll": -90,
+    "yaw": 180
+  }
+}

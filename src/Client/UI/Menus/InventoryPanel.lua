@@ -6195,6 +6195,10 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         end
     end
 
+    if PetBadge and item.category == "Pets" and item.petType then
+        PetBadge.createReviveBadge(itemFrame, item.petType, item.variant, 112)
+    end
+
     -- ENCHANT badges (lower-LEFT — Jason: per-copy IDENTITY, vs auras lower-right =
     -- species role): white disc carries the effect symbol, ring metal carries
     -- strength 1-5 (copper/bronze/silver/gold/onyx). Extras fan RIGHT, mirroring

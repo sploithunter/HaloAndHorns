@@ -7,6 +7,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CrossroadsOnboarding = require(ReplicatedStorage.Shared.Game.CrossroadsOnboarding)
 
 local StarterPetChoice = require(ReplicatedStorage.Shared.Game.StarterPetChoice)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
@@ -111,6 +112,20 @@ function StarterPetService:_push(player, extra)
     -- out first. Fail-open when PrologueService never initialized (Workspace flag absent) so
     -- a broken prologue can never brick the new-player chooser.
     if state.eligible then
+        if CrossroadsOnboarding.pending(player) then
+            self._crossroadsWaiters = self._crossroadsWaiters or setmetatable({}, { __mode = "k" })
+            if not self._crossroadsWaiters[player] then
+                self._crossroadsWaiters[player] = true
+                local function retry()
+                    if player.Parent and not CrossroadsOnboarding.pending(player) then
+                        self:_push(player)
+                    end
+                end
+                player:GetAttributeChangedSignal("CrossroadsFarmEntered"):Connect(retry)
+                player:GetAttributeChangedSignal("InCrossroads"):Connect(retry)
+            end
+            return
+        end
         local prologueRuns = game:GetService("Workspace"):GetAttribute("PrologueServiceInit")
             == true
         local pending = prologueRuns
@@ -167,6 +182,9 @@ local function firstFreeSlot(equipped)
 end
 
 function StarterPetService:_choose(player, request)
+    if CrossroadsOnboarding.pending(player) then
+        return
+    end
     if not self:_isAvailableHere() then
         self:_push(player)
         return

@@ -1650,4 +1650,23 @@ local uiConfig = {
 
 -- 🎉 UNIVERSAL CONSISTENCY SYSTEM - Successfully loaded!
 
+-- Same currency-display binding as the other wallets; CurrencyStack owns region visibility.
+do
+    local garden = require(script.Parent.crossroads_garden)
+    local pane = table.clone(uiConfig.panes.hall_coins_pane)
+    pane.background = table.clone(pane.background)
+    pane.background.color = garden.hud.fill
+    pane.contents = {
+        {
+            type = "currency_display",
+            config = {
+                currency = garden.currency.id,
+                icon = garden.currency.icon,
+                color = garden.hud.light,
+            },
+        },
+    }
+    uiConfig.panes.crossroads_coins_pane = pane
+end
+
 return uiConfig

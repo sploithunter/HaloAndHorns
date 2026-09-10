@@ -24,6 +24,7 @@ local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CrossroadsOnboarding = require(ReplicatedStorage.Shared.Game.CrossroadsOnboarding)
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
@@ -645,6 +646,9 @@ function PrologueService:Start()
             if self._active[player] or player:GetAttribute("PrologueChecked") then
                 return
             end
+            if CrossroadsOnboarding.pending(player) then
+                return
+            end
             player:SetAttribute("PrologueChecked", true)
             -- Profile has to be resolvable before eligibility means anything; IsEligible
             -- returns no_profile until then, so retry briefly rather than guessing a delay.
@@ -698,6 +702,8 @@ function PrologueService:Start()
                 })
             end)
         end
+        player:GetAttributeChangedSignal("CrossroadsFarmEntered"):Connect(onCharacter)
+        player:GetAttributeChangedSignal("InCrossroads"):Connect(onCharacter)
         player.CharacterAdded:Connect(onCharacter)
         if player.Character then
             onCharacter() -- character already existed when we connected

@@ -15,6 +15,11 @@ return function()
             expect(PrologueSpawnGate.action(true, true, "eligible")).to.equal("skip")
         end)
 
+        it("places Crossroads arrivals before a deferred prologue decision", function()
+            expect(PrologueSpawnGate.action(true, false, nil, true)).to.equal("place")
+            expect(PrologueSpawnGate.action(true, true, nil, true)).to.equal("skip")
+        end)
+
         it("places normally after a non-active decision resolves", function()
             expect(PrologueSpawnGate.action(true, false, "already_seen")).to.equal("place")
             expect(PrologueSpawnGate.action(true, false, "room_unavailable")).to.equal("place")

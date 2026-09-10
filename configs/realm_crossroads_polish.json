@@ -1,0 +1,116 @@
+{
+  "revision": 11,
+  "application_order": [
+    {
+      "config": "configs/realm_crossroads_polish_core.json",
+      "module": "CrossroadsCorePolish",
+      "config_value": "CrossroadsCorePolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_bragg.json",
+      "module": "CrossroadsBraggPolish",
+      "config_value": "CrossroadsBraggPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_fishing.json",
+      "module": "CrossroadsFishingPolish",
+      "config_value": "CrossroadsFishingPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_garden.json",
+      "module": "CrossroadsGardenPolish",
+      "config_value": "CrossroadsGardenPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_arena.json",
+      "module": "CrossroadsArenaPolish",
+      "config_value": "CrossroadsArenaPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_arena_access_ramp.json",
+      "module": "CrossroadsArenaAccessRamp",
+      "config_value": "CrossroadsArenaAccessRampConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_heraldry.json",
+      "module": "CrossroadsHeraldryPolish",
+      "config_value": "CrossroadsHeraldryPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fishing_rods.json",
+      "module": "CrossroadsFishingRodsInstaller",
+      "config_value": "CrossroadsFishingRodsConfig",
+      "source_key": "installer"
+    },
+    {
+      "config": "configs/realm_crossroads_polish_shore_routes.json",
+      "module": "CrossroadsShoreRoutesPolish",
+      "config_value": "CrossroadsShoreRoutesPolishConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fishing_shelter.json",
+      "module": "CrossroadsFishingShelter",
+      "config_value": "CrossroadsFishingShelterConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fishing_wayfinding.json",
+      "module": "CrossroadsFishingWayfinding",
+      "config_value": "CrossroadsFishingWayfindingConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/crossroads_fossil.json",
+      "module": "CrossroadsFossilPlacement",
+      "config_value": "CrossroadsFossilConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_arena_floor.json",
+      "module": "CrossroadsArenaFloor",
+      "config_value": "CrossroadsArenaFloorConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_fossil_setting.json",
+      "module": "CrossroadsFossilSetting",
+      "config_value": "CrossroadsFossilSettingConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_interaction_bindings.json",
+      "module": "CrossroadsInteractionBindings",
+      "config_value": "CrossroadsInteractionBindingsConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_visual_fx.json",
+      "module": "CrossroadsVisualFXInstaller",
+      "config_value": "CrossroadsVisualFXConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_pond_life.json",
+      "module": "CrossroadsPondLifeInstaller",
+      "config_value": "CrossroadsPondLifeConfig",
+      "source_key": "bake_source"
+    },
+    {
+      "config": "configs/realm_crossroads_preview_interactions.json",
+      "module": "CrossroadsPreviewInstaller",
+      "config_value": "CrossroadsPreviewConfig",
+      "source_key": "installer_source"
+    }
+  ],
+  "note": "Apply in listed order to native R10 baseline. FX additionally consumes bundle_source; interaction installer consumes client_source; fishing wayfinding consumes font_source and existing native letter cache. Authoring modules never run automatically at game startup. Pond-life installer consumes client_source after the visual FX bundle; its source asset config and native fish cache are retained with the checkpoint.",
+  "native_checkpoint": "assets/source/maps/realm_crossroads/RealmCrossroads-R11.rbxl",
+  "native_checkpoint_note": "Lossless isolated Studio checkpoint; not mapped into any production Rojo place. Open only if no existing editable preview is already open."
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/crossroad_chest/model_repaired.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 1107,
+    "edges": 3183,
+    "faces": 2122,
+    "triangles": 2122,
+    "face_components": 24,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "Mesh_0",
+      "vertices": 1107,
+      "raw_vertices": 3030,
+      "welded_coincident_vertices": 1923,
+      "inspection_weld_distance": 8.753891425776881e-08,
+      "edges": 3183,
+      "faces": 2122,
+      "triangles": 2122,
+      "face_components": 24,
+      "bounds_diagonal": 0.8753891425776882,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

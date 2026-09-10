@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/trail_pup_shepherd/model_solid.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 2465,
+    "edges": 7437,
+    "faces": 4958,
+    "triangles": 4958,
+    "face_components": 1,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "Mesh_0",
+      "vertices": 2465,
+      "raw_vertices": 4118,
+      "welded_coincident_vertices": 1653,
+      "inspection_weld_distance": 1.060145663129971e-07,
+      "edges": 7437,
+      "faces": 4958,
+      "triangles": 4958,
+      "face_components": 1,
+      "bounds_diagonal": 1.060145663129971,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

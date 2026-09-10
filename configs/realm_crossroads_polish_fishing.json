@@ -1,0 +1,50 @@
+{
+  "root": "FishingPolishR11",
+  "bake_source": "tools/realm_crossroads/polish_fishing.luau",
+  "source_root": "CrossroadsFishingR10",
+  "preview_only": true,
+  "template_cache": "CrossroadsLandscapeAssets",
+  "geometry": {
+    "plank_count": 5, "plank_gap": 0.035, "plank_height": 0.24,
+    "fascia_height": 0.75, "fascia_width": 0.3,
+    "beam_width": 0.65, "beam_height": 0.7, "beam_x": 3.6,
+    "post_width": 0.7, "post_match_tolerance": 0.15, "post_bed_embed": 0.3,
+    "brace_width": 0.28, "brace_drop": 2.2,
+    "cleat_x": 4.1, "cleat_z": -4.6, "cleat_width": 0.3, "cleat_height": 0.5, "cleat_bar": 0.85,
+    "rest_x": -4.1, "rest_z": 3.8, "rest_height": 1.5, "rest_width": 0.3,
+    "marker_x": 3.7, "marker_z": 4.6, "marker_size": [1.65, 0.12, 1.2],
+    "numeral_stroke": 0.07, "numeral_digit_width": 0.3, "numeral_digit_height": 0.6,
+    "numeral_digit_spacing": 0.43, "numeral_relief": 0.03,
+    "sample_height": 40, "sample_depth": 80,
+    "approach_width": 7.5, "approach_depth": 4, "approach_thickness": 0.15,
+    "approach_min_height": 3.7, "approach_max_height": 4.3, "approach_gap": 0.04,
+    "original_post_local_xz": [[-4,-4],[-4,4],[4,-4],[4,4]]
+  },
+  "integration": {
+    "standing_local": [0, 0.25, -1], "line_tip_local": [0.7, 5, -4.7],
+    "cast_distance": 18, "water_clearance": 0.2,
+    "prompt_enabled": false, "prompt_distance": 10,
+    "prompt_action": "Preview cast", "prompt_object": "Fishing station",
+    "prompt_hold": 0, "stub_action": "fishing_preview",
+    "status": "Art and preview anchors only; no reservation, fish, catches, rewards or inventory writes."
+  },
+  "landscape": {
+    "ground_embed": 0.35, "max_ground_shift": 14,
+    "ground_x_min": 164, "ground_x_max": 296, "ground_z_min": -76, "ground_z_max": 92,
+    "cluster_radial_offset": 3, "cluster_heights": [1.7, 1.1, 0.8],
+    "cluster_offsets": [[0,0],[1.2,0.7],[-1.0,1.0]],
+    "deck_clearance": 2, "cluster_max_extent": 5.5,
+    "hell_clear_x_min": 199, "hell_clear_x_max": 211,
+    "ground_names": ["cherry_heaven_tree_1","frosted_pine_1","cloud_sapling","pearl_quartz","field_flower_bush","softglow_bloom","withered_sapling","coldfire_pine","lava_eye_tree","dark_ice_shard","dead_brush","ash_tuft","bone_rock"]
+  },
+  "ponds": [
+    {"name":"HeavenFishingPond", "center":[-216,8], "radii":[44,56], "water_y":2, "stations":10,
+     "wood":[182,165,123], "frame":[132,114,80], "metal":[157,128,62], "marker":[226,219,190],
+     "plank_variation":[0.96,1.03,1,0.98,1.02], "station_offsets":{}, "skip_approaches":[],
+     "flora":["field_flower_bush","pearl_quartz","softglow_bloom"], "cluster_indices":[1,3,5,7,9]},
+    {"name":"HellFishingPool", "center":[244,8], "radii":[28,48], "water_y":2, "stations":8,
+     "wood":[105,78,58], "frame":[62,48,43], "metal":[78,75,64], "marker":[158,143,105],
+     "plank_variation":[1,0.94,1.04,0.97,1.02], "station_offsets":{"5":[2,0,0]}, "skip_approaches":[5],
+     "flora":["bone_rock","dead_brush","pearl_quartz"], "cluster_indices":[1,2,6,7]}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "CrossroadsFossil",
+  "triangles": 6952,
+  "mesh_objects": 1,
+  "material_slots": 1,
+  "dimensions_blender_xyz": [
+    8.0,
+    3.5781280994415283,
+    5.218751907348633
+  ],
+  "dimensions_roblox_xyz": [
+    8.0,
+    5.218751907348633,
+    3.5781280994415283
+  ],
+  "pivot": "bottom_center",
+  "uv_seam_edges_split": 0,
+  "textures": [
+    "texture_0.png"
+  ],
+  "config": "assets/source/props/crossroads_fossil/prepare_asset.py",
+  "native_validation": "pending root-owned asset-only inspection"
+}

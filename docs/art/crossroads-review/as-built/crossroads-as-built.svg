@@ -1,0 +1,259 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1540" height="1260" viewBox="0 0 1540 1260"><rect width="1540" height="1260" fill="#f8f6ef"/><g font-family="Arial,Helvetica,sans-serif">
+<text x="48" y="45" font-size="27" fill="#233744" font-weight="bold" text-anchor="start">CROSSROADS / AS-BUILT ARCHITECTURAL SURVEY</text>
+<text x="48" y="73" font-size="15" fill="#233744" font-weight="normal" text-anchor="start">R11 isolated preview • 8 September 2026 • dimensions in Roblox studs • source + native survey</text>
+<text x="48" y="108" font-size="17" fill="#233744" font-weight="bold" text-anchor="start">A1  PLAN — north = −Z; Heaven west / Hell east</text>
+<defs><clipPath id="island"><polygon points="268.4,185.6 303.6,150.39999999999998 796.4,150.39999999999998 831.6,185.6 1023.6,259.2 1023.6,566.4 831.6,614.4 796.4,649.6 303.6,649.6 268.4,614.4 76.39999999999998,566.4 76.39999999999998,259.2"/></clipPath></defs>
+<rect x="60" y="140" width="490" height="520" fill="#e0e8ce" stroke="none" stroke-dasharray=""/>
+<rect x="550" y="140" width="480" height="520" fill="#ded0cb" stroke="none" stroke-dasharray=""/>
+<polygon points="268.4,185.6 303.6,150.39999999999998 796.4,150.39999999999998 831.6,185.6 1023.6,259.2 1023.6,566.4 831.6,614.4 796.4,649.6 303.6,649.6 268.4,614.4 76.39999999999998,566.4 76.39999999999998,259.2" fill="#ece8d9" stroke="#304953" stroke-width="3" stroke-dasharray="7 4"/>
+<circle cx="550.0" cy="259.2" r="92.80000000000001" fill="#dfd8c5" stroke="#64757b"/>
+<circle cx="550.0" cy="259.2" r="60.800000000000004" fill="none" stroke="#64757b"/>
+<circle cx="550.0" cy="259.2" r="54.400000000000006" fill="#eee9db" stroke="#64757b"/>
+<circle cx="550.0" cy="259.2" r="17.6" fill="#80adae" stroke="#64757b"/>
+<text x="550.0" y="259.2" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">FOUNTAIN</text>
+<text x="550.0" y="209.6" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">BRAGG Ø116</text>
+<text x="550.0" y="310.4" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">court Y4.44</text>
+<rect x="306.79999999999995" y="356.8" width="102.4" height="144.0" fill="#d1dfa9" stroke="#657c80" stroke-dasharray=""/>
+<text x="358.0" y="424.0" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">COIN FIELD</text>
+<text x="358.0" y="441.6" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">64 × 90 / Y4</text>
+<rect x="690.8" y="331.2" width="102.4" height="163.20000000000002" fill="#b5a1a0" stroke="#657c80" stroke-dasharray=""/>
+<text x="742.0" y="406.4" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">ARENA</text>
+<text x="742.0" y="424.0" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">64 × 102</text>
+<text x="742.0" y="440.0" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">Y4.38</text>
+<rect x="300.4" y="280.0" width="115.2" height="44.800000000000004" fill="#e9dfc6" stroke="#657c80" stroke-dasharray=""/>
+<text x="358.0" y="304.0" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">PAVILION</text>
+<rect x="684.4" y="270.4" width="115.2" height="44.800000000000004" fill="#e9dfc6" stroke="#657c80" stroke-dasharray=""/>
+<text x="742.0" y="294.4" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">PAVILION</text>
+<polyline points="550.0,560.0 550.0,499.2 486.0,467.2" fill="none" stroke="#927344" stroke-width="7" stroke-dasharray=""/>
+<polyline points="550.0,499.2 614.0,467.2" fill="none" stroke="#927344" stroke-width="7" stroke-dasharray=""/>
+<polyline points="550.0,499.2 550.0,352.0" fill="none" stroke="#927344" stroke-width="7" stroke-dasharray=""/>
+<polyline points="454.0,371.2 409.2,371.2" fill="none" stroke="#927344" stroke-width="5" stroke-dasharray=""/>
+<polyline points="646.0,371.2 690.8,371.2" fill="none" stroke="#927344" stroke-width="5" stroke-dasharray=""/>
+<polyline points="524.4,528.0 422.0,528.0" fill="none" stroke="#927344" stroke-width="5" stroke-dasharray=""/>
+<polyline points="575.6,528.0 678.0,528.0" fill="none" stroke="#927344" stroke-width="5" stroke-dasharray=""/>
+<circle cx="550.0" cy="560.0" r="14.4" fill="#e7c967" stroke="#64757b"/>
+<text x="550.0" y="592.0" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">SPAWN (0,100) Y0</text>
+<polygon points="471.80220198138863,488.6562695843058 511.101580241665,461.55556535843095 500.19779801861137,445.7437304156942 460.898419758335,472.8444346415691" fill="#b29b78" stroke="#4e514a"/>
+<text x="486.0" y="441.6" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">FARM &amp; FIGHT</text>
+<polygon points="588.3782840155643,462.17244109333444 627.806076756134,489.3616994644097 639.6217159844357,472.2275589066656 600.193923243866,445.03830053559034" fill="#b29b78" stroke="#4e514a"/>
+<text x="614.0" y="441.6" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">PET SIEGE</text>
+<rect x="529.2" y="358.4" width="41.6" height="25.6" fill="#e6dcc5" stroke="#657c80" stroke-dasharray=""/>
+<polyline points="529.2,361.6 570.8,361.6" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,364.8 570.8,364.8" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,368.0 570.8,368.0" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,371.2 570.8,371.2" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,374.4 570.8,374.4" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,377.6 570.8,377.6" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,380.8 570.8,380.8" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="529.2,384.0 570.8,384.0" fill="none" stroke="#8e785a" stroke-width="0.7" stroke-dasharray=""/>
+<rect x="494.0" y="358.4" width="25.6" height="51.2" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="580.4" y="358.4" width="25.6" height="51.2" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="422.0" y="352.0" width="25.6" height="38.400000000000006" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<polyline points="425.2,352.0 425.2,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="428.4,352.0 428.4,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="431.6,352.0 431.6,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="434.8,352.0 434.8,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="438.0,352.0 438.0,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="441.2,352.0 441.2,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="444.4,352.0 444.4,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<rect x="652.4" y="352.0" width="25.6" height="38.400000000000006" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<polyline points="655.6,352.0 655.6,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="658.8,352.0 658.8,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="662.0,352.0 662.0,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="665.2,352.0 665.2,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="668.4,352.0 668.4,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="671.6,352.0 671.6,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="674.8,352.0 674.8,390.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<rect x="422.0" y="515.2" width="51.2" height="25.6" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="626.8" y="515.2" width="51.2" height="25.6" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="524.4" y="592.0" width="51.2" height="25.6" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<polyline points="524.4,595.2 575.6,595.2" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,598.4 575.6,598.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,601.6 575.6,601.6" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,604.8 575.6,604.8" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,608.0 575.6,608.0" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,611.2 575.6,611.2" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<polyline points="524.4,614.4 575.6,614.4" fill="none" stroke="#a98f67" stroke-width="0.7" stroke-dasharray=""/>
+<rect x="466.8" y="566.4" width="25.6" height="51.2" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="607.6" y="566.4" width="25.6" height="51.2" fill="none" stroke="#a98f67" stroke-dasharray=""/>
+<rect x="524.4" y="620.8" width="51.2" height="19.200000000000003" fill="#d6d6cc" stroke="#657c80" stroke-dasharray=""/>
+<text x="550.0" y="640.0" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">OVERLOOK Y−4</text>
+<rect x="804.4" y="355.2" width="16.0" height="51.2" fill="#b8a79d" stroke="#657c80" stroke-dasharray=""/>
+<rect x="804.4" y="419.2" width="16.0" height="51.2" fill="#b8a79d" stroke="#657c80" stroke-dasharray=""/>
+<text x="812.4000000000001" y="521.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">6</text>
+<rect x="820.4000000000001" y="355.2" width="16.0" height="51.2" fill="#b09c91" stroke="#657c80" stroke-dasharray=""/>
+<rect x="820.4000000000001" y="419.2" width="16.0" height="51.2" fill="#b09c91" stroke="#657c80" stroke-dasharray=""/>
+<text x="828.4000000000001" y="521.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">8</text>
+<rect x="836.4000000000001" y="355.2" width="16.0" height="51.2" fill="#a38c81" stroke="#657c80" stroke-dasharray=""/>
+<rect x="836.4000000000001" y="419.2" width="16.0" height="51.2" fill="#a38c81" stroke="#657c80" stroke-dasharray=""/>
+<text x="844.4000000000001" y="521.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">10</text>
+<rect x="852.4000000000001" y="355.2" width="16.0" height="51.2" fill="#94796e" stroke="#657c80" stroke-dasharray=""/>
+<rect x="852.4000000000001" y="419.2" width="16.0" height="51.2" fill="#94796e" stroke="#657c80" stroke-dasharray=""/>
+<text x="860.4000000000001" y="521.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">12</text>
+<polyline points="804.4,412.8 868.4000000000001,412.8" fill="none" stroke="#eee3bf" stroke-width="12" stroke-dasharray=""/>
+<text x="836.4000000000001" y="494.4" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">32 SEATS / 8 FREE</text>
+<text x="836.4000000000001" y="539.2" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">TIER TOP Y</text>
+<rect x="834.8" y="278.4" width="12.8" height="51.2" fill="#c8d7ce" stroke="#456c68" stroke-dasharray=""/>
+<rect x="854.0" y="278.4" width="12.8" height="51.2" fill="#c8d7ce" stroke="#456c68" stroke-dasharray=""/>
+<rect x="834.8" y="265.6" width="32.0" height="12.8" fill="#c8d7ce" stroke="#456c68" stroke-dasharray=""/>
+<rect x="854.0" y="329.6" width="12.8" height="25.6" fill="#c8d7ce" stroke="#456c68" stroke-dasharray=""/>
+<text x="849.2" y="257.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">RAMP 1:8</text>
+<ellipse cx="204.39999999999998" cy="412.8" rx="70.4" ry="89.60000000000001" fill="#8fbfc8" stroke="#4c777f"/>
+<text x="204.39999999999998" y="400.0" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">HEAVEN</text>
+<text x="204.39999999999998" y="417.6" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">88 × 112</text>
+<text x="204.39999999999998" y="435.2" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">10 STATIONS</text>
+<polyline points="298.79999999999995,412.8 280.771240234375,479.5723388671875 233.57126464843748,520.8400024414062 175.22873535156248,520.8400024414062 128.02875976562495,479.5723388671875 110.0,412.8 128.02875976562495,346.0276306152344 175.22873535156248,304.75999755859374 233.57126464843748,304.75999755859374 280.7712158203125,346.0276306152344 298.79999999999995,412.8" fill="none" stroke="#967241" stroke-width="2" stroke-dasharray="3 3"/>
+<polygon points="266.8,420.8 266.8,404.8 286.0,404.8 286.0,420.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="274.8" cy="412.8" r="3.3" fill="#334c60"/>
+<text x="292.4" y="412.8" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">1</text>
+<polygon points="250.18037643432615,467.2354537963867 259.58489456176756,454.29114837646483 275.1180610656738,465.57657012939455 265.7135429382324,478.52087554931643" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="261.35478515625" cy="465.46555786132814" r="3.3" fill="#334c60"/>
+<text x="275.59352416992186" y="475.810530090332" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">2</text>
+<polygon points="216.07418022155758,492.87838945388796 231.29106674194333,487.93406400680544 237.22425727844234,506.1943278312683 222.0073707580566,511.13865327835083" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="226.15478515625" cy="498.0146728515625" r="3.3" fill="#334c60"/>
+<text x="231.5935441970825" y="514.7532451629638" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">3</text>
+<polygon points="177.50893325805663,487.93406400680544 192.72581977844237,492.87838945388796 186.79262924194336,511.13865327835083 171.57574272155762,506.1943278312683" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="182.64521484374995" cy="498.0146728515625" r="3.3" fill="#334c60"/>
+<text x="177.20645580291745" y="514.7532451629638" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">4</text>
+<polygon points="149.2151054382324,454.29114837646483 158.6196235656738,467.2354537963867 143.08645706176753,478.52087554931643 133.68193893432613,465.57657012939455" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="147.44521484374997" cy="465.46555786132814" r="3.3" fill="#334c60"/>
+<text x="133.2064758300781" y="475.810530090332" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">5</text>
+<polygon points="142.0,404.8 142.0,420.8 122.79999999999995,420.8 122.79999999999995,404.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="134.0" cy="412.8" r="3.3" fill="#334c60"/>
+<text x="116.39999999999998" y="412.8" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">6</text>
+<polygon points="158.61962547302244,358.3645628929138 149.21508636474607,371.3088540077209 133.6819370269775,360.02340707778933 143.08647613525386,347.0791159629822" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="147.44521484374997" cy="360.1344390869141" r="3.3" fill="#334c60"/>
+<text x="133.20649013519284" y="349.7894458770752" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">7</text>
+<polygon points="192.72581977844237,332.72161054611206 177.50893325805663,337.6659359931946 171.57574272155762,319.4056721687317 186.79262924194336,314.4613467216492" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="182.64521484374995" cy="327.5853271484375" r="3.3" fill="#334c60"/>
+<text x="177.20645580291745" y="310.84675483703614" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">8</text>
+<polygon points="231.29106674194333,337.6659359931946 216.07418022155758,332.72161054611206 222.0073707580566,314.4613467216492 237.22425727844234,319.4056721687317" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="226.15478515625" cy="327.5853271484375" r="3.3" fill="#334c60"/>
+<text x="231.5935441970825" y="310.84675483703614" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">9</text>
+<polygon points="259.5849136352539,371.3088540077209 250.18037452697752,358.3645628929138 265.7135238647461,347.0791159629822 275.11806297302246,360.02340707778933" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="261.35478515625" cy="360.1344390869141" r="3.3" fill="#334c60"/>
+<text x="275.5935098648071" y="349.7894458770752" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">10</text>
+<ellipse cx="940.4000000000001" cy="412.8" rx="44.800000000000004" ry="76.80000000000001" fill="#9aaf9b" stroke="#4c777f"/>
+<text x="940.4000000000001" y="400.0" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">HELL</text>
+<text x="940.4000000000001" y="417.6" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">56 × 96</text>
+<text x="940.4000000000001" y="435.2" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">8 STATIONS</text>
+<polyline points="1009.2,412.8 989.04873046875,484.0765380859375 940.4000000000001,513.6 891.7510498046875,484.07636108398435 874.8,412.8 891.7510498046875,341.5236328125 940.4000000000001,312.0 989.04873046875,341.5234619140625 1009.2,412.8" fill="none" stroke="#967241" stroke-width="2" stroke-dasharray="3 3"/>
+<polygon points="977.2,420.8 977.2,404.8 996.4000000000001,404.8 996.4000000000001,420.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="985.2" cy="412.8" r="3.3" fill="#334c60"/>
+<text x="1002.8" y="412.8" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">1</text>
+<polygon points="960.7646488189698,467.1056652069092 972.0784801483155,455.7920780181885 985.6547847747803,469.3686756134033 974.3409534454346,480.682262802124" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="972.078369140625" cy="467.1057861328125" r="3.3" fill="#334c60"/>
+<text x="984.5233039855957" y="479.55100173950194" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">2</text>
+<polygon points="932.4000000000001,481.6 948.4000000000001,481.6 948.4000000000001,500.8 932.4000000000001,500.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="940.4000000000001" cy="489.6" r="3.3" fill="#334c60"/>
+<text x="940.4000000000001" y="507.2" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">3</text>
+<polygon points="908.721605205536,455.79209127426145 920.0353135108949,467.10579957962034 906.4588635444641,480.682249546051 895.1451552391052,469.36854124069214" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="908.7216064453125" cy="467.1057983398438" r="3.3" fill="#334c60"/>
+<text x="896.2765260696411" y="479.5508787155151" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">4</text>
+<polygon points="906.8,404.8 906.8,420.8 887.6,420.8 887.6,404.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="898.8" cy="412.8" r="3.3" fill="#334c60"/>
+<text x="881.2" y="412.8" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">5</text>
+<polygon points="920.0353135108949,358.4941973686218 908.721605205536,369.8079056739807 895.1451552391052,356.23145570755 906.4588635444641,344.91774740219114" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="908.7216064453125" cy="358.49419860839845" r="3.3" fill="#334c60"/>
+<text x="896.2765260696411" y="346.04911823272704" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">6</text>
+<polygon points="948.4000000000001,344.0 932.4000000000001,344.0 932.4000000000001,324.8 948.4000000000001,324.8" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="940.4000000000001" cy="336.0" r="3.3" fill="#334c60"/>
+<text x="940.4000000000001" y="318.4" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">7</text>
+<polygon points="972.0784801483155,369.8079189300537 960.7646488189698,358.494331741333 974.3409534454346,344.91773414611816 985.6547847747803,356.23132133483887" fill="#c6ab78" stroke="#655541" stroke-width=".7"/>
+<circle cx="972.078369140625" cy="358.4942108154297" r="3.3" fill="#334c60"/>
+<text x="984.5233039855957" y="346.0489952087402" font-size="9" fill="#233744" font-weight="normal" text-anchor="middle">8</text>
+<rect x="191.59999999999997" y="252.79999999999998" width="35.2" height="22.400000000000002" fill="#d7bf91" stroke="#657c80" stroke-dasharray=""/>
+<text x="209.2" y="241.6" font-size="10" fill="#233744" font-weight="normal" text-anchor="middle">REST / 4 SEATS</text>
+<polyline points="297.2,480.0 297.2,368.0" fill="none" stroke="#cf773f" stroke-width="3" stroke-dasharray=""/>
+<polyline points="878.0,464.0 878.0,352.0" fill="none" stroke="#cf773f" stroke-width="3" stroke-dasharray=""/>
+<text x="310.0" y="560.0" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">12.3 clear</text>
+<text x="895.6" y="556.8" font-size="11" fill="#233744" font-weight="normal" text-anchor="middle">12 clear rear</text>
+<path d="M76,683 L1024,683" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<path d="M76,677 L76,689" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<path d="M1024,677 L1024,689" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<text x="550" y="704" font-size="12" fill="#233744" font-weight="normal" text-anchor="middle">592 safety-wall centerline span (land extent nominal 600)</text>
+<text x="70" y="738" font-size="11" fill="#233744" font-weight="normal" text-anchor="start">0</text>
+<path d="M84,732 L244,732" fill="none" stroke="#263d47" stroke-width="3" stroke-dasharray=""/>
+<path d="M84,726 L84,738" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<path d="M164,726 L164,738" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<path d="M244,726 L244,738" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<text x="155" y="751" font-size="11" fill="#233744" font-weight="normal" text-anchor="start">50</text>
+<text x="236" y="751" font-size="11" fill="#233744" font-weight="normal" text-anchor="start">100 studs</text>
+<text x="1090" y="120" font-size="17" fill="#233744" font-weight="bold" text-anchor="start">MEASURED / BUILT</text>
+<text x="1090" y="150" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">01  Gates</text>
+<text x="1090" y="172" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Centers X±40 / Z42.</text>
+<text x="1090" y="190" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Heaven 29.84 × 12.00 footprint;</text>
+<text x="1090" y="208" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">top 28.20. Hell 29.93 × 13.01;</text>
+<text x="1090" y="226" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">top 28.06. Faces retained.</text>
+<text x="1090" y="259" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">02  Openings</text>
+<text x="1090" y="281" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Travel anchors ±38.865,43.646.</text>
+<text x="1090" y="299" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Door clear 6 × 9 is config intent,</text>
+<text x="1090" y="317" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">not a fresh aperture survey.</text>
+<text x="1090" y="335" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Both thresholds navigation-passed.</text>
+<text x="1090" y="368" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">03  Bragg</text>
+<text x="1090" y="390" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Court Ø116, center(0,−88).</text>
+<text x="1090" y="408" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Ring radii 34–38 / floorY 4.44.</text>
+<text x="1090" y="426" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Fountain Ø22; clear loopR 22.</text>
+<text x="1090" y="444" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Gallery access reached in Play.</text>
+<text x="1090" y="477" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">04  Occupied docks</text>
+<text x="1090" y="499" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">18 decks 10 × 12 / topY 4.5.</text>
+<text x="1090" y="517" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Proxies 5.5 high; footprints</text>
+<text x="1090" y="535" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">4.246 × 1.232; no measured</text>
+<text x="1090" y="553" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">figure / fixed-rod overlap.</text>
+<text x="1090" y="586" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">05  Bank passages</text>
+<text x="1090" y="608" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Heaven 12.3: deck rear−165</text>
+<text x="1090" y="626" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">to wall west−152.7. Hell 12:</text>
+<text x="1090" y="644" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">stand back 199 to deck rear 211.</text>
+<text x="1090" y="662" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Bank-loop walking passed at 24.</text>
+<text x="1090" y="695" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">06  Built access ramp</text>
+<text x="1090" y="717" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Two 8 wide ×32 run flights /1:8.</text>
+<text x="1090" y="735" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Top levels 4→8→12; turn 20 ×8.</text>
+<text x="1090" y="753" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Bridge 8 ×16; max X198.67.</text>
+<text x="1090" y="771" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Underpass headroom 7.5.</text>
+<path d="M48,790 L1492,790" fill="none" stroke="#647a80" stroke-width="1" stroke-dasharray=""/>
+<text x="48" y="820" font-size="16" fill="#233744" font-weight="bold" text-anchor="start">A2  STANDS / bank Y4</text>
+<rect x="70" y="960" width="95" height="20" fill="#b9aaa0" stroke="#718690" stroke-dasharray=""/>
+<path d="M117,960 L117,926" fill="none" stroke="#304958" stroke-width="3" stroke-dasharray=""/>
+<text x="117" y="918" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">Y6</text>
+<rect x="165" y="940" width="95" height="40" fill="#b9aaa0" stroke="#718690" stroke-dasharray=""/>
+<path d="M212,940 L212,906" fill="none" stroke="#304958" stroke-width="3" stroke-dasharray=""/>
+<text x="212" y="898" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">Y8</text>
+<rect x="260" y="920" width="95" height="60" fill="#b9aaa0" stroke="#718690" stroke-dasharray=""/>
+<path d="M307,920 L307,886" fill="none" stroke="#304958" stroke-width="3" stroke-dasharray=""/>
+<text x="307" y="878" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">Y10</text>
+<rect x="355" y="900" width="95" height="80" fill="#b9aaa0" stroke="#718690" stroke-dasharray=""/>
+<path d="M402,900 L402,866" fill="none" stroke="#304958" stroke-width="3" stroke-dasharray=""/>
+<text x="402" y="858" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">Y12</text>
+<path d="M70,980 L450,980" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<text x="70" y="1003" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">10 / row; native Seat center = deck +1.75</text>
+<text x="70" y="1025" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Eye sample = deck +5.087; 16 existing aisle steps.</text>
+<text x="70" y="1047" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Aisle 8 wide; front corridor 7; rear corridor 12.</text>
+<text x="70" y="1069" font-size="12" fill="#a04f37" font-weight="normal" text-anchor="start">Raised tiers 7.5/10/12.5/15 NOT BUILT.</text>
+<text x="520" y="820" font-size="16" fill="#233744" font-weight="bold" text-anchor="start">A3  DOCK OCCUPANCY / typical</text>
+<rect x="555" y="845" width="150" height="180" fill="#c6ab78" stroke="#718690" stroke-dasharray=""/>
+<rect x="598" y="900" width="64" height="19" fill="#334c60" stroke="#718690" stroke-dasharray=""/>
+<path d="M574,958 L574,884" fill="none" stroke="#84602d" stroke-width="4" stroke-dasharray=""/>
+<text x="630" y="1048" font-size="13" fill="#233744" font-weight="normal" text-anchor="middle">10 × 12 deck / Y4.5</text>
+<text x="745" y="863" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">Body:5.5 high</text>
+<text x="745" y="887" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">rod:5.5 long, at rest</text>
+<text x="745" y="911" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">~1.616 X gap</text>
+<text x="745" y="935" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">back → Standing → back</text>
+<text x="745" y="959" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">all 18 access-passed</text>
+<text x="555" y="1070" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">Geometry only; no 18-client load certification.</text>
+<text x="1090" y="820" font-size="16" fill="#233744" font-weight="bold" text-anchor="start">A4  ELEVATION DATUMS</text>
+<text x="1090" y="850" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">0  Central arrival court / nominal datum</text>
+<text x="1090" y="875" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">4  Activity banks / garden terrain</text>
+<text x="1090" y="900" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">4.38  Current arena surface</text>
+<text x="1090" y="925" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">4.44  Bragg floor</text>
+<text x="1090" y="950" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">4.5  Dock walking surface</text>
+<text x="1090" y="975" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">6 / 8 / 10 / 12  Spectator tiers</text>
+<text x="1090" y="1000" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">14.2  Shelter roof top</text>
+<text x="1090" y="1025" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">−4  Overlook; pond nominal bottom</text>
+<text x="1090" y="1050" font-size="12" fill="#233744" font-weight="normal" text-anchor="start">0  Last native water-surface sample</text>
+<path d="M48,1120 L1492,1120" fill="none" stroke="#687a83" stroke-width="1" stroke-dasharray=""/>
+<text x="48" y="1150" font-size="14" fill="#233744" font-weight="bold" text-anchor="start">STATUS KEY</text>
+<text x="180" y="1150" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">Solid = authored footprint  •  ochre dashed = tested bank centerline  •  dark dashed = safety wall</text>
+<text x="48" y="1180" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">Plan is diagrammatic measured coordination, not a terrain contour survey. Organic assets omitted for legibility.</text>
+<text x="48" y="1204" font-size="13" fill="#233744" font-weight="normal" text-anchor="start">Source/runtime differences, QA limits and the applied access ramp are documented in AS_BUILT.md. Scale applies to A1 only.</text>
+<text x="48" y="1234" font-size="12" fill="#627780" font-weight="normal" text-anchor="start">No export hash, instance total or future construction is implied. Sheet generated from versioned source + native observations.</text>
+</g></svg>

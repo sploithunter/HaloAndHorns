@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/textured_closed/model.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 2364,
+    "edges": 7074,
+    "faces": 4716,
+    "triangles": 4716,
+    "face_components": 3,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "Mesh_0",
+      "vertices": 2364,
+      "raw_vertices": 4173,
+      "welded_coincident_vertices": 1809,
+      "inspection_weld_distance": 2.3807312333005334e-07,
+      "edges": 7074,
+      "faces": 4716,
+      "triangles": 4716,
+      "face_components": 3,
+      "bounds_diagonal": 2.3807312333005335,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

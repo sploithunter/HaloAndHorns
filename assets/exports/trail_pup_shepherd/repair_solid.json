@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/trail_pup_shepherd/model.glb",
+  "output": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/trail_pup_shepherd/model_solid.glb",
+  "raw_vertices": 3857,
+  "weld_distance": 1.0602845311825636e-07,
+  "initial_cleanup": {
+    "boundary_edges_found": 410,
+    "fill_faces_added": 19,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "final_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 5,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 5
+  },
+  "roundtrip_cleanup": {
+    "boundary_edges_found": 0,
+    "fill_faces_added": 0,
+    "duplicate_faces_removed": 0,
+    "nonmanifold_faces_removed": 0,
+    "degenerate_faces_removed": 0,
+    "small_component_faces_removed": 0
+  },
+  "voxel_size": 0.003180853593547691,
+  "triangles_after_fill": 240736,
+  "decimation_ratio": 0.020636714076831052,
+  "final_triangles": 4958,
+  "max_triangles": 5000
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_fossil/repaired/model.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 3538,
+    "edges": 10428,
+    "faces": 6952,
+    "triangles": 6952,
+    "face_components": 31,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 3538,
+      "raw_vertices": 20691,
+      "welded_coincident_vertices": 17153,
+      "inspection_weld_distance": 4.8861885447833536e-08,
+      "edges": 10428,
+      "faces": 6952,
+      "triangles": 6952,
+      "face_components": 31,
+      "bounds_diagonal": 0.48861885447833536,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

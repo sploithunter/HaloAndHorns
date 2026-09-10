@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "preview_only": true,
+  "bake_source": "tools/realm_crossroads/fossil_setting.luau",
+  "world_root": "RealmCrossroadsR4",
+  "root": "SulfurFossilSettingR11",
+  "landmark": "SulfurPoolFossilR11",
+  "template_cache": "CrossroadsLandscapeAssets",
+  "anchor_xz": [
+    280,
+    77
+  ],
+  "anchor_tolerance": 0.5,
+  "bounds_xz": [
+    275,
+    292.9,
+    70.5,
+    100
+  ],
+  "view_clearance_xz": [
+    274,
+    282.5,
+    74,
+    80
+  ],
+  "landmark_clearance_xz": [
+    277.8,
+    282.2,
+    72.8,
+    81.2
+  ],
+  "ground": {
+    "ray_origin_y": 100,
+    "ray_depth": 200,
+    "embed": 0.16,
+    "max_sample_spread": 1.25,
+    "min_y": 3.5,
+    "max_y": 6.5,
+    "sample_footprint_fraction": 0.85
+  },
+  "cast_shadow": false,
+  "max_base_parts": 16,
+  "entries": [
+    {
+      "name": "RearBoneCradle",
+      "asset": "bone_rock",
+      "xz": [
+        285,
+        79
+      ],
+      "height": 2.6,
+      "max_width": 3.1,
+      "yaw": 28
+    },
+    {
+      "name": "RearShardSpire",
+      "asset": "dark_ice_shard",
+      "xz": [
+        285,
+        74
+      ],
+      "height": 4.4,
+      "max_width": 3.4,
+      "yaw": -18
+    },
+    {
+      "name": "RearDryBrush",
+      "asset": "dead_brush",
+      "xz": [
+        286.5,
+        81.5
+      ],
+      "height": 3.2,
+      "max_width": 3.1,
+      "yaw": -30
+    },
+    {
+      "name": "RearAshNest",
+      "asset": "ash_tuft",
+      "xz": [
+        286.3,
+        76.7
+      ],
+      "height": 1.4,
+      "max_width": 2.3,
+      "yaw": 52
+    },
+    {
+      "name": "SouthAshNest",
+      "asset": "ash_tuft",
+      "xz": [
+        283.3,
+        83
+      ],
+      "height": 1.15,
+      "max_width": 2.0,
+      "yaw": -12
+    },
+    {
+      "name": "SouthBoneFragment",
+      "asset": "bone_rock",
+      "xz": [
+        280.3,
+        84.4
+      ],
+      "height": 1.25,
+      "max_width": 1.8,
+      "yaw": 83
+    },
+    {
+      "name": "SouthLowAsh",
+      "asset": "ash_tuft",
+      "xz": [
+        278,
+        82.8
+      ],
+      "height": 0.75,
+      "max_width": 1.5,
+      "yaw": 35
+    },
+    {
+      "name": "NorthDryBrush",
+      "asset": "dead_brush",
+      "xz": [
+        283,
+        71.6
+      ],
+      "height": 2.15,
+      "max_width": 2.1,
+      "yaw": 22
+    },
+    {
+      "name": "NorthBoneFragment",
+      "asset": "bone_rock",
+      "xz": [
+        279,
+        71.9
+      ],
+      "height": 0.95,
+      "max_width": 1.25,
+      "yaw": -52
+    },
+    {
+      "name": "NorthLowAsh",
+      "asset": "ash_tuft",
+      "xz": [
+        276.7,
+        72.3
+      ],
+      "height": 0.65,
+      "max_width": 1.3,
+      "yaw": 10
+    },
+    {
+      "name": "SouthForegroundAsh",
+      "asset": "ash_tuft",
+      "xz": [
+        276.5,
+        82
+      ],
+      "height": 0.6,
+      "max_width": 1.2,
+      "yaw": -40
+    },
+    {
+      "name": "FossilBackdropSapling",
+      "asset": "withered_sapling",
+      "xz": [
+        287,
+        95
+      ],
+      "height": 15,
+      "max_width": 10,
+      "max_world_width": 9,
+      "yaw": 45,
+      "support_footprint_fraction": 0.15
+    }
+  ],
+  "notes": "Compact asymmetric dry-bank crescent around existing v2 fossil. Preserve native materials/textures. West viewing window and physical fossil envelope stay empty. No Terrain writes, collision, prompts, particles, lights, station edits or new uploads. All positions are dry Terrain measurements in the active preview; remeasure at apply. Revision2: one15-stud withered sapling rotated45degrees for8.59-stud world footprint, bounded west ofX293. Its narrow trunk support uses15percent of canopy footprint for real Terrain grounding; canopy tips are not ground contacts."
+}

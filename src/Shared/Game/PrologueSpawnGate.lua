@@ -4,12 +4,15 @@
 -- first-run decision is unresolved or active; otherwise the normal zone spawn may place the player.
 local PrologueSpawnGate = {}
 
-function PrologueSpawnGate.action(prologueServiceRuns, inPrologue, prologueGate)
+function PrologueSpawnGate.action(prologueServiceRuns, inPrologue, prologueGate, crossroadsArrival)
     if prologueServiceRuns ~= true then
         return "place"
     end
     if inPrologue == true then
         return "skip"
+    end
+    if crossroadsArrival == true then
+        return "place"
     end
     if prologueGate == nil then
         return "wait"

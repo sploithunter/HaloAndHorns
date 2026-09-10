@@ -1,0 +1,25 @@
+{
+  "v1_v2_geometry_and_uv_buffers_identical": true,
+  "attributes": [
+    [
+      "NORMAL",
+      5767,
+      "c5702469ab14f5d898eb948058dcafc808bc21b5dbd7acf334d884f128e8e4fd"
+    ],
+    [
+      "POSITION",
+      5767,
+      "ef90eb22bac84486aca986ce99e323bf06f4e7a9b14e3d14af88456a33810b5f"
+    ],
+    [
+      "TEXCOORD_0",
+      5767,
+      "fe49e7a80ce0deb703f9886ce6a769ed89bfc9b97f426ed9ce9987b734de508b"
+    ],
+    [
+      "indices",
+      20856,
+      "d1d9bb3f89caeb4aa046ec6d54d6e1846d9843a93a77c84ba06b0ef117aeda37"
+    ]
+  ]
+}

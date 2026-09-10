@@ -1,0 +1,191 @@
+{
+  "root": "CrossroadsFishingR10",
+  "bake_source": "tools/realm_crossroads/bake_fishing.luau",
+  "extension": {
+    "inner": 152,
+    "outer": 300,
+    "flat": 284,
+    "z_min": -132,
+    "z_max": 148,
+    "floor": 4,
+    "bottom": -24,
+    "rim": 8
+  },
+  "ponds": [
+    {
+      "name": "HeavenFishingPond",
+      "center": [
+        -216,
+        8
+      ],
+      "radii": [
+        44,
+        56
+      ],
+      "bottom": -4,
+      "surface": 2,
+      "spots": 10,
+      "color": [
+        164,
+        148,
+        110
+      ],
+      "material": "WoodPlanks",
+      "terrain": "LeafyGrass",
+      "decor": [
+        "field_flower_bush",
+        "pearl_quartz",
+        "softglow_bloom"
+      ]
+    },
+    {
+      "name": "HellFishingPool",
+      "center": [
+        244,
+        8
+      ],
+      "radii": [
+        28,
+        48
+      ],
+      "bottom": -4,
+      "surface": 2,
+      "spots": 8,
+      "color": [
+        89,
+        71,
+        53
+      ],
+      "material": "WoodPlanks",
+      "terrain": "Ground",
+      "decor": [
+        "bone_rock",
+        "dead_brush",
+        "pearl_quartz"
+      ]
+    }
+  ],
+  "platform": {
+    "width": 10,
+    "depth": 12,
+    "height": 0.5,
+    "top": 4.5,
+    "radial_offset": 1,
+    "walking_clearance": 12
+  },
+  "boundary": [
+    [
+      -176,
+      -134
+    ],
+    [
+      -154,
+      -156
+    ],
+    [
+      154,
+      -156
+    ],
+    [
+      176,
+      -134
+    ],
+    [
+      296,
+      -88
+    ],
+    [
+      296,
+      104
+    ],
+    [
+      176,
+      134
+    ],
+    [
+      154,
+      156
+    ],
+    [
+      -154,
+      156
+    ],
+    [
+      -176,
+      134
+    ],
+    [
+      -296,
+      104
+    ],
+    [
+      -296,
+      -88
+    ]
+  ],
+  "flora": {
+    "old_min_x": 208,
+    "outer_rows": [
+      284,
+      291
+    ],
+    "z_range": [
+      -76,
+      92
+    ]
+  },
+  "hell_liquid": {
+    "color": [
+      43,
+      57,
+      35
+    ],
+    "transparency": 0.08,
+    "material": "SmoothPlastic",
+    "rim_color": [
+      126,
+      122,
+      50
+    ],
+    "mode": "terrain_water"
+  },
+  "notes": "Authored fishing layout only. Heaven independently supports ten spaced angler stations; no fishing rewards, rods, fish AI or catch code added.",
+  "hell_mist": {
+    "bake_source": "tools/realm_crossroads/bake_pool_mist.luau",
+    "texture": "rbxasset://textures/particles/smoke_main.dds",
+    "spacing": 12,
+    "inset": 4,
+    "height": 1,
+    "rate": 4,
+    "lifetime": [
+      5,
+      8
+    ],
+    "speed": [
+      0.6,
+      1.2
+    ],
+    "size": [
+      10,
+      18,
+      23
+    ],
+    "color_start": [
+      101,
+      153,
+      48
+    ],
+    "color_end": [
+      55,
+      101,
+      37
+    ],
+    "opacity": 0.45,
+    "acceleration": [
+      0.12,
+      0.15,
+      0.06
+    ],
+    "light_emission": 0.12
+  }
+}

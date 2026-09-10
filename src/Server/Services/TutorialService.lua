@@ -13,6 +13,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CrossroadsOnboarding = require(ReplicatedStorage.Shared.Game.CrossroadsOnboarding)
 
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -58,6 +59,8 @@ function TutorialService:Init()
 end
 
 function TutorialService:Start()
+    require(script.Parent.CrossroadsDialogue).start()
+    require(script.Parent.CrossroadsIntroduction).start(self._dataService)
     require(script.Parent.Parent.TutorialVoiceTemplates).start(
         self._configLoader:LoadConfig("tutorial_voice")
     )
@@ -141,6 +144,19 @@ function TutorialService:_watchMergeHud(player)
     if not player then
         return
     end
+    local function resumeFarm()
+        if
+            player.Parent
+            and not CrossroadsOnboarding.pending(player)
+            and self._dataService:IsDataLoaded(player)
+        then
+            local data = self:_ensureProgress(player)
+            self:_applyStepGrant(player, data)
+            self:_push(player)
+        end
+    end
+    player:GetAttributeChangedSignal("CrossroadsFarmEntered"):Connect(resumeFarm)
+    player:GetAttributeChangedSignal("InCrossroads"):Connect(resumeFarm)
     player:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
         if player.Parent and player:GetAttribute("InMergeEggPrototype") ~= true then
             self:_push(player)
@@ -152,7 +168,8 @@ function TutorialService:_hidesHomeTutorial(player)
     if player and player:GetAttribute("InMergeEggPrototype") == true then
         return true
     end
-    return PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+    return CrossroadsOnboarding.pending(player)
+        or PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
 end
 
 function TutorialService:_waitForDataAndPush(player)
@@ -300,6 +317,9 @@ function TutorialService:_ensureRallyBound(player)
 end
 
 function TutorialService:_onEvent(player, name, ctx)
+    if CrossroadsOnboarding.pending(player) then
+        return
+    end
     if not (player and player.Parent) or not self._dataService:IsDataLoaded(player) then
         return
     end
@@ -379,6 +399,9 @@ end
 -- analytics event idempotent. If the progression peer is temporarily unavailable, the marker stays
 -- pending and the next TutorialState pull/rejoin retries it.
 function TutorialService:_applyCompletionLevelGrant(player, data)
+    if CrossroadsOnboarding.pending(player) then
+        return
+    end
     local tutorial = data and data.Tutorial
     if not (tutorial and tutorial.done) or tutorial.completionLevelGranted then
         return
@@ -427,6 +450,9 @@ end
 -- The slot step uses it for Potency; build_squad grants a Rainbow Kitty so Inventory has an
 -- obviously stronger pick. Config-driven so future steps can reward without code.
 function TutorialService:_applyStepGrant(player, data)
+    if CrossroadsOnboarding.pending(player) then
+        return
+    end
     if not (data and data.Tutorial) or data.Tutorial.done then
         return
     end

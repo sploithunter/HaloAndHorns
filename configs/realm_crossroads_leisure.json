@@ -1,0 +1,219 @@
+{
+  "revision": 9,
+  "root": "CrossroadsLeisureR9",
+  "bake_source": "tools/realm_crossroads/bake_leisure.luau",
+  "preview_only": true,
+  "extension": {
+    "inner_x": 152,
+    "outer_x": 228,
+    "flat_x": 216,
+    "z_min": -80,
+    "z_max": 96,
+    "floor": 4,
+    "bottom": -24,
+    "rim": 8
+  },
+  "stands": {
+    "row_x": [
+      164,
+      174,
+      184,
+      194
+    ],
+    "row_height": [
+      6,
+      8,
+      10,
+      12
+    ],
+    "center_z": 8,
+    "seat_z": [
+      -29,
+      -22,
+      -15,
+      -8,
+      8,
+      15,
+      22,
+      29
+    ],
+    "row_depth": 10,
+    "half_length": 36,
+    "aisle": 8,
+    "seat_size": [
+      3.2,
+      0.45,
+      3
+    ],
+    "seat_height": 1.75,
+    "back_height": 3,
+    "stair_rise": 0.5,
+    "dummy_count": 24
+  },
+  "pond": {
+    "center": [
+      -188,
+      8
+    ],
+    "radii": [
+      24,
+      40
+    ],
+    "surface": 2,
+    "bottom": -4,
+    "bank_width": 8,
+    "dock_z": [
+      -18,
+      34
+    ],
+    "dock_x": -172,
+    "dock_size": [
+      18,
+      0.6,
+      8
+    ]
+  },
+  "palette": {
+    "stone": [
+      63,
+      52,
+      53
+    ],
+    "trim": [
+      157,
+      101,
+      54
+    ],
+    "seat": [
+      99,
+      44,
+      35
+    ],
+    "metal": [
+      45,
+      40,
+      43
+    ],
+    "heaven": [
+      135,
+      167,
+      111
+    ],
+    "hell": [
+      80,
+      62,
+      62
+    ],
+    "wood": [
+      170,
+      148,
+      108
+    ],
+    "water": [
+      75,
+      162,
+      178
+    ],
+    "dummy_colors": [
+      [
+        212,
+        182,
+        111
+      ],
+      [
+        161,
+        176,
+        190
+      ],
+      [
+        174,
+        117,
+        84
+      ],
+      [
+        180,
+        171,
+        157
+      ]
+    ]
+  },
+  "boundary": [
+    [
+      -176,
+      -134
+    ],
+    [
+      -154,
+      -156
+    ],
+    [
+      154,
+      -156
+    ],
+    [
+      176,
+      -134
+    ],
+    [
+      176,
+      -88
+    ],
+    [
+      224,
+      -64
+    ],
+    [
+      224,
+      80
+    ],
+    [
+      176,
+      104
+    ],
+    [
+      176,
+      134
+    ],
+    [
+      154,
+      156
+    ],
+    [
+      -154,
+      156
+    ],
+    [
+      -176,
+      134
+    ],
+    [
+      -176,
+      104
+    ],
+    [
+      -224,
+      80
+    ],
+    [
+      -224,
+      -64
+    ],
+    [
+      -176,
+      -88
+    ]
+  ],
+  "flora_move": {
+    "threshold_x": 154,
+    "z_min": -76,
+    "z_max": 92,
+    "outer_rows": [
+      214,
+      221
+    ]
+  },
+  "future_gameplay": {
+    "spectators": "Populate stands from podium members, with native Seats for visiting players. Dummies are static previews only.",
+    "fishing": "Candidate reuse of land-shark movement code requires source review. Create fish and fishing-rod assets; catches may award Enhancements, potions, and rare eggs. Economy and probabilities are undecided."
+  }
+}

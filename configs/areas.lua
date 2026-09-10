@@ -25,6 +25,47 @@ local function layer3RealmArea(id, element, displayName, order, y, centerX, cent
 end
 
 return {
+    crossroads = {
+        enabled = true,
+        area_id = "Crossroads",
+        context_area = "Spawn",
+        root_name = "RealmCrossroadsR4",
+        spawn_name = "PreviewSpawn",
+        slots_folder = "ArrivalSlots",
+        slot_prefix = "ArrivalSlot",
+        slot_size = { 2, 0.2, 2 },
+        spawn_clearance = 3.5,
+        gate_path = { "CrossroadsCraftR11", "GateRearCraft", "FarmAndFightTravelAnchor" },
+        gate_size = { 16, 9, 4 },
+        prompt_name = "ProximityPrompt",
+        prompt_action = "Enter Farm and Fight",
+        prompt_title = "Farm and Fight",
+        prompt_distance = 14,
+        prompt_hold = 0.2,
+        touch_distance = 12,
+        cooldown_seconds = 1.5,
+        stream_timeout = 2,
+        destination_area = "Spawn",
+        atmosphere = {
+            enabled = true,
+            origin = { -8192, 0, 0 },
+            bounds_min = { -320, -64, -192 },
+            bounds_max = { 324, 132, 196 },
+            poll_seconds = 0.12,
+            tween_seconds = 1.2,
+            neutral_half_width = 20,
+            hysteresis = 2,
+            bragg_center = { 0, -88 },
+            bragg_radius = 66,
+            -- Both accessible side ramps remain part of the neutral Bragg approach.
+            neutral_rects = { { -82, 82, -90, -52 } },
+            layers = { heaven = "heaven_1", hell = "hell_2", purgatory = "base" },
+        },
+        home_gate_action = "Return to Crossroads",
+        home_gate_title = "CROSSROADS",
+        home_gate_subtitle = "Farm & Fight • Pet Siege",
+        home_spawn_path = { "Maps", "Home", "SpawnLocation" },
+    },
     -- ZoneService fans player arrivals around the authored spawn anchor instead
     -- of placing every character on the exact same point.
     player_spawn_spread = {

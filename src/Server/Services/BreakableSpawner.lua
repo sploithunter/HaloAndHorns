@@ -31,6 +31,7 @@ local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 local TweenService = game:GetService("TweenService")
 
+local BreakableWorld = require(ReplicatedStorage.Shared.Game.BreakableWorld)
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
@@ -854,7 +855,7 @@ function BreakableSpawner:_isWorldActive(worldName)
     -- Mission pseudo-worlds (mission_hell etc.): lifetime is owned by
     -- MissionInstanceService (spawn at stamp, destroyed at teardown) — the
     -- presence/unlock gates don't apply.
-    if worldName:sub(1, 8) == "mission_" then
+    if BreakableWorld.isManaged(breakablesConfig, worldName) then
         return true
     end
 
@@ -1165,6 +1166,9 @@ function BreakableSpawner:_setupWorld(worldFolder)
                 if c > 0 then
                     current.Value = c - 1
                 end
+                if BreakableWorld.isManaged(breakablesConfig, worldFolder.Name) then
+                    return -- the activity owns replacement cadence and positions
+                end
                 local placeCfg = getSpawnSettings(worldFolder.Name)
                 local minDelay = tonumber(placeCfg.respawn_min_seconds or 5)
                 local maxDelay = tonumber(placeCfg.respawn_max_seconds or 60)
@@ -1212,7 +1216,7 @@ function BreakableSpawner:_fillWorld(worldFolder)
     -- Mission pseudo-worlds are populated EXPLICITLY by MissionInstanceService
     -- (SpawnMissionBreakable) — the top-up/fill machinery must never manage
     -- them (they have no spawner parts; managing them = a warn every cycle).
-    if worldFolder.Name:sub(1, 8) == "mission_" then
+    if BreakableWorld.isManaged(breakablesConfig, worldFolder.Name) then
         return
     end
 
@@ -1792,8 +1796,11 @@ function BreakableSpawner:_trySpawnOne(
         end
     end
 
-    -- Determine placement/orientation settings
+    -- Per-target and explicit activity placement overrides the default world floor.
     local placeCfg = getSpawnSettings(worldFolder.Name)
+    for key, value in pairs(crystalPlacement) do
+        placeCfg[key] = value
+    end
     local sinkDepth = tonumber(crystalPlacement.sink_depth or placeCfg.sink_depth or 0)
     local surfaceY = tonumber(placeCfg.surface_y)
 
@@ -2842,7 +2849,7 @@ end
 -- auto-target, pet assignment, contrib awards, drops — with no respawn (the
 -- top-up loop only walks configured worlds). The caller owns model lifetime;
 -- teardown destroys its own spawns.
-function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, position, floorY)
+function BreakableSpawner:SpawnActivityBreakable(pseudoWorld, breakableId, position, floorY)
     if not (breakablesConfig.crystals and breakablesConfig.crystals[breakableId]) then
         return nil
     end
@@ -2879,6 +2886,11 @@ function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, positi
         position = position,
         placement = { upright = true, surface_y = tonumber(floorY) },
     }, true)
+end
+
+-- Preserve mission callers; activity owners use the same explicit-placement contract.
+function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, position, floorY)
+    return self:SpawnActivityBreakable(pseudoWorld, breakableId, position, floorY)
 end
 
 return BreakableSpawner

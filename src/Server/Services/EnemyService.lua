@@ -580,7 +580,9 @@ function EnemyService:_leashToHomeArea(entry, pos, extraInset)
     local movement = entry and entry.movementLeash
     local movementShapes = movement and movement.shapes
     if movementShapes and #movementShapes > 0 then
-        local inset = (tonumber(movement.inset) or 0) + math.max(0, tonumber(extraInset) or 0)
+        local inset = (tonumber(movement.inset) or 0)
+            + math.max(0, tonumber(extraInset) or 0)
+            + (movement.bodyInset and (entry.bodyRadius or 0) or 0)
         local x, z = EnemyLeash.clamp(pos.X, pos.Z, movementShapes, inset)
         pos = Vector3.new(x, pos.Y, z)
     end
@@ -664,6 +666,20 @@ end
 -- fights in lava, ice in ice, etc. An enemy with no resolved home area (spawned off-grid) has no
 -- gate (engages anyone).
 function EnemyService:_inTerritory(entry, player)
+    local movement = entry.movementLeash
+    if movement and movement.restrictEngagement then
+        local root = player
+            and player.Character
+            and player.Character:FindFirstChild("HumanoidRootPart")
+        if
+            not root
+            or root.Position.Y < movement.minY
+            or root.Position.Y > movement.maxY
+            or not EnemyLeash.inside(root.Position.X, root.Position.Z, movement.shapes, 0)
+        then
+            return false
+        end
+    end
     local home = entry.homeArea
     if not home then
         return true
@@ -1654,6 +1670,18 @@ function EnemyService:_awardCombatDefeat(player, entry, model, combat, rewardDef
             awardOptions
         )
     end)
+    local braggCfg = require(ReplicatedStorage.Configs.leaderboards).bragg_tracking
+    local resolvedDef = rewardDef or entry.def
+    if braggCfg.boss_tiers[resolvedDef and resolvedDef.tier] then
+        entry.braggReceipt = entry.braggReceipt or HttpService:GenerateGUID(false)
+        require(script.Parent.BraggProgress).record(
+            self._dataServiceInstance,
+            self._statsService,
+            player,
+            "boss",
+            "boss:" .. entry.braggReceipt
+        )
+    end
     fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
     if self._statsService then
         pcall(function() -- mission counter (Origin Story combat beats)
@@ -1812,6 +1840,11 @@ function EnemyService:_onDefeated(targetId)
                                 hrp
                                 and entry.pos
                                 and (hrp.Position - entry.pos).Magnitude <= creditR
+                                and (
+                                    not entry.movementLeash
+                                    or not entry.movementLeash.restrictEngagement
+                                    or self:_inTerritory(entry, mate)
+                                )
                             then
                                 credited[mate] = true
                             end
@@ -2967,6 +3000,7 @@ function EnemyService:SetScriptedMove(enemyModel, position, opts)
     opts = type(opts) == "table" and opts or {}
     for _, entry in pairs(self._enemies) do
         if entry.model == enemyModel then
+            position = self:_leashToHomeArea(entry, position)
             entry.pos = position
             enemyModel:SetAttribute("MoveTarget", position)
             if typeof(opts.face) == "Vector3" then
@@ -3481,14 +3515,18 @@ function EnemyService:_loiter(entry, targetId, model, ePos, dt)
 end
 
 -- Nearest player whose character is within maxRange of a point (or nil).
-function EnemyService:_nearestPlayer(ePos, maxRange)
+function EnemyService:_nearestPlayer(ePos, maxRange, entry)
     local best, bestD
     for _, player in ipairs(Players:GetPlayers()) do
         local character = player.Character
         local hrp = character and character:FindFirstChild("HumanoidRootPart")
         if hrp then
             local d = (hrp.Position - ePos).Magnitude
-            if d <= maxRange and (not bestD or d < bestD) then
+            if
+                d <= maxRange
+                and (not bestD or d < bestD)
+                and (not entry or self:_inTerritory(entry, player))
+            then
                 best, bestD = player, d
             end
         end
@@ -3713,7 +3751,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         if now >= entry.nextPerception then
             entry.nextPerception = now + (eng.perception_interval or 0.75)
             local proxRange = (eng.aggro and eng.aggro.proximity_range) or 30
-            local player, d = self:_nearestPlayer(ePos, perceptionRange)
+            local player, d = self:_nearestPlayer(ePos, perceptionRange, entry)
             -- NO SQUAD, NO FIGHT (Jason's statue imps): enemies fight PETS, not
             -- players. A player with no live pet deployed is not a target — the
             -- pack keeps loitering around them instead of freezing mid-aggro on
@@ -6054,6 +6092,15 @@ function EnemyService:_assignPetTargets(eng)
                         end
                     end
                 end
+                local selected = chosen and live[chosen]
+                if
+                    selected
+                    and selected.movementLeash
+                    and selected.movementLeash.restrictEngagement
+                    and not self:_inTerritory(selected, player)
+                then
+                    chosen = nil
+                end
                 if chosen then
                     if tt.Value ~= "Enemy" or tid.Value ~= chosen then
                         tt.Value = "Enemy"
@@ -6890,6 +6937,13 @@ end
 -- Enemy side = entry.allegiance (set for realm pet-invaders, nil/neutral elsewhere); pet side = species.
 function EnemyService:_enemyHostileToPet(entry, pet, player)
     if
+        entry.movementLeash
+        and entry.movementLeash.restrictEngagement
+        and not self:_inTerritory(entry, player)
+    then
+        return false
+    end
+    if
         pet:GetAttribute("MergeEggObjective") == true
         and not (entry.model and entry.model:GetAttribute("MergeEggCanAttackObjective") == true)
     then
@@ -6919,6 +6973,13 @@ end
 -- only to an enemy ALREADY engaged with this player's squad (entry.aggroPlayerName == the player). Non-
 -- neutral pets follow the pure allegiance gate (proactive).
 function EnemyService:_petHostileToEnemy(pet, entry, player)
+    if
+        entry.movementLeash
+        and entry.movementLeash.restrictEngagement
+        and not self:_inTerritory(entry, player)
+    then
+        return false
+    end
     if
         not CombatTargetGroup.compatible(
             pet:GetAttribute("CombatTargetGroup"),
@@ -8185,12 +8246,26 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- Half the (scaled) body height: ground-snap sits the pivot this far above the floor so the
     -- model rests ON the terrain. hoverHeight lifts flyers (def.hover_height) above that.
     local halfHeight = 3
+    local bodyRadius = 0
     do
         local okE, ext = pcall(function()
             return model:GetExtentsSize()
         end)
         if okE and ext then
             halfHeight = math.max(ext.Y * 0.5, 0.5)
+            bodyRadius = Vector2.new(ext.X, ext.Z).Magnitude / 2
+        end
+    end
+    local movementBounds = opts and opts.movementLeash
+    if movementBounds and movementBounds.bodyInset then
+        for _, shape in ipairs(movementBounds.shapes or {}) do
+            if
+                shape.kind == "box"
+                and bodyRadius + movementBounds.inset >= math.min(shape.halfX, shape.halfZ)
+            then
+                model:Destroy()
+                return { ok = false, reason = "enemy_does_not_fit_bounds" }
+            end
         end
     end
     local requestedLeash = opts and opts.leashRegion
@@ -8241,8 +8316,16 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         homeArea = homeArea, -- territorial: only engages players in this area
         leashRegion = leashRegion, -- movement pen (hard wall at its boundary)
         halfHeight = halfHeight, -- ground-snap pivot offset
+        bodyRadius = bodyRadius, -- conservative yaw-independent footprint for authored outer edges
         hoverHeight = tonumber(def.hover_height) or 0, -- flyers float this far above the ground
     }
+    if opts and opts.movementLeash and opts.movementLeash.bodyInset then
+        local entry = self._enemies[targetId]
+        local clamped = self:_leashToHomeArea(entry, position)
+        model:PivotTo(model:GetPivot() + (clamped - position))
+        position = clamped
+        entry.pos, entry.spawnPosition, entry.home = clamped, clamped, clamped
+    end
     model:SetAttribute("HomeArea", homeArea or "")
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
@@ -8261,7 +8344,10 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
             "MovementLeashHalfExtents",
             Vector3.new(movementShape.halfX, 0, movementShape.halfZ)
         )
-        model:SetAttribute("MovementLeashInset", tonumber(movement.inset) or 0)
+        model:SetAttribute(
+            "MovementLeashInset",
+            (tonumber(movement.inset) or 0) + (movement.bodyInset and bodyRadius or 0)
+        )
         model:SetAttribute("MissionRoomIndex", movement.roomIndex)
     end
 
@@ -8278,7 +8364,8 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- TEAM HP (docs/TEAMING.md — PartyMath.scaledHp, finally wired): packs facing an engaged
     -- TEAM are meatier as well as more numerous. HP × (1 + per_extra × (engaged−1)), toggled
     -- by teaming pack.hp_scaling; applies to EVERY tier (bosses scale hp-only by design).
-    local engaged = self:_engagedTeamFor(position)
+    local engaged = opts and tonumber(opts.engagedTeamSize)
+    engaged = engaged and math.max(1, math.floor(engaged)) or self:_engagedTeamFor(position)
     if engaged > 1 and (self:_teamingConfig().pack or {}).hp_scaling ~= false then
         local perExtra = tonumber(
             (self._combatConfig and self._combatConfig.group_scaling or {}).per_extra_player

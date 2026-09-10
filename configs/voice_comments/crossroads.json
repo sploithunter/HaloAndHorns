@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "voices": {
+    "angel": "thfYL0Elyru2qqTtNQsE",
+    "demon": "NxGA8X3YhTrnf3TRQf6Q"
+  },
+  "voice_settings": {
+    "angel": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.25,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    },
+    "demon": {
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0.3,
+      "use_speaker_boost": true,
+      "speed": 1.0
+    }
+  },
+  "sections": [
+    {
+      "speaker": "angel",
+      "locale": "en",
+      "lines": [
+        {
+          "id": "CR_A01",
+          "cue": "crossroads.welcome",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Welcome to Crossroads, little light. Your adventures begin here. Farm and Fight is where you raise pets, gather treasure, and battle together. In Pet Siege, you hatch defenders and protect your eggs from enemy waves."
+        },
+        {
+          "id": "CR_A02",
+          "cue": "crossroads.explore",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Choose either gate when you are ready, and we will show you how to play. There is no hurry. You can fish, visit the coin garden, hatch a pet, or explore Crossroads first."
+        },
+        {
+          "id": "CR_A03",
+          "cue": "crossroads.handoff.angel",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Heading toward the hell side? I believe that is your cue."
+        },
+        {
+          "id": "CR_A04",
+          "cue": "crossroads.handoff.reply",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Show them around. And do try to keep the dramatic threats to a minimum."
+        },
+        {
+          "id": "CR_A05",
+          "cue": "crossroads.heaven",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Back on the brighter side, little light? I am here if you need me. Choose a gate for your next adventure, or keep exploring. The choice is yours."
+        }
+      ]
+    },
+    {
+      "speaker": "demon",
+      "locale": "en",
+      "lines": [
+        {
+          "id": "CR_D01",
+          "cue": "crossroads.handoff.demon",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "Finally! A traveler with excellent taste. I will take it from here."
+        },
+        {
+          "id": "CR_D02",
+          "cue": "crossroads.hell",
+          "locale": "en",
+          "usage": "Crossroads welcome and realm handoff",
+          "text": "No promises. Welcome to my side of Crossroads. Explore as you please, or choose a gate: Farm and Fight for adventures with your pets, Pet Siege to defend your eggs. I will handle the introductions here."
+        }
+      ]
+    }
+  ]
+}

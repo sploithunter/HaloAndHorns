@@ -30,15 +30,21 @@ return {
 
     -- Auto Collector Game Pass: a separate passive pet, never an extension of the player's
     -- Magnet. It chases owned currency, enhancement, and potion pickups and collects within its
-    -- own fixed-radius reach. `trail_pup` is the temporary Wayfinder Hall visual until the dedicated
-    -- collector pet is authored. Travel scales from the published Eff_Speed axis, so VIP, Speed
+    -- own fixed-radius reach. Its dedicated visual keeps the original dog appearance independent
+    -- of the hatchable Trail Pup shepherd. Travel scales from the published Eff_Speed axis, so VIP, Speed
     -- Boost, Swift, and speed potions affect it exactly like ordinary pet movement.
     auto_collector = {
         enabled = true,
         entitlement_attribute = "AutoCollectorEnabled",
         pickup_kinds = { currency = true, enhancement = true, potion = true },
-        pet = "trail_pup",
+        pet = "trail_pup", -- gait identity only; visual assets below are independent of the egg pet
         variant = "basic",
+        visual = {
+            mesh_asset = "rbxassetid://130310262461103",
+            texture_asset = "rbxassetid://76308987762920",
+            scale = 3.2,
+            orientation = { x = 0, y = 0, z = 0 },
+        },
         collect_radius = 11,
         base_travel_speed = 26,
         target_height = 2,
@@ -69,6 +75,7 @@ return {
     -- from the mineable node. The uploaded mesh is already horizontal, so its one-time template
     -- orientation is neutral; runtime clones use the exact same pop/rest/spin/Magnet path as gems.
     currency_pickups = {
+        crossroads_coins = require(script.Parent.crossroads_garden).pickup,
         -- Premium Gems use the existing authored amethyst geode mesh instead of the emergency
         -- neon-ball fallback. This is the same textured asset already shipped with Heaven flora;
         -- DropService handles its pop, spin, owner visibility, magnet, and collection unchanged.

@@ -2051,7 +2051,7 @@ function GameAPIService:_registerCommands()
             if not s then
                 return { ok = false, reason = "service_unavailable" }
             end
-            return s:RequestSnapshot(args.boardId)
+            return s:RequestSnapshot(args.boardId, context.player)
         end,
     })
     bus:register("hoverboard.shop.catalog", {

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/source/props/crossroads_pond_fish/geometry/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 2149,
+    "edges": 6371,
+    "faces": 4236,
+    "triangles": 4236,
+    "face_components": 8,
+    "boundary_edges": 34,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 2149,
+      "raw_vertices": 12629,
+      "welded_coincident_vertices": 10480,
+      "inspection_weld_distance": 1.760401373243751e-08,
+      "edges": 6371,
+      "faces": 4236,
+      "triangles": 4236,
+      "face_components": 8,
+      "bounds_diagonal": 0.17604013732437512,
+      "boundary_edges": 34,
+      "boundary_components": [
+        {
+          "edge_count": 22,
+          "vertex_count": 22,
+          "closed_loop": true,
+          "perimeter": 0.07311942844535224,
+          "perimeter_to_mesh_diagonal": 0.4153565746805849
+        },
+        {
+          "edge_count": 12,
+          "vertex_count": 12,
+          "closed_loop": true,
+          "perimeter": 0.03294026822550222,
+          "perimeter_to_mesh_diagonal": 0.18711794211342733
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 34 exceed allowed 0"
+  ]
+}

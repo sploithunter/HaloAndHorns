@@ -16,7 +16,11 @@ local Player = {}
 Player.__index = Player
 local singleton
 local speakingOwners = {}
+local exclusiveOwner
 function Narrator.isSpeaking(except)
+    if exclusiveOwner and exclusiveOwner ~= except then
+        return true
+    end
     for owner in pairs(speakingOwners) do
         if owner ~= except then
             return true
@@ -44,7 +48,9 @@ function Narrator.new(options)
         watcher = watcher,
         volumes = lines.playbackVolumeSource,
         mixer = Mixer.new(audioConfig),
-        presentation = Presentation.new(config),
+        presentation = options.presentation or Presentation.new(config),
+        soundParent = options.soundParent,
+        soundRange = options.soundRange,
         seen = {},
         eventTimes = {},
         connections = {},
@@ -66,6 +72,7 @@ function Narrator.new(options)
     return self
 end
 function Player:_stop()
+    self.deferredCue = nil
     if self.current then
         self.current.sound:Destroy()
     end
@@ -73,10 +80,14 @@ function Player:_stop()
     self.mixer:setSpeaking(false)
     self.presentation:hide()
     speakingOwners[self] = nil
-    Players.LocalPlayer:SetAttribute("TutorialNarrationActive", next(speakingOwners) ~= nil)
+    Players.LocalPlayer:SetAttribute(
+        "TutorialNarrationActive",
+        exclusiveOwner ~= nil or next(speakingOwners) ~= nil
+    )
 end
 function Player:cancel()
     self:_stop()
+    self.deferredCue = nil
     self.nextCue, self.helpCue, self.identity, self.state = nil, nil, nil, nil
     table.clear(self.seen)
 end
@@ -97,6 +108,10 @@ function Player:setLocale(localeId)
     end
 end
 function Player:_play(cue, completion, forceEnglish)
+    if exclusiveOwner and exclusiveOwner ~= self then
+        self.deferredCue = { cue = cue, completion = completion, forceEnglish = forceEnglish }
+        return true
+    end
     local line = self.catalog[cue]
     local asset, language = VoiceLocale.resolve(
         forceEnglish and "en" or self.language,
@@ -118,7 +133,12 @@ function Player:_play(cue, completion, forceEnglish)
     end
     sound.Volume = gain
     sound.SoundGroup = self.mixer.group
-    sound.Parent = SoundService
+    sound.Parent = self.soundParent and self.soundParent(line.speaker) or SoundService
+    if self.soundRange then
+        sound.RollOffMinDistance = self.soundRange.minimum
+        sound.RollOffMaxDistance = self.soundRange.maximum
+        sound.RollOffMode = Enum.RollOffMode.InverseTapered
+    end
     local now = os.clock()
     self.current = {
         cue = cue,
@@ -291,6 +311,14 @@ function Player:say(cue)
 end
 function Player:step(dt)
     self.mixer:step(dt)
+    if exclusiveOwner and exclusiveOwner ~= self then
+        return
+    end
+    if self.deferredCue then
+        local deferred = self.deferredCue
+        self.deferredCue = nil
+        self:_play(deferred.cue, deferred.completion, deferred.forceEnglish)
+    end
     local current = self.current
     local player = Players.LocalPlayer
     if current then
@@ -405,12 +433,39 @@ function Player:_stepReminders(dt, blocked)
     end
 end
 function Player:destroy()
+    Narrator.release(self)
     self:cancel()
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
     end
     self.presentation:destroy()
     self.mixer:destroy()
+end
+-- An authored exchange owns the voice channel until every participant has finished.
+function Narrator.acquire(owner)
+    if exclusiveOwner and exclusiveOwner ~= owner then
+        return false
+    end
+    exclusiveOwner = owner
+    local interrupted = {}
+    for other in pairs(speakingOwners) do
+        if other ~= owner then
+            table.insert(interrupted, other)
+        end
+    end
+    for _, other in ipairs(interrupted) do
+        local current = other.current
+        other:_stop()
+        other.deferredCue = current and { cue = current.cue, completion = current.completion }
+    end
+    Players.LocalPlayer:SetAttribute("TutorialNarrationActive", true)
+    return true
+end
+function Narrator.release(owner)
+    if exclusiveOwner == owner then
+        exclusiveOwner = nil
+        Players.LocalPlayer:SetAttribute("TutorialNarrationActive", next(speakingOwners) ~= nil)
+    end
 end
 function Narrator.start()
     if singleton then

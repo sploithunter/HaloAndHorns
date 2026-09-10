@@ -947,6 +947,27 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.EnemyService,
     { "Logger", "ConfigLoader" }
 )
+loader:RegisterModule(
+    "CrossroadsHosts",
+    ServerScriptService.Server.Services.CrossroadsHosts,
+    { "Logger", "ConfigLoader" }
+)
+-- Authored Crossroads arena: shared combat through the canonical enemy and reward services.
+loader:RegisterModule(
+    "CrossroadsArena",
+    ServerScriptService.Server.Services.CrossroadsArena,
+    { "Logger", "ConfigLoader", "EnemyService", "DataService" }
+)
+loader:RegisterModule(
+    "CrossroadsGarden",
+    ServerScriptService.Server.Services.CrossroadsGarden,
+    { "Logger", "ConfigLoader", "BreakableSpawner", "DataService" }
+)
+loader:RegisterModule(
+    "CrossroadsFishingService",
+    ServerScriptService.Server.Services.CrossroadsFishingService,
+    { "Logger", "ConfigLoader", "DataService", "RewardService", "GameAPIService" }
+)
 -- RealmAllianceService: mixed-level temporary alliances at live Heaven/Hell cave patrols.
 -- Kept separate from the homeworld spawner service and its newcomer/onramp behavior.
 loader:RegisterModule(

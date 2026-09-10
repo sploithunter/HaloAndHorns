@@ -1,0 +1,25 @@
+-- Original angel/demon performances; provenance: assets/audio/voices/crossroads_hosts/.
+return {
+    clips = {
+        ["crossroads.welcome"] = { asset_id = 83085057564973, seconds = 17.322086 },
+        ["hosts.angel.greeting"] = { asset_id = 124483208296161, seconds = 11.563537 },
+        ["hosts.angel.advice"] = { asset_id = 126124227647615, seconds = 14.071293 },
+        ["hosts.angel.return"] = { asset_id = 91986423001129, seconds = 8.591383 },
+        ["hosts.angel.garden"] = { asset_id = 122623460916612, seconds = 10.21678 },
+        ["hosts.angel.working1"] = { asset_id = 103271241700992, seconds = 5.15483 },
+        ["hosts.angel.working2"] = { asset_id = 116513712229678, seconds = 6.222948 },
+        ["hosts.angel.egg"] = { asset_id = 91822130689766, seconds = 6.965986 },
+        ["hosts.angel.hatched"] = { asset_id = 81753878817908, seconds = 6.362268 },
+        ["crossroads.hell"] = { asset_id = 130617475820517, seconds = 23.684354 },
+        ["hosts.demon.greeting"] = { asset_id = 98971688830987, seconds = 14.535692 },
+        ["hosts.demon.advice"] = { asset_id = 91446690970318, seconds = 20.154921 },
+        ["hosts.demon.return"] = { asset_id = 118452885844796, seconds = 17.275646 },
+        ["hosts.demon.arena"] = { asset_id = 87217533572392, seconds = 16.253968 },
+        ["hosts.demon.fighting1"] = { asset_id = 78389299682932, seconds = 10.26322 },
+        ["hosts.demon.fighting2"] = { asset_id = 124851769903201, seconds = 9.148662 },
+        ["hosts.demon.fighting3"] = { asset_id = 112842146988886, seconds = 9.98458 },
+        ["hosts.demon.defeated"] = { asset_id = 100396267180013, seconds = 6.965986 },
+        ["hosts.demon.victory"] = { asset_id = 120208718399885, seconds = 11.377778 },
+        ["hosts.demon.retreat"] = { asset_id = 130303076032787, seconds = 12.770975 },
+    },
+}

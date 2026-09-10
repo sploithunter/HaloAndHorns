@@ -1,0 +1,14 @@
+{
+  "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/concepts/pets/trail_pup_shepherd/basic.png",
+  "source_sha256": "1c3305d92f0db0d6c703967dfa500db7e73315c8692bed3f5031ad75d64fdba0",
+  "model_type": "smart-topology",
+  "ai_model": "meshy-t2",
+  "target_polycount": 4000,
+  "should_texture": true,
+  "target_formats": [
+    "glb",
+    "fbx"
+  ],
+  "auto_size": true,
+  "origin_at": "bottom"
+}

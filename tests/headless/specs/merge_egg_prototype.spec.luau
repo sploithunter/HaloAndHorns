@@ -440,7 +440,7 @@ return function()
             expect(returnRoute.expected_gate_count).to.equal(2)
             expect(returnRoute.destination_role).to.equal("main")
             expect(returnRoute.public).to.equal(true)
-            expect(returnRoute.object_text).to.equal("Farm & Fight")
+            expect(returnRoute.object_text).to.equal("Crossroads")
 
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local returnAt =

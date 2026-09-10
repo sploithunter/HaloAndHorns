@@ -15,6 +15,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Pill = require(script.Parent.Parent.UI.Pill)
 
 local CurrencyStyle = {}
@@ -75,9 +76,12 @@ local COLORS = {
     },
 }
 
+COLORS.crossroad = require(ReplicatedStorage.Configs.crossroads_garden).hud
+
 local BOXES = {
     gems_pane = "amethyst",
     hall_coins_pane = "waycoin",
+    crossroads_coins_pane = "crossroad",
     grass_coins_pane = "emerald",
     desert_coins_pane = "citrine",
     lava_coins_pane = "ruby",
@@ -119,7 +123,10 @@ local function addGemIcon(pane, col, key)
     shadow.ZIndex = icon.ZIndex + 4
     shadow.Parent = holder
 
-    local real = key == "waycoin" and WAYCOIN_IMAGE or REAL_GEMS[key]
+    local real = key == "crossroad"
+            and require(ReplicatedStorage.Configs.crossroads_garden).currency.icon_asset
+        or key == "waycoin" and WAYCOIN_IMAGE
+        or REAL_GEMS[key]
     local gem = Instance.new("ImageLabel")
     gem.Name = "GemIcon"
     gem.BackgroundTransparency = 1

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/exports/crossroad_chest/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 1107,
+    "edges": 3158,
+    "faces": 2095,
+    "triangles": 2095,
+    "face_components": 24,
+    "boundary_edges": 31,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "Mesh_0",
+      "vertices": 1107,
+      "raw_vertices": 2957,
+      "welded_coincident_vertices": 1850,
+      "inspection_weld_distance": 8.753891425776881e-08,
+      "edges": 3158,
+      "faces": 2095,
+      "triangles": 2095,
+      "face_components": 24,
+      "bounds_diagonal": 0.8753891425776882,
+      "boundary_edges": 31,
+      "boundary_components": [
+        {
+          "edge_count": 14,
+          "vertex_count": 14,
+          "closed_loop": true,
+          "perimeter": 2.2659750510938466,
+          "perimeter_to_mesh_diagonal": 2.588534562379208
+        },
+        {
+          "edge_count": 17,
+          "vertex_count": 17,
+          "closed_loop": true,
+          "perimeter": 0.6510775219649076,
+          "perimeter_to_mesh_diagonal": 0.7437578218616373
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 31 exceed allowed 0"
+  ]
+}

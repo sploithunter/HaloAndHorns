@@ -8711,4 +8711,213 @@ first-session cohort rates.
 2026-09-08 — Localization verification: `mise run ci` passes 2,842 tests / 322 specs. Native Merge Play passes Farm voice smoke (42 main steps), Merge voice smoke (38 main step/side combinations), and locale smoke (both tracks / 10 switches). All 344 uploads have distinct group-owned IDs; first full Studio delivery check loads 306/344. All 38 remaining failures explicitly report “Asset has not been reviewed.” A real unavailable Spanish combat cue successfully falls back to its English recording and caches the failed asset. Preserve IDs while moderation completes.
 2026-09-08 — Localization delivery recheck: 339/344 clips now load (160/160 Merge; 179/184 Farm & Fight). The five remaining Farm & Fight recordings are still awaiting Roblox review; original IDs and tested English fallback are retained. The full listening page serves all 344 original local MP3s regardless of Roblox review status.
 
+## 2026-09-08 — Realm Crossroads arrival courtyard blockout
+
+- Recorded the approved voxel courtyard direction: Farm & Fight / Merge entrances beside spawn,
+  angel/demon landmarks, rear champions podium arcade, and future-mode gardens.
+- Added a config-driven offline bake for a 240 × 220-stud local Roblox walkthrough and a
+  spawn-neutral import model. No production place, profile, spawn, or travel changes.
+- See [Realm Crossroads](REALM_CROSSROADS.md) for scale, rebuild command, and integration limits.
+
+### 2026-09-08 — Crossroads scale correction; architectural design before rebuilding
+
+- User rejected R1 scale: gateways too large; island too small. Paused Roblox iteration.
+- Created R2 site plan, gateway/player elevation, longitudinal section, and explicit staged
+  build/acceptance instructions. Proposed island 360 × 320; doorway 10 × 12; art envelope 9 high.
+- Kept R2 design parameters separate from the first blockout. R2 is not yet approved or baked.
+
+### 2026-09-08 — Crossroads existing-gate evaluation and approach lighting
+
+- Inspected the actual Heaven/Hell bay-end arches and both Farm & Fight return rings in active
+  Merge Play, without changing the source map. Preferred the matched bay arches at a trial
+  25–30% scale, with faces inside the openings. Recorded native sizes, appearance maps,
+  collision-opening caveats, and the Hell lightning-marker bounds trap.
+- Added R3 architectural sheets for comparison, inset faces, and wider gate placement / local
+  lighting. Proposed 80-stud gate separation, 4.4-second walks, and two 26-stud light zones with
+  a 28-stud neutral gap. R3 replaces the earlier gate positions and roof-mounted face concept;
+  it is not yet built or walk-tested. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+### 2026-09-08 — Crossroads adopts Merge default movement speed
+
+- User selected Merge's default 24 studs/s for the hub, verified against `roles.merge.walk_speed`
+  and `PlaceRuntime.walkSpeedFor`. Updated the R3 approach drawing and design reference: the
+  70.5-stud route now estimates 2.9 seconds. Gate separation and lighting radii stay unchanged.
+- The next walkthrough must use that baseline. No game-wide movement changes or new bake.
+
+- 2026-09-08 — Crossroads R4: authored voxel terrain grading (court 0, gardens/gallery +4, overlook -4, planted rim +12), stairs/ramps and retaining walls; native Merge gates at 30%; eight representative walking routes passed at speed 24. Saved isolated preview and grading diagram. Duplicate local Studio copies lock editing; reuse one instance. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Crossroads demon face: removed inherited tilted placement matrix and used upright mesh rotation with 180-degree yaw toward spawn. Visually verified, saved native preview, and resumed the same Studio walkthrough.
+
+- 2026-09-08 — Crossroads R5: accepted Pet Siege / SIEGE naming; Blender-derived extruded native lettering, paired heraldic crests, physical relief panels and proximity lighting in the existing preview. Two gate routes pass at speed 24; no art collisions or title GUIs; CI passes 2,842 tests. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Planned Bragg Rotunda: fourteen podium groups, eight initial rankings and central fountain. Audited existing Siege reached-wave record versus proposed cleared-wave/lifetime/boss-wave counters; documented shared leaderboard exclusions, offline provenance, migration and avatar budget. Plan only; no map/backend changes. See [R6 design](../REALM_CROSSROADS_BRAGG_PLAN.md).
+
+- 2026-09-08 — Built R6 Bragg Rotunda in the existing isolated preview: 116-stud court, low halo-and-horns fountain, eight 2/1/3 podium groups, six planted reserves, physical category titles. Changed boss category to actual Bosses Defeated across both modes. Stairs, both ramps and fountain-side aisle passed at speed 24. Rankings remain preview-only; original terrain/gallery backed up in ServerStorage.BeforeBraggR6. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Bragg visual refinement: distributed six reserve alcoves between eight ranking groups, replaced FUTURE signs/topiary with three paired flower-garden themes and sculpted botanical wall medallions. Reserved category bindings remain metadata; same local Studio preview, gate/terrain dimensions unchanged.
+
+- 2026-09-08 — Replaced improvised Bragg flower geometry with existing Merge meshes/textures: Field Flower Bush, Softglow Bloom and Crystal Bloom in three Heaven bays; Animal Skull with Skull Lantern pairs in three Hell bays. Preserved interleaved positions; visually verified skull facing and asset scale. Asset IDs/placements remain in config; native templates cached in preview.
+
+- 2026-09-08 — Crossroads R7 side areas authored: west Coin Garden with Hall coin specimens/weekly-egg pavilion, east Patrol Grove with bounded open arena, cover, banner ruins and gathering terrace. Existing mesh assets reused. User clarified map-only scope inside future Farm & Fight integration; hooks are inert metadata and no gameplay code was pulled in. See [Realm Crossroads](REALM_CROSSROADS.md).
+
+- 2026-09-08 — Removed coin garden specimens; added a noncolliding 7-stud energy perimeter with violet entrance spans to Patrol Grove. Recommended widening combat to roughly 64 studs within the existing island margin; coin lawn remains 42×90. No resize or runtime containment implemented.
+
+- 2026-09-08 — User approved symmetric widening: both side fields now 64 studs wide at X±120, inner entries unchanged. Coin area 64×90, combat area 64×102; flank terrain extended within the existing 360×320 island with original terrain backups. Arena energy boundary follows the new width; coin specimens remain removed.
+
+- 2026-09-08 — Replaced arena lightning with native tier-2 Impaler Palisade bulwarks and saved raised/retracted poses. Authored Heaven-left/Hell-right surface themes, 225 existing textured flora around the rim, and eight invisible collidable outer safety walls. Activity floors remain clear. See [Realm Crossroads](REALM_CROSSROADS.md).
+## 2026-09-08 — Standalone Confluence fountain asset started
+
+Separate fountain agent is preparing ImageGen → Meshy → Blender source and Roblox upload for the Bragg center, without map edits. Contract is `configs/confluence_fountain.json`; 22-stud footprint and 8-stud height limit. Source and provenance under `assets/source/props/confluence/`.
+
+### 2026-09-08 — Confluence fountain asset delivered separately
+
+Completed ImageGen concept, Meshy T2 topology selection, strict Blender closure check, repaired-mesh retexture, Blender realm material correction and separate pools/falls. Uploaded the 24-part model to group 15872767; config records the Model and texture IDs. Native `assets/place/Confluence.rbxm` adds nine scrolling Beams and corrects FBX orientation. Measured 22-stud footprint / 7.8-stud height; 20,716 triangles, largest mesh 3,690. Verified upload in unparented Studio model and native file round-trip; preview model/export buffer destroyed. No map insertion or shared library rewrite. Review renders and packed Blender source accompany the asset. CI passes 2,842 tests; targeted Lua and Python checks pass. Visual Beam motion awaits placement review.
+
+- 2026-09-08 — Placed completed Confluence in the existing Bragg preview at (0,4.44,-88), replacing the original fountain retained as ServerStorage.FountainBeforeConfluence. Native orientation matches Heaven-left/Hell-right; both pedestrian side routes pass, nine scrolling Beam effects enabled.
+
+- 2026-09-08 — Animated placed Confluence pool tops with clipped colored surfaces and scrolling textures. Water/lava offsets verified moving at distinct configured rates in Play; original carved frame and nine waterfall/lava Beams preserved.
+- 2026-09-08: Trimmed 12 Crossroads paving intersections into non-overlapping solids after user identified stacked flat surfaces. Visually checked arrival junction; original slabs retained in ServerStorage, config and Edit-time finishing baker recorded.
+- 2026-09-08: Added mirrored spectator/fishing extensions: 32 native seats, 24 static audience dummies, central stairs, oval Terrain pond, two fishing docks, relocated perimeter flora and expanded safety walls. Corrected arrival continuity to Z120 and replaced the center strip with individual edged stone pavers after user rejected the abrupt cut layout. Gameplay remains deferred.
+- 2026-09-08: Removed mirrored notches at the garden-ramp/diagonal approach junctions: links now begin at |X|16 rather than 20, with the diagonal footprint subtracted. Verified matching uninterrupted outlines overhead; authored finishing repair is configured in realm_crossroads_paving.json.
+- 2026-09-08: Expanded Heaven fishing water to 88×112 with ten separate platforms and added an eight-platform Hell pool behind spectator stands. Extended both land lobes and safety walls, reused native plants/rocks, and checked bank/access routes and platform spacing in preview.
+- 2026-09-08: Replaced the Hell pool's artificial liquid surface with real Terrain water at user request. WaterColor is place-wide, so both ponds retain the existing color. Clear the region before writing buffered replacement voxels when converting solid ground to fluid; otherwise the old solid channel can remain.
+- 2026-09-08: Added 20 ambient green mist emitters across the Hell fishing water, reviewed in Play. Rate, color, opacity, spacing, size and lifetime are config-owned; water and global lighting remain unchanged.
+- 2026-09-08: Captured 37 current-map views and commissioned eight independent section design reviews (20 improvements each), with a coordinated architectural/landscape/FX implementation sequence. Retained screenshot atlas and plans under docs/art/crossroads-review. User clarified that modest new effects should be developed in RBX-FX-GEN rather than constrained by its current crystal-only implementation.
+
+### 2026-09-08 — Crossroads R11 premium construction
+
+- Implemented config-driven core, Bragg, garden, stands, fishing and heraldry craft in the existing local Studio preview; retained approved native gates/fountain and route/capacity contracts.
+- Built/uploaded two Blender fishing rods and installed 18 displays with tip anchors. Added Studio-only cast/reel rehearsal; no production gameplay/rewards/travel writes.
+- Integrated the RBX-FX-GEN ambient bundle (local standalone commit503334d); native lifecycle/quality checks passed and old duplicate mist is archived.
+- Added an explicit nine-pass authoring registry and source-synchronized native exporter; documented exact production integration boundaries and remaining art/QA. Full repo CI passed 2,842 headless tests plus lint/style/build and architecture checks.
+
+### 2026-09-08 — Crossroads shelter and final art checkpoint notes
+
+- Added four-seat Heaven fishing rest shelter, two inert dry pet/display bays, three native backdrop trees and retained two bushes; lead verified one Humanoid sit/exit in Play. Roof topY14.2 and18 material-only spur cells verified with unchanged occupancy.
+- Installed physical fishing approach signs and version2 textured fossil (config-owned provenance); eight Bragg emblems await final facing correction/review. Registry now13 passes, superseding the earlier nine-pass note.
+- Updated implementation/native QA/integration documents and Crossroads wiki. Latest native export refresh pending; retained checkpoint link without stale hash/count claims. Whole-map/device/art acceptance and east-annulus collision-query ambiguity remain explicit.
+
+- 2026-09-08: Crossroads follow-up fits arena stone floor/crest/receiver faces within unchanged bounds, composes native fossil backdrop and closes22underwater pier-footing gaps. All8visitorSeats pass native sit/jump smoke; measured sightline work keeps tier changes provisional until rendered target evidence.
+
+- 2026-09-08: Crossroads route sweep reaches49 endpoints at24studs/sec; native boundary audit finds no sampled gaps in12walls. Added37stable bulwark side/segment IDs as inert integration metadata. Decorative original pond-fish asset and local motion are being authored separately from fishing rewards.
+
+- 2026-09-08 — Crossroads completion audit: all 18 occupied fishing proxies fit, and both rear-bank loops passed at 24 studs/sec. Added a dimensioned as-built sheet and explicit acceptance audit. Two full 17-pass native replays completed; fixed a small repeated-grounding drift by casting retained landscape rays from a stable world height. Foreground/device timing remains unverified in the locked session. See `docs/art/crossroads-review/REBUILD_QA.md` and `OCCUPIED_FISHING_QA.md`.
+- 2026-09-08 — Crossroads native save now retains supplementary authoring inputs and supports explicit paths. Added source/runtime/cache/paver checkpoint validation and five negative regression fixtures; archiving current sources is explicitly distinct from replaying installers.
+- 2026-09-08 — Added the measured northern spectator switchback as finishing pass 18. Direct normal-avatar up/down/underpass movement passed 16 segments with zero sampled jumping/falling/swimming. Preserved 32 Seats and 12-stud Hell passage. Saved 17,695-instance native checkpoint; source/runtime validator and five rejection fixtures pass; full CI passes 2,842 tests.
+- 2026-09-08 — Completed 42-view after atlas: all 37 original cameras plus five low-angle/ramp views, inspected and paired in HTML. Documented changed viewport/aspect ratio, assumed default FOV where absent, one facade-obstructed original Bragg camera, and the limits of static FX-off evidence.
+- 2026-09-08 — Follow-up Crossroads QA: OS now reports unlocked and the correct preview window is foreground. Two server-owned R15 pedestrians crossed in opposite directions behind all 18 occupied fishing proxies on both shores, with zero sampled jumping/falling/swimming and minimum root separation above 5 studs. Strict endpoint flags remain false at normal MoveTo stopping distances and are documented separately. Temporary figures removed before focused rendering measurement. Remote PR fast gate also passes.
+- 2026-09-08 — Focused desktop render review collected 13 valid conditions before the session locked again: arrival and Bragg at two graphics levels × full/reduced/off effects, plus Heaven low/full. Three throttled conditions were rejected and eight not attempted. Valid frame medians are about 16.6–16.8 ms and p95 about 19 ms; these are short M3 Max desktop samples, not mobile or whole-map acceptance. Restored graphics/camera/effect settings and stopped Play. Per-session `CGSSessionScreenIsLocked=true` can coexist with global `IOConsoleLocked=false`; use the session state plus foreground window/frame evidence.
+
+- 2026-09-09: Imported R11 into existing Farm and Fight at X -4096 with bounded native Terrain, four visual clients, translated FX/fish origins and bulwark pivots, and inert source archives. Geometry/Terrain counts and hash match source; cosmetic Play smoke passed after streaming, but player profile timed out. Saved to Roblox (not published). See art/crossroads-review/FARM_IMPORT.md.
+
+- 2026-09-09: Crossroads relocated to X -8192 between Home and legacy Merge at user request; cleared previous-location Terrain from original empty backup and translated visual origins/bulwark pivots. Replaced 438 Grass voxels beneath paving with Ground, preserving occupancy (rerun zero changes). Studio GrassLength 0.7 → 0.25. No distant-map hiding client added. See FARM_IMPORT.md.
+
+- 2026-09-09: Replaced all remaining Crossroads Grass Terrain with Ground at user request, including Bragg Plaza; 960 replacements, zero Grass remaining, occupancy/water unchanged. Updated repeatable surface config and archived source.
 - 2026-09-08: Added optional Coin Pup angel/demon comments for both games in English, Spanish and Brazilian Portuguese. Real Marketplace non-ownership is required; unknown checks and all effective/previous collector benefits suppress them. Manual credited pickups trigger bounded opportunities, shared narration preserves gains/fallback, and purchases cancel queued/active comments. See TUTORIAL_VOICE.md.
+
+- 2026-09-09: Excluded Crossroads map-authoring JSON inputs from Rojo runtime config sync to prevent ConfigLoader startup failures; retained unrelated runtime JSON configuration.
+
+- 2026-09-09: Connected Crossroads arrivals (24 assigned native spawn slots) and Farm gate (server-validated prompt/touch to existing Home Spawn). Preserved prologue/mission priority; session Farm entry switches respawn to Home, fresh joins use Crossroads. Native allocation, automatic join, walking gate and Home respawn checks passed. Brought current main/Coin Pup work into branch and excluded map-authoring JSON from runtime sync via separate template fix.
+
+### 2026-09-09 — Homeworld return portal
+
+Homeworld’s existing HallOfWorldsPortal now shows CROSSROADS and Return to Crossroads. Merge delegates this hook to CrossroadsArrival when the imported map is enabled; its cross-place handler is not bound. Dedicated Pet Siege return gates are unchanged. Config-owned text lives in areas.crossroads. The return validates living character, proximity, mission/prologue ownership and cooldown before and after destination streaming, then uses ZoneService to reset the Farm-entered session flag and assign a spaced Crossroads respawn slot. Native Play verified Crossroads → Home via gate touch and Home → Crossroads via the actual proximity prompt, with ArrivalSlot5 restored. Full CI: 2,846/2,846 tests, 323 specs.
+
+### 2026-09-09 — Crossroads Heaven/Purgatory/Hell atmosphere
+
+Added config-driven spatial selection to the existing RealmAtmosphere client: left Heaven 1, right Hell 2, neutral center/Bragg/approaches. Lighting tweens, sky swaps, boundary hysteresis and outside-map restoration verified in native Play. Twelve spatial assertions and full CI (2,846 tests) passed. See REALM_CROSSROADS.md for region dimensions.
+
+### 2026-09-09 — Bragg leaderboard integration and recognition tracking
+
+Connected eight authored podium groups to canonical snapshots with real rank/name/score labels and bounded avatar loading. Archived preview figures/text. Added successful Pet Siege clear counters and shared credited boss defeats, per-profile receipt deduplication and offline provenance. No backfill or Studio counter publication. Native figure placement and memory-only offline facade checks passed; see REALM_CROSSROADS.md for credit rules and deployment limits.
+
+### 2026-09-09 — Studio Bragg global winner visibility
+
+Enabled internal-account-only, read-only Crossroads leaderboard snapshots in Studio while preserving the general Studio isolation, disabled writes, and disabled score tracking. Native Play populated all five established boards with real global names, values, and 12 nearby avatars; the three newly registered recognition boards correctly remain empty until results accumulate.
+
+## 2026-09-09 — Crossroads leaderboard audience
+
+- Connected the 24 reserved spectator Seats to the eight Bragg top-three snapshots; category
+  order and pose/budgets live in leaderboard config, and eight visitor Seats remain native.
+- Reused serial appearance loading/cache and preserved snapshots across podium stream-out.
+- Static R15 posing supports Motor6D and Roblox AnimationConstraint avatars. Retain inactive
+  Humanoids for correct clothing/body rendering; remove Animators and disable state evaluation.
+- Archived authored audience placeholders through the podium binding helper.
+- Verification: full CI 2,849/2,849; fresh Studio Play showed 15 real ranked audience
+  placements (three new categories empty), noncolliding static rigs, correct accessories,
+  both animation-constraint and Motor6D posing, and native visitor-seat occupancy.
+
+## 2026-09-09 — Crossroads arena combat
+
+- Added one shared, level-appropriate arena encounter using authored outer CombatBounds,
+  the existing Trials population/density/boss ladder, and player/team-lead level offset.
+- Config owns rosters, onramp scaling, a 24-enemy cap, lightning arrivals and round lifecycle.
+  Existing group-size menu now identifies both Trials and Arena.
+- EnemyService clamps body-inset spawn/chase/fear/knockback/scripted positions, excludes
+  spectators from targeting and shared credit, and sizes HP from inside teammates only.
+- Boss egg rewards reuse the Trials definitions and normal defeated-enemy award path.
+  Studio arena rewards are disabled; no new save fields or synthetic mission/Siege clears.
+- Native checks covered low-level −3/25% and level-16 +3/200% settings,
+  1,008 movement samples, 84 outside-territory checks, boss egg attachment, clear and
+  repeated-defeat handling. Live combat and lightning were observed; abandonment cleared
+  the arena on exit. Added a transient Studio QA script and pure composition tests.
+
+- 2026-09-09 — Added a lower-right Nine Lives numeral badge to the shared pet-card renderer,
+  derived from variant passive configuration (Rainbow Kitty only among the kitty variants).
+  Native 65×65 card comparison checked all three variants and numeral readability; lint/build
+  and 2,856 headless tests pass. Full CI is blocked by existing CrossroadsArena arrival task.wait
+  debt under the newly present architecture guard; the badge adds no architecture debt.
+
+- 2026-09-09 — Crossroads side music now reuses Heaven_2_Grass / Hell_2_Grass through the atmosphere zones; the neutral center retains its normal area bed. Native side/center checks loaded all three tracks, and Jason confirmed the transitions work. Targeted lint, format, build and wiki checks pass.
+
+- 2026-09-09 — Fixed 51 floating Crossroads perimeter placements (25 Heaven, 26 Hell; maximum
+  7.8-stud gap). Audited 225 perimeter and 69 other matching landscaping models; final support
+  checks and zero-movement replay passed. Added a config-owned Edit repair with original-pivot
+  retention. Native ground-level views, helper lint/format and wiki checks passed.
+
+- 2026-09-09 — Added user-supplied arena entry voice and thunder: trimmed 3.51 seconds before
+  the main thunder impact, retained the tail and reduced gain; uploaded both to the project group.
+  Server entry-edge cue is debounced; lightning batches emit one clap. Uses Voices/Effects buses.
+  Corrected the earlier foliage author's config filename to `realm_crossroads_foliage_grounding.json`
+  so Rojo's existing editor-only exclusion applies; fresh native server startup now passes.
+  Native arena entry loaded/played both group-owned assets with one voice and one clap; voice
+  did not repeat across rounds. Targeted lint, formatting, Rojo build and 2,856 headless tests pass.
+
+- 2026-09-09: Connected the Crossroads coin garden and configurable featured egg using shared DropService/EggService authorities, separate persisted Crossroad Coins, silver ImageGen/Meshy assets, and a Gems + Crossroad Coins HUD. Native collection/expiry/cap/debit checks and 2,859 headless tests passed. See REALM_CROSSROADS.md.
+- 2026-09-09: Revised the garden per Jason: falling mineable chests, no free coin rain. New ImageGen/Meshy silver paw coin and blue/silver chest; shared activity-world mining gates and caller-owned spawn lifecycle. Corrected explicit floor placement before bounds alignment.
+
+- 2026-09-09 — Crossroads fishing: implemented fully client-owned cast/bite/luck/escape/reel timing per user decision, rare 100% surge, keyboard/controller/touch Hook controls and config-owned coin/gem rewards. Added server reward persistence with 24 retained attempt receipts; superseded old server-clock proposal. Native catches, replay protection, cancellation, menu blocking and phone orientations verified; 2,866 headless tests pass. Controller B virtual input unavailable; preexisting arena task.wait blocks full CI. See REALM_CROSSROADS.md.
+
+- 2026-09-09 — Fixed sideways Crossroads chests: shared garden default_orientation now compensates the imported FBX -90-degree pitch with +90 X. Both chest sizes retain random yaw and floor alignment; native visual review confirms lid-up, feet-down placement.
+
+- 2026-09-09 — Trail Pup replaced with an ImageGen/Meshy adult German Shepherd (normal/Golden art, transparent icons; Rainbow shares normal geometry). Name, stats and egg slot remain. Closed 4,958-triangle mesh passes both final integrity gates. Scale 3.4 matches the user's AutoDog reference height. Dedicated config-owned collector visual preserves the original dog independently; native source/size/appearance checks and 2,867 headless tests pass. See REALM_CROSSROADS.md and assets/exports/trail_pup_shepherd/README.md.
+
+- 2026-09-09 — Trail Pup sizing correction: user explicitly rejected height matching because AutoDog has short legs, and considered the original 4.4 preview too small. Final scale is 5.2, using body breadth; supersedes the earlier 3.4 scale note.
+
+- 2026-09-09 — User approved the final 5.2-scale Trail Pup shepherd size after side-by-side body-width comparison with AutoDog.
+
+- 2026-09-09 — Crossroads onboarding and portals: added the voiced angel welcome and ordered
+  angel/demon handoff, deferred Farm prologue/starter/tutorial until the Farm gate, retained saved
+  progress on hub returns, and queued gate intent until dialogue completion. Added Pet Siege gate
+  touch debounce and Crossroads return copy/routing on both endcaps and Quartermaster. Seven
+  original recordings uploaded and verified with native Sound loading; native handoff, gate queue,
+  deliberate retry and saved-step resume checked. Headless suite: 2,874 passes; full CI remains
+  blocked by the existing CrossroadsArena.lua arrival timer architecture debt.
+
+- 2026-09-09 — Crossroads delivery: Farm Save to Roblox confirmed at 16:16 Mountain Time;
+  no publish. Pet Siege source/config changes are present in its open Edit session and boot-tested,
+  but a cloud save is unverified because the desktop UI controller selects the other Studio process.
+  Optional collector comments now follow the active Crossroads guide. Narrator smoke passes all
+  42 existing steps plus exchange priority and stale-queue cancellation.
+
+- 2026-09-09: Added shared roaming Crossroads angel/demon hosts, gate-priority return greetings, garden/egg and arena reactions, and 20 recorded English lines. Verified movement, real mining/combat responses, audio loading, protected handoff and client queue/regression checks in Studio. See REALM_CROSSROADS.md and TUTORIAL_VOICE.md.
+
+- 2026-09-09: Corrected inaudible Crossroads hosts with per-listener angel/demon companion copies above and off to the side, matching Pet Siege spacing and voice range. Shared gate visitors retain priority; native angel playback verified at 36.4 studs inside the 45-stud full-volume radius; Studio update interrupted the remaining movement/demon checks.
+
+- 2026-09-09: Limited the demon defeat taunt to once per listener's arena visit, preserving other commentary and victory lines. Native 18-check queue regression passes, including host gate detours and leaving/reentering.
+
+- 2026-09-09: Added durable Crossroads introduction milestones and server-observed destination visits. Completed exchanges no longer replay across sessions; visited destinations stop their host commentary. Destination tutorials remain separate.
+
+- 2026-09-09: Native persistent-intro validation passed: completed exchange survived rejoin, successful Farm gate marked Farm, actual Siege profile load marked Siege, and return to Crossroads restored both visits with idle guidance hidden. Headless 2886/2886 and Rojo build pass.
+
+- 2026-09-10: Removed the narration wait from Farm and Pet Siege gate travel at the user’s request. Gate validation/debounce remains; leaving Crossroads cancels local narration.

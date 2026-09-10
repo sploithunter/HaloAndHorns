@@ -3962,7 +3962,7 @@ local petConfig = {
             rarity = "common",
             base_power = 8,
             base_health = 120,
-            asset_transform = { scale = 3.2, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            asset_transform = { scale = 5.2, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,
                 angle_y = 0,
@@ -3972,23 +3972,23 @@ local petConfig = {
             },
             variants = {
                 basic = {
-                    mesh_asset = "rbxassetid://130310262461103",
-                    texture_asset = "rbxassetid://76308987762920",
-                    image_id = "rbxassetid://120400295131072",
+                    mesh_asset = "rbxassetid://117920748271522",
+                    texture_asset = "rbxassetid://112908745315187",
+                    image_id = "rbxassetid://108678031613905",
                     display_name = "Trail Pup",
                     abilities = {},
                 },
                 golden = {
-                    mesh_asset = "rbxassetid://80522248123382",
-                    texture_asset = "rbxassetid://104590134640679",
-                    image_id = "rbxassetid://104496648833556",
+                    mesh_asset = "rbxassetid://110380464319135",
+                    texture_asset = "rbxassetid://126423160315367",
+                    image_id = "rbxassetid://128345293781447",
                     display_name = "Golden Trail Pup",
                     abilities = {},
                 },
                 rainbow = {
-                    mesh_asset = "rbxassetid://130310262461103",
-                    texture_asset = "rbxassetid://76308987762920",
-                    image_id = "rbxassetid://120400295131072",
+                    mesh_asset = "rbxassetid://117920748271522",
+                    texture_asset = "rbxassetid://112908745315187",
+                    image_id = "rbxassetid://108678031613905",
                     display_name = "Rainbow Trail Pup",
                     abilities = {},
                 },
@@ -10729,5 +10729,17 @@ petConfig.hatching_animation = {
         -- [5] = {columns = 3, rows = 2, name = "custom_5"},
     },
 }
+
+-- Independent offer identity: reuses the selected egg's art/odds without changing Hall prices.
+do
+    local garden = require(script.Parent.crossroads_garden)
+    local source =
+        assert(petConfig.egg_sources[garden.egg.source], "Unknown Crossroads featured egg")
+    local offer = table.clone(source)
+    offer.cost = garden.egg.cost
+    offer.currency = garden.currency.id
+    offer.world_placeable = true
+    petConfig.egg_sources[garden.egg.id] = offer
+end
 
 return petConfig

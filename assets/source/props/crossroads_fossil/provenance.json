@@ -1,0 +1,71 @@
+{
+  "tasks": [
+    {
+      "stage": "geometry",
+      "task_id": "01a0836a-2461-75b4-bd86-b464b80f67a1",
+      "consumed_credits": 5,
+      "status": "SUCCEEDED"
+    },
+    {
+      "stage": "geometry_9300",
+      "task_id": "01a0836b-1127-746a-aeaf-3e74a5196fa6",
+      "consumed_credits": 5,
+      "status": "SUCCEEDED"
+    },
+    {
+      "stage": "textured",
+      "task_id": "01a0836c-f763-71d7-af1a-241e5df5ec6a",
+      "consumed_credits": 10,
+      "status": "SUCCEEDED"
+    }
+  ],
+  "files": {
+    "concept-v1.png": {
+      "sha256": "5add3d1ffd1b61cfd94a7de0eac82b14296ae8a2e8a0dfc4a85affc89393adae",
+      "bytes": 2138120
+    },
+    "repaired/model.glb": {
+      "sha256": "96cca4e20bb8f8a19dd9d90691332f1495800015eb83d2478c228283301bb391",
+      "bytes": 539172
+    },
+    "textured/model.glb": {
+      "sha256": "3e9ae68394ac0202a0ad08895acb1988129e87953c5f1ba39c97ed96270b3bd7",
+      "bytes": 3854804
+    },
+    "final/CrossroadsFossil.fbx": {
+      "sha256": "4f4b20db80b2113d31ff6757a39a2c376dd9a4aec63d7c673242deb1192fa47b",
+      "bytes": 3909676
+    },
+    "final/CrossroadsFossil.blend": {
+      "sha256": "a397097eb5010955fe9ddb9e8271f7ee4086a32d0ebc0fcb92d8d2c261dfaf18",
+      "bytes": 4003134
+    },
+    "final/texture_0.png": {
+      "sha256": "04152a90789b3500c903d0b79acb666d98e4020fdd93bfe83b4925aec6c724fb",
+      "bytes": 1826053
+    }
+  },
+  "final": {
+    "name": "CrossroadsFossil",
+    "triangles": 6952,
+    "mesh_objects": 1,
+    "material_slots": 1,
+    "dimensions_blender_xyz": [
+      8.0,
+      3.5781280994415283,
+      5.218751907348633
+    ],
+    "dimensions_roblox_xyz": [
+      8.0,
+      5.218751907348633,
+      3.5781280994415283
+    ],
+    "pivot": "bottom_center",
+    "uv_seam_edges_split": 0,
+    "textures": [
+      "texture_0.png"
+    ],
+    "config": "assets/source/props/crossroads_fossil/prepare_asset.py",
+    "native_validation": "pending root-owned asset-only inspection"
+  }
+}

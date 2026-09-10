@@ -1,0 +1,118 @@
+{
+  "name": "Crossroads_Friendly_Fish_Fossil_v2",
+  "status": "native_verified_placed_preview",
+  "config": "configs/crossroads_fossil.json",
+  "source": "assets/source/props/crossroads_fossil/brief.md",
+  "geometry_task": "01a0836a-2461-75b4-bd86-b464b80f67a1",
+  "alternate_geometry_task": "01a0836b-1127-746a-aeaf-3e74a5196fa6",
+  "geometry_triangles": 6952,
+  "geometry_integrity_report": "assets/source/props/crossroads_fossil/repaired/integrity.json",
+  "creator_group": 15872767,
+  "map_inserted": true,
+  "native_visual_review": "lead_verified_textured_viewport_matches_reference_front",
+  "model_asset_id": 116671594170630,
+  "texture_task": "01a0836c-f763-71d7-af1a-241e5df5ec6a",
+  "meshy_consumed_credits": 20,
+  "dimensions_xyz": [
+    8.0,
+    5.218751907348633,
+    3.5781280994415283
+  ],
+  "material_count": 1,
+  "final_integrity_report": "assets/source/props/crossroads_fossil/final_v2/integrity_fbx.json",
+  "uv_guard": "assets/source/props/crossroads_fossil/final_v2/uv_guard.json",
+  "source_provenance": "assets/source/props/crossroads_fossil/provenance_v2.json",
+  "editable_blend": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.blend",
+  "fbx": "assets/source/props/crossroads_fossil/final_v2/CrossroadsFossil.fbx",
+  "preview": "assets/source/props/crossroads_fossil/final_v2/front.png",
+  "native_checks": {
+    "reported_by": "integrating_lead",
+    "mesh_parts": 1,
+    "texture_id": 105991804065229,
+    "mesh_id": 116191368702768,
+    "dimensions_xyz": [
+      8,
+      5.21875,
+      3.57813
+    ],
+    "placement_xyz": [
+      280,
+      4,
+      77
+    ],
+    "yaw_degrees": 85,
+    "ground_embed": 0.2,
+    "production_published": false
+  },
+  "external_atlas_resolution": 1024,
+  "packed_blend_atlas_resolution": 1024,
+  "uploaded_texture_resolution": "embedded_FBX_verified_1024; native_pixels_not_independently_measured",
+  "v1_record": {
+    "name": "CrossroadsFossil",
+    "status": "native_verified_placed_preview",
+    "config": "configs/crossroads_fossil.json",
+    "source": "assets/source/props/crossroads_fossil/brief.md",
+    "geometry_task": "01a0836a-2461-75b4-bd86-b464b80f67a1",
+    "alternate_geometry_task": "01a0836b-1127-746a-aeaf-3e74a5196fa6",
+    "geometry_triangles": 6952,
+    "geometry_integrity_report": "assets/source/props/crossroads_fossil/repaired/integrity.json",
+    "creator_group": 15872767,
+    "map_inserted": true,
+    "native_visual_review": "lead_verified_textured_viewport_matches_reference_front",
+    "model_asset_id": 77687797463306,
+    "texture_task": "01a0836c-f763-71d7-af1a-241e5df5ec6a",
+    "meshy_consumed_credits": 20,
+    "dimensions_xyz": [
+      8.0,
+      5.218751907348633,
+      3.5781280994415283
+    ],
+    "material_count": 1,
+    "final_integrity_report": "assets/source/props/crossroads_fossil/final/integrity_fbx.json",
+    "uv_guard": "assets/source/props/crossroads_fossil/final/uv_guard.json",
+    "source_provenance": "assets/source/props/crossroads_fossil/provenance.json",
+    "editable_blend": "assets/source/props/crossroads_fossil/final/CrossroadsFossil.blend",
+    "fbx": "assets/source/props/crossroads_fossil/final/CrossroadsFossil.fbx",
+    "preview": "assets/source/props/crossroads_fossil/final/front.png",
+    "native_checks": {
+      "reported_by": "integrating_lead",
+      "mesh_parts": 1,
+      "texture_id": 103342164515277,
+      "dimensions_xyz": [
+        8,
+        5.21875,
+        3.57813
+      ],
+      "placement_xyz": [
+        280,
+        4,
+        77
+      ],
+      "yaw_degrees": 85,
+      "ground_embed": 0.2,
+      "stone_base_grounded": true,
+      "route_intrusion": false,
+      "production_published": false,
+      "texture_resolution": "not_measured"
+    },
+    "external_atlas_resolution": 1024,
+    "packed_blend_atlas_resolution": 2048,
+    "uploaded_texture_resolution": "not_independently_measured"
+  },
+  "version": 2,
+  "supersedes_model_asset_id": 77687797463306,
+  "native_validation": "placed_preview_dimensions_verified",
+  "texture_id": 105991804065229,
+  "packed_texture_resolution": [
+    1024,
+    1024
+  ],
+  "triangles": 6952,
+  "upload_method": "scripts/upload_models.js embedded FBX",
+  "production_published": false,
+  "geometry_and_uv_buffers_identical_to_v1": true,
+  "reopened_blend_texture_verified": true,
+  "embedded_fbx_texture_verified": true,
+  "native_texture_id": 105991804065229,
+  "native_mesh_id": 116191368702768
+}

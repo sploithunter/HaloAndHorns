@@ -1,0 +1,36 @@
+{
+  "id": "01a087de-3707-7039-ae8c-7a72d2ddb00a",
+  "type": "image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "consumed_credits": 15,
+  "created_at": 1788985884359,
+  "started_at": 1788985884368,
+  "finished_at": 1788986006463,
+  "expires_at": 1789245206463,
+  "task_error": null,
+  "request": {
+    "source_image": "/Users/jason/Documents/HaloAndHorns-crossroads/assets/concepts/crossroads/crossroad_chest.png",
+    "source_sha256": "fdd4707e0962fcd62a2da8f4f0b2288aafb1d6bb8789f712ddfb9f566f6669e4",
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 2000,
+    "should_texture": true,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ],
+    "auto_size": true,
+    "origin_at": "bottom"
+  },
+  "files": {
+    "glb": "model.glb",
+    "fbx": "model.fbx",
+    "preview": "preview.png",
+    "preview_back": "preview_back.png",
+    "preview_front": "preview_front.png",
+    "preview_left": "preview_left.png",
+    "preview_right": "preview_right.png",
+    "preview_alpha": "preview_alpha.png"
+  }
+}

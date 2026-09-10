@@ -447,6 +447,11 @@ return {
 
     -- Which looping track plays in each AREA (edit freely — falls back to `default`). Only 3 tracks
     -- so far, so some areas share; add more tracks + remap for fully distinct per-area music.
+    -- Reuse the existing layer-2 Grass area mappings; neutral Crossroads keeps its area bed.
+    crossroads_music_areas = {
+        heaven = "Heaven_2_Grass",
+        hell = "Hell_2_Grass",
+    },
     area_music = {
         default = "awe",
         -- HOMEWORLD (Jason: "we have distinct music for all the homeworlds

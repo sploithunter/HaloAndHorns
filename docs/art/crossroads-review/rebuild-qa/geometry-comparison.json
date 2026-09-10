@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"missing\":0,\"changed\":{\"1\":{\"distance\":0.24950790405273438,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.withered_sapling.withered_sapling\",\"size\":0},\"3\":{\"distance\":0.24944305419921876,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.ash_tuft.ash_tuft\",\"size\":0},\"2\":{\"distance\":0.0359649658203125,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.withered_sapling.withered_sapling\",\"size\":0},\"5\":{\"distance\":0.24970293045043946,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.ash_tuft.ash_tuft\",\"size\":0},\"4\":{\"distance\":0.0408782958984375,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.ash_tuft.ash_tuft\",\"size\":0},\"7\":{\"distance\":0.2484893798828125,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.ash_tuft.ash_tuft\",\"size\":0},\"6\":{\"distance\":0.0386509895324707,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.ash_tuft.ash_tuft\",\"size\":0},\"9\":{\"distance\":0.12500381469726563,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.dead_brush.dead_brush\",\"size\":0},\"8\":{\"distance\":0.24939727783203126,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.dead_brush.dead_brush\",\"size\":0},\"13\":{\"distance\":0.04249906539916992,\"path\":\"CrossroadsFishingR10.FishingPolishR11.HellFishingPool.CraftedStation1.DryBankApproach\",\"size\":0.009658336639404297},\"12\":{\"distance\":0.24579620361328126,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.lava_eye_tree.lava_eye_tree\",\"size\":0},\"11\":{\"distance\":0.24795150756835938,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.coldfire_pine.coldfire_pine\",\"size\":0},\"10\":{\"distance\":0.24854660034179688,\"path\":\"CrossroadsLandscapeR8.PerimeterFlora.dark_ice_shard.dark_ice_shard\",\"size\":0}},\"added\":0,\"parts\":5448}"
+    }
+  ],
+  "isError": false
+}

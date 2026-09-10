@@ -1,0 +1,25 @@
+{
+  "triangles": 4716,
+  "dimensions_roblox_xyz": [
+    0.85,
+    1.2,
+    3
+  ],
+  "pivot": "center",
+  "native_forward_expected": "-Z",
+  "bones": [
+    "Root",
+    "Tail"
+  ],
+  "animation_clips": 0,
+  "packed_images": [
+    {
+      "name": "texture_0.png",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "native_validation": "pending root-owned insertion and tail deformation check"
+}

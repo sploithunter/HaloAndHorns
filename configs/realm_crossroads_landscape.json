@@ -1,0 +1,187 @@
+{
+  "revision": 8,
+  "root": "CrossroadsLandscapeR8",
+  "bake_source": "tools/realm_crossroads/bake_landscape.luau",
+  "seed": 80608,
+  "models": {
+    "cherry_heaven_tree_1": 125558447155984,
+    "frosted_pine_1": 107694612602760,
+    "cloud_sapling": 127768158768789,
+    "field_flower_bush": 79157049690801,
+    "softglow_bloom": 86094061836178,
+    "pearl_quartz": 76377133605544,
+    "withered_sapling": 135248376048576,
+    "coldfire_pine": 98718860782548,
+    "lava_eye_tree": 116040941870340,
+    "dark_ice_shard": 109075525221053,
+    "dead_brush": 93403417736289,
+    "ash_tuft": 80790375961218,
+    "bone_rock": 80112726228834
+  },
+  "region_min": [
+    -184,
+    -32,
+    -164
+  ],
+  "region_max": [
+    184,
+    48,
+    164
+  ],
+  "center_blend_width": 12,
+  "heaven": {
+    "trees": [
+      "cherry_heaven_tree_1",
+      "frosted_pine_1",
+      "cloud_sapling"
+    ],
+    "plants": [
+      "field_flower_bush",
+      "softglow_bloom"
+    ],
+    "rocks": [
+      "pearl_quartz"
+    ],
+    "terrain": [
+      135,
+      167,
+      111
+    ],
+    "stone": [
+      215,
+      213,
+      197
+    ],
+    "ground": [
+      116,
+      150,
+      96
+    ]
+  },
+  "hell": {
+    "trees": [
+      "withered_sapling",
+      "coldfire_pine",
+      "lava_eye_tree"
+    ],
+    "plants": [
+      "dead_brush",
+      "ash_tuft"
+    ],
+    "rocks": [
+      "bone_rock",
+      "dark_ice_shard"
+    ],
+    "terrain": [
+      65,
+      51,
+      57
+    ],
+    "stone": [
+      151,
+      122,
+      108
+    ],
+    "ground": [
+      65,
+      52,
+      54
+    ]
+  },
+  "tree_height": [
+    21,
+    33
+  ],
+  "plant_height": [
+    3.2,
+    5.3
+  ],
+  "rock_height": [
+    5,
+    10
+  ],
+  "edge_height": 100,
+  "edge_bottom": -32,
+  "edge_thickness": 4,
+  "boundary": [
+    [
+      -176,
+      -134
+    ],
+    [
+      -154,
+      -156
+    ],
+    [
+      154,
+      -156
+    ],
+    [
+      176,
+      -134
+    ],
+    [
+      176,
+      134
+    ],
+    [
+      154,
+      156
+    ],
+    [
+      -154,
+      156
+    ],
+    [
+      -176,
+      134
+    ]
+  ],
+  "side_rows": [
+    164,
+    172
+  ],
+  "side_z_range": [
+    -122,
+    124
+  ],
+  "side_tree_step": 18,
+  "rear_rows": [
+    -145,
+    -153
+  ],
+  "rear_x_range": [
+    -144,
+    144
+  ],
+  "rear_tree_step": 18,
+  "front_rows": [
+    144,
+    151
+  ],
+  "front_x_ranges": [
+    [
+      -145,
+      -73
+    ],
+    [
+      73,
+      145
+    ]
+  ],
+  "front_tree_step": 16,
+  "understory_step": 8,
+  "note": "No trees inside activity fields, rotunda or main routes. Outer safety wall is physical and invisible; arena containment remains a separate future gameplay rule.",
+  "hell_accent_trees": [
+    [
+      133,
+      -92,
+      12
+    ],
+    [
+      133,
+      105,
+      12
+    ]
+  ]
+}

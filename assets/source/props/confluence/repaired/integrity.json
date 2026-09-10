@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/repaired/model.glb",
+  "passed": false,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 7835,
+    "edges": 22607,
+    "faces": 15070,
+    "triangles": 15070,
+    "face_components": 157,
+    "boundary_edges": 8,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 4,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 7835,
+      "raw_vertices": 44685,
+      "welded_coincident_vertices": 36850,
+      "inspection_weld_distance": 2.576649094681873e-06,
+      "edges": 22607,
+      "faces": 15070,
+      "triangles": 15070,
+      "face_components": 157,
+      "bounds_diagonal": 25.76649094681873,
+      "boundary_edges": 8,
+      "boundary_components": [
+        {
+          "edge_count": 2,
+          "vertex_count": 3,
+          "closed_loop": false,
+          "perimeter": 2.8392484188079834,
+          "perimeter_to_mesh_diagonal": 0.11019150510902348
+        },
+        {
+          "edge_count": 2,
+          "vertex_count": 3,
+          "closed_loop": false,
+          "perimeter": 2.2304927110671997,
+          "perimeter_to_mesh_diagonal": 0.08656563734933369
+        },
+        {
+          "edge_count": 2,
+          "vertex_count": 3,
+          "closed_loop": false,
+          "perimeter": 2.060577869415283,
+          "perimeter_to_mesh_diagonal": 0.07997122594878187
+        },
+        {
+          "edge_count": 2,
+          "vertex_count": 3,
+          "closed_loop": false,
+          "perimeter": 0.7379864454269409,
+          "perimeter_to_mesh_diagonal": 0.028641325159491953
+        }
+      ],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 4,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": [
+    "boundary edges 8 exceed allowed 0",
+    "wire/3+-face edges 4 exceed allowed 0"
+  ]
+}

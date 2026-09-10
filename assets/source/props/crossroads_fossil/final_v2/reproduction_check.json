@@ -1,0 +1,9 @@
+{
+  "rebuild_from_retained_blend_passed": true,
+  "geometry_normal_uv_index_buffers_identical": true,
+  "triangles": 6952,
+  "reopened_packed_texture": [
+    1024,
+    1024
+  ]
+}

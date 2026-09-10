@@ -1,0 +1,7 @@
+{
+  "input": "textured/model.glb",
+  "boundary_edges_before": 4,
+  "method": "four_triangle_center_fan",
+  "voxel_remesh": false,
+  "uv_interpolated": true
+}

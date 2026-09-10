@@ -1,0 +1,208 @@
+{
+  "revision": 5,
+  "root": "GateCrestR5",
+  "source": "tools/realm_crossroads/bake_crests.luau",
+  "glyph_source": "configs/realm_crossroads_glyphs.json",
+  "font_source": "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
+  "curve_resolution": 2,
+  "glyph_depth": 0.42,
+  "position": [
+    0,
+    23.4,
+    5.8
+  ],
+  "outline": [
+    [
+      -14,
+      -2.1
+    ],
+    [
+      -12,
+      -3.4
+    ],
+    [
+      -4,
+      -3.8
+    ],
+    [
+      0,
+      -4.4
+    ],
+    [
+      4,
+      -3.8
+    ],
+    [
+      12,
+      -3.4
+    ],
+    [
+      14,
+      -2.1
+    ],
+    [
+      14,
+      2.2
+    ],
+    [
+      10,
+      3.0
+    ],
+    [
+      0,
+      3.7
+    ],
+    [
+      -10,
+      3.0
+    ],
+    [
+      -14,
+      2.2
+    ]
+  ],
+  "panel_depth": 1.1,
+  "title_depth": 0.44,
+  "halo_radius": 2.9,
+  "halo_segments": 40,
+  "ornament_depth": 0.75,
+  "relief_position": [
+    -20,
+    4.5,
+    7
+  ],
+  "relief_size": [
+    13,
+    5.8,
+    1.0
+  ],
+  "pulse_seconds": 6,
+  "approach_radius": 26,
+  "light_brightness": 0.65,
+  "face_light_brightness": 0.65,
+  "light_range": 16,
+  "themes": [
+    {
+      "gate": "FarmAndFight",
+      "mode_name": "Farm & Fight",
+      "lines": [
+        {
+          "text": "FARM &",
+          "y": 1.6,
+          "height": 2.25,
+          "max_width": 23
+        },
+        {
+          "text": "FIGHT",
+          "y": -1.5,
+          "height": 2.65,
+          "max_width": 21
+        }
+      ],
+      "captions": [
+        "GROW",
+        "HATCH",
+        "FIGHT"
+      ],
+      "icons": [
+        "sprout",
+        "egg",
+        "swords"
+      ],
+      "body": [
+        76,
+        81,
+        75
+      ],
+      "inset": [
+        224,
+        218,
+        192
+      ],
+      "trim": [
+        190,
+        145,
+        66
+      ],
+      "letters": [
+        105,
+        73,
+        30
+      ],
+      "letter_edge": [
+        244,
+        213,
+        139
+      ],
+      "glow": [
+        255,
+        220,
+        145
+      ],
+      "accent": [
+        246,
+        241,
+        220
+      ],
+      "ornament": "wings"
+    },
+    {
+      "gate": "Merge",
+      "mode_name": "Pet Siege",
+      "lines": [
+        {
+          "text": "SIEGE",
+          "y": 0,
+          "height": 4.4,
+          "max_width": 23
+        }
+      ],
+      "captions": [
+        "MERGE",
+        "SHARE",
+        "DEFEND"
+      ],
+      "icons": [
+        "egg",
+        "paw",
+        "shield"
+      ],
+      "body": [
+        30,
+        27,
+        30
+      ],
+      "inset": [
+        49,
+        37,
+        37
+      ],
+      "trim": [
+        143,
+        93,
+        54
+      ],
+      "letters": [
+        243,
+        187,
+        112
+      ],
+      "letter_edge": [
+        90,
+        51,
+        34
+      ],
+      "glow": [
+        255,
+        99,
+        34
+      ],
+      "accent": [
+        78,
+        66,
+        63
+      ],
+      "ornament": "horns"
+    }
+  ]
+}

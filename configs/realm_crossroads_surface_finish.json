@@ -1,0 +1,35 @@
+{
+  "root": "RealmCrossroadsR4",
+  "archive": "CrossroadsAuthoringR11",
+  "bounds_min": [
+    -8512,
+    -64,
+    -192
+  ],
+  "bounds_max": [
+    -7868,
+    132,
+    196
+  ],
+  "replacement_material": "Ground",
+  "paver_names": [
+    "ArrivalPaver",
+    "StonePaver",
+    "PreviewSpawn",
+    "EntryApron",
+    "EntryRamp",
+    "EntryStep1",
+    "EntryStep2",
+    "EntryStep3",
+    "EntryStep4",
+    "EntryStep5",
+    "EntryStep6",
+    "EntryStep7",
+    "EntryStep8"
+  ],
+  "edge_margin": 2,
+  "buried_depth": 8,
+  "grass_length": 0.25,
+  "previous_grass_length": 0.7,
+  "replace_all_grass": true
+}

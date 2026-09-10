@@ -1,0 +1,267 @@
+{
+  "revision": 2,
+  "activity_root": "CrossroadsActivitiesR7",
+  "garden_name": "CoinGarden",
+  "output_name": "CelestialPavilionCraftR1",
+  "backup_name": "CrossroadsGardenCraftBackup",
+  "bake_source": "tools/realm_crossroads/polish_garden.luau",
+  "center": [
+    -120,
+    4,
+    -61
+  ],
+  "floor_offset": 0.6,
+  "replace_names": [
+    "PavilionColumn",
+    "Capital",
+    "PergolaBeam",
+    "PergolaSlat"
+  ],
+  "columns": {
+    "x": 19,
+    "z": 10,
+    "shaft_height": 15.2,
+    "shaft_width": 1.75,
+    "base_size": [
+      3.4,
+      0.55,
+      3.4
+    ],
+    "plinth_size": [
+      2.75,
+      0.45,
+      2.75
+    ],
+    "plinth_y": 0.775,
+    "shaft_bottom": 1,
+    "collar_size": [
+      2.2,
+      0.18,
+      2.2
+    ],
+    "collar_ys": [
+      1.3,
+      15.7
+    ],
+    "capital_size": [
+      3.2,
+      0.55,
+      3.2
+    ],
+    "capital_y": 16.2
+  },
+  "arch": {
+    "spring_y": 16.8,
+    "half_width": 20.6,
+    "rise": 4.1,
+    "inner_half_width": 18.2,
+    "inner_rise": 2.65,
+    "depth": 1.55,
+    "z_offsets": [
+      -10,
+      10
+    ],
+    "cutter_depth": 8,
+    "lower_cutter_size": [
+      60,
+      40,
+      20
+    ]
+  },
+  "halo": {
+    "center_y": 21.3,
+    "radius": 6.5,
+    "inner_radius": 5.8,
+    "thickness": 1.0,
+    "support_z": 6.2,
+    "support_width": 0.9,
+    "support_depth": 0.75
+  },
+  "brackets": {
+    "width": 0.55,
+    "depth": 0.65,
+    "drop": 3.1,
+    "inset": 3.5
+  },
+  "title_frame": {
+    "half_width": 18.6,
+    "side_size": [
+      0.5,
+      3.4,
+      1.05
+    ],
+    "lower_size": [
+      36.8,
+      0.25,
+      1.05
+    ],
+    "lower_y": -1.73,
+    "top_size": [
+      36.8,
+      0.25,
+      1.05
+    ],
+    "top_y": 1.73
+  },
+  "beds": {
+    "x_offsets": [
+      -28,
+      28
+    ],
+    "size": [
+      7,
+      0.65,
+      15
+    ],
+    "rim_width": 0.35,
+    "soil_drop": 0.12,
+    "asset_specs": [
+      {
+        "model": "field_flower_bush",
+        "offset": [
+          -1.2,
+          0,
+          -4.5
+        ],
+        "height": 2.4,
+        "yaw": 15
+      },
+      {
+        "model": "softglow_bloom",
+        "offset": [
+          1.15,
+          0,
+          -1.8
+        ],
+        "height": 2.7,
+        "yaw": -25
+      },
+      {
+        "model": "field_flower_bush",
+        "offset": [
+          -1.1,
+          0,
+          2.2
+        ],
+        "height": 2.3,
+        "yaw": 80
+      },
+      {
+        "model": "softglow_bloom",
+        "offset": [
+          1.1,
+          0,
+          5.0
+        ],
+        "height": 2.1,
+        "yaw": 30
+      },
+      {
+        "model": "pearl_quartz",
+        "offset": [
+          0.3,
+          -0.45,
+          0.8
+        ],
+        "height": 2.5,
+        "yaw": 40
+      }
+    ],
+    "max_plant_width": 3.2,
+    "max_plant_depth": 3.5
+  },
+  "seats": {
+    "x_offsets": [
+      -13,
+      -9,
+      9,
+      13
+    ],
+    "z": -9,
+    "seat_height": 1.55,
+    "size": [
+      2.5,
+      0.35,
+      2.4
+    ],
+    "foot_size": [
+      0.4,
+      1.375,
+      0.4
+    ],
+    "foot_x": 0.85,
+    "foot_z": 0.75,
+    "back_size": [
+      2.5,
+      1.2,
+      0.3
+    ],
+    "back_y": 0.7,
+    "back_z": 1.0,
+    "yaw": 180
+  },
+  "asset_caches": [
+    "CrossroadsActivityAssets",
+    "CrossroadsExistingDecor",
+    "CrossroadsLandscapeAssets"
+  ],
+  "prompt": {
+    "name": "WeeklyEggPreviewPrompt",
+    "action": "Inspect",
+    "object": "Egg of the Week",
+    "range": 10,
+    "hold": 0,
+    "host_offset": [
+      0,
+      5,
+      3
+    ],
+    "host_size": [
+      0.2,
+      0.2,
+      0.2
+    ],
+    "camera_offset": [
+      0,
+      8,
+      16
+    ],
+    "focus_offset": [
+      0,
+      8,
+      0
+    ]
+  },
+  "palette": {
+    "stone": [
+      206,
+      201,
+      180
+    ],
+    "light": [
+      230,
+      222,
+      201
+    ],
+    "gold": [
+      177,
+      137,
+      64
+    ],
+    "dark_gold": [
+      130,
+      99,
+      52
+    ],
+    "soil": [
+      79,
+      93,
+      68
+    ],
+    "wood": [
+      155,
+      132,
+      97
+    ]
+  }
+}

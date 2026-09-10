@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "input": "/Users/jason/Documents/HaloAndHorns-fountain/assets/source/props/confluence/closed/model.glb",
+  "passed": true,
+  "limits": {
+    "max_boundary_edges": 0,
+    "max_non_manifold_edges": 0
+  },
+  "totals": {
+    "vertices": 8428,
+    "edges": 25434,
+    "faces": 16956,
+    "triangles": 16956,
+    "face_components": 3,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0
+  },
+  "objects": [
+    {
+      "name": "mesh_node",
+      "vertices": 8428,
+      "raw_vertices": 50058,
+      "welded_coincident_vertices": 41630,
+      "inspection_weld_distance": 2.5749226602177236e-06,
+      "edges": 25434,
+      "faces": 16956,
+      "triangles": 16956,
+      "face_components": 3,
+      "bounds_diagonal": 25.749226602177238,
+      "boundary_edges": 0,
+      "boundary_components": [],
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0
+    }
+  ],
+  "failures": []
+}

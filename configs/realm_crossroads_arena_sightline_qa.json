@@ -1,0 +1,88 @@
+{
+  "root": "ArenaSightlineQA",
+  "source": "tools/realm_crossroads/arena_sightline_qa.luau",
+  "action": "build",
+  "active_target": "all",
+  "width": 5,
+  "height": 7,
+  "columns": 5,
+  "rows": 7,
+  "gap": 0.04,
+  "depth": 0.06,
+  "floor_y": 4.38,
+  "eye_offset": [
+    0.198,
+    3.337,
+    0
+  ],
+  "observer_seat": "Seat_01_04",
+  "palette": [
+    [
+      255,
+      68,
+      210
+    ],
+    [
+      30,
+      235,
+      245
+    ],
+    [
+      255,
+      230,
+      40
+    ]
+  ],
+  "targets": [
+    {
+      "name": "Center",
+      "xz": [
+        120,
+        8
+      ]
+    },
+    {
+      "name": "NearEdge",
+      "xz": [
+        148,
+        8
+      ]
+    },
+    {
+      "name": "FarEdge",
+      "xz": [
+        92,
+        8
+      ]
+    },
+    {
+      "name": "WestEntrance",
+      "xz": [
+        88,
+        -18
+      ]
+    },
+    {
+      "name": "FrontEntrance",
+      "xz": [
+        120,
+        59
+      ]
+    },
+    {
+      "name": "NearNorth",
+      "xz": [
+        148,
+        -28
+      ]
+    },
+    {
+      "name": "NearSouth",
+      "xz": [
+        148,
+        44
+      ]
+    }
+  ],
+  "note": "Temporary Play-client QA only. all builds seven5x7-stud checker panels/245cells; named target builds35cells. Baseline native captures completed at floorY4.38; remove QA before checkpoint. Not an authoring registry pass."
+}

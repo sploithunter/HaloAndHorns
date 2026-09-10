@@ -20,6 +20,8 @@ local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
+local CrossroadsArrival = require(script.Parent.CrossroadsArrival)
+
 local ZoneService = {}
 ZoneService.__index = ZoneService
 
@@ -97,6 +99,7 @@ function ZoneService:Init()
         end
     end
     self._touchDebounce = {}
+    self._crossroads = CrossroadsArrival.new(self, self._areasConfig.crossroads)
 end
 
 function ZoneService:IsHallEntryEnabled()
@@ -126,6 +129,9 @@ function ZoneService:CanLeaveHall(player, sourceHook, targetAreaId)
 end
 
 function ZoneService:GetInitialArea(player)
+    if self._crossroads and self._crossroads:IsEnabled() then
+        return self._areasConfig.crossroads.area_id
+    end
     if not self:IsHallEntryEnabled() then
         return self:_crystalSpawnArea()
     end
@@ -181,6 +187,13 @@ function ZoneService:IsInHall(player)
 end
 
 function ZoneService:GetRespawnArea(player)
+    if
+        self._crossroads
+        and self._crossroads:IsEnabled()
+        and player:GetAttribute("CrossroadsFarmEntered") ~= true
+    then
+        return self._areasConfig.crossroads.area_id
+    end
     if not self:IsHallEntryEnabled() then
         return self:_crystalSpawnArea()
     end
@@ -309,6 +322,7 @@ function ZoneService:_watchLastWorld(player)
 end
 
 function ZoneService:Start()
+    self._crossroads:Start()
     self:_connectTravelHooks()
     if self:IsHallEntryEnabled() then
         self:_seatHallAreaZones()
@@ -611,6 +625,7 @@ function ZoneService:SetZoneLocked(player, zoneId, locked, options)
 end
 
 function ZoneService:_connectCharacterSpawnSafety(player)
+    self._crossroads:ConfigurePlayer(player)
     player.CharacterAdded:Connect(function()
         task.defer(function()
             if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
@@ -663,7 +678,10 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
         local action = PrologueSpawnGate.action(
             workspace:GetAttribute("PrologueServiceInit") == true,
             player:GetAttribute("InPrologue") == true,
-            player:GetAttribute("PrologueGate")
+            player:GetAttribute("PrologueGate"),
+            self._crossroads
+                and self._crossroads:IsEnabled()
+                and player:GetAttribute("CrossroadsFarmEntered") ~= true
         )
         if action == "place" then
             return true
@@ -689,7 +707,10 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
         action = PrologueSpawnGate.action(
             workspace:GetAttribute("PrologueServiceInit") == true,
             player:GetAttribute("InPrologue") == true,
-            player:GetAttribute("PrologueGate")
+            player:GetAttribute("PrologueGate"),
+            self._crossroads
+                and self._crossroads:IsEnabled()
+                and player:GetAttribute("CrossroadsFarmEntered") ~= true
         )
         if action == "wait" and player.Parent then
             changed.Event:Wait()
@@ -731,6 +752,13 @@ function ZoneService:_spreadSpawnCFrame(player, areaId, spawnCFrame)
 end
 
 function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId, options)
+    if
+        self._crossroads
+        and self._crossroads:IsEnabled()
+        and zoneId == self._areasConfig.crossroads.area_id
+    then
+        return self._crossroads:Place(player)
+    end
     local spawnCFrame, areaId =
         self._worldBindingService:GetSpawnCFrameForZone(zoneId or DEFAULT_START_AREA)
     if not spawnCFrame then
@@ -1000,6 +1028,23 @@ function ZoneService:_getZoneDisplayName(zoneId)
 end
 
 function ZoneService:TravelToZone(player, targetZoneId, sourceHook)
+    -- Internal return-to-start callers use the same initial destination as post-prologue placement.
+    if
+        self._crossroads
+        and self._crossroads:IsEnabled()
+        and targetZoneId == self._areasConfig.crossroads.area_id
+    then
+        if not self:CanLeaveHall(player, sourceHook, self._areasConfig.crossroads.context_area) then
+            return { ok = false, reason = "hall_route_required" }
+        end
+        local entered = player:GetAttribute("CrossroadsFarmEntered")
+        player:SetAttribute("CrossroadsFarmEntered", nil)
+        local ok, reason, areaId = self._crossroads:Place(player)
+        if not ok then
+            player:SetAttribute("CrossroadsFarmEntered", entered)
+        end
+        return { ok = ok, reason = reason, targetZoneId = targetZoneId, targetAreaId = areaId }
+    end
     local targetAreaId = self:_resolveAreaId(targetZoneId)
     if not targetAreaId then
         return {
@@ -1290,7 +1335,10 @@ function ZoneService:_sealDisabledHallEntryHook(hook)
                 -- This sealed in-place Hall route also hosts the cross-place Merge doorway.
                 -- Do not repaint its public-release title if ZoneService binds after Merge.
                 local gate = self._mergeGateConfig or {}
-                if hook.Name == gate.hook_name and (gate.access or {}).public == true then
+                if hook.Name == gate.hook_name and self._crossroads:IsEnabled() then
+                    local cfg = self._areasConfig.crossroads
+                    descendant.Text = cfg.home_gate_title .. "\n" .. cfg.home_gate_subtitle
+                elseif hook.Name == gate.hook_name and (gate.access or {}).public == true then
                     descendant.Text = gate.title
                 else
                     descendant.Text = "COMING SOON"
