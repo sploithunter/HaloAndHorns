@@ -2237,3 +2237,7 @@ and native elemental FX. Live advanced-tier dragging/capacity checks and wave-10
 18 Node groups and 2,846 HH tests/323 specs pass. The bay remains a ten-wave basic simulation with
 Doggy/Bear stand-ins; full species drafts, powers, combat balance, ordinary-player authority and
 failure recovery are future gates. Details: [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+2026-11-09: Spawn's functional upgrade board now mounts on the creator-indicated authored wall;
+Buy Egg and Upgrade Spawn use native face buttons and validated near-board commands. The floating
+generator HUD button is removed. See [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).

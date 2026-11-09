@@ -20,6 +20,8 @@ target values, and stand changes during a wave are rejected without consuming ei
 Valid drop targets turn green. Release outside a target, press Escape, or cancel a touch to return
 the egg. The B panel and the right-side hatcher cards support the same gestures; click-to-select
 and install remain available. Installed eggs can be recalled between waves.
+The wall-mounted UPGRADES board contains Buy Egg and Upgrade Spawn. Walk up to use it; it shows
+the current/next egg and live Waycoin prices. The generator control no longer floats in the side HUD.
 WASD walks, right mouse drag turns the camera, wheel zooms, and B opens the compact egg board.
 One player owns this bay per room; other players can watch. Leaving releases the bay.
 

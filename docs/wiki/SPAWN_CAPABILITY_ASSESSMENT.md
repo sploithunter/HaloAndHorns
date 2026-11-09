@@ -173,3 +173,24 @@ text (DOM opacity/animation time and screenshot verified), and empty gameplay er
 leave/rejoin retained cleared wave/checkpoint 10. Reclaim now preserves completed status instead
 of offering wave 11; the ten-wave director regression covers this. Crash/rollback recovery remains
 unverified. Both tests used the agent's own separate profile/room, without editing the creator's save.
+
+## Wall-mounted upgrade board (2026-11-09)
+
+The creator's screenshot identifies `Heaven_01_WallBoard`. A native object-UI panel now sits on
+its inward face, using the source management-board dimensions (14x8x0.6 studs), bottom height
+(3.5 studs) and the service's 1.6-stud wall inset. Buy Egg and Upgrade Spawn show live names,
+capacities and canonical Waycoin prices; the floating generator HUD button was removed. This
+places the existing lab actions; full Gem-rank/rebirth controls are still outside the slice.
+
+Spawn object faces use native `ui:<button-id>` ears, not HUD `onclick` functions. The board rings
+the presser's player behavior; that behavior accepts only the board's event and emits the ordinary
+command with its real source identity. The director retains ownership, funds, wave and dedup
+validation, and rejects wall actions/generator upgrades beyond the configured 8-metre radius.
+Put the physical width/class on the same `face="front"` root: a nested fixed-width wrapper shrank
+the content in testing. Yaw -90 faces into this bay; +90 showed its back. Identical HTML updates
+are deduplicated by the engine, allowing live script/style edits to refresh without a stale cache.
+
+Live pointer checks upgraded T4→T5 for 16,000 Waycoins, then bought the new T5 egg for 2,000.
+A remote upgrade left both wallet and generator unchanged after the test body settled at the far
+position. All 18 Node groups and HH CI (2,846/323) passed. Preview expected published-room file-write
+notices were separated from gameplay errors. Tests touched only the agent's isolated preview profile.

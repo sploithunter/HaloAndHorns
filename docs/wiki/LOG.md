@@ -8745,3 +8745,12 @@ Spawn deployed verification follow-up: dev version 23/engine 289ba86c passed wav
 visible rising/fading damage numbers, empty error log, and actual checkpoint-10 leave/rejoin.
 Fixed reclaim to preserve completed status, covered by the existing ten-wave regression. The
 18 Node groups still pass; crash/save-rollback recovery remains unverified.
+
+## 2026-11-09 — Spawn upgrade board restored to the authored wall (Codex Spawn)
+
+Mounted functional Buy Egg / Upgrade Spawn controls on Heaven_01_WallBoard using the source
+14x8-stud panel and bottom height; removed the floating generator HUD control. Native UI-id ears
+relay through the presser's body into the existing validated command path, with a near-board
+check. Live pointer tests: T4→T5 charged 16,000; new T5 purchase charged 2,000; remote upgrade
+rejected without spending. 18 Node groups, HH CI 2,846/323. Native face root sizing/yaw details
+are recorded in [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).

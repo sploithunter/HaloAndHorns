@@ -69,6 +69,7 @@ local data = {
     source = { config = "configs/merge_egg_prototype.lua", version = config.version },
     tuning = tuning,
     tiers = tiers,
+    managementBoard = config.world.management_board,
     eggHeight = config.team.merge_board.egg_height * tuning.scene.sourceTransform.metersPerStud,
     progression = {
         stage = config.progression_loop.default_stage,

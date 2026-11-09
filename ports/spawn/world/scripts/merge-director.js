@@ -237,6 +237,20 @@ function receive(ctx, request, meta) {
     actor.state.mergeNotice = "Claim the bay before playing";
     return;
   }
+  if (request.station === "upgrade-board" || request.kind === "upgrade") {
+    const board = ctx.getObject("hh-upgrade-board"),
+      p = actor.feetPosition,
+      cfg = DATA.tuning.scene.upgradeBoard;
+    if (
+      !board ||
+      !p ||
+      Math.hypot(p.x - board.feetPosition.x, p.z - board.feetPosition.z) >
+        cfg.range
+    ) {
+      actor.state.mergeNotice = cfg.rangeNotice;
+      return;
+    }
+  }
   const window = Math.floor(ctx.now() / 1000),
     previous = run.rate[actor.userId];
   const rate = previous?.window === window ? previous : { window, count: 0 };

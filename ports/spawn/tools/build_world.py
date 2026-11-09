@@ -7,6 +7,23 @@ WORLD = ROOT / "ports/spawn/world"
 data = json.loads((WORLD / "scripts/lib/data/merge.yml").read_text())
 scene = data["tuning"]["scene"]
 objects = json.loads((ROOT / "configs/spawn_merge_scene.json").read_text())
+# Match the authored control-wall anchor and HH's 14x8-stud management panel.
+board = scene["upgradeBoard"]
+wall = next(spec for spec in objects.values() if spec.get("state", {}).get("sourcePath") == board["wallPath"])
+scale = scene["sourceTransform"]["metersPerStud"]
+size = data["managementBoard"]["size"]
+board_position = {
+    "x": wall["feetPosition"]["x"] + board["inward"]["x"] * board["insetStuds"] * scale,
+    "y": scene["groundY"] + (data["managementBoard"]["bottom_height"] + size["y"] / 2) * scale,
+    "z": wall["feetPosition"]["z"] + board["inward"]["z"] * board["insetStuds"] * scale,
+}
+objects["hh-upgrade-board"] = {
+    "feetPosition": board_position, "pivot": "center", "rotation": {"yaw": board["yaw"]},
+    "primitive": {"kind": "box", "width": size["x"] * scale, "height": size["y"] * scale, "depth": size["z"] * scale},
+    "material": board["material"],
+    "behavior": "scripts/merge-upgrade-board.js", "simulatedBy": "platform", "tags": ["hh-upgrade-board"],
+    "state": {"sourcePath": board["wallPath"]},
+}
 cells = WORLD / "places/main/cells"
 cells.mkdir(parents=True, exist_ok=True)
 import math
@@ -46,5 +63,6 @@ assets = json.loads((ROOT / "configs/spawn_merge_assets.json").read_text())
 ui = json.loads((ROOT / "configs/spawn_merge_ui.json").read_text())
 combat = json.loads((ROOT / "configs/spawn_merge_combat.json").read_text())
 (WORLD / "scripts/lib/data/combat.yml").write_text(json.dumps(combat, indent=2) + "\n")
+ui["upgradeBoard"]["style"] = (ROOT / ui["upgradeBoard"]["styleFile"]).read_text()
 ui["style"] = (ROOT / "configs/spawn_merge_ui.css").read_text() + (ROOT / combat["styleFile"]).read_text()
 (WORLD / "scripts/lib/data/ui.yml").write_text(json.dumps(ui, indent=2) + "\n")

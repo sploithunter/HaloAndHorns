@@ -25,3 +25,9 @@ hit-driven contact/recovery, alternating Doggy sidesteps and hit flinches. Drive
 and elemental impact/death FX from applied damage only; merge actions sparkle. The lab still uses
 Doggy/Bear stand-ins and basic ten-wave rules; full species drafts, powers and combat balance are
 not yet a faithful port. Cosmetic root offsets must never accumulate into authoritative positions.
+
+2026-11-09: ColoradoPlays identified the blank authored side wall as the upgrade-board location.
+Mount the working Buy Egg / Upgrade Spawn board on Heaven_01_WallBoard, flat against its inward
+face at HH's 14x8-stud size and source bottom height. Remove the floating generator HUD control.
+Wall clicks use native object UI events and the presser's own command path; upgrades require the
+owner to stand near the board. Other Gem upgrades/rebirth are still outside this lab's scope.

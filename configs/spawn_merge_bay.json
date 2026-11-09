@@ -191,6 +191,21 @@
       "base": "#9ca8b3",
       "vein": "#c4cdd5",
       "roughness": 0.45
+    },
+    "upgradeBoard": {
+      "wallPath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBoard",
+      "inward": {
+        "x": 1,
+        "z": 0
+      },
+      "insetStuds": 1.6,
+      "yaw": -90,
+      "range": 8,
+      "rangeNotice": "Walk up to the upgrade board",
+      "material": {
+        "color": "#181d28",
+        "roughness": 0.7
+      }
     }
   },
   "interaction": {

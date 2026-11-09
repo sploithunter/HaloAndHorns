@@ -44,5 +44,21 @@
     "combat": "Stand changes are locked during a wave",
     "self": "Release to cancel",
     "tierLabel": "T{tier}"
+  },
+  "upgradeBoard": {
+    "title": "UPGRADES",
+    "buy": "BUY EGG",
+    "upgrade": "UPGRADE SPAWN",
+    "current": "CURRENT SPAWN",
+    "next": "NEXT SPAWN",
+    "tier": "TIER",
+    "coins": "WAYCOINS",
+    "pets": "PETS / HATCHER",
+    "claim": "Claim this bay to use the board",
+    "betweenWaves": "Upgrades available between waves",
+    "maximum": "MAXIMUM SPAWN TIER",
+    "cost": "EGG COST",
+    "owner": "BAY OWNER",
+    "styleFile": "configs/spawn_merge_upgrade_board.css"
   }
 }

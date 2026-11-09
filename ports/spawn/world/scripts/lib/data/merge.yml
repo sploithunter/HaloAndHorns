@@ -141,6 +141,14 @@
     "upgradeMultiplier": 2
   },
   "eggHeight": 1.344,
+  "managementBoard": {
+    "bottom_height": 3.5,
+    "size": {
+      "x": 14,
+      "y": 8,
+      "z": 0.6
+    }
+  },
   "objective": {
     "damage_per_escape": 1,
     "hatcher_egg_max_health": 5000,
@@ -2327,7 +2335,22 @@
         "y": 0.5,
         "z": 2.8
       },
-      "spawnSpread": 1.8
+      "spawnSpread": 1.8,
+      "upgradeBoard": {
+        "insetStuds": 1.6,
+        "inward": {
+          "x": 1,
+          "z": 0
+        },
+        "material": {
+          "color": "#181d28",
+          "roughness": 0.7
+        },
+        "range": 8,
+        "rangeNotice": "Walk up to the upgrade board",
+        "wallPath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBoard",
+        "yaw": -90
+      }
     },
     "scope": "Source 56-tier egg catalog, economy and combat choreography; a single bay with ten opening waves and basic combat rules.",
     "simulation": {

@@ -678,3 +678,14 @@
   "model": "/cdn/value.d5720447902b39e10f6e54805768177b23f00d3c084fe0425c291794d85d8056.glb"
   "feetPosition": {"x": -12.880000114440918, "y": -11.876605987548828, "z": -39.20000076293945}
   "physics": "none"
+
+"hh-upgrade-board":
+  "feetPosition": {"x": -13.883081542968752, "y": 2.14, "z": -2.9945166015625}
+  "pivot": "center"
+  "rotation": {"yaw": -90}
+  "primitive": {"kind": "box", "width": 3.9200000000000004, "height": 2.24, "depth": 0.168}
+  "material": {"color": "#181d28", "roughness": 0.7}
+  "behavior": "scripts/merge-upgrade-board.js"
+  "simulatedBy": "platform"
+  "tags": ["hh-upgrade-board"]
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBoard"}
