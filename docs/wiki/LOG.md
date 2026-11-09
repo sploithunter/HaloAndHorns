@@ -8740,3 +8740,8 @@ per-hit attack channels, applied-damage streamers and elemental hit/death/merge 
 roster/power/balance limits. Verification: 18 Node groups, 273 real-Luau formation fixtures plus role
 strikes; HH CI 2,846/323. Live preview tested 4→5/28→29/55→56, T5/T29 capacities and wave 10 with
 reserve 5/checkpoint 10. No authored Roblox place edits, public publish or runtime inference.
+
+Spawn deployed verification follow-up: dev version 23/engine 289ba86c passed wave 10 with reserve 5,
+visible rising/fading damage numbers, empty error log, and actual checkpoint-10 leave/rejoin.
+Fixed reclaim to preserve completed status, covered by the existing ten-wave regression. The
+18 Node groups still pass; crash/save-rollback recovery remains unverified.

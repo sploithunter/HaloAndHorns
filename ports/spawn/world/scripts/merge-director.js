@@ -227,7 +227,8 @@ function receive(ctx, request, meta) {
     }
     if (run.owner === actor.userId) return;
     run.owner = actor.userId;
-    actor.state.merge.status = "ready";
+    actor.state.merge.status =
+      actor.state.merge.clearedWave >= DATA.waves.length ? "complete" : "ready";
     redraw(ctx, run, actor);
     publish(ctx, run, actor);
     return;

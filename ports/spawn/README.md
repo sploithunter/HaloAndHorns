@@ -85,7 +85,8 @@ lunges, attack channels and independent damage markers. All seven formation styl
 and five role strike profiles/starter overrides match fixtures executed from the real Luau modules.
 Only the melee Doggy defender is currently used; exported role curves do not mean the full roster
 or power rules are implemented. Source-priced wallets retain Lua-compatible finite double semantics.
-The live checkpoint-10 reconnect/failure case remains unverified. Both live bodies have editor
+The deployed dev build also cleared wave 10 with reserve 5 and an empty error console; actual
+checkpoint-10 leave/rejoin and visible rising/fading damage numbers passed. Failure recovery remains unverified. Both live bodies have editor
 standing, so this is not an ordinary-player anti-cheat test. No runtime AI inference was invoked.
 See the assessment for authority, performance, save, engine-version and asset-ingestion limits.
 

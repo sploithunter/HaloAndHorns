@@ -149,6 +149,16 @@ test("actual director clears all ten source waves and stamps checkpoint 10", () 
   }
   assert.equal(h.owner.state.merge.status, "complete");
   assert.equal(h.owner.state.merge.checkpoint, 10);
+  h.ctx.world.players = [h.visitor];
+  h.step();
+  h.ctx.world.players.push(h.owner);
+  h.send(h.owner, "claim");
+  assert.equal(
+    h.owner.state.merge.status,
+    "complete",
+    "reclaiming a completed bay keeps the lab complete",
+  );
+
   assert.ok(h.owner.state.merge.uncollected > DATA.economy.openingCoins);
 });
 test("owner departure frees the shared bay without deleting saved economy or eggs", () => {

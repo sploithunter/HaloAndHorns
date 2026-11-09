@@ -17,7 +17,7 @@ authored Heaven bay, a third-person camera and physical board/hatcher positions.
 | Update loop | HH's server/client service lifecycle | `update(ctx, dt)` per behavior; this director runs every 0.1 seconds on a platform-simulated row. Live `simulatedBy` was `platform`. |
 | Commands | RemoteEvents and server validation | Body input emits `hh:command` to the director's declared ear. Identity comes from event `meta.sourceId`; payload actor claims are ignored. Validate ownership, indices, tier, funds, status, nonce and rate. |
 | Replication | Explicit client/server boundaries and network ownership | Shared object/state rows replicate; player bodies move on their devices. Built-in multiplayer removes much transport work but is a different trust model. |
-| Saves | Existing HH profiles/DataStore services | Protected `player.state.merge` holds wallet, eggs, progression and dedup history. Actual leave/rejoin retained wave-2 progress. No Roblox identity/profile import. |
+| Saves | Existing HH profiles/DataStore services | Protected `player.state.merge` holds wallet, eggs, progression and dedup history. Actual leave/rejoin retained wave-2 and checkpoint-10 progress. No Roblox identity/profile import. |
 | Art | Studio geometry, IDs, rigs, built-in materials | Actual bay read from Studio; meshes/UVs/normals/textures reconstructed as GLB groups. Real pet rigs with distinct Walk/Attack imports work. Materials, scale and collision need explicit conversion. |
 | UI | Roblox UI hierarchy | HTML and world anchors; compact HUD plus real board/hatcher anchors. All layout must be rebuilt. |
 | Iteration | Rojo/Studio tests and published places | Git push updates open dev rooms; publishing is a separate action. Live reload is useful, but explicit engine shapes and asset ingestion failures require runtime checks. |
@@ -96,11 +96,11 @@ emission inputs in both source rigs were corrected during export.
 | Gameplay adapter | Eighteen Node test groups pass; includes full ten-wave combat run with Tier-4 hatchers and checkpoint 10 in an in-memory adapter. |
 | Real input | Browser buttons and movement completed buy/merge/deploy and waves 1–2; right-drag orbit and wheel zoom exercised. |
 | Two peers | Shared room state observed; visitor purchase rejected; owner departure freed the bay. Both peers are editors. |
-| Save/rejoin | Fresh client session retained 320 coins, two installed Tier-2 eggs, cleared wave 2 and pending rewards; owner reclaimed the bay. |
+| Save/rejoin | Fresh client session retained 320 coins, two installed Tier-2 eggs, cleared wave 2 and pending rewards. Deployed version 23 also retained cleared wave/checkpoint 10 on actual leave/rejoin. |
 | Rendering | One local idle sample: 59 fps, 50 draw calls, 364,795 triangles including passes, 1440×1000, renderScale 1. This is not a mobile or load benchmark. |
 | Errors | Client error-filter log empty after the corrected scene and material loaded. |
 | AI | API assessed from docs; no runtime inference or billable generation tested. |
-| Unverified | Ordinary-player security, live ten-wave checkpoint reconnect, room/server failure, hostile concurrency, mobile UX/performance, latency/loss, SQL migration and production billing. |
+| Unverified | Ordinary-player security, room/server failure, hostile concurrency, mobile UX/performance, latency/loss, SQL migration and production billing. |
 
 Two engine runtime hashes were observed during the same session: `83b794dcf076ede95d16203f09cc9306`
 and, on rejoin, `5c977dd743ae41f3c7a7407c6a9fb82d`, both under the 6.0.0 contract. The starter's
@@ -166,3 +166,10 @@ alongside actual damage markers. A local 640×360 render sample reported 60 fps;
 full-resolution or multi-bay performance measurement. Preview hot writes log expected
 `teach.save.published-room` notices because its base is a published version; gameplay errors were
 checked separately. Runtime hash `0d454803…` was observed, further evidence of rolling engine versions.
+
+Deployed dev version 23 was also exercised at 1440×1000 on engine `289ba86c…`: T5/T29 capacities,
+wave-10 clear with reserve 5, distinct attack channels/root offsets, visible rising/fading damage
+text (DOM opacity/animation time and screenshot verified), and empty gameplay error log. Actual
+leave/rejoin retained cleared wave/checkpoint 10. Reclaim now preserves completed status instead
+of offering wave 11; the ten-wave director regression covers this. Crash/rollback recovery remains
+unverified. Both tests used the agent's own separate profile/room, without editing the creator's save.
