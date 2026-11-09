@@ -8712,3 +8712,11 @@ first-session cohort rates.
 2026-09-08 — Localization delivery recheck: 339/344 clips now load (160/160 Merge; 179/184 Farm & Fight). The five remaining Farm & Fight recordings are still awaiting Roblox review; original IDs and tested English fallback are retained. The full listening page serves all 344 original local MP3s regardless of Roblox review status.
 
 - 2026-09-08: Added optional Coin Pup angel/demon comments for both games in English, Spanish and Brazilian Portuguese. Real Marketplace non-ownership is required; unknown checks and all effective/previous collector benefits suppress them. Manual credited pickups trigger bounded opportunities, shared narration preserves gains/fallback, and purchases cancel queued/active comments. See TUTORIAL_VOICE.md.
+
+
+## 2026-11-09 — Spawn Heaven bay capability slice
+
+- Added isolated Spawn world adapters/configs, source-Luau parity fixtures and a playable bay in ColoradoPlays’ HH Merge Bay Lab.
+- Replaced the rejected generic arena with 513 authored Studio parts, 16 source meshes, actual hatcher/board placements and third-person controls. Roblox authored/runtime data were not edited.
+- Verified waves 1–2 in real browser clients, visitor command rejection, bay release, and progress across rejoin. Eight Node groups cover all ten waves/checkpoint logic; HH CI passes 2,846 tests.
+- Documented the shared-row authority limits, editor-only live test limitation, asset-ingestion workaround, inference options and remaining migration gates in [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).

@@ -1,0 +1,252 @@
+{
+  "difficulty": [
+    {
+      "damage": 0.2,
+      "hp": 0.25,
+      "wave": 1
+    },
+    {
+      "damage": 0.20555555555555557,
+      "hp": 0.25555555555555554,
+      "wave": 2
+    },
+    {
+      "damage": 0.22222222222222224,
+      "hp": 0.2722222222222222,
+      "wave": 5
+    },
+    {
+      "damage": 0.25,
+      "hp": 0.3,
+      "wave": 10
+    },
+    {
+      "damage": 0.3,
+      "hp": 0.35,
+      "wave": 15
+    },
+    {
+      "damage": 0.35,
+      "hp": 0.4,
+      "wave": 20
+    },
+    {
+      "damage": 0.45,
+      "hp": 0.5,
+      "wave": 30
+    },
+    {
+      "damage": 0.7250000000000001,
+      "hp": 0.75,
+      "wave": 45
+    },
+    {
+      "damage": 1,
+      "hp": 1,
+      "wave": 60
+    },
+    {
+      "damage": 1,
+      "hp": 1,
+      "wave": 100
+    }
+  ],
+  "mitigation": [
+    {
+      "armor": 0,
+      "damage": 0,
+      "k": 100,
+      "result": 0
+    },
+    {
+      "armor": 30,
+      "damage": 0,
+      "k": 100,
+      "result": 0
+    },
+    {
+      "armor": 80,
+      "damage": 0,
+      "k": 100,
+      "result": 0
+    },
+    {
+      "armor": 160,
+      "damage": 0,
+      "k": 100,
+      "result": 0
+    },
+    {
+      "armor": 0,
+      "damage": 1,
+      "k": 100,
+      "result": 1
+    },
+    {
+      "armor": 30,
+      "damage": 1,
+      "k": 100,
+      "result": 0.7692307692307692
+    },
+    {
+      "armor": 80,
+      "damage": 1,
+      "k": 100,
+      "result": 0.5555555555555556
+    },
+    {
+      "armor": 160,
+      "damage": 1,
+      "k": 100,
+      "result": 0.3846153846153846
+    },
+    {
+      "armor": 0,
+      "damage": 30,
+      "k": 100,
+      "result": 30
+    },
+    {
+      "armor": 30,
+      "damage": 30,
+      "k": 100,
+      "result": 23.076923076923073
+    },
+    {
+      "armor": 80,
+      "damage": 30,
+      "k": 100,
+      "result": 16.666666666666668
+    },
+    {
+      "armor": 160,
+      "damage": 30,
+      "k": 100,
+      "result": 11.538461538461537
+    },
+    {
+      "armor": 0,
+      "damage": 100,
+      "k": 100,
+      "result": 100
+    },
+    {
+      "armor": 30,
+      "damage": 100,
+      "k": 100,
+      "result": 76.92307692307692
+    },
+    {
+      "armor": 80,
+      "damage": 100,
+      "k": 100,
+      "result": 55.55555555555556
+    },
+    {
+      "armor": 160,
+      "damage": 100,
+      "k": 100,
+      "result": 38.46153846153846
+    },
+    {
+      "armor": 0,
+      "damage": 999,
+      "k": 100,
+      "result": 999
+    },
+    {
+      "armor": 30,
+      "damage": 999,
+      "k": 100,
+      "result": 768.4615384615383
+    },
+    {
+      "armor": 80,
+      "damage": 999,
+      "k": 100,
+      "result": 555
+    },
+    {
+      "armor": 160,
+      "damage": 999,
+      "k": 100,
+      "result": 384.23076923076917
+    }
+  ],
+  "prices": [
+    {
+      "amount": 100,
+      "tier": 1
+    },
+    {
+      "amount": 250,
+      "tier": 2
+    },
+    {
+      "amount": 500,
+      "tier": 3
+    },
+    {
+      "amount": 1000,
+      "tier": 4
+    },
+    {
+      "amount": 2000,
+      "tier": 5
+    },
+    {
+      "amount": 4000,
+      "tier": 6
+    },
+    {
+      "amount": 8000,
+      "tier": 7
+    },
+    {
+      "amount": 16000,
+      "tier": 8
+    }
+  ],
+  "waveCounts": [
+    {
+      "count": 3,
+      "wave": 1
+    },
+    {
+      "count": 1,
+      "wave": 2
+    },
+    {
+      "count": 8,
+      "wave": 3
+    },
+    {
+      "count": 12,
+      "wave": 4
+    },
+    {
+      "count": 16,
+      "wave": 5
+    },
+    {
+      "count": 16,
+      "wave": 6
+    },
+    {
+      "count": 20,
+      "wave": 7
+    },
+    {
+      "count": 24,
+      "wave": 8
+    },
+    {
+      "count": 20,
+      "wave": 9
+    },
+    {
+      "count": 13,
+      "wave": 10
+    }
+  ]
+}

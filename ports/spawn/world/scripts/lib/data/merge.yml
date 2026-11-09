@@ -1,0 +1,893 @@
+{
+  "archetypes": {
+    "boss": {
+      "armor": 160,
+      "cadence": 2.5,
+      "composition_role": "tank",
+      "damage": 40,
+      "display_name": "Prototype Magma Wyrm",
+      "faction": "hell",
+      "hp": 9000,
+      "id": "infernal_boss",
+      "rank": "boss",
+      "reward_kind": "boss"
+    },
+    "brute": {
+      "armor": 80,
+      "cadence": 2,
+      "composition_role": "tank",
+      "damage": 10,
+      "faction": "hell",
+      "hp": 1600,
+      "id": "ember_brute",
+      "rank": "tank",
+      "reward_kind": "tank"
+    },
+    "heaven_boss": {
+      "armor": 160,
+      "cadence": 2.5,
+      "composition_role": "tank",
+      "damage": 40,
+      "display_name": "Prototype Celestial Archon",
+      "faction": "heaven",
+      "hp": 9000,
+      "id": "celestial_archon",
+      "rank": "boss",
+      "reward_kind": "boss"
+    },
+    "heaven_lieutenant": {
+      "armor": 30,
+      "cadence": 2,
+      "composition_role": "support",
+      "damage": 8,
+      "display_name": "Prototype Radiant Lieutenant",
+      "faction": "heaven",
+      "hp": 1800,
+      "id": "radiant_sprite_guard",
+      "rank": "lieutenant",
+      "reward_kind": "lieutenant"
+    },
+    "heaven_melee": {
+      "armor": 0,
+      "cadence": 2,
+      "composition_role": "melee",
+      "damage": 4,
+      "faction": "heaven",
+      "hp": 320,
+      "id": "zealous_cherub",
+      "rank": "trash",
+      "reward_kind": "trash"
+    },
+    "heaven_tank": {
+      "armor": 80,
+      "cadence": 2,
+      "composition_role": "tank",
+      "damage": 10,
+      "faction": "heaven",
+      "hp": 1600,
+      "id": "prism_warden",
+      "rank": "tank",
+      "reward_kind": "tank"
+    },
+    "lieutenant": {
+      "armor": 30,
+      "cadence": 2,
+      "composition_role": "support",
+      "damage": 8,
+      "display_name": "Prototype Ember Lieutenant",
+      "faction": "hell",
+      "hp": 1800,
+      "id": "ember_acolyte",
+      "rank": "lieutenant",
+      "reward_kind": "lieutenant"
+    },
+    "whelp": {
+      "armor": 0,
+      "cadence": 2,
+      "composition_role": "melee",
+      "damage": 4,
+      "faction": "hell",
+      "hp": 320,
+      "id": "lava_imp",
+      "rank": "trash",
+      "reward_kind": "trash"
+    }
+  },
+  "checkpoints": {
+    "auto_restart_gameplay": true,
+    "gameplay_restore_mode": "retain_progress",
+    "intermission_seconds": 8,
+    "interval": 10,
+    "recovery_wave_count": 3,
+    "restart_delay_seconds": 3,
+    "test_restore_mode": "checkpoint_snapshot"
+  },
+  "earlyDifficulty": {
+    "checkpoints": [
+      {
+        "damage_multiplier": 0.2,
+        "hp_multiplier": 0.25,
+        "wave": 1
+      },
+      {
+        "damage_multiplier": 0.25,
+        "hp_multiplier": 0.3,
+        "wave": 10
+      },
+      {
+        "damage_multiplier": 0.35,
+        "hp_multiplier": 0.4,
+        "wave": 20
+      },
+      {
+        "damage_multiplier": 0.45,
+        "hp_multiplier": 0.5,
+        "wave": 30
+      },
+      {
+        "damage_multiplier": 1,
+        "hp_multiplier": 1,
+        "wave": 60
+      }
+    ],
+    "enabled": true
+  },
+  "economy": {
+    "basePrice": 100,
+    "firstUpgradedPrice": 250,
+    "growth": 2,
+    "mergeRatio": 2,
+    "openingCoins": 600,
+    "upgradeMultiplier": 2
+  },
+  "objective": {
+    "damage_per_escape": 1,
+    "hatcher_egg_max_health": 5000,
+    "hatcher_egg_offset": {
+      "x": 0,
+      "y": 3.5,
+      "z": 3
+    },
+    "hatcher_egg_size": {
+      "x": 5.5,
+      "y": 7,
+      "z": 5.5
+    },
+    "hatcher_egg_threat": 120,
+    "heal_denial": {
+      "active_seconds": 30,
+      "color": [
+        255,
+        70,
+        150
+      ],
+      "enabled": true,
+      "radius": 12,
+      "recharge_seconds": 30,
+      "suppression_refresh_seconds": 2,
+      "tick_seconds": 0.25
+    },
+    "starting_eggs": 5
+  },
+  "petsPerHatcher": [
+    3,
+    3,
+    3,
+    3
+  ],
+  "rewards": {
+    "boss_amount": 2400,
+    "combat_xp_yield": {
+      "after_rebirth_only": true,
+      "enabled": true,
+      "full_yield_difficulty_ratio": 1,
+      "include_allied_cadence": true,
+      "maximum_multiplier": 1,
+      "minimum_multiplier": 0.05,
+      "relative_difficulty_exponent": 3,
+      "simulation_player_pet_kill_share": 0.5
+    },
+    "contain_pickups_to_world": true,
+    "currency": "hall_coins",
+    "gem_drop": {
+      "amount": 1,
+      "base_chance": 0.02,
+      "currency": "gems",
+      "rank_chance_multiplier": {
+        "boss": 10,
+        "lieutenant": 3,
+        "tank": 1,
+        "trash": 1
+      },
+      "visual_scale": 1.5
+    },
+    "lieutenant_amount": 180,
+    "pickup_despawn_seconds": 600,
+    "pickup_visual_scale": 2,
+    "pickup_wall_inset": 2,
+    "tank_amount": 120,
+    "trash_amount": 40
+  },
+  "source": {
+    "config": "configs/merge_egg_prototype.lua",
+    "version": 6
+  },
+  "tuning": {
+    "boardSlots": 16,
+    "commandHistory": 64,
+    "commandsPerSecond": 10,
+    "hatcherCount": 4,
+    "interaction": {
+      "boardRange": 8,
+      "promptRange": 16,
+      "range": 12
+    },
+    "scene": {
+      "atmosphere": {
+        "fog": {
+          "color": "#b7d0e6",
+          "far": 240,
+          "kind": "linear",
+          "near": 100
+        },
+        "sky": {
+          "kind": "realistic",
+          "model": "rayleigh",
+          "turbidity": 2
+        },
+        "timeOfDay": 12
+      },
+      "board": [
+        {
+          "x": -3.02399658203125,
+          "y": 0.12,
+          "z": -7.196001281738282
+        },
+        {
+          "x": -1.0080017089843751,
+          "y": 0.12,
+          "z": -7.196001281738282
+        },
+        {
+          "x": 1.0080017089843751,
+          "y": 0.12,
+          "z": -7.196001281738282
+        },
+        {
+          "x": 3.02399658203125,
+          "y": 0.12,
+          "z": -7.196001281738282
+        },
+        {
+          "x": -3.02399658203125,
+          "y": 0.12,
+          "z": -5.180000000000001
+        },
+        {
+          "x": -1.0080017089843751,
+          "y": 0.12,
+          "z": -5.180000000000001
+        },
+        {
+          "x": 1.0080017089843751,
+          "y": 0.12,
+          "z": -5.180000000000001
+        },
+        {
+          "x": 3.02399658203125,
+          "y": 0.12,
+          "z": -5.180000000000001
+        },
+        {
+          "x": -3.02399658203125,
+          "y": 0.12,
+          "z": -3.164000854492188
+        },
+        {
+          "x": -1.0080017089843751,
+          "y": 0.12,
+          "z": -3.164000854492188
+        },
+        {
+          "x": 1.0080017089843751,
+          "y": 0.12,
+          "z": -3.164000854492188
+        },
+        {
+          "x": 3.02399658203125,
+          "y": 0.12,
+          "z": -3.164000854492188
+        },
+        {
+          "x": -3.02399658203125,
+          "y": 0.12,
+          "z": -1.1479995727539063
+        },
+        {
+          "x": -1.0080017089843751,
+          "y": 0.12,
+          "z": -1.1479995727539063
+        },
+        {
+          "x": 1.0080017089843751,
+          "y": 0.12,
+          "z": -1.1479995727539063
+        },
+        {
+          "x": 3.02399658203125,
+          "y": 0.12,
+          "z": -1.1479995727539063
+        }
+      ],
+      "breachSign": {
+        "x": 0,
+        "y": 0.2,
+        "z": -22.652
+      },
+      "breachZ": -22.652,
+      "camera": {
+        "aimHeight": 1.4,
+        "distance": 8.5,
+        "height": 2.2,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "pitch": -0.22,
+        "sensitivity": 3,
+        "yaw": 0,
+        "zoomSensitivity": 2.5
+      },
+      "colors": {
+        "floor": "#172940",
+        "gold": "#edc56a",
+        "heaven": "#b8edf5",
+        "hell": "#ff725b",
+        "ink": "#0b1424",
+        "lane": "#243f4a",
+        "tier": [
+          "#8ae5a3",
+          "#8dddf8",
+          "#ff9a68",
+          "#e6c775"
+        ]
+      },
+      "eggRadius": 0.6,
+      "eggStandHeight": 0.75,
+      "enemyHeight": 1.25,
+      "enemySpacing": 1.5,
+      "gateSign": {
+        "x": 0,
+        "y": 3,
+        "z": -70
+      },
+      "gateZ": -70,
+      "groundY": 0.04,
+      "groupSpread": 6,
+      "hatcherX": [
+        6.72,
+        2.24,
+        -2.24,
+        -6.72
+      ],
+      "hatcherZ": -19.852,
+      "laneHalfWidth": 14,
+      "marble": {
+        "base": "#9ca8b3",
+        "roughness": 0.45,
+        "scale": 4.2,
+        "vein": "#c4cdd5",
+        "veinEnd": 0.9,
+        "veinStart": 0.65,
+        "warp": 0.5,
+        "warpScale": 1.1
+      },
+      "petHeight": 1.1,
+      "petHomeOffset": -7,
+      "petSpacing": 1.3,
+      "sceneVersion": 2,
+      "sourceTransform": {
+        "metersPerStud": 0.28,
+        "origin": [
+          100,
+          2.416449,
+          -272
+        ]
+      },
+      "spawn": {
+        "x": 0,
+        "y": 0.5,
+        "z": 2.8
+      },
+      "spawnSpread": 1.8
+    },
+    "scope": "Capability prototype: canonical economy and opening wave composition; simplified pet combat and a single shared bay.",
+    "simulation": {
+      "attackDistance": 2.4,
+      "enemySpeed": 3.8,
+      "engageDistance": 22,
+      "petCadence": 1,
+      "petDamage": 30,
+      "petHealth": 300,
+      "petRecovery": 6,
+      "petSpeed": 7,
+      "step": 0.1
+    },
+    "tiers": [
+      "Earth",
+      "Ice",
+      "Lava",
+      "Desert"
+    ],
+    "version": 1
+  },
+  "waves": [
+    {
+      "gap_after": 8,
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        }
+      ],
+      "id": "home_01_whelps"
+    },
+    {
+      "gap_after": 8,
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "id": "home_02_brute"
+    },
+    {
+      "gap_after": 6,
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "whelp",
+              "count": 4
+            }
+          ]
+        }
+      ],
+      "id": "home_03_two_fronts"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "whelp",
+              "count": 4
+            }
+          ]
+        }
+      ],
+      "id": "home_04_three_fronts"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        }
+      ],
+      "id": "home_05_four_fronts"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 2
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 2
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 2
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 2
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "id": "home_06_lieutenants"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "id": "home_07_reinforced"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 4
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 4
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 4
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 4
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "id": "home_08_large_battle"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            },
+            {
+              "archetype": "lieutenant",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "id": "home_09_pressure"
+    },
+    {
+      "groups": [
+        {
+          "units": [
+            {
+              "archetype": "boss",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "units": [
+            {
+              "archetype": "brute",
+              "count": 1
+            },
+            {
+              "archetype": "whelp",
+              "count": 3
+            }
+          ]
+        }
+      ],
+      "id": "home_10_boss"
+    }
+  ]
+}

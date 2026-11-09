@@ -96,6 +96,10 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
 - [Egg Authoring And Admin Testing](../EGG_AUTHORING_AND_ADMIN_TESTING.md)
 
+## Platform ports
+
+- [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) — source-derived Merge bay, programming/events, authority, AI/model contracts, live evidence and migration gates.
+
 ## Maintenance Rule
 
 - [Merge Stress Testing](MERGE_STRESS_TESTING.md) — isolated eight-bay performance workload and measurement contract.

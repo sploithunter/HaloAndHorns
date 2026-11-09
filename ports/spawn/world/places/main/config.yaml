@@ -1,0 +1,30 @@
+{
+  "mode": "3d",
+  "terrain": {
+    "kind": "none"
+  },
+  "gravity": {
+    "x": 0,
+    "y": -24,
+    "z": 0
+  },
+  "defaultSpawnPoint": {
+    "x": 0,
+    "y": 0.5,
+    "z": 2.8
+  },
+  "atmosphere": {
+    "fog": {
+      "color": "#b7d0e6",
+      "far": 240,
+      "kind": "linear",
+      "near": 100
+    },
+    "sky": {
+      "kind": "realistic",
+      "model": "rayleigh",
+      "turbidity": 2
+    },
+    "timeOfDay": 12
+  }
+}

@@ -2218,3 +2218,8 @@ local/GitHub CI (2,781 tests / 314 specs) and a fresh Merge Studio boot/runtime 
 an active bay and live Hell strikes. Merged feature branches and the redundant Auto Dog worktree
 were pruned; broader product-design questions remain tracked separately, not discarded.
 This reconciliation did not publish either Roblox place. Save authored Studio map edits separately.
+
+
+## Spawn Merge bay lab (2026-11-09)
+
+A playable source-derived Heaven bay is at [ColoradoPlays’ development world](https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev). The source/config/test implementation lives under `ports/spawn` and `configs/spawn_merge_*`; Roblox production code is unchanged. Live waves 1–2 and ordinary leave/rejoin worked. Full combat parity, non-editor security, failure recovery and multi-bay/mobile performance remain unproven. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) and draft PR #501.
