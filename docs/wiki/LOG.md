@@ -8727,3 +8727,16 @@ first-session cohort rates.
 - Added physical-board and B-panel mouse/touch dragging, highlighted stand/egg targets, atomic equal-tier stacking on the board and installed stands, and safe empty-board moves.
 - Platform validation checks ownership, indices, observed tiers, combat state, tier cap and duplicate nonces before consuming eggs. Added drop conservation/rejection tests and a real Playwright pointer regression.
 - Verified mouse board merges, wrong-tier preservation, world/panel stand installation, installed stacking, touch input and touch/Escape cancellation in an isolated preview. Refreshed the renamed ColoradoPlays lab address.
+
+## 2026-11-09 — Spawn source tiers and real-hit choreography (Codex Spawn)
+
+Removed the four-tier lab cap: export the current HH 56-tier catalog, source prices/quotes, cost
+formatting and 3–9 team positions; imported all 28 source egg models. Corrected the previously
+mislabeled walk action and exported distinct canonical Walk/Attack clips on Doggy/Bear. Creator
+clarified that attack includes formation, spacing, lunge and streaming damage. Ported source
+formation/strike/flinch math, stable targets, slot separation, clean-root cosmetic pose sampling,
+per-hit attack channels, applied-damage streamers and elemental hit/death/merge FX. See
+[Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md) for the density/reach adaptation and remaining
+roster/power/balance limits. Verification: 18 Node groups, 273 real-Luau formation fixtures plus role
+strikes; HH CI 2,846/323. Live preview tested 4→5/28→29/55→56, T5/T29 capacities and wave 10 with
+reserve 5/checkpoint 10. No authored Roblox place edits, public publish or runtime inference.

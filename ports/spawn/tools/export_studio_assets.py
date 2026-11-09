@@ -7,10 +7,11 @@ import argparse
 parser=argparse.ArgumentParser(description="Read-only EditableMesh/EditableImage export from an open HH Studio session")
 parser.add_argument("studio_id")
 parser.add_argument("output",type=pathlib.Path)
+parser.add_argument("--manifest",default="configs/spawn_merge_source_bay.json")
 args=parser.parse_args()
 ROOT=pathlib.Path(__file__).resolve().parents[3]
 out=args.output;out.mkdir(parents=True,exist_ok=True)
-parts=json.loads((ROOT/'configs/spawn_merge_source_bay.json').read_text())['parts']
+parts=json.loads((ROOT/args.manifest).read_text())['parts']
 p=subprocess.Popen(['/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,bufsize=1)
 serial=0
 def rpc(method,params):

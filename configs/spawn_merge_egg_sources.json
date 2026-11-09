@@ -1,0 +1,493 @@
+{
+  "source": "configs/pets.lua",
+  "parts": [
+    {
+      "color": [
+        87,
+        210,
+        112
+      ],
+      "draftRolls": 2,
+      "eggId": "grass_egg",
+      "element": "grass",
+      "huge": false,
+      "model": "rbxassetid://95237477079273",
+      "name": "Earth Egg",
+      "positions": 3,
+      "tier": 1,
+      "size": [
+        1.338718056678772,
+        1.9055286645889282,
+        1.3455321788787842
+      ],
+      "mesh": "rbxassetid://109736205576000",
+      "texture": "rbxassetid://102042655430294"
+    },
+    {
+      "color": [
+        76,
+        165,
+        245
+      ],
+      "draftRolls": 3,
+      "eggId": "ice_egg",
+      "element": "ice",
+      "huge": false,
+      "model": "rbxassetid://96544163202240",
+      "name": "Ice Egg",
+      "positions": 3,
+      "tier": 2,
+      "size": [
+        1.354207992553711,
+        1.9060659408569336,
+        1.3424659967422485
+      ],
+      "mesh": "rbxassetid://80581659004642",
+      "texture": "rbxassetid://109392577192141"
+    },
+    {
+      "color": [
+        174,
+        100,
+        235
+      ],
+      "draftRolls": 4,
+      "eggId": "lava_egg",
+      "element": "lava",
+      "huge": false,
+      "model": "rbxassetid://79770174701008",
+      "name": "Ember Egg",
+      "positions": 3,
+      "tier": 3,
+      "size": [
+        1.1194500923156738,
+        1.9060959815979004,
+        1.127568006515503
+      ],
+      "mesh": "rbxassetid://75130552899255",
+      "texture": "rbxassetid://92603790229784"
+    },
+    {
+      "color": [
+        242,
+        82,
+        91
+      ],
+      "draftRolls": 5,
+      "eggId": "desert_egg",
+      "element": "desert",
+      "huge": false,
+      "model": "rbxassetid://86278537786961",
+      "name": "Sand Egg",
+      "positions": 3,
+      "tier": 4,
+      "size": [
+        1.3268100023269653,
+        1.9060659408569336,
+        1.334637999534607
+      ],
+      "mesh": "rbxassetid://75532710736322",
+      "texture": "rbxassetid://86724851670384"
+    },
+    {
+      "color": [
+        255,
+        151,
+        64
+      ],
+      "draftRolls": 2,
+      "eggId": "bloom_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://95206555175588",
+      "model": "rbxassetid://135147499819558",
+      "name": "Bloom Egg",
+      "positions": 4,
+      "texture": "rbxassetid://97881865156853",
+      "tier": 5
+    },
+    {
+      "color": [
+        250,
+        220,
+        80
+      ],
+      "draftRolls": 3,
+      "eggId": "aurora_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://83610100600955",
+      "model": "rbxassetid://74522830834998",
+      "name": "Aurora Egg",
+      "positions": 4,
+      "texture": "rbxassetid://140277885621849",
+      "tier": 6
+    },
+    {
+      "color": [
+        87,
+        210,
+        112
+      ],
+      "draftRolls": 4,
+      "eggId": "solar_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://120776006241642",
+      "model": "rbxassetid://77584635179884",
+      "name": "Solar Egg",
+      "positions": 4,
+      "texture": "rbxassetid://72536199373579",
+      "tier": 7
+    },
+    {
+      "color": [
+        76,
+        165,
+        245
+      ],
+      "draftRolls": 5,
+      "eggId": "gilded_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://96910056672038",
+      "model": "rbxassetid://116703860678458",
+      "name": "Gilded Egg",
+      "positions": 4,
+      "texture": "rbxassetid://95387752152620",
+      "tier": 8
+    },
+    {
+      "color": [
+        174,
+        100,
+        235
+      ],
+      "draftRolls": 2,
+      "eggId": "blight_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://92966116192331",
+      "model": "rbxassetid://120754517837077",
+      "name": "Blight Egg",
+      "positions": 5,
+      "texture": "rbxassetid://110483576540897",
+      "tier": 9
+    },
+    {
+      "color": [
+        242,
+        82,
+        91
+      ],
+      "draftRolls": 3,
+      "eggId": "black_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://77865901338290",
+      "model": "rbxassetid://133490974371883",
+      "name": "Black Ice Egg",
+      "positions": 5,
+      "texture": "rbxassetid://117724720749402",
+      "tier": 10
+    },
+    {
+      "color": [
+        255,
+        151,
+        64
+      ],
+      "draftRolls": 4,
+      "eggId": "infernal_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://72980753133146",
+      "model": "rbxassetid://138837852735149",
+      "name": "Infernal Egg",
+      "positions": 5,
+      "texture": "rbxassetid://87250695013962",
+      "tier": 11
+    },
+    {
+      "color": [
+        250,
+        220,
+        80
+      ],
+      "draftRolls": 5,
+      "eggId": "ash_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://76039070814624",
+      "model": "rbxassetid://85400070997354",
+      "name": "Ash Egg",
+      "positions": 5,
+      "texture": "rbxassetid://81432308149691",
+      "tier": 12
+    },
+    {
+      "color": [
+        87,
+        210,
+        112
+      ],
+      "draftRolls": 2,
+      "eggId": "heaven2_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://112812356074190",
+      "name": "Bloomlight Egg",
+      "positions": 6,
+      "texture": "rbxassetid://100391425038520",
+      "tier": 13
+    },
+    {
+      "color": [
+        76,
+        165,
+        245
+      ],
+      "draftRolls": 3,
+      "eggId": "heaven2_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Prism Egg",
+      "positions": 6,
+      "texture": "rbxassetid://92369406922076",
+      "tier": 14
+    },
+    {
+      "color": [
+        174,
+        100,
+        235
+      ],
+      "draftRolls": 4,
+      "eggId": "heaven2_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Coronal Egg",
+      "positions": 6,
+      "texture": "rbxassetid://85473657458550",
+      "tier": 15
+    },
+    {
+      "color": [
+        242,
+        82,
+        91
+      ],
+      "draftRolls": 5,
+      "eggId": "heaven2_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Mirage Egg",
+      "positions": 6,
+      "texture": "rbxassetid://117485367061974",
+      "tier": 16
+    },
+    {
+      "color": [
+        255,
+        151,
+        64
+      ],
+      "draftRolls": 2,
+      "eggId": "hell2_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://88748649873565",
+      "name": "Frostblight Egg",
+      "positions": 7,
+      "texture": "rbxassetid://131727540160106",
+      "tier": 17
+    },
+    {
+      "color": [
+        250,
+        220,
+        80
+      ],
+      "draftRolls": 3,
+      "eggId": "hell2_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://88819644811580",
+      "name": "Black-Ice Egg",
+      "positions": 7,
+      "texture": "rbxassetid://138609284205775",
+      "tier": 18
+    },
+    {
+      "color": [
+        87,
+        210,
+        112
+      ],
+      "draftRolls": 4,
+      "eggId": "hell2_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Frostcinder Egg",
+      "positions": 7,
+      "texture": "rbxassetid://73618981450854",
+      "tier": 19
+    },
+    {
+      "color": [
+        76,
+        165,
+        245
+      ],
+      "draftRolls": 5,
+      "eggId": "hell2_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://115352006220322",
+      "name": "Frostcarrion Egg",
+      "positions": 7,
+      "texture": "rbxassetid://98666034334855",
+      "tier": 20
+    },
+    {
+      "color": [
+        174,
+        100,
+        235
+      ],
+      "draftRolls": 2,
+      "eggId": "heaven3_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://79016160176504",
+      "model": "rbxassetid://75389163785053",
+      "name": "Empyrean Grove Egg",
+      "positions": 8,
+      "texture": "rbxassetid://119008753003956",
+      "tier": 21
+    },
+    {
+      "color": [
+        242,
+        82,
+        91
+      ],
+      "draftRolls": 3,
+      "eggId": "heaven3_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://72594981350736",
+      "model": "rbxassetid://97002148599875",
+      "name": "Halo Frost Egg",
+      "positions": 8,
+      "texture": "rbxassetid://128919915905376",
+      "tier": 22
+    },
+    {
+      "color": [
+        255,
+        151,
+        64
+      ],
+      "draftRolls": 4,
+      "eggId": "heaven3_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://91935114884673",
+      "model": "rbxassetid://86811984655091",
+      "name": "Gloryfire Egg",
+      "positions": 8,
+      "texture": "rbxassetid://107295234564410",
+      "tier": 23
+    },
+    {
+      "color": [
+        250,
+        220,
+        80
+      ],
+      "draftRolls": 5,
+      "eggId": "heaven3_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://139743668604749",
+      "model": "rbxassetid://128013403739624",
+      "name": "Oasis Egg",
+      "positions": 8,
+      "texture": "rbxassetid://83104442715829",
+      "tier": 24
+    },
+    {
+      "color": [
+        87,
+        210,
+        112
+      ],
+      "draftRolls": 2,
+      "eggId": "hell3_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://114756995416189",
+      "model": "rbxassetid://132472586154102",
+      "name": "Dreadthorn Egg",
+      "positions": 9,
+      "texture": "rbxassetid://118603970417096",
+      "tier": 25
+    },
+    {
+      "color": [
+        76,
+        165,
+        245
+      ],
+      "draftRolls": 3,
+      "eggId": "hell3_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://78475913272497",
+      "model": "rbxassetid://109433355344191",
+      "name": "Dreadfrost Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116607794725818",
+      "tier": 26
+    },
+    {
+      "color": [
+        174,
+        100,
+        235
+      ],
+      "draftRolls": 4,
+      "eggId": "hell3_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://112325478054212",
+      "model": "rbxassetid://109931371072559",
+      "name": "Ruinfire Egg",
+      "positions": 9,
+      "texture": "rbxassetid://85932181978557",
+      "tier": 27
+    },
+    {
+      "color": [
+        242,
+        82,
+        91
+      ],
+      "draftRolls": 5,
+      "eggId": "hell3_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://87127630973664",
+      "model": "rbxassetid://140611340840194",
+      "name": "Dreadglass Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116019683064591",
+      "tier": 28
+    }
+  ]
+}

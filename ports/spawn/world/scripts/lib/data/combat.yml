@@ -1,0 +1,60 @@
+{
+  "version": 3,
+  "animation": {
+    "attackCadenceShare": 0.82,
+    "walkSpeed": 1,
+    "motionEpsilon": 0.005
+  },
+  "text": {
+    "tag": "hh-combat-text",
+    "height": 1.5,
+    "spread": 1.1,
+    "retentionPadding": 0.15,
+    "projection": 0.8660254
+  },
+  "flash": {
+    "duration": 0.1,
+    "intensity": 0.65
+  },
+  "impactTemplate": "fx\npop hit burst=12 on=sphere(.12) life=.22..0.45 v=sdir()*(.5..2.2) acc=drag(3.8) size=.07..0.19 col=<{r},{g},{b}> a=1>.65:.85>0 sz=$size*(1>.2) r=sprite({texture},{blend},velocity,.02)",
+  "deathTemplate": "fx\npop release burst=18 on=sphere(.3) life=.35..0.7 v=sdir()*(.4..1.8)+up(.6) acc=drag(2) size=.06..0.17 col=<{r},{g},{b}> a=1>.5:.8>0 sz=$size*(.7>1.4) r=sprite(mote,add)",
+  "mergeTemplate": "fx\npop upgrade burst=20 on=sphere(.4) life=.45..0.85 v=sdir()*(.4..1.4)+up(.9) acc=drag(1.8) size=.04..0.12 col=<{r},{g},{b}> a=1>.6:.8>0 sz=$size*(.5>1.3) r=sprite(mote,add)",
+  "elementSinks": {
+    "grass": {
+      "texture": "mote",
+      "blend": "add"
+    },
+    "ice": {
+      "texture": "shard",
+      "blend": "alpha"
+    },
+    "lava": {
+      "texture": "ember",
+      "blend": "add"
+    },
+    "desert": {
+      "texture": "smoke-puff",
+      "blend": "alpha"
+    }
+  },
+  "styleFile": "configs/spawn_merge_combat.css",
+  "poseStep": 0.03333333333333333,
+  "slotArrivalTolerance": 0.18,
+  "rolePriority": {
+    "tank": 0,
+    "melee": 1,
+    "control": 2,
+    "ranged": 3,
+    "support": 4
+  },
+  "actors": {
+    "pet": {
+      "petType": "doggy",
+      "role": "melee"
+    },
+    "enemy": {
+      "petType": "bear",
+      "role": "tank"
+    }
+  }
+}

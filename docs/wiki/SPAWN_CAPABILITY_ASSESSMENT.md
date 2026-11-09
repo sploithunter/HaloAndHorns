@@ -18,7 +18,7 @@ authored Heaven bay, a third-person camera and physical board/hatcher positions.
 | Commands | RemoteEvents and server validation | Body input emits `hh:command` to the director's declared ear. Identity comes from event `meta.sourceId`; payload actor claims are ignored. Validate ownership, indices, tier, funds, status, nonce and rate. |
 | Replication | Explicit client/server boundaries and network ownership | Shared object/state rows replicate; player bodies move on their devices. Built-in multiplayer removes much transport work but is a different trust model. |
 | Saves | Existing HH profiles/DataStore services | Protected `player.state.merge` holds wallet, eggs, progression and dedup history. Actual leave/rejoin retained wave-2 progress. No Roblox identity/profile import. |
-| Art | Studio geometry, IDs, rigs, built-in materials | Actual bay read from Studio; meshes/UVs/normals/textures reconstructed as GLB groups. Real pet rig/Attack clip imports work. Materials, scale and collision need explicit conversion. |
+| Art | Studio geometry, IDs, rigs, built-in materials | Actual bay read from Studio; meshes/UVs/normals/textures reconstructed as GLB groups. Real pet rigs with distinct Walk/Attack imports work. Materials, scale and collision need explicit conversion. |
 | UI | Roblox UI hierarchy | HTML and world anchors; compact HUD plus real board/hatcher anchors. All layout must be rebuilt. |
 | Iteration | Rojo/Studio tests and published places | Git push updates open dev rooms; publishing is a separate action. Live reload is useful, but explicit engine shapes and asset ingestion failures require runtime checks. |
 
@@ -78,10 +78,12 @@ The 18 scene asset groups include architecture, terrain and repeated mesh types.
 single-request upload cap. A 14.9 MB combined upload failed during finalization with HTTP 503;
 smaller groups succeeded. GLB image packing retains opaque base-color maps at up to 1024 pixels
 and normal maps at up to 512. Geometry/placements are source-derived. Built-in Roblox marble is
-approximated procedurally; eggs and the agent's body are placeholders. The floor/rail/pad colliders
+approximated procedurally; the agent's body remains a placeholder. All 28 source egg models are imported. The floor/rail/pad colliders
 use source boxes; decorative collisions and terrain are simplified, with a mesh collider on the gate.
-The imported doggy/bear rigs retain the Attack clip; full HH character catalogs and animation states
-have not been ported. An unlinked white emission input in Blender was corrected during export.
+The imported doggy/bear rigs contain separate Walk and Attack actions. The earlier action labeled
+Attack was actually Walk; the corrected export appends the canonical wolf-attack action to both
+compatible 19-bone rigs. Full HH character catalogs/powers have not been ported. Unlinked white
+emission inputs in both source rigs were corrected during export.
 [EditableMesh](https://create.roblox.com/docs/reference/engine/classes/EditableMesh),
 [AssetService](https://create.roblox.com/docs/reference/engine/classes/AssetService).
 
@@ -91,7 +93,7 @@ have not been ported. An unlinked white emission input in Blender was corrected 
 | --- | --- |
 | HH CI | `mise run ci`: 2,846 headless tests, 323 specs passed, plus repository checks. |
 | Source parity | Prices, 20 mitigation cases, early-relief points and all ten opening wave counts pass against executed Luau fixtures. |
-| Gameplay adapter | Ten Node test groups pass; includes full ten-wave combat run with Tier-4 hatchers and checkpoint 10 in an in-memory adapter. |
+| Gameplay adapter | Eighteen Node test groups pass; includes full ten-wave combat run with Tier-4 hatchers and checkpoint 10 in an in-memory adapter. |
 | Real input | Browser buttons and movement completed buy/merge/deploy and waves 1–2; right-drag orbit and wheel zoom exercised. |
 | Two peers | Shared room state observed; visitor purchase rejected; owner departure freed the bay. Both peers are editors. |
 | Save/rejoin | Fresh client session retained 320 coins, two installed Tier-2 eggs, cleared wave 2 and pending rewards; owner reclaimed the bay. |
@@ -109,7 +111,7 @@ Keep reproducible version pinning on the next assessment list rather than callin
 
 1. Review this source bay's presentation and basic interaction in ColoradoPlays' world.
 2. Establish the non-editor authority boundary and save recovery guarantees with Spawn.
-3. Port one complete HH combat role and actual tier-egg art, then compare recorded fights and economy.
+3. Complete HH squad drafts, roster and role/power rules; compare recorded fights and economy. Source egg art and the initial melee choreography are now ported.
 4. Measure one representative full bay on desktop/mobile, then multiple concurrent bays.
 5. Design cross-platform identity/data migration only after those gates pass.
 
@@ -117,10 +119,50 @@ Keep reproducible version pinning on the next assessment list rather than callin
 
 Physical eggs and the B panel support pointer-captured mouse/touch drag. World anchors align
 pointer surfaces with the source board and stands; a local ghost and target highlight preview
-the result. The same tier can be stacked on the board or an occupied stand, up to T4. An empty
+the result. The same tier can be stacked on the board or an occupied stand, through the source terminal tier T56. An empty
 board slot accepts a move; an empty stand accepts installation. Stand changes are locked during
 combat. All drops use one platform-validated `drop` command with source/target slots, observed
 tiers and the existing dedup nonce. A stale or invalid drop consumes neither egg. Mouse/touch
 stacking, stand install/upgrade, panel-to-world drag, wrong-tier rejection and Escape/touch
 cancellation were exercised in an isolated browser preview. The HUD mount holds pointer capture
 across reactive updates and clears it on cancellation/unmount.
+
+## Source egg progression and combat choreography (2026-11-09)
+
+The default HH stage currently contains **56 tiers**, not the older eight-tier wiki summary:
+28 normal eggs across Home and Heaven/Hell 1–3, then the same identities as prototype Huge eggs.
+The Huge pass does not establish ownership of real Huge inventory pets. The exporter reads the
+stage's egg catalog, 3–9 team positions, best-of-N draft metadata, creation prices and generator
+quotes directly from config. Two equal eggs advance one tier, terminal at 56; source formatting
+uses M/B/T/Q suffixes. Wallet checks allow finite integer-valued doubles, matching Luau's numeric
+semantics at late-tier prices. Full best-of-N species drafts and full combat balance are not ported.
+
+All 28 actual egg meshes/textures were read through authorized Studio APIs, normalized to source
+height and uploaded as immutable GLB assets. Both pet CDN assets were inspected after upload:
+Walk and the real 1.708-second Attack action each retain 58 animation channels.
+
+Attack is a sequence: acquire/retain a target, travel to a stable formation slot, face it, plant,
+apply a real hit, lunge/slam and rebound, sidestep after recovery, react when hit, then rejoin the
+formation or acquire the next target. Numeric ports of `PetFormation.attackOffset`, `PetAttackMotion`
+and `HitReact` consume exported source parameters. The existing single-bay combat rules still use
+Doggy melee defenders and Bear enemy art. All seven formation curves and five role profiles are
+verified against executed Luau fixtures; this does not claim all five roles/powers are playable.
+A density adapter expands the minimum ring radius using the source footprint when several hatchers
+focus the same enemy, with an equivalent reach allowance; it is not exact HH range/balance parity.
+The ring pole uses the hatcher squad's home anchor because these NPC squads do not follow the player.
+
+The director preserves clean combat coordinates at 10 Hz; a separate platform actor behavior samples
+cosmetic root motion at 30 Hz. Per-hit state drives a once-only attack clip, contact/recovery,
+received flinch, elemental impact/flash and a separate lifetime-bound damage marker. Floating numbers
+show actual HP removed, including overkill clamping, and survive target deletion. No invented crit,
+miss, heal or power outcomes are emitted by the basic simulation. Death and merge use native FX;
+all-peer effect audience is explicit. No additional inference is used.
+
+Verification: 18 Node groups, including 273 formation fixtures, all five strike profiles and all ten
+waves; HH CI 2,846 tests/323 specs. Real mouse drags crossed T4→5, T28→29 and T55→56, and T5/T29
+installations spawned 4/9 defenders. A live preview wave-10 fight using four T4 hatchers cleared at
+checkpoint 10 with reserve 5; native actor snapshots confirmed whole-body offsets and attack channels
+alongside actual damage markers. A local 640×360 render sample reported 60 fps; this is not a mobile,
+full-resolution or multi-bay performance measurement. Preview hot writes log expected
+`teach.save.published-room` notices because its base is a published version; gameplay errors were
+checked separately. Runtime hash `0d454803…` was observed, further evidence of rolling engine versions.

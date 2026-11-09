@@ -2228,3 +2228,12 @@ A playable source-derived Heaven bay is at [ColoradoPlays’ development world](
 ## Spawn egg dragging and stacking (2026-11-09)
 
 The [Spawn development lab](https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev) supports mouse/touch egg dragging onto stands and equal-tier eggs. Matching eggs combine on the board or an occupied stand up to T4. Invalid/cancelled drops preserve eggs; stand changes are blocked during combat. Ten Node groups and real browser gesture checks cover the new behavior. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+## 2026-11-09 — Spawn bay progression and attack presentation
+
+PR #501 now includes all 56 configured HH egg tiers, 28 source egg models, canonical prices/team
+capacities, actual Walk/Attack clips, source formation/strike/flinch math, hit-linked damage text
+and native elemental FX. Live advanced-tier dragging/capacity checks and wave-10 preview passed;
+18 Node groups and 2,846 HH tests/323 specs pass. The bay remains a ten-wave basic simulation with
+Doggy/Bear stand-ins; full species drafts, powers, combat balance, ordinary-player authority and
+failure recovery are future gates. Details: [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).

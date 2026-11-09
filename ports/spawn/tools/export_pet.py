@@ -8,6 +8,7 @@ from mathutils import Vector
 parser = argparse.ArgumentParser()
 parser.add_argument("source")
 parser.add_argument("output")
+parser.add_argument("--attack-source")
 parser.add_argument("--height", type=float, default=1.1)
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 source = Path(args.source)
@@ -40,7 +41,20 @@ for o in objects + [root]:
     o.select_set(True)
 for o in objects:
     if o.type == "ARMATURE" and o.animation_data and o.animation_data.action:
-        o.animation_data.action.name = "Attack"
+        o.animation_data.action.name = "Walk"
+        if args.attack_source:
+            with bpy.data.libraries.load(args.attack_source, link=False) as (available, target):
+                target.actions = ["QuadrupedRigAction.001"]
+            attack = target.actions[0]
+            attack.name = "Attack"
+            walk = o.animation_data.action
+            o.animation_data.action = None
+            for name, action in [("Walk", walk), ("Attack", attack)]:
+                track = o.animation_data.nla_tracks.new()
+                track.name = name
+                strip = track.strips.new(name, int(action.frame_range[0]), action)
+                if hasattr(action, "slots") and action.slots:
+                    strip.action_slot = action.slots[0]
 # Unconnected white emission in the source Blender files is a viewport artifact.
 # Preserve a real emission texture; otherwise export the lit albedo.
 for material in bpy.data.materials:
@@ -50,5 +64,5 @@ for material in bpy.data.materials:
                 node.inputs['Emission Strength'].default_value = 0
 Path(args.output).parent.mkdir(parents=True, exist_ok=True)
 bpy.ops.export_scene.gltf(filepath=args.output, export_format="GLB", use_selection=True,
-                          export_animations=True, export_apply=False)
+                          export_animations=True, export_animation_mode="NLA_TRACKS", export_apply=False)
 print("HH_EXPORT", args.output, "height", args.height, "scale", scale)

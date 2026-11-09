@@ -140,6 +140,7 @@
     "openingCoins": 600,
     "upgradeMultiplier": 2
   },
+  "eggHeight": 1.344,
   "objective": {
     "damage_per_escape": 1,
     "hatcher_egg_max_health": 5000,
@@ -173,8 +174,1238 @@
     3,
     3,
     3,
-    3
+    3,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    6,
+    6,
+    6,
+    6,
+    7,
+    7,
+    7,
+    7,
+    8,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9,
+    9
   ],
+  "presentation": {
+    "animation": {
+      "fade": 0.1,
+      "speed": 1
+    },
+    "attack": {
+      "anim": {
+        "combat": {
+          "style": "none"
+        },
+        "mining": {
+          "style": "none"
+        }
+      },
+      "combat_ring_zero": "toward_player",
+      "line_recoil": 2,
+      "line_spacing": 2.5,
+      "line_speed": 5,
+      "lunge_distance": 3,
+      "lunge_speed": 6,
+      "mode": {
+        "combat": "individual",
+        "mining": "individual"
+      },
+      "orbit_speed": 2.5,
+      "pincer_arc": 80,
+      "pincer_speed": 3,
+      "pincer_squeeze": 2,
+      "ring_height": 3,
+      "ring_radius": 6,
+      "role_styles": {
+        "control": "pincer",
+        "melee": "static_ring",
+        "ranged": "firing_line",
+        "support": "orbit",
+        "tank": "static_ring"
+      },
+      "spiral_inner_speed": 3,
+      "spiral_outer_speed": 1.5,
+      "spiral_rise": 2,
+      "spiral_turns": 1.5,
+      "strike_motion": {
+        "by_type": {
+          "bear": {
+            "depth": 1.35,
+            "drop": 0.56,
+            "duration": 0.52,
+            "height": 0.48
+          },
+          "bunny": {
+            "height": 0.92,
+            "roll": 0.18,
+            "yaw": 0.28
+          },
+          "doggy": {
+            "depth": 3.15,
+            "duration": 0.58,
+            "height": 0.38,
+            "pitch": 0.2,
+            "recoil": 0.62,
+            "roll": 0.18
+          },
+          "kitty": {
+            "height": 0.24,
+            "pitch": 0.18,
+            "recoil": 1.05
+          }
+        },
+        "enabled": true,
+        "roles": {
+          "control": {
+            "depth": 0.42,
+            "duration": 0.44,
+            "height": 0.4,
+            "pitch": 0.08,
+            "roll": 0.12,
+            "style": "cast",
+            "yaw": 0.28
+          },
+          "melee": {
+            "depth": 1.7,
+            "duration": 0.34,
+            "height": 0.16,
+            "pitch": 0.1,
+            "recoil": 0.25,
+            "roll": 0.08,
+            "sidestep_degrees": 10,
+            "style": "lunge"
+          },
+          "ranged": {
+            "duration": 0.38,
+            "height": 0.18,
+            "pitch": 0.14,
+            "recoil": 0.78,
+            "roll": 0.07,
+            "style": "recoil"
+          },
+          "support": {
+            "depth": 0.3,
+            "duration": 0.5,
+            "height": 0.72,
+            "pitch": 0.08,
+            "roll": 0.14,
+            "style": "cast",
+            "yaw": 0.2
+          },
+          "tank": {
+            "depth": 1.05,
+            "drop": 0.42,
+            "duration": 0.48,
+            "height": 0.35,
+            "pitch": 0.2,
+            "recoil": 0.12,
+            "roll": 0.04,
+            "style": "slam"
+          }
+        }
+      },
+      "style": "orbit",
+      "swarm_bob": 1.2,
+      "swarm_radius_frac": 0.85,
+      "swarm_speed": 3
+    },
+    "combatText": {
+      "colors": {
+        "absorbed": [
+          130,
+          210,
+          255
+        ],
+        "blind_miss": [
+          255,
+          150,
+          40
+        ],
+        "blocked": [
+          130,
+          190,
+          255
+        ],
+        "crit": [
+          255,
+          200,
+          60
+        ],
+        "dodge": [
+          255,
+          221,
+          64
+        ],
+        "heal": [
+          90,
+          230,
+          110
+        ],
+        "immune": [
+          190,
+          160,
+          255
+        ],
+        "miss": [
+          175,
+          175,
+          175
+        ],
+        "normal": [
+          255,
+          255,
+          255
+        ]
+      },
+      "crit_size": 34,
+      "duration": 0.9,
+      "enabled": true,
+      "miss_text": "MISS",
+      "rise": 6,
+      "size": 22
+    },
+    "costNotations": [
+      {
+        "suffix": "Q",
+        "threshold": 1000000000000000
+      },
+      {
+        "suffix": "T",
+        "threshold": 1000000000000
+      },
+      {
+        "suffix": "B",
+        "threshold": 1000000000
+      },
+      {
+        "suffix": "M",
+        "threshold": 1000000
+      }
+    ],
+    "formation": {
+      "arc": {
+        "arc_step_degrees": 20,
+        "depth_factor": 0.1,
+        "radius": 11,
+        "spread_factor": 0.15
+      },
+      "arc_degrees": 120,
+      "col_spacing": 4,
+      "default_mode": "risers",
+      "follow_distance": 6,
+      "height": 2,
+      "mode": "rows",
+      "per_row": 3,
+      "radius": 8,
+      "risers": {
+        "col_spacing": 3,
+        "per_row": 3,
+        "row_gap": 2
+      },
+      "row_spacing": 4,
+      "size": {
+        "default_footprint": 4,
+        "gap": 1.5
+      }
+    },
+    "hitReact": {
+      "duration": 0.22,
+      "recoil": 1.1,
+      "yaw": 0.22
+    },
+    "melee": {
+      "desert": {
+        "colors": [
+          [
+            200,
+            170,
+            115
+          ],
+          [
+            150,
+            125,
+            90
+          ]
+        ],
+        "impact": "dust",
+        "impact_crit": "big"
+      },
+      "grass": {
+        "colors": [
+          [
+            120,
+            220,
+            90
+          ],
+          [
+            200,
+            255,
+            150
+          ]
+        ],
+        "impact": "small",
+        "impact_crit": "medium"
+      },
+      "ice": {
+        "colors": [
+          [
+            150,
+            220,
+            255
+          ],
+          [
+            235,
+            250,
+            255
+          ]
+        ],
+        "impact": "shatter",
+        "impact_crit": "big"
+      },
+      "lava": {
+        "colors": [
+          [
+            255,
+            150,
+            40
+          ],
+          [
+            255,
+            210,
+            120
+          ]
+        ],
+        "impact": "small",
+        "impact_crit": "medium"
+      }
+    },
+    "roles": {
+      "aura_targeting_by_kind": {
+        "antiheal": "single",
+        "buff": "aura",
+        "curse": "single",
+        "defense": "aura",
+        "drain": "single",
+        "drop_rate": "aura",
+        "empower": "single",
+        "haste": "aura",
+        "heal": "single",
+        "hold": "single",
+        "huge_luck": "aura",
+        "luck": "aura",
+        "offense": "aura",
+        "rage": "single",
+        "root": "single",
+        "shred": "single",
+        "slow": "single",
+        "xp": "aura",
+        "yield": "aura"
+      },
+      "by_type": {
+        "abyssal_wyrm": "ranged",
+        "archon_spark": "melee",
+        "ash_ibis": "support",
+        "ash_roc": "ranged",
+        "ashfeather_phoenix": "ranged",
+        "ashmane_lion": "tank",
+        "ashwing": "support",
+        "atlas_golem": "tank",
+        "aurora_dove": "support",
+        "aurora_dragon": "melee",
+        "aurora_fox": "control",
+        "aurora_leviathan": "tank",
+        "banner_hare": "support",
+        "bastion_ram": "tank",
+        "beacon_finch": "ranged",
+        "bear": "tank",
+        "beta_tester_bot": "melee",
+        "bird": "ranged",
+        "black_ice_leviathan": "tank",
+        "black_seraph": "tank",
+        "blade_lynx": "melee",
+        "blightlamb": "support",
+        "bloom_ibis": "support",
+        "bloomlamb": "support",
+        "bloomlight_sprite": "support",
+        "bloomspirit_lamb": "support",
+        "bolt_hawk": "ranged",
+        "brimstone_salamander": "support",
+        "bunny": "support",
+        "cache_bandit": "melee",
+        "camel": "tank",
+        "carrion_scarab": "support",
+        "cat": "ranged",
+        "celestial_moth": "ranged",
+        "cerberus_pup": "control",
+        "chain_serpent": "control",
+        "cinder_golemite": "tank",
+        "cinderling_imp": "support",
+        "clockwork_spider": "control",
+        "cloudling": "tank",
+        "colorado": "ranged",
+        "colorado_creator": "ranged",
+        "compass_fox": "control",
+        "core_digger": "tank",
+        "coronal_cherub": "melee",
+        "crowned_chimera": "control",
+        "crownwing_falcon": "ranged",
+        "crystalbark_stag": "tank",
+        "dawn_camel": "tank",
+        "dawnfire_phoenix": "ranged",
+        "deadfire_phoenix": "ranged",
+        "desertiguana": "melee",
+        "dog": "melee",
+        "doggy": "melee",
+        "dragon": "ranged",
+        "dread_couatl": "support",
+        "dread_fox": "control",
+        "dread_hare": "melee",
+        "dread_hart": "melee",
+        "dread_mongoose": "support",
+        "dread_owl": "ranged",
+        "dread_wisp": "control",
+        "dreadbloom_sprite": "support",
+        "dreadcinder_imp": "melee",
+        "dreadfire_hawk": "ranged",
+        "dreadglass_dragon": "support",
+        "dreadguard_bear": "tank",
+        "dreadlance_seraph": "ranged",
+        "dreadspire_mammoth": "tank",
+        "dreadthorn_grovekeeper": "tank",
+        "dreadveil_moth": "ranged",
+        "duskfrost_seal": "melee",
+        "dust_camel": "tank",
+        "emberfox": "melee",
+        "emberimp": "support",
+        "emberling": "melee",
+        "emberling_cherub": "support",
+        "emberlion": "tank",
+        "emberowl": "ranged",
+        "empyreal_couatl": "support",
+        "empyrean_dragon": "ranged",
+        "empyrean_firehawk": "ranged",
+        "empyrean_grovekeeper": "tank",
+        "empyrean_mammoth": "tank",
+        "fennec": "melee",
+        "fortune_wisp": "support",
+        "frostblight_lamb": "support",
+        "frostbrand_salamander": "support",
+        "frostcinder_imp": "melee",
+        "frostdust_camel": "support",
+        "frostgrave_ent": "tank",
+        "frostlight_doe": "melee",
+        "frostlight_hare": "melee",
+        "gilded_sphinx": "ranged",
+        "glacial_bear": "tank",
+        "glacial_seraph": "tank",
+        "glass_sphinx": "ranged",
+        "gloom_hare": "melee",
+        "gloom_jackal": "support",
+        "glory_mongoose": "support",
+        "gloryleaf_lamb": "support",
+        "gloryscale_salamander": "support",
+        "gloryspark_cherub": "melee",
+        "goldleaf_stag": "tank",
+        "gravefrost_owl": "ranged",
+        "gravewood_ent": "tank",
+        "guide_moth": "support",
+        "halo_bear": "tank",
+        "halo_fawn": "support",
+        "halo_hare": "melee",
+        "halo_hart": "melee",
+        "halo_wisp": "control",
+        "hoarfrost_phoenix": "ranged",
+        "icerot_stag": "tank",
+        "ironbark_rhino": "tank",
+        "kade": "tank",
+        "keytail_raccoon": "melee",
+        "kitty": "ranged",
+        "lance_seraph": "ranged",
+        "laurel_lynx": "melee",
+        "light_tortoise": "support",
+        "lightbark_rhino": "tank",
+        "lightleaf_hare": "melee",
+        "lockbox_imp": "control",
+        "lumen_dove": "support",
+        "lumen_salamander": "support",
+        "lumen_seal": "melee",
+        "medal_moth": "support",
+        "meerkat": "control",
+        "mirage_jackal": "melee",
+        "mirage_meerkat": "support",
+        "oasis_dragon": "support",
+        "obsidian_hound": "melee",
+        "obsidian_tortoise": "support",
+        "obsidian_totem": "support",
+        "pack_tortoise": "tank",
+        "patch_phoenix": "ranged",
+        "penguin": "support",
+        "phantom_jackal": "melee",
+        "polarbear": "tank",
+        "portal_drake": "ranged",
+        "prism_fox": "control",
+        "prism_lion": "tank",
+        "prism_scarab": "support",
+        "radiant_lance_seraph": "ranged",
+        "radiant_salamander": "support",
+        "radiant_sprite": "support",
+        "radiant_totem": "support",
+        "ribbon_ram": "tank",
+        "rift_panther": "melee",
+        "rime_scarab": "support",
+        "rimegloom_hare": "melee",
+        "rimeguard_bear": "tank",
+        "rimelight_hare": "support",
+        "rimemane_lion": "tank",
+        "rimewither_sprite": "support",
+        "rimewraith_dragon": "melee",
+        "rimewraith_fox": "control",
+        "rotleaf_stag": "tank",
+        "ruinmane_lion": "tank",
+        "ruinscale_salamander": "support",
+        "scorpion": "melee",
+        "seraph_kit": "control",
+        "seraph_lion": "tank",
+        "seraph_owl": "ranged",
+        "signal_seal": "support",
+        "snowflakeowl": "ranged",
+        "snowfox": "control",
+        "snowleopard": "melee",
+        "solar_phoenix": "ranged",
+        "solar_roc": "ranged",
+        "star_moth": "support",
+        "starlight_owl": "ranged",
+        "sun_scarab": "support",
+        "sunmane_lion": "tank",
+        "sunwell_camel": "support",
+        "thornleaf_lamb": "support",
+        "trail_pup": "melee",
+        "vault_beetle": "tank",
+        "verdant_sprite": "support",
+        "victory_gryphon": "ranged",
+        "wither_sprite": "support",
+        "worldbloom_ent": "tank",
+        "worldroot_ent": "tank",
+        "wraith_dove": "support",
+        "wyrmling": "ranged"
+      },
+      "default": "melee",
+      "roles": {
+        "control": {
+          "attack_range": 20,
+          "color": [
+            90,
+            185,
+            205
+          ],
+          "combat_mult": 0.5,
+          "defense": 40,
+          "engage_range": 60,
+          "glyph": "C",
+          "icon": "",
+          "label": "Control",
+          "mining_mult": 0.5,
+          "standoff": 12,
+          "targeting": "single",
+          "tooltip": "Disables or weakens enemies; trades personal damage for control."
+        },
+        "melee": {
+          "attack_range": 9,
+          "color": [
+            205,
+            85,
+            70
+          ],
+          "combat_mult": 1,
+          "defense": 20,
+          "glyph": "M",
+          "icon": "",
+          "label": "Melee",
+          "mining_mult": 1,
+          "standoff": 0,
+          "targeting": "single",
+          "threat_mult": 1,
+          "tooltip": "Close-range fighter with balanced mining and combat damage."
+        },
+        "ranged": {
+          "attack_range": 28,
+          "color": [
+            120,
+            180,
+            85
+          ],
+          "combat_mult": 1,
+          "defense": 0,
+          "engage_range": 60,
+          "glyph": "R",
+          "icon": "",
+          "kite": true,
+          "label": "Blaster",
+          "mining_mult": 1,
+          "standoff": 17,
+          "targeting": "single",
+          "tooltip": "Long-range damage dealer that fights from a safer distance."
+        },
+        "support": {
+          "attack_range": 16,
+          "auto_heal": {
+            "fraction": 0.3,
+            "interval": 1.5
+          },
+          "color": [
+            150,
+            110,
+            215
+          ],
+          "combat_mult": 0.45,
+          "defense": 10,
+          "engage_range": 60,
+          "glyph": "S",
+          "icon": "",
+          "label": "Buffer",
+          "mining_mult": 0.45,
+          "standoff": 9,
+          "targeting": "single",
+          "tooltip": "Supports the squad with a special ability; lower personal damage."
+        },
+        "tank": {
+          "attack_range": 9,
+          "color": [
+            70,
+            130,
+            195
+          ],
+          "combat_mult": 0.6,
+          "defense": 100,
+          "glyph": "T",
+          "icon": "",
+          "implicit_taunt": true,
+          "label": "Tank",
+          "mining_mult": 0.6,
+          "standoff": 0,
+          "targeting": "single",
+          "threat_mult": 5,
+          "tooltip": "High defense and threat; protects the squad but deals less damage."
+        }
+      },
+      "support_auras": {
+        "ash_ibis": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "drain"
+        },
+        "ashwing": {
+          "duration": 6,
+          "fraction": 0.1,
+          "interval": 2,
+          "kind": "recharge"
+        },
+        "aurora_dove": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "aurora_fox": {
+          "duration": 5,
+          "factor": 0.55,
+          "interval": 8,
+          "kind": "slow"
+        },
+        "banner_hare": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.1667
+        },
+        "bear": {
+          "duration": 6,
+          "enrage_below": 0.5,
+          "interval": 2,
+          "kind": "rage",
+          "mult": 1.5
+        },
+        "beta_tester_bot": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "huge_luck",
+          "mult": 1.1667
+        },
+        "blightlamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "drain"
+        },
+        "bloom_ibis": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "bloomlamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "bloomlight_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "luck",
+          "mult": 1.2
+        },
+        "bloomspirit_lamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "brimstone_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "bunny": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "luck",
+          "mult": 1.1667
+        },
+        "cache_bandit": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "xp",
+          "mult": 1.1667
+        },
+        "carrion_scarab": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "empower",
+          "mult": 1.5,
+          "target": "highest_power"
+        },
+        "cerberus_pup": {
+          "duration": 10,
+          "interval": 30,
+          "kind": "hold"
+        },
+        "chain_serpent": {
+          "duration": 3.5,
+          "interval": 10,
+          "kind": "root"
+        },
+        "cinderling_imp": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "haste",
+          "mult": 1.25
+        },
+        "clockwork_spider": {
+          "duration": 3.5,
+          "interval": 10,
+          "kind": "root"
+        },
+        "colorado": [
+          {
+            "fraction": 0.2,
+            "interval": 15,
+            "kind": "heal"
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "luck",
+            "mult": 1.1667
+          }
+        ],
+        "colorado_creator": [
+          {
+            "fraction": 0.2,
+            "interval": 1.5,
+            "kind": "heal"
+          },
+          {
+            "amount": 53.3,
+            "duration": 6,
+            "interval": 2,
+            "kind": "defense"
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "offense",
+            "mult": 1.1667
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "yield",
+            "mult": 1.1667
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "luck",
+            "mult": 1.1667
+          }
+        ],
+        "compass_fox": {
+          "duration": 3,
+          "interval": 12,
+          "kind": "root"
+        },
+        "core_digger": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "yield",
+          "mult": 1.1667
+        },
+        "crowned_chimera": {
+          "duration": 10,
+          "interval": 30,
+          "kind": "hold"
+        },
+        "dread_couatl": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.7
+        },
+        "dread_fox": {
+          "duration": 3,
+          "interval": 12,
+          "kind": "root"
+        },
+        "dread_mongoose": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "dread_wisp": {
+          "duration": 3.25,
+          "interval": 11,
+          "kind": "root"
+        },
+        "dreadbloom_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.75
+        },
+        "dreadglass_dragon": [
+          {
+            "duration": 6,
+            "fraction": 0.1,
+            "heal_suppression_duration": 3,
+            "interval": 2,
+            "kind": "drain",
+            "max_targets": 5,
+            "radius": 12,
+            "targeting": "targeted_aoe"
+          },
+          {
+            "amount": 0.25,
+            "duration": 6,
+            "interval": 2,
+            "kind": "shred"
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "curse",
+            "mult": 0.7
+          }
+        ],
+        "dreadthorn_grovekeeper": {
+          "duration": 6,
+          "fraction": 0.1,
+          "heal_suppression_duration": 3,
+          "interval": 2,
+          "kind": "drain",
+          "max_targets": 5,
+          "radius": 12,
+          "targeting": "aura"
+        },
+        "emberimp": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.1667
+        },
+        "emberling_cherub": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "empyreal_couatl": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.25
+        },
+        "empyrean_grovekeeper": {
+          "duration": 6,
+          "fraction": 0.1,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "fortune_wisp": {
+          "duration": 6,
+          "fraction": 0.09,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "frostblight_lamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "drain"
+        },
+        "frostbrand_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "frostdust_camel": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.85
+        },
+        "gloom_jackal": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "glory_mongoose": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.1667
+        },
+        "gloryleaf_lamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "gloryscale_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.2
+        },
+        "guide_moth": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "halo_fawn": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "halo_wisp": {
+          "duration": 3.25,
+          "interval": 11,
+          "kind": "root"
+        },
+        "kade": [
+          {
+            "fraction": 0.2,
+            "interval": 15,
+            "kind": "heal"
+          },
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "luck",
+            "mult": 1.1667
+          }
+        ],
+        "light_tortoise": {
+          "duration": 6,
+          "fraction": 0.05,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "lockbox_imp": {
+          "duration": 3.25,
+          "interval": 11,
+          "kind": "root"
+        },
+        "lumen_dove": {
+          "amount": 0.75,
+          "duration": 6,
+          "interval": 2,
+          "kind": "focus"
+        },
+        "lumen_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.1667
+        },
+        "medal_moth": {
+          "amount": 53.3,
+          "duration": 6,
+          "interval": 2,
+          "kind": "defense"
+        },
+        "meerkat": {
+          "duration": 10,
+          "interval": 30,
+          "kind": "hold"
+        },
+        "mirage_meerkat": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "yield",
+          "mult": 1.1667
+        },
+        "oasis_dragon": [
+          {
+            "duration": 6,
+            "fraction": 0.1,
+            "interval": 2,
+            "kind": "heal"
+          },
+          {
+            "amount": 53.3,
+            "duration": 6,
+            "interval": 2,
+            "kind": "defense"
+          }
+        ],
+        "obsidian_tortoise": [
+          {
+            "duration": 6,
+            "interval": 2,
+            "kind": "curse",
+            "mult": 0.85
+          },
+          {
+            "duration": 3,
+            "interval": 2,
+            "kind": "antiheal",
+            "max_targets": 5,
+            "radius": 12,
+            "targeting": "aura"
+          }
+        ],
+        "obsidian_totem": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.85
+        },
+        "patch_phoenix": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "drop_rate",
+          "mult": 1.1667
+        },
+        "penguin": {
+          "amount": 53.3,
+          "duration": 6,
+          "interval": 2,
+          "kind": "defense"
+        },
+        "prism_fox": {
+          "duration": 3,
+          "interval": 12,
+          "kind": "root"
+        },
+        "prism_scarab": {
+          "amount": 53.3,
+          "duration": 6,
+          "interval": 2,
+          "kind": "defense"
+        },
+        "radiant_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "offense",
+          "mult": 1.1667
+        },
+        "radiant_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "luck",
+          "mult": 1.1667
+        },
+        "radiant_totem": {
+          "amount": 53.3,
+          "duration": 6,
+          "interval": 2,
+          "kind": "defense"
+        },
+        "rime_scarab": {
+          "amount": 0.25,
+          "duration": 6,
+          "interval": 2,
+          "kind": "shred"
+        },
+        "rimelight_hare": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "rimewither_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "rimewraith_fox": {
+          "duration": 5,
+          "factor": 0.55,
+          "interval": 8,
+          "kind": "slow"
+        },
+        "ruinscale_salamander": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.75
+        },
+        "seraph_kit": {
+          "duration": 10,
+          "interval": 30,
+          "kind": "hold"
+        },
+        "signal_seal": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "luck",
+          "mult": 1.1667
+        },
+        "snowfox": {
+          "duration": 4,
+          "factor": 0.65,
+          "interval": 8,
+          "kind": "slow"
+        },
+        "star_moth": {
+          "duration": 6,
+          "fraction": 0.1,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "sun_scarab": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "yield",
+          "mult": 1.1667
+        },
+        "sunwell_camel": {
+          "duration": 6,
+          "fraction": 0.05,
+          "interval": 2,
+          "kind": "heal"
+        },
+        "thornleaf_lamb": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "drain"
+        },
+        "verdant_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "yield",
+          "mult": 1.1667
+        },
+        "wither_sprite": {
+          "duration": 6,
+          "interval": 2,
+          "kind": "curse",
+          "mult": 0.8
+        },
+        "wraith_dove": {
+          "duration": 6,
+          "fraction": 0.08,
+          "interval": 2,
+          "kind": "drain"
+        }
+      },
+      "variant_effect_multipliers": {
+        "basic": 1,
+        "golden": 1.25,
+        "rainbow": 1.5
+      }
+    },
+    "strikeDefaults": {
+      "depth": 0,
+      "drop": 0,
+      "duration": 0.36,
+      "enabled": false,
+      "height": 0,
+      "pitch": 0,
+      "recoil": 0,
+      "roll": 0,
+      "sidestep_degrees": 0,
+      "style": "none",
+      "yaw": 0
+    }
+  },
+  "progression": {
+    "hugeStart": 29,
+    "normalTiers": 28,
+    "stage": "home"
+  },
   "rewards": {
     "boss_amount": 2400,
     "combat_xp_yield": {
@@ -212,6 +1443,704 @@
     "config": "configs/merge_egg_prototype.lua",
     "version": 6
   },
+  "tiers": [
+    {
+      "color": "#57d270",
+      "draftRolls": 2,
+      "eggId": "grass_egg",
+      "element": "grass",
+      "huge": false,
+      "model": "rbxassetid://95237477079273",
+      "name": "Earth Egg",
+      "positions": 3,
+      "tier": 1
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 3,
+      "eggId": "ice_egg",
+      "element": "ice",
+      "huge": false,
+      "model": "rbxassetid://96544163202240",
+      "name": "Ice Egg",
+      "positions": 3,
+      "tier": 2
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 4,
+      "eggId": "lava_egg",
+      "element": "lava",
+      "huge": false,
+      "model": "rbxassetid://79770174701008",
+      "name": "Ember Egg",
+      "positions": 3,
+      "tier": 3
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 5,
+      "eggId": "desert_egg",
+      "element": "desert",
+      "huge": false,
+      "model": "rbxassetid://86278537786961",
+      "name": "Sand Egg",
+      "positions": 3,
+      "tier": 4
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 2,
+      "eggId": "bloom_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://95206555175588",
+      "model": "rbxassetid://135147499819558",
+      "name": "Bloom Egg",
+      "positions": 4,
+      "texture": "rbxassetid://97881865156853",
+      "tier": 5
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 3,
+      "eggId": "aurora_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://83610100600955",
+      "model": "rbxassetid://74522830834998",
+      "name": "Aurora Egg",
+      "positions": 4,
+      "texture": "rbxassetid://140277885621849",
+      "tier": 6
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 4,
+      "eggId": "solar_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://120776006241642",
+      "model": "rbxassetid://77584635179884",
+      "name": "Solar Egg",
+      "positions": 4,
+      "texture": "rbxassetid://72536199373579",
+      "tier": 7
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 5,
+      "eggId": "gilded_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://96910056672038",
+      "model": "rbxassetid://116703860678458",
+      "name": "Gilded Egg",
+      "positions": 4,
+      "texture": "rbxassetid://95387752152620",
+      "tier": 8
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 2,
+      "eggId": "blight_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://92966116192331",
+      "model": "rbxassetid://120754517837077",
+      "name": "Blight Egg",
+      "positions": 5,
+      "texture": "rbxassetid://110483576540897",
+      "tier": 9
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 3,
+      "eggId": "black_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://77865901338290",
+      "model": "rbxassetid://133490974371883",
+      "name": "Black Ice Egg",
+      "positions": 5,
+      "texture": "rbxassetid://117724720749402",
+      "tier": 10
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 4,
+      "eggId": "infernal_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://72980753133146",
+      "model": "rbxassetid://138837852735149",
+      "name": "Infernal Egg",
+      "positions": 5,
+      "texture": "rbxassetid://87250695013962",
+      "tier": 11
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 5,
+      "eggId": "ash_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://76039070814624",
+      "model": "rbxassetid://85400070997354",
+      "name": "Ash Egg",
+      "positions": 5,
+      "texture": "rbxassetid://81432308149691",
+      "tier": 12
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 2,
+      "eggId": "heaven2_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://112812356074190",
+      "name": "Bloomlight Egg",
+      "positions": 6,
+      "texture": "rbxassetid://100391425038520",
+      "tier": 13
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 3,
+      "eggId": "heaven2_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Prism Egg",
+      "positions": 6,
+      "texture": "rbxassetid://92369406922076",
+      "tier": 14
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 4,
+      "eggId": "heaven2_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Coronal Egg",
+      "positions": 6,
+      "texture": "rbxassetid://85473657458550",
+      "tier": 15
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 5,
+      "eggId": "heaven2_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Mirage Egg",
+      "positions": 6,
+      "texture": "rbxassetid://117485367061974",
+      "tier": 16
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 2,
+      "eggId": "hell2_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://88748649873565",
+      "name": "Frostblight Egg",
+      "positions": 7,
+      "texture": "rbxassetid://131727540160106",
+      "tier": 17
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 3,
+      "eggId": "hell2_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://88819644811580",
+      "name": "Black-Ice Egg",
+      "positions": 7,
+      "texture": "rbxassetid://138609284205775",
+      "tier": 18
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 4,
+      "eggId": "hell2_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Frostcinder Egg",
+      "positions": 7,
+      "texture": "rbxassetid://73618981450854",
+      "tier": 19
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 5,
+      "eggId": "hell2_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://115352006220322",
+      "name": "Frostcarrion Egg",
+      "positions": 7,
+      "texture": "rbxassetid://98666034334855",
+      "tier": 20
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 2,
+      "eggId": "heaven3_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://79016160176504",
+      "model": "rbxassetid://75389163785053",
+      "name": "Empyrean Grove Egg",
+      "positions": 8,
+      "texture": "rbxassetid://119008753003956",
+      "tier": 21
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 3,
+      "eggId": "heaven3_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://72594981350736",
+      "model": "rbxassetid://97002148599875",
+      "name": "Halo Frost Egg",
+      "positions": 8,
+      "texture": "rbxassetid://128919915905376",
+      "tier": 22
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 4,
+      "eggId": "heaven3_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://91935114884673",
+      "model": "rbxassetid://86811984655091",
+      "name": "Gloryfire Egg",
+      "positions": 8,
+      "texture": "rbxassetid://107295234564410",
+      "tier": 23
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 5,
+      "eggId": "heaven3_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://139743668604749",
+      "model": "rbxassetid://128013403739624",
+      "name": "Oasis Egg",
+      "positions": 8,
+      "texture": "rbxassetid://83104442715829",
+      "tier": 24
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 2,
+      "eggId": "hell3_grass_egg",
+      "element": "grass",
+      "huge": false,
+      "mesh": "rbxassetid://114756995416189",
+      "model": "rbxassetid://132472586154102",
+      "name": "Dreadthorn Egg",
+      "positions": 9,
+      "texture": "rbxassetid://118603970417096",
+      "tier": 25
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 3,
+      "eggId": "hell3_ice_egg",
+      "element": "ice",
+      "huge": false,
+      "mesh": "rbxassetid://78475913272497",
+      "model": "rbxassetid://109433355344191",
+      "name": "Dreadfrost Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116607794725818",
+      "tier": 26
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 4,
+      "eggId": "hell3_fire_egg",
+      "element": "lava",
+      "huge": false,
+      "mesh": "rbxassetid://112325478054212",
+      "model": "rbxassetid://109931371072559",
+      "name": "Ruinfire Egg",
+      "positions": 9,
+      "texture": "rbxassetid://85932181978557",
+      "tier": 27
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 5,
+      "eggId": "hell3_desert_egg",
+      "element": "desert",
+      "huge": false,
+      "mesh": "rbxassetid://87127630973664",
+      "model": "rbxassetid://140611340840194",
+      "name": "Dreadglass Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116019683064591",
+      "tier": 28
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 2,
+      "eggId": "grass_egg",
+      "element": "grass",
+      "huge": true,
+      "model": "rbxassetid://95237477079273",
+      "name": "Huge Earth Egg",
+      "positions": 9,
+      "tier": 29
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 3,
+      "eggId": "ice_egg",
+      "element": "ice",
+      "huge": true,
+      "model": "rbxassetid://96544163202240",
+      "name": "Huge Ice Egg",
+      "positions": 9,
+      "tier": 30
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 4,
+      "eggId": "lava_egg",
+      "element": "lava",
+      "huge": true,
+      "model": "rbxassetid://79770174701008",
+      "name": "Huge Ember Egg",
+      "positions": 9,
+      "tier": 31
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 5,
+      "eggId": "desert_egg",
+      "element": "desert",
+      "huge": true,
+      "model": "rbxassetid://86278537786961",
+      "name": "Huge Sand Egg",
+      "positions": 9,
+      "tier": 32
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 2,
+      "eggId": "bloom_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://95206555175588",
+      "model": "rbxassetid://135147499819558",
+      "name": "Huge Bloom Egg",
+      "positions": 9,
+      "texture": "rbxassetid://97881865156853",
+      "tier": 33
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 3,
+      "eggId": "aurora_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://83610100600955",
+      "model": "rbxassetid://74522830834998",
+      "name": "Huge Aurora Egg",
+      "positions": 9,
+      "texture": "rbxassetid://140277885621849",
+      "tier": 34
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 4,
+      "eggId": "solar_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://120776006241642",
+      "model": "rbxassetid://77584635179884",
+      "name": "Huge Solar Egg",
+      "positions": 9,
+      "texture": "rbxassetid://72536199373579",
+      "tier": 35
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 5,
+      "eggId": "gilded_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://96910056672038",
+      "model": "rbxassetid://116703860678458",
+      "name": "Huge Gilded Egg",
+      "positions": 9,
+      "texture": "rbxassetid://95387752152620",
+      "tier": 36
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 2,
+      "eggId": "blight_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://92966116192331",
+      "model": "rbxassetid://120754517837077",
+      "name": "Huge Blight Egg",
+      "positions": 9,
+      "texture": "rbxassetid://110483576540897",
+      "tier": 37
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 3,
+      "eggId": "black_ice_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://77865901338290",
+      "model": "rbxassetid://133490974371883",
+      "name": "Huge Black Ice Egg",
+      "positions": 9,
+      "texture": "rbxassetid://117724720749402",
+      "tier": 38
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 4,
+      "eggId": "infernal_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://72980753133146",
+      "model": "rbxassetid://138837852735149",
+      "name": "Huge Infernal Egg",
+      "positions": 9,
+      "texture": "rbxassetid://87250695013962",
+      "tier": 39
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 5,
+      "eggId": "ash_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://76039070814624",
+      "model": "rbxassetid://85400070997354",
+      "name": "Huge Ash Egg",
+      "positions": 9,
+      "texture": "rbxassetid://81432308149691",
+      "tier": 40
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 2,
+      "eggId": "heaven2_grass_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://112812356074190",
+      "name": "Huge Bloomlight Egg",
+      "positions": 9,
+      "texture": "rbxassetid://100391425038520",
+      "tier": 41
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 3,
+      "eggId": "heaven2_ice_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Huge Prism Egg",
+      "positions": 9,
+      "texture": "rbxassetid://92369406922076",
+      "tier": 42
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 4,
+      "eggId": "heaven2_fire_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Huge Coronal Egg",
+      "positions": 9,
+      "texture": "rbxassetid://85473657458550",
+      "tier": 43
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 5,
+      "eggId": "heaven2_desert_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Huge Mirage Egg",
+      "positions": 9,
+      "texture": "rbxassetid://117485367061974",
+      "tier": 44
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 2,
+      "eggId": "hell2_grass_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://88748649873565",
+      "name": "Huge Frostblight Egg",
+      "positions": 9,
+      "texture": "rbxassetid://131727540160106",
+      "tier": 45
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 3,
+      "eggId": "hell2_ice_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://88819644811580",
+      "name": "Huge Black-Ice Egg",
+      "positions": 9,
+      "texture": "rbxassetid://138609284205775",
+      "tier": 46
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 4,
+      "eggId": "hell2_fire_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://73674091017866",
+      "name": "Huge Frostcinder Egg",
+      "positions": 9,
+      "texture": "rbxassetid://73618981450854",
+      "tier": 47
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 5,
+      "eggId": "hell2_desert_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://115352006220322",
+      "name": "Huge Frostcarrion Egg",
+      "positions": 9,
+      "texture": "rbxassetid://98666034334855",
+      "tier": 48
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 2,
+      "eggId": "heaven3_grass_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://79016160176504",
+      "model": "rbxassetid://75389163785053",
+      "name": "Huge Empyrean Grove Egg",
+      "positions": 9,
+      "texture": "rbxassetid://119008753003956",
+      "tier": 49
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 3,
+      "eggId": "heaven3_ice_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://72594981350736",
+      "model": "rbxassetid://97002148599875",
+      "name": "Huge Halo Frost Egg",
+      "positions": 9,
+      "texture": "rbxassetid://128919915905376",
+      "tier": 50
+    },
+    {
+      "color": "#ae64eb",
+      "draftRolls": 4,
+      "eggId": "heaven3_fire_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://91935114884673",
+      "model": "rbxassetid://86811984655091",
+      "name": "Huge Gloryfire Egg",
+      "positions": 9,
+      "texture": "rbxassetid://107295234564410",
+      "tier": 51
+    },
+    {
+      "color": "#f2525b",
+      "draftRolls": 5,
+      "eggId": "heaven3_desert_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://139743668604749",
+      "model": "rbxassetid://128013403739624",
+      "name": "Huge Oasis Egg",
+      "positions": 9,
+      "texture": "rbxassetid://83104442715829",
+      "tier": 52
+    },
+    {
+      "color": "#ff9740",
+      "draftRolls": 2,
+      "eggId": "hell3_grass_egg",
+      "element": "grass",
+      "huge": true,
+      "mesh": "rbxassetid://114756995416189",
+      "model": "rbxassetid://132472586154102",
+      "name": "Huge Dreadthorn Egg",
+      "positions": 9,
+      "texture": "rbxassetid://118603970417096",
+      "tier": 53
+    },
+    {
+      "color": "#fadc50",
+      "draftRolls": 3,
+      "eggId": "hell3_ice_egg",
+      "element": "ice",
+      "huge": true,
+      "mesh": "rbxassetid://78475913272497",
+      "model": "rbxassetid://109433355344191",
+      "name": "Huge Dreadfrost Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116607794725818",
+      "tier": 54
+    },
+    {
+      "color": "#57d270",
+      "draftRolls": 4,
+      "eggId": "hell3_fire_egg",
+      "element": "lava",
+      "huge": true,
+      "mesh": "rbxassetid://112325478054212",
+      "model": "rbxassetid://109931371072559",
+      "name": "Huge Ruinfire Egg",
+      "positions": 9,
+      "texture": "rbxassetid://85932181978557",
+      "tier": 55
+    },
+    {
+      "color": "#4ca5f5",
+      "draftRolls": 5,
+      "eggId": "hell3_desert_egg",
+      "element": "desert",
+      "huge": true,
+      "mesh": "rbxassetid://87127630973664",
+      "model": "rbxassetid://140611340840194",
+      "name": "Huge Dreadglass Egg",
+      "positions": 9,
+      "texture": "rbxassetid://116019683064591",
+      "tier": 56
+    }
+  ],
   "tuning": {
     "boardSlots": 16,
     "commandHistory": 64,
@@ -400,7 +2329,7 @@
       },
       "spawnSpread": 1.8
     },
-    "scope": "Capability prototype: canonical economy and opening wave composition; simplified pet combat and a single shared bay.",
+    "scope": "Source 56-tier egg catalog, economy and combat choreography; a single bay with ten opening waves and basic combat rules.",
     "simulation": {
       "attackDistance": 2.4,
       "enemySpeed": 3.8,
@@ -412,13 +2341,7 @@
       "petSpeed": 7,
       "step": 0.1
     },
-    "tiers": [
-      "Earth",
-      "Ice",
-      "Lava",
-      "Desert"
-    ],
-    "version": 1
+    "version": 2
   },
   "waves": [
     {

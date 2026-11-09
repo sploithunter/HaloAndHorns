@@ -1,17 +1,27 @@
 {
   "doggy": {
-    "url": "/cdn/value.118f24ce29e6a8945e5f9b37a43f6c0fd756182988b96b52c5f595cf4623ece6.glb",
-    "sha256": "118f24ce29e6a8945e5f9b37a43f6c0fd756182988b96b52c5f595cf4623ece6",
-    "bytes": 4344076,
-    "clip": "Attack",
-    "source": "assets/model_test/rig_experiments/doggy_rigged.blend"
+    "url": "/cdn/value.78cd5c79159f85cfd7dc4ded6396fc9a95b10ffe05097d92ec84d3a0b77f47a7.glb",
+    "sha256": "78cd5c79159f85cfd7dc4ded6396fc9a95b10ffe05097d92ec84d3a0b77f47a7",
+    "bytes": 1025600,
+    "source": "assets/model_test/rig_experiments/doggy_rigged.blend",
+    "clips": {
+      "walk": "Walk",
+      "attack": "Attack"
+    },
+    "attackSeconds": 1.7083333333,
+    "attackSource": "assets/model_test/rig_experiments/doggy_wolfattack.blend"
   },
   "bear": {
-    "url": "/cdn/value.90c65313cfe8c82244da0adbefac74e6f8457ead1a38c46a99c30d0f95d53ea4.glb",
-    "sha256": "90c65313cfe8c82244da0adbefac74e6f8457ead1a38c46a99c30d0f95d53ea4",
-    "bytes": 6003864,
-    "clip": "Attack",
-    "source": "assets/model_test/rig_experiments/bear_rigged.blend"
+    "url": "/cdn/value.e4aa43fc167870e64e87690c495ab484cb1fdd05fb085f305ce8cb96530dee92.glb",
+    "sha256": "e4aa43fc167870e64e87690c495ab484cb1fdd05fb085f305ce8cb96530dee92",
+    "bytes": 824612,
+    "source": "assets/model_test/rig_experiments/bear_rigged.blend",
+    "clips": {
+      "walk": "Walk",
+      "attack": "Attack"
+    },
+    "attackSeconds": 1.7083333333,
+    "attackSource": "assets/model_test/rig_experiments/doggy_wolfattack.blend"
   },
   "heavenBay": {
     "source": "configs/spawn_merge_source_bay.json",
@@ -243,5 +253,175 @@
       }
     ],
     "bytes": 19062608
+  },
+  "eggs": {
+    "grass_egg": {
+      "url": "/cdn/value.726bc437a30da30e819042f05a56e01fe1de39a58f9cc0f4d668e66b73d51aa4.glb",
+      "sourceSha256": "726bc437a30da30e819042f05a56e01fe1de39a58f9cc0f4d668e66b73d51aa4",
+      "bytes": 1499772,
+      "height": 1.344
+    },
+    "ice_egg": {
+      "url": "/cdn/value.b1d45fecc62a54f65f370379f0979a358969c10e9c19079bf82c6daab1d9408f.glb",
+      "sourceSha256": "b1d45fecc62a54f65f370379f0979a358969c10e9c19079bf82c6daab1d9408f",
+      "bytes": 597116,
+      "height": 1.344
+    },
+    "lava_egg": {
+      "url": "/cdn/value.47f53f4f60432af27a410b45626fe399bc91bf249ffa40a5414e065e1d27dee4.glb",
+      "sourceSha256": "47f53f4f60432af27a410b45626fe399bc91bf249ffa40a5414e065e1d27dee4",
+      "bytes": 1278780,
+      "height": 1.344
+    },
+    "desert_egg": {
+      "url": "/cdn/value.fa51399a28edb59caa6aa226a84f4bd21e36f8ea3c80f1bf57a2a5f95dbd66d1.glb",
+      "sourceSha256": "fa51399a28edb59caa6aa226a84f4bd21e36f8ea3c80f1bf57a2a5f95dbd66d1",
+      "bytes": 634060,
+      "height": 1.344
+    },
+    "bloom_egg": {
+      "url": "/cdn/value.ac76182663dc69af8daf4415542d0826bb3d9be2bf3d627100995374dd05f35b.glb",
+      "sourceSha256": "ac76182663dc69af8daf4415542d0826bb3d9be2bf3d627100995374dd05f35b",
+      "bytes": 797096,
+      "height": 1.344
+    },
+    "aurora_egg": {
+      "url": "/cdn/value.402227c44d5d2641c6dea752d43302989e0fe5386313cac0955278831ecfa383.glb",
+      "sourceSha256": "402227c44d5d2641c6dea752d43302989e0fe5386313cac0955278831ecfa383",
+      "bytes": 378180,
+      "height": 1.344
+    },
+    "solar_egg": {
+      "url": "/cdn/value.8a3d8124185f56aca0607dbc6d9408211bdfadd9a031e55cab663f4297046f41.glb",
+      "sourceSha256": "8a3d8124185f56aca0607dbc6d9408211bdfadd9a031e55cab663f4297046f41",
+      "bytes": 684296,
+      "height": 1.344
+    },
+    "gilded_egg": {
+      "url": "/cdn/value.48b47b575bd9036066a9a3d2a9b0882b75ed52e8e5aba0f9c4de69bae2846558.glb",
+      "sourceSha256": "48b47b575bd9036066a9a3d2a9b0882b75ed52e8e5aba0f9c4de69bae2846558",
+      "bytes": 856920,
+      "height": 1.344
+    },
+    "blight_egg": {
+      "url": "/cdn/value.6067b0ef275374bfea2675b60ba28e7fa83d9ca344d71b3f282fd34cc618cd15.glb",
+      "sourceSha256": "6067b0ef275374bfea2675b60ba28e7fa83d9ca344d71b3f282fd34cc618cd15",
+      "bytes": 462788,
+      "height": 1.344
+    },
+    "black_ice_egg": {
+      "url": "/cdn/value.0457480a7d8e4e4c71532abe394df6671389de8727632157eb00478af6894d6d.glb",
+      "sourceSha256": "0457480a7d8e4e4c71532abe394df6671389de8727632157eb00478af6894d6d",
+      "bytes": 894700,
+      "height": 1.344
+    },
+    "infernal_egg": {
+      "url": "/cdn/value.5feac2ac15e1c4e389c3f50c533af0d280daaa0ffcce80f6c201879ca45cebee.glb",
+      "sourceSha256": "5feac2ac15e1c4e389c3f50c533af0d280daaa0ffcce80f6c201879ca45cebee",
+      "bytes": 836936,
+      "height": 1.344
+    },
+    "ash_egg": {
+      "url": "/cdn/value.5d9cad672faf3ab1aaeb817414f72796429df1630997034ccade8929819f4661.glb",
+      "sourceSha256": "5d9cad672faf3ab1aaeb817414f72796429df1630997034ccade8929819f4661",
+      "bytes": 792480,
+      "height": 1.344
+    },
+    "heaven2_grass_egg": {
+      "url": "/cdn/value.bc95b8dc8277a0593fbbbb15fe7ddca1bb0b40f2b3400aa29e63273531c4f959.glb",
+      "sourceSha256": "bc95b8dc8277a0593fbbbb15fe7ddca1bb0b40f2b3400aa29e63273531c4f959",
+      "bytes": 969368,
+      "height": 1.344
+    },
+    "heaven2_ice_egg": {
+      "url": "/cdn/value.62e1124df1526f4e403e862d030dc69aa461c783a98cfe951ac514a27921335b.glb",
+      "sourceSha256": "62e1124df1526f4e403e862d030dc69aa461c783a98cfe951ac514a27921335b",
+      "bytes": 714252,
+      "height": 1.344
+    },
+    "heaven2_fire_egg": {
+      "url": "/cdn/value.8c948a331a7e336d0cfecd2dc508027a02fe8a2ec1de0597307871c3c325383e.glb",
+      "sourceSha256": "8c948a331a7e336d0cfecd2dc508027a02fe8a2ec1de0597307871c3c325383e",
+      "bytes": 613892,
+      "height": 1.344
+    },
+    "heaven2_desert_egg": {
+      "url": "/cdn/value.0b3eead8ef941cface7dc89abb059265ecf9b76197be3696665c4c5a433d4c4f.glb",
+      "sourceSha256": "0b3eead8ef941cface7dc89abb059265ecf9b76197be3696665c4c5a433d4c4f",
+      "bytes": 641840,
+      "height": 1.344
+    },
+    "hell2_grass_egg": {
+      "url": "/cdn/value.37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954.glb",
+      "sourceSha256": "37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954",
+      "bytes": 957672,
+      "height": 1.344
+    },
+    "hell2_ice_egg": {
+      "url": "/cdn/value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+      "sourceSha256": "d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707",
+      "bytes": 870080,
+      "height": 1.344
+    },
+    "hell2_fire_egg": {
+      "url": "/cdn/value.2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e.glb",
+      "sourceSha256": "2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e",
+      "bytes": 721908,
+      "height": 1.344
+    },
+    "hell2_desert_egg": {
+      "url": "/cdn/value.c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1.glb",
+      "sourceSha256": "c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1",
+      "bytes": 541416,
+      "height": 1.344
+    },
+    "heaven3_grass_egg": {
+      "url": "/cdn/value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+      "sourceSha256": "6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6",
+      "bytes": 1386324,
+      "height": 1.344
+    },
+    "heaven3_ice_egg": {
+      "url": "/cdn/value.ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae.glb",
+      "sourceSha256": "ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae",
+      "bytes": 1342352,
+      "height": 1.344
+    },
+    "heaven3_fire_egg": {
+      "url": "/cdn/value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb",
+      "sourceSha256": "fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e",
+      "bytes": 796060,
+      "height": 1.344
+    },
+    "heaven3_desert_egg": {
+      "url": "/cdn/value.61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec.glb",
+      "sourceSha256": "61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec",
+      "bytes": 858152,
+      "height": 1.344
+    },
+    "hell3_grass_egg": {
+      "url": "/cdn/value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+      "sourceSha256": "8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc",
+      "bytes": 1274476,
+      "height": 1.344
+    },
+    "hell3_ice_egg": {
+      "url": "/cdn/value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+      "sourceSha256": "8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7",
+      "bytes": 1267432,
+      "height": 1.344
+    },
+    "hell3_fire_egg": {
+      "url": "/cdn/value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+      "sourceSha256": "73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0",
+      "bytes": 1265048,
+      "height": 1.344
+    },
+    "hell3_desert_egg": {
+      "url": "/cdn/value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+      "sourceSha256": "f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179",
+      "bytes": 1229252,
+      "height": 1.344
+    }
   }
 }

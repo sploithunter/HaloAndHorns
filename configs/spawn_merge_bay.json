@@ -1,12 +1,6 @@
 {
-  "version": 1,
-  "scope": "Capability prototype: canonical economy and opening wave composition; simplified pet combat and a single shared bay.",
-  "tiers": [
-    "Earth",
-    "Ice",
-    "Lava",
-    "Desert"
-  ],
+  "version": 2,
+  "scope": "Source 56-tier egg catalog, economy and combat choreography; a single bay with ten opening waves and basic combat rules.",
   "boardSlots": 16,
   "hatcherCount": 4,
   "commandHistory": 64,

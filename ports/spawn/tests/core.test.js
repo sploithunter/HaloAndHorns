@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { eggPrice, mitigate, earlyDifficulty, waveUnits, freshProfile, command, invariant } from '../world/scripts/lib/merge-core.js';
+import { eggPrice, formatMoney, mitigate, earlyDifficulty, waveUnits, freshProfile, command, invariant } from '../world/scripts/lib/merge-core.js';
 const data = JSON.parse(fs.readFileSync(new URL('../world/scripts/lib/data/merge.yml', import.meta.url)));
 const fixtures = JSON.parse(fs.readFileSync(new URL('./fixtures.json', import.meta.url)));
 test('JavaScript agrees with source Luau prices, armor, early relief and all ten wave counts', () => {
@@ -82,6 +82,25 @@ test('invalid and stale drag drops preserve both eggs and reject stand changes d
   }
   const fighting={...state,status:'fighting'};
   assert.equal(command(data,fighting,{...base,targetKind:'hatcher',targetSlot:0,expectedTargetTier:2}).ok,false);
-  const maximum={...state,board:[4,4,...state.board.slice(2)]};
-  assert.equal(command(data,maximum,{...base,expectedTier:4,expectedTargetTier:4}).ok,false);
+  const maximum={...state,board:[data.tiers.length,data.tiers.length,...state.board.slice(2)]};
+  assert.equal(command(data,maximum,{...base,expectedTier:data.tiers.length,expectedTargetTier:data.tiers.length}).ok,false);
+});
+
+test('all 56 HH tiers preserve source identity, capacity, merge progression and generator quotes',()=>{
+  assert.equal(data.tiers.length,56);assert.equal(data.progression.normalTiers,28);assert.equal(data.progression.hugeStart,29);
+  for(let i=0;i<data.tiers.length;i++) {
+    assert.deepEqual(data.tiers[i],fixtures.tiers[i]);
+    assert.equal(data.petsPerHatcher[i],fixtures.tiers[i].positions);
+    if(i===data.tiers.length-1)continue;
+    const state=freshProfile(data);state.board[0]=i+1;state.board[1]=i+1;
+    const result=command(data,state,{kind:'drop',from:0,expectedTier:i+1,targetKind:'board',targetSlot:1,expectedTargetTier:i+1,nonce:'tier-'+i});
+    assert.equal(result.ok,true);assert.equal(result.profile.board[1],i+2);assert.ok(invariant(data,result.profile));
+    const quote=fixtures.generatorUpgrades[i];state.generator=i+1;state.coins=quote.amount;state.deployed[0]=i+1;
+    const upgraded=command(data,state,{kind:'upgrade',nonce:'generator-'+i});
+    assert.equal(upgraded.ok,true);assert.equal(upgraded.profile.coins,0);assert.equal(upgraded.profile.generator,i+2);assert.equal(upgraded.profile.deployed[0],i+2);assert.ok(invariant(data,upgraded.profile));
+  }
+});
+
+test('all tier price labels agree with Roblox cost formatting',()=>{
+  for(const row of fixtures.costLabels)assert.equal(formatMoney(data,row.value),row.label);
 });

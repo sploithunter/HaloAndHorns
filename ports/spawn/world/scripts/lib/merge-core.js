@@ -77,7 +77,7 @@ export function command(data, profile, request) {
       if (request.expectedTargetTier !== destination[target]) return reject('The destination changed; try again');
       if (destination[target]) {
         if (destination[target] !== tier) return reject('Stack two eggs of the same tier');
-        if (tier >= data.tuning.tiers.length) return reject('Maximum prototype tier');
+        if (tier >= data.tiers.length) return reject('Final HH egg tier reached');
         destination[target] = tier + 1;
         message = `Merged a Tier ${tier + 1} egg`;
       } else {
@@ -90,7 +90,7 @@ export function command(data, profile, request) {
     case 'merge': {
       if (!selected()) return reject('Select an egg on the board');
       const tier = board[request.from];
-      if (tier >= data.tuning.tiers.length) return reject('Maximum prototype tier');
+      if (tier >= data.tiers.length) return reject('Final HH egg tier reached');
       const target = request.to ?? board.findIndex((value, index) => index !== request.from && value === tier);
       if (!validIndex(target, board.length) || target === request.from || board[target] !== tier) return reject('Two equal-tier eggs are required');
       board[request.from] = 0; board[target] = tier + 1;
@@ -116,7 +116,7 @@ export function command(data, profile, request) {
     }
     case 'upgrade': {
       if (next.status === 'fighting') return reject('Upgrade after the wave');
-      if (next.generator >= data.tuning.tiers.length) return reject('Maximum prototype generator');
+      if (next.generator >= data.tiers.length) return reject('Final HH generator tier reached');
       const price = eggPrice(data, next.generator + 1) * deployed.length * data.economy.upgradeMultiplier;
       if (next.coins < price) return reject(`Need ${price} Waycoins`);
       next.coins -= price; next.generator++;
@@ -147,5 +147,14 @@ export function command(data, profile, request) {
   return { ok: true, profile: next };
 }
 export function invariant(data, profile) {
-  return Number.isSafeInteger(profile.coins) && profile.coins >= 0 && Number.isSafeInteger(profile.uncollected) && profile.uncollected >= 0 && profile.board.length === data.tuning.boardSlots && profile.deployed.length === data.tuning.hatcherCount && [...profile.board, ...profile.deployed].every(t => Number.isInteger(t) && t >= 0 && t <= data.tuning.tiers.length);
+  return (Number.isFinite(profile.coins) && Number.isInteger(profile.coins)) && profile.coins >= 0 && (Number.isFinite(profile.uncollected) && Number.isInteger(profile.uncollected)) && profile.uncollected >= 0 && profile.board.length === data.tuning.boardSlots && profile.deployed.length === data.tuning.hatcherCount && [...profile.board, ...profile.deployed].every(t => Number.isInteger(t) && t >= 0 && t <= data.tiers.length);
+}
+
+export function formatMoney(data, value) {
+  const amount=Math.max(0,Number(value)||0);
+  for(const notation of data.presentation.costNotations) if(amount>=notation.threshold) {
+    const scaled=amount/notation.threshold,decimals=scaled>=100?0:scaled>=10?1:2;
+    return scaled.toFixed(decimals).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')+notation.suffix;
+  }
+  return Math.floor(amount).toLocaleString('en-US');
 }
