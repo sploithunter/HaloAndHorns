@@ -99,6 +99,7 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 ## Platform ports
 
 - [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) — source-derived Merge bay, programming/events, authority, AI/model contracts, live evidence and migration gates.
+- [Spawn Shared HH Account](SPAWN_SHARED_ACCOUNT.md) — owned/temporary pets, Full Merge rules, place persistence and streaming experiments; deployment remains open.
 
 ## Maintenance Rule
 

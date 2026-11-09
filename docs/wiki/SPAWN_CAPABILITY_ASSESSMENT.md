@@ -194,3 +194,13 @@ Live pointer checks upgraded T4→T5 for 16,000 Waycoins, then bought the new T5
 A remote upgrade left both wallet and generator unchanged after the test body settled at the far
 position. All 18 Node groups and HH CI (2,846/323) passed. Preview expected published-room file-write
 notices were separated from gameplay errors. Tests touched only the agent's isolated preview profile.
+
+## Shared inventory and deployment follow-up (2026-11-09)
+
+[Shared HH account assessment](SPAWN_SHARED_ACCOUNT.md) supersedes any assumption that Merge
+uses only temporary pets: Full Merge uses actual owned/equipped pets as well as NPC hatchers.
+The shared inventory core now passes source-executed fixtures; it is not yet wired into the live
+UI. Ordinary-browser tests verified a changed mock account across places and HTTP-cache-cleared
+reload. Roblox Merge streaming is enabled; equivalent imported-model eviction for two full Spawn
+games is unproven. One-world/separate-world deployment stays open while representative load and
+authority tests continue. No live Spawn main change or publication in this assessment.

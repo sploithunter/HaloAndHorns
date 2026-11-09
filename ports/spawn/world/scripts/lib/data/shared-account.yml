@@ -1,0 +1,172 @@
+{
+  "equipPath": "Equipped.pets",
+  "equipped": {
+    "display_name": "Active Pets",
+    "extra_slots_perk": "extra_pet_slots",
+    "icon": "🐾",
+    "max_slots": 10,
+    "slot_extensions": [
+      {
+        "additional_slots": 1,
+        "gamepass_id": 456789123,
+        "name": "4th Pet Slot"
+      },
+      {
+        "additional_slots": 2,
+        "gamepass_id": 789123456,
+        "name": "5th & 6th Pet Slots"
+      }
+    ],
+    "slots": 3
+  },
+  "mergePlayerReserve": {
+    "base_slots": 3,
+    "castoff_policy": "weakest_draft_candidate",
+    "enabled": true,
+    "extra_slot_feature": "extra_equip_slots",
+    "full_mode": {
+      "default_mode": "full",
+      "minimum_level": 2,
+      "notices": {
+        "full_intro": {
+          "body": "Your real pets and powers are active in Merge Defense. If you prefer automatic pet management, Simple Mode is always available in Settings.",
+          "primary_label": "OKAY",
+          "title": "FULL COMBAT ACTIVE"
+        },
+        "full_unlock_choice": {
+          "body": "Manage your own pets and powers! Your first switch to Full gives you four Earth Egg pets with super starter luck. Stay in automatic Simple Mode or switch to Full?",
+          "primary_label": "SWITCH TO FULL",
+          "secondary_label": "STAY SIMPLE",
+          "title": "FULL COMBAT UNLOCKED"
+        }
+      },
+      "personal_hatches": {
+        "inventory_requires_combat_tutorial": false,
+        "starting_tier": 1,
+        "tiers_per_rebirth": 1,
+        "unlock_area_by_egg": {
+          "ash_egg": "Hell_1_Desert",
+          "aurora_egg": "Heaven_1_Ice",
+          "black_ice_egg": "Hell_1_Ice",
+          "blight_egg": "Hell_1_Grass",
+          "bloom_egg": "Heaven_1_Grass",
+          "desert_egg": "Desert",
+          "gilded_egg": "Heaven_1_Desert",
+          "heaven2_desert_egg": "Heaven_2_Desert",
+          "heaven2_fire_egg": "Heaven_2_Lava",
+          "heaven2_grass_egg": "Heaven_2_Grass",
+          "heaven2_ice_egg": "Heaven_2_Ice",
+          "heaven3_desert_egg": "Heaven_3_Desert",
+          "heaven3_fire_egg": "Heaven_3_Lava",
+          "heaven3_grass_egg": "Heaven_3_Grass",
+          "heaven3_ice_egg": "Heaven_3_Ice",
+          "hell2_desert_egg": "Hell_2_Desert",
+          "hell2_fire_egg": "Hell_2_Lava",
+          "hell2_grass_egg": "Hell_2_Grass",
+          "hell2_ice_egg": "Hell_2_Ice",
+          "hell3_desert_egg": "Hell_3_Desert",
+          "hell3_fire_egg": "Hell_3_Lava",
+          "hell3_grass_egg": "Hell_3_Grass",
+          "hell3_ice_egg": "Hell_3_Ice",
+          "ice_egg": "Ice",
+          "infernal_egg": "Hell_1_Lava",
+          "lava_egg": "Lava",
+          "solar_egg": "Heaven_1_Lava"
+        }
+      },
+      "starter_grant": {
+        "count": 4,
+        "egg_id": "grass_egg",
+        "first_hatch_luck": 50
+      }
+    },
+    "hold_at_breach_line": true,
+    "maximum_slots": 4,
+    "roles": [
+      "tank",
+      "ranged",
+      "melee",
+      "support"
+    ]
+  },
+  "mergeRecovery": {
+    "auto_summon_on_recovery": true,
+    "down_lockout": {
+      "pet_lockout_seconds": 60
+    },
+    "slot_recovery": {
+      "down_cooldown_seconds": 10
+    }
+  },
+  "ownershipPath": "Inventory.pets.items",
+  "petStorage": {
+    "base_limit": 500,
+    "max_stack_size": 99999,
+    "special_rarities": [
+      "secret",
+      "exclusive",
+      "huge",
+      "creator"
+    ],
+    "stack_key_fields": [
+      "id",
+      "variant",
+      "enchant"
+    ],
+    "stacks_count_toward_limit": false
+  },
+  "progression": {
+    "early_boost_sampler": {
+      "enabled": true,
+      "grants": [
+        {
+          "claimed_level": 2,
+          "display_name": "Double Coins",
+          "item_id": "double_coins_token",
+          "marker": "level2_double_coins_v1",
+          "quantity": 1
+        },
+        {
+          "claimed_level": 3,
+          "display_name": "Titan Team",
+          "item_id": "titan_team_token",
+          "marker": "level3_titan_team_v1",
+          "quantity": 1
+        },
+        {
+          "claimed_level": 4,
+          "display_name": "Double XP",
+          "item_id": "double_xp_token",
+          "marker": "level4_double_xp_v1",
+          "quantity": 1
+        }
+      ]
+    },
+    "enabled": true,
+    "level_rewards": {
+      "equip_slots": {
+        "pets": {
+          "enabled": true,
+          "every_levels": 7,
+          "max_bonus_slots": 7,
+          "slots_per_milestone": 1,
+          "start_level": 8
+        }
+      }
+    },
+    "team_power": {
+      "enabled": true,
+      "kind": "team_power",
+      "max_bonus_percent": 1,
+      "percent_per_level": 0.01,
+      "stage": "boosts",
+      "start_level": 1
+    },
+    "version": "1.0.0",
+    "xp": {
+      "max_level": 50,
+      "mode": "linear",
+      "per_level": 700
+    }
+  }
+}

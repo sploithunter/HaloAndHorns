@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "fixtureDirectory": "research/account-probe",
+  "place": "farm_probe",
+  "farDistance": 4096,
+  "primitiveCount": 384,
+  "coldEggs": [
+    "hell2_grass_egg",
+    "hell2_ice_egg",
+    "hell2_fire_egg",
+    "hell2_desert_egg",
+    "heaven3_grass_egg",
+    "heaven3_ice_egg",
+    "heaven3_fire_egg",
+    "heaven3_desert_egg",
+    "hell3_grass_egg",
+    "hell3_ice_egg",
+    "hell3_fire_egg",
+    "hell3_desert_egg"
+  ],
+  "farEgg": "heaven2_desert_egg"
+}

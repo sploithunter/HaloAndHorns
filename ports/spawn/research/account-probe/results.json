@@ -1,0 +1,1032 @@
+{
+  "date": "2026-11-09",
+  "runtime": "289ba86c6f19761f5e9d178636ff5633",
+  "baseDevVersion": 25,
+  "profileNamespace": "hhAccountProbe",
+  "identity": "agent-owned editor; artificial inventory",
+  "browser": "ordinary system Chrome headless, Playwright, Metal, 1440x1000",
+  "passed": true,
+  "samples": [
+    {
+      "place": "farm_probe",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 3
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "stack|bear:basic:",
+            "slot_2": "probe-unique"
+          }
+        },
+        "Stats": {
+          "Experience": 731
+        },
+        "Receipts": {}
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "enter_farm_for_reward_settled"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 3
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "stack|bear:basic:",
+            "slot_2": "probe-unique"
+          }
+        },
+        "Stats": {
+          "Experience": 731
+        },
+        "Receipts": {}
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "reward_before"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "schemaVersion": 1
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "farm_reward_settled"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "schemaVersion": 1
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "reward_after"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "schemaVersion": 1
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "farm_reward_repeat_settled"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "schemaVersion": 1
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 20,
+        "triangles": 105140,
+        "gpuMemoryMB": 150,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "reward_repeat_after"
+    },
+    {
+      "place": "main",
+      "profile": {
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "schemaVersion": 1
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 29,
+        "triangles": 476488,
+        "gpuMemoryMB": 217,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "return_main_settled"
+    },
+    {
+      "place": "main",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 37,
+        "triangles": 492103,
+        "gpuMemoryMB": 187,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "main_cold_reloaded"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 11,
+        "triangles": 105140,
+        "gpuMemoryMB": 148,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "first_farm_after_cold_settled"
+    },
+    {
+      "place": "farm_probe",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 59,
+        "drawCalls": 11,
+        "triangles": 105140,
+        "gpuMemoryMB": 148,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "farm_after_cold"
+    },
+    {
+      "place": "main",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 31,
+        "triangles": 466283,
+        "gpuMemoryMB": 215,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "main_after_farm_settled"
+    },
+    {
+      "place": "farm_ephemeral_probe-d0189b6c-5027-4dfa-9f8a-c99a3a97e266",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 11,
+        "triangles": 105140,
+        "gpuMemoryMB": 155,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main",
+        "farm_ephemeral_probe-d0189b6c-5027-4dfa-9f8a-c99a3a97e266"
+      ],
+      "stage": "ephemeral_visit_settled"
+    },
+    {
+      "place": "main",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 31,
+        "triangles": 463929,
+        "gpuMemoryMB": 221,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main",
+        "farm_ephemeral_probe-d0189b6c-5027-4dfa-9f8a-c99a3a97e266"
+      ],
+      "stage": "main_after_ephemeral_settled"
+    },
+    {
+      "place": "main",
+      "profile": {
+        "schemaVersion": 1,
+        "Inventory": {
+          "pets": {
+            "items": {
+              "bear:basic:": {
+                "id": "bear",
+                "variant": "basic",
+                "quantity": 4
+              },
+              "probe-unique": {
+                "uid": "probe-unique",
+                "id": "doggy",
+                "variant": "rainbow",
+                "unique": true,
+                "level": 7,
+                "exp": 23
+              }
+            }
+          }
+        },
+        "Equipped": {
+          "pets": {
+            "slot_1": "probe-unique",
+            "slot_2": "stack|bear:basic:",
+            "slot_3": "stack|bear:basic:"
+          }
+        },
+        "Stats": {
+          "Experience": 748
+        },
+        "Receipts": {
+          "normal_browser_reward": true
+        }
+      },
+      "view": {
+        "fps": 60,
+        "drawCalls": 31,
+        "triangles": 463929,
+        "gpuMemoryMB": 213,
+        "size": {
+          "width": 1440,
+          "height": 1000
+        }
+      },
+      "places": [
+        "farm_ephemeral_probe",
+        "farm_probe",
+        "main"
+      ],
+      "stage": "main_ephemeral_cleanup_wait"
+    }
+  ],
+  "networkByRequestStartPhase": {
+    "boot": {
+      "requestCount": 1823,
+      "responseBodyBytes": 27484193,
+      "coldMetadataIds": [],
+      "farMetadataLookup": true,
+      "contentTypes": {
+        "font/woff2": 3,
+        "text/css": 6,
+        "image/png": 4,
+        "text/javascript": 1473,
+        "application/json": 78,
+        "text/html": 6,
+        "application/javascript": 149,
+        "image/webp": 4,
+        "unknown": 11,
+        "text/x-component": 7,
+        "image/vnd.microsoft.icon": 1,
+        "application/wasm": 2,
+        "application/octet-stream": 19,
+        "text/plain": 2,
+        "application/x-spawn-model-form": 24,
+        "image/ktx2": 29,
+        "application/x-spawn-collider-form": 2,
+        "application/x-spawn-scans-spoken+json": 1,
+        "application/x-spawn-bgeo": 1,
+        "image/svg+xml": 1
+      }
+    },
+    "enter_farm_for_reward": {
+      "requestCount": 103,
+      "responseBodyBytes": 8474797,
+      "coldMetadataIds": [
+        "value.2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e.glb",
+        "value.37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954.glb",
+        "value.61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec.glb",
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1.glb",
+        "value.ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "text/javascript": 38,
+        "application/json": 24,
+        "unknown": 5,
+        "application/octet-stream": 5,
+        "application/x-spawn-model-form": 12,
+        "application/x-spawn-scans-spoken+json": 1,
+        "text/plain": 1,
+        "image/ktx2": 14,
+        "application/javascript": 1,
+        "application/x-spawn-bgeo": 1,
+        "image/webp": 1
+      }
+    },
+    "farm_reward_repeat": {
+      "requestCount": 67,
+      "responseBodyBytes": 1107756,
+      "coldMetadataIds": [
+        "value.2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e.glb",
+        "value.37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954.glb",
+        "value.61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec.glb",
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1.glb",
+        "value.ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "unknown": 1,
+        "application/json": 3,
+        "text/javascript": 63
+      }
+    },
+    "reward_repeat_after": {
+      "requestCount": 3,
+      "responseBodyBytes": 165038,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "text/javascript": 3
+      }
+    },
+    "return_main": {
+      "requestCount": 17,
+      "responseBodyBytes": 1158274,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "image/svg+xml": 1,
+        "text/javascript": 15,
+        "unknown": 1
+      }
+    },
+    "return_main_settled": {
+      "requestCount": 1,
+      "responseBodyBytes": -623,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "text/javascript": 1
+      }
+    },
+    "cold_reload_main": {
+      "requestCount": 1557,
+      "responseBodyBytes": 16181110,
+      "coldMetadataIds": [],
+      "farMetadataLookup": true,
+      "contentTypes": {
+        "application/json": 33,
+        "unknown": 9,
+        "text/javascript": 1456,
+        "font/woff2": 3,
+        "text/css": 5,
+        "image/png": 4,
+        "image/webp": 3,
+        "text/html": 6,
+        "application/wasm": 2,
+        "image/vnd.microsoft.icon": 1,
+        "application/octet-stream": 5,
+        "text/plain": 2,
+        "application/x-spawn-scans-spoken+json": 2,
+        "application/x-spawn-bgeo": 1,
+        "application/javascript": 25
+      }
+    },
+    "first_farm_after_cold": {
+      "requestCount": 238,
+      "responseBodyBytes": 2230171,
+      "coldMetadataIds": [
+        "value.2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e.glb",
+        "value.37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954.glb",
+        "value.61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec.glb",
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1.glb",
+        "value.ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "text/javascript": 36,
+        "application/json": 66,
+        "unknown": 7,
+        "application/octet-stream": 3,
+        "application/javascript": 118,
+        "text/plain": 1,
+        "text/x-component": 4,
+        "image/webp": 2,
+        "text/css": 1
+      }
+    },
+    "first_farm_after_cold_settled": {
+      "requestCount": 1,
+      "responseBodyBytes": 477,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "unknown": 1
+      }
+    },
+    "main_after_farm": {
+      "requestCount": 14,
+      "responseBodyBytes": 364247,
+      "coldMetadataIds": [
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "image/svg+xml": 1,
+        "unknown": 1,
+        "text/javascript": 9,
+        "application/json": 3
+      }
+    },
+    "main_after_farm_settled": {
+      "requestCount": 3,
+      "responseBodyBytes": 284969,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "text/javascript": 3
+      }
+    },
+    "ephemeral_visit": {
+      "requestCount": 71,
+      "responseBodyBytes": 2903666,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "application/octet-stream": 2,
+        "text/javascript": 68,
+        "unknown": 1
+      }
+    },
+    "main_after_ephemeral": {
+      "requestCount": 3,
+      "responseBodyBytes": 8779,
+      "coldMetadataIds": [],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "unknown": 2,
+        "text/javascript": 1
+      }
+    },
+    "main_after_ephemeral_settled": {
+      "requestCount": 7,
+      "responseBodyBytes": 9634,
+      "coldMetadataIds": [
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "application/json": 4,
+        "text/javascript": 2,
+        "unknown": 1
+      }
+    },
+    "main_ephemeral_cleanup_wait": {
+      "requestCount": 3,
+      "responseBodyBytes": 1064,
+      "coldMetadataIds": [
+        "value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+        "value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+        "value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+        "value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+        "value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+        "value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+        "value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb"
+      ],
+      "farMetadataLookup": false,
+      "contentTypes": {
+        "application/json": 3
+      }
+    }
+  },
+  "limitations": [
+    "Counts include application/runtime traffic, not just scene assets.",
+    "Metadata resolution is not proof of model upload/download, decoding or GPU residency.",
+    "Engine GPU counter is not an OS process/resident-memory measurement.",
+    "Small synthetic place; no mobile/full Farm & Fight map/concurrent account test."
+  ]
+}

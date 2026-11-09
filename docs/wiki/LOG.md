@@ -8754,3 +8754,19 @@ relay through the presser's body into the existing validated command path, with 
 check. Live pointer tests: T4→T5 charged 16,000; new T5 purchase charged 2,000; remote upgrade
 rejected without spending. 18 Node groups, HH CI 2,846/323. Native face root sizing/yaw details
 are recorded in [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+
+### 2026-11-09 — Spawn shared HH inventory and place/streaming assessment
+
+Reviewed actual ownership/equip, Full/Simple Merge, independent personal hatches, starter receipts,
+XP/rebirth unlock and recovery contracts. Full Merge uses owned pets; deployment remains open.
+Added a storage-independent inventory core and source exporter (48 build/48 resolve/48 fill cases).
+Isolated agent-only preview tests verified a changed mock common/unique/equip/XP profile across
+places, duplicate receipt, actual HTTP-cache-cleared ordinary-browser reload and eventual instance
+cleanup. Platform simulation continued across inactive places; imported GLB eviction and full-map
+mobile/load behavior remain unproven. Actual Roblox Merge StreamingEnabled=true (64/1024).
+No production Spawn main push, account import, Full mode or permanent inventory UI shipped.
+See [shared account assessment](SPAWN_SHARED_ACCOUNT.md) and its reproducible evidence.
+
+Validation: 22 Spawn Node groups passed; HH CI passed (2,846 headless tests/323 specs),
+StyLua/source regeneration, isolated fixture reconstruction, wiki check and diff whitespace check passed.

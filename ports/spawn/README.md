@@ -42,6 +42,7 @@ From the HH repository root:
 
 ```sh
 mise exec -- lune run ports/spawn/export-source.luau
+mise exec -- lune run ports/spawn/export-account-source.luau
 python3 ports/spawn/tools/build_world.py
 node --test ports/spawn/tests/*.test.js
 mise run ci
@@ -93,3 +94,16 @@ standing, so this is not an ordinary-player anti-cheat test. No runtime AI infer
 See the assessment for authority, performance, save, engine-version and asset-ingestion limits.
 
 Browser regression: `PLAYWRIGHT_MODULE=<installed Playwright module> node ports/spawn/tools/verify_drag_playwright.mjs <CDP URL>` exercises actual mouse/touch input. Use a fresh `--as` test body in an isolated development room with a claimed fresh bay, four T1 board eggs and 200 coins. The check refuses other egg layouts and consumes only that test run's eggs.
+
+## Shared inventory foundation
+
+[Assessment and source rules](../../docs/wiki/SPAWN_SHARED_ACCOUNT.md) distinguish owned HH pets,
+Full Merge personal hatches and temporary squads. `scripts/lib/pet-inventory.js` is a pure ownership/
+equip port with 144 cases executed from the actual Luau source plus conservation/rejection checks.
+It has no engine/save dependency and is not yet bound to the production UI or director. The exported
+`shared-account.yml` records source configuration (including Roblox-only entitlement references),
+not active Spawn purchases. All 22 Node groups pass.
+
+[Isolated place/account protocol](../../docs/research/spawn-account-probe-2026-11-09.md) records
+normal-browser persistence, instance lifecycle and rendering tests. It does not settle full imported
+map streaming, security or the deployment choice. Do not copy research fixtures into the live world.
