@@ -59,6 +59,34 @@ export function command(data, profile, request) {
       message = `Bought a Tier ${next.generator} egg`;
       break;
     }
+    case 'drop': {
+      if (!selected()) return reject('That egg is no longer on the board');
+      const tier = board[request.from];
+      if (request.expectedTier !== tier) return reject('The dragged egg changed; try again');
+      const target = request.targetSlot;
+      let destination;
+      if (request.targetKind === 'board') {
+        if (!validIndex(target, board.length)) return reject('Unknown board slot');
+        if (target === request.from) return reject('Drop onto another slot');
+        destination = board;
+      } else if (request.targetKind === 'hatcher') {
+        if (next.status === 'fighting') return reject('Change installed eggs after the wave');
+        if (!validIndex(target, deployed.length)) return reject('Unknown hatcher');
+        destination = deployed;
+      } else return reject('Unknown drop target');
+      if (request.expectedTargetTier !== destination[target]) return reject('The destination changed; try again');
+      if (destination[target]) {
+        if (destination[target] !== tier) return reject('Stack two eggs of the same tier');
+        if (tier >= data.tuning.tiers.length) return reject('Maximum prototype tier');
+        destination[target] = tier + 1;
+        message = `Merged a Tier ${tier + 1} egg`;
+      } else {
+        destination[target] = tier;
+        message = request.targetKind === 'hatcher' ? `Deployed hatcher ${target + 1}` : 'Egg moved';
+      }
+      board[request.from] = 0;
+      break;
+    }
     case 'merge': {
       if (!selected()) return reject('Select an egg on the board');
       const tier = board[request.from];

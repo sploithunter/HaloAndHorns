@@ -8720,3 +8720,10 @@ first-session cohort rates.
 - Replaced the rejected generic arena with 513 authored Studio parts, 16 source meshes, actual hatcher/board placements and third-person controls. Roblox authored/runtime data were not edited.
 - Verified waves 1–2 in real browser clients, visitor command rejection, bay release, and progress across rejoin. Eight Node groups cover all ten waves/checkpoint logic; HH CI passes 2,846 tests.
 - Documented the shared-row authority limits, editor-only live test limitation, asset-ingestion workaround, inference options and remaining migration gates in [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+
+## 2026-11-09 — Spawn egg drag and stacking
+
+- Added physical-board and B-panel mouse/touch dragging, highlighted stand/egg targets, atomic equal-tier stacking on the board and installed stands, and safe empty-board moves.
+- Platform validation checks ownership, indices, observed tiers, combat state, tier cap and duplicate nonces before consuming eggs. Added drop conservation/rejection tests and a real Playwright pointer regression.
+- Verified mouse board merges, wrong-tier preservation, world/panel stand installation, installed stacking, touch input and touch/Escape cancellation in an isolated preview. Refreshed the renamed ColoradoPlays lab address.

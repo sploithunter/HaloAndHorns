@@ -100,8 +100,9 @@ function receive(ctx, request, meta) {
   actor.state.mergeNotice = result.ok ? '' : result.reason;
   if (!result.ok || result.duplicate) return;
   actor.state.merge = result.profile;
+  if (request.kind === 'drop') actor.state.mergeSelected = request.targetKind === 'board' ? request.targetSlot : -1;
   if (request.kind === 'start') beginWave(ctx, run, actor);
-  else if (['deploy', 'recall', 'upgrade', 'restart'].includes(request.kind) && result.profile.status !== 'fighting') redraw(ctx, run, actor);
+  else if ((['deploy', 'recall', 'upgrade', 'restart'].includes(request.kind) || (request.kind === 'drop' && request.targetKind === 'hatcher')) && result.profile.status !== 'fighting') redraw(ctx, run, actor);
   publish(ctx, run, actor);
 }
 export const ears = { 'hh:command': receive };

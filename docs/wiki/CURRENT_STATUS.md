@@ -2223,3 +2223,8 @@ This reconciliation did not publish either Roblox place. Save authored Studio ma
 ## Spawn Merge bay lab (2026-11-09)
 
 A playable source-derived Heaven bay is at [ColoradoPlays’ development world](https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev). The source/config/test implementation lives under `ports/spawn` and `configs/spawn_merge_*`; Roblox production code is unchanged. Live waves 1–2 and ordinary leave/rejoin worked. Full combat parity, non-editor security, failure recovery and multi-bay/mobile performance remain unproven. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) and draft PR #501.
+
+
+## Spawn egg dragging and stacking (2026-11-09)
+
+The [Spawn development lab](https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev) supports mouse/touch egg dragging onto stands and equal-tier eggs. Matching eggs combine on the board or an occupied stand up to T4. Invalid/cancelled drops preserve eggs; stand changes are blocked during combat. Ten Node groups and real browser gesture checks cover the new behavior. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).

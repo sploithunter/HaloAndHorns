@@ -5,6 +5,11 @@ export function onInput(ctx, input) {
     if (Number.isInteger(index) && index >= 0 && index < DATA.tuning.boardSlots) ctx.self.state.mergeSelected = index;
   }
   if (input.pressed.board) ctx.self.state.mergeBoardOpen = !ctx.self.state.mergeBoardOpen;
+  if (input.pressed.dragState) {
+    const slot = input.actionData?.dragState?.slot;
+    ctx.self.faded = Number.isInteger(slot) && slot >= 0 && slot < DATA.tuning.boardSlots
+      ? { [`hh-board-egg-${slot}`]: DATA.tuning.interaction.dragSourceOpacity } : {};
+  }
   if (input.pressed.command) {
     const request = input.actionData?.command;
     if (request && typeof request.kind === 'string') ctx.emit('hh:command', request, { to: 'hh-director' });

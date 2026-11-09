@@ -219,6 +219,7 @@
     "hatcherCount": 4,
     "interaction": {
       "boardRange": 8,
+      "dragSourceOpacity": 0.18,
       "promptRange": 16,
       "range": 12
     },

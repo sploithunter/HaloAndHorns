@@ -26,6 +26,7 @@
       },
       "select": {},
       "command": {},
+      "dragState": {},
       "board": {
         "keys": [
           "b"

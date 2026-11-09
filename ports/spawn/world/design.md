@@ -11,3 +11,7 @@ scale and third-person presentation, importing source art rather than inventing 
 The current slice has source prices, rewards, wave composition, basic attacks and recovery.
 Full combat roles, powers, hatcher endurance, workshops, equipment and player migration remain
 later work. Use no runtime inference for deterministic combat or economy.
+
+2026-11-09: ColoradoPlays requested Roblox-style egg dragging and stacking. Drag from the board
+onto an empty stand to install; stack equal tiers on the board or an occupied stand to upgrade.
+Drops cancel safely; stands are locked during combat. The lab currently caps eggs at Tier 4.

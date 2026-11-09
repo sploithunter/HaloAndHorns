@@ -1,6 +1,6 @@
 # HH Merge bay on Spawn
 
-[Open the development world](https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev).
+[Open the development world](https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev).
 [Capability assessment](../../docs/wiki/SPAWN_CAPABILITY_ASSESSMENT.md).
 
 This is a playable porting slice of Heaven bay 01, exported read-only from the open Roblox Merge
@@ -11,9 +11,15 @@ Spawn material; eggs and the agent's avatar remain placeholders. Source doggy/be
 
 ## Play
 
-Claim the bay, collect the opening 600 Waycoins, buy two eggs, select an egg and merge the pair.
-Select the resulting egg and install it using an empty hatcher button. Start a wave and collect
-its rewards. Equal eggs merge upward; installed eggs can be recalled between waves.
+Claim the bay, collect the opening 600 Waycoins, then buy eggs. Drag a physical egg from the
+board onto an empty stand to install it. Drop an egg onto another egg of the same tier to combine
+them into the next tier; this works on the board and on an occupied stand. The current lab stops
+at Tier 4. An empty board tile accepts a move. Wrong tiers, maximum-tier stacks, changed source or
+target values, and stand changes during a wave are rejected without consuming either egg.
+
+Valid drop targets turn green. Release outside a target, press Escape, or cancel a touch to return
+the egg. The B panel and the right-side hatcher cards support the same gestures; click-to-select
+and install remain available. Installed eggs can be recalled between waves.
 WASD walks, right mouse drag turns the camera, wheel zooms, and B opens the compact egg board.
 One player owns this bay per room; other players can watch. Leaving releases the bay.
 
@@ -54,7 +60,7 @@ rooms, not the public published version. This lab has not been published to the 
 
 ## Evidence and limits
 
-2026-11-09: eight Node test groups pass, including source-Luau parity, idempotency, invalid
+2026-11-09: ten Node test groups pass, including source-Luau parity, idempotency, invalid
 commands, actor ownership, and all ten waves/checkpoint 10 in an in-memory engine adapter.
 Two real client bodies observed the same room. Browser controls completed collect → buy → merge
 → deploy → wave 2 clear; a visitor purchase was rejected. Leaving freed the bay, and a new client
@@ -63,3 +69,5 @@ session restored 320 coins, two Tier-2 hatchers and cleared wave 2 before reclai
 The live ten-wave/checkpoint reconnect case remains unverified. Both live bodies have editor
 standing, so this is not an ordinary-player anti-cheat test. No runtime AI inference was invoked.
 See the assessment for authority, performance, save, engine-version and asset-ingestion limits.
+
+Browser regression: `PLAYWRIGHT_MODULE=<installed Playwright module> node ports/spawn/tools/verify_drag_playwright.mjs <CDP URL>` exercises actual mouse/touch input. Use a fresh `--as` test body in an isolated development room with a claimed fresh bay, four T1 board eggs and 200 coins. The check refuses other egg layouts and consumes only that test run's eggs.

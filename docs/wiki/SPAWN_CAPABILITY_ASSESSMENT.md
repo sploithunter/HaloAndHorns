@@ -1,6 +1,6 @@
 # Spawn capability assessment for HH
 
-Status: first playable assessed, 2026-11-09. [Lab](https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev) · [Implementation](../../ports/spawn/README.md) · [Draft PR #501](https://github.com/sploithunter/HaloAndHorns/pull/501).
+Status: first playable assessed, 2026-11-09. [Lab](https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev) · [Implementation](../../ports/spawn/README.md) · [Draft PR #501](https://github.com/sploithunter/HaloAndHorns/pull/501).
 
 ## Decision
 
@@ -91,7 +91,7 @@ have not been ported. An unlinked white emission input in Blender was corrected 
 | --- | --- |
 | HH CI | `mise run ci`: 2,846 headless tests, 323 specs passed, plus repository checks. |
 | Source parity | Prices, 20 mitigation cases, early-relief points and all ten opening wave counts pass against executed Luau fixtures. |
-| Gameplay adapter | Eight Node test groups pass; includes full ten-wave combat run with Tier-4 hatchers and checkpoint 10 in an in-memory adapter. |
+| Gameplay adapter | Ten Node test groups pass; includes full ten-wave combat run with Tier-4 hatchers and checkpoint 10 in an in-memory adapter. |
 | Real input | Browser buttons and movement completed buy/merge/deploy and waves 1–2; right-drag orbit and wheel zoom exercised. |
 | Two peers | Shared room state observed; visitor purchase rejected; owner departure freed the bay. Both peers are editors. |
 | Save/rejoin | Fresh client session retained 320 coins, two installed Tier-2 eggs, cleared wave 2 and pending rewards; owner reclaimed the bay. |
@@ -112,3 +112,15 @@ Keep reproducible version pinning on the next assessment list rather than callin
 3. Port one complete HH combat role and actual tier-egg art, then compare recorded fights and economy.
 4. Measure one representative full bay on desktop/mobile, then multiple concurrent bays.
 5. Design cross-platform identity/data migration only after those gates pass.
+
+## Dragging and stacking (2026-11-09)
+
+Physical eggs and the B panel support pointer-captured mouse/touch drag. World anchors align
+pointer surfaces with the source board and stands; a local ghost and target highlight preview
+the result. The same tier can be stacked on the board or an occupied stand, up to T4. An empty
+board slot accepts a move; an empty stand accepts installation. Stand changes are locked during
+combat. All drops use one platform-validated `drop` command with source/target slots, observed
+tiers and the existing dedup nonce. A stale or invalid drop consumes neither egg. Mouse/touch
+stacking, stand install/upgrade, panel-to-world drag, wrong-tier rejection and Escape/touch
+cancellation were exercised in an isolated browser preview. The HUD mount holds pointer capture
+across reactive updates and clears it on cancellation/unmount.

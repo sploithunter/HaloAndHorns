@@ -2,8 +2,8 @@
   "origin": "https://www.spawn.co",
   "worldId": "a19e63cf-decf-46c7-9912-6505c59515d5",
   "appId": "a448a523-cace-4a3d-82f2-7705c92b120d",
-  "address": "@coloradoplays/hh-merge-bay-lab",
-  "git": "https://git.spawn.co/@coloradoplays/hh-merge-bay-lab.git",
-  "playUrl": "https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev",
+  "address": "@coloradoplays/halo-horns-merge-bay-lab",
+  "git": "https://git.spawn.co/@coloradoplays/halo-horns-merge-bay-lab.git",
+  "playUrl": "https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev",
   "engine": "6.0.0"
 }

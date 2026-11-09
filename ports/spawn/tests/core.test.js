@@ -59,3 +59,29 @@ test('generator upgrades use the canonical capacity-dependent quote and preserve
   assert.equal(result.ok, true); assert.equal(result.profile.coins, 0);
   assert.equal(result.profile.generator, 2); assert.deepEqual(result.profile.deployed, [2, 0, 0, 0]);
 });
+test('drag drops move board eggs, merge exact targets and upgrade an occupied stand atomically', () => {
+  let state=freshProfile(data);state.board[0]=1;state.board[1]=1;state.board[2]=2;
+  const drop=(from,targetKind,targetSlot,nonce)=>{
+    const target=targetKind==='board' ? state.board : state.deployed;
+    const request={kind:'drop',from,targetKind,targetSlot,expectedTier:state.board[from],expectedTargetTier:target[targetSlot],nonce};
+    const result=command(data,state,request);assert.equal(result.ok,true,result.reason);state=result.profile;
+    assert.ok(invariant(data,state));return request;
+  };
+  drop(0,'board',3,'move');assert.equal(state.board[0],0);assert.equal(state.board[3],1);
+  drop(1,'board',3,'board-stack');assert.equal(state.board[3],2);assert.equal(state.board[1],0);
+  drop(3,'hatcher',0,'install');assert.equal(state.deployed[0],2);assert.equal(state.board[3],0);
+  const request=drop(2,'hatcher',0,'stand-stack');assert.equal(state.deployed[0],3);assert.equal(state.board[2],0);
+  assert.equal(command(data,state,request).duplicate,true);assert.equal(state.coins,0);
+});
+test('invalid and stale drag drops preserve both eggs and reject stand changes during combat',()=>{
+  const state=freshProfile(data);state.board[0]=2;state.board[1]=1;state.deployed[0]=2;
+  const base={kind:'drop',from:0,expectedTier:2,targetKind:'board',targetSlot:1,expectedTargetTier:1,nonce:'reject-drop'};
+  for(const change of [{},{from:999},{from:-1},{targetSlot:99},{targetSlot:0,expectedTargetTier:2},{expectedTier:1},{targetKind:'bad'},{targetKind:'hatcher',targetSlot:0,expectedTargetTier:1}]) {
+    const before=JSON.stringify(state),result=command(data,state,{...base,...change});
+    assert.equal(result.ok,false);assert.equal(JSON.stringify(state),before);assert.strictEqual(result.profile,state);
+  }
+  const fighting={...state,status:'fighting'};
+  assert.equal(command(data,fighting,{...base,targetKind:'hatcher',targetSlot:0,expectedTargetTier:2}).ok,false);
+  const maximum={...state,board:[4,4,...state.board.slice(2)]};
+  assert.equal(command(data,maximum,{...base,expectedTier:4,expectedTargetTier:4}).ok,false);
+});

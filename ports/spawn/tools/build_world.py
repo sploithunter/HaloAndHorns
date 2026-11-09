@@ -28,7 +28,7 @@ root = {
     "name": "Halo & Horns · Merge Bay Lab", "description": "Combine eggs. Deploy your pets. Hold the line.",
     "camera": "templates/camera.js#camera", "lighting": "scripts/lighting.js", "defaultPlace": "main",
     "engine": {"behaviors": ["scripts/arrival.js"], "networking": {"mode": "multiplayer"}, "ui": {"theme": {"font": "Geist Pixel Square"}}},
-    "inputs": {"actions": {"jump": {"keys": ["space"]}, "select": {}, "command": {}, "board": {"keys": ["b"]}}, "axes": {"moveX": {"keys": "a/d"}, "moveZ": {"keys": "s/w"}, "zoomIn": {"mouse": "wheelY"}}},
+    "inputs": {"actions": {"jump": {"keys": ["space"]}, "select": {}, "command": {}, "dragState": {}, "board": {"keys": ["b"]}}, "axes": {"moveX": {"keys": "a/d"}, "moveZ": {"keys": "s/w"}, "zoomIn": {"mouse": "wheelY"}}},
     "player": "templates/player.js#player", "ui": {"render": "scripts/ui.js"}, "nametag": "ui/nametag.js",
 }
 (WORLD / "world.config.yaml").write_text(json.dumps(root, indent=2) + "\n")
