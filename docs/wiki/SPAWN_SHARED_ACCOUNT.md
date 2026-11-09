@@ -137,6 +137,9 @@ The committed inventory core and generated source contract are storage-independe
 not a shipped feature. Next wire a shared account provider and flat owned-pet UI to the one-bay
 prototype, then Full/Simple lifecycle, real personal hatches and source reward attribution. Verify
 ownership conservation, starter receipts/partial retries and transfer/restore in both game adapters.
+The [menu source audit](SPAWN_MENU_TRANSLATION.md) adds the required local draft/Reset/Activate,
+acknowledgement, safe-area/input and bounded-rendering contracts; preserve these before replacing
+the temporary lab HUD with the owned inventory menu.
 In parallel with later gameplay expansion, test a representative Farm & Fight region and repeated
 travel on target desktop/mobile devices, recording asset/network/GPU residency and inactive simulation.
 Only then choose one world with separate places or separate worlds with a trusted account service.

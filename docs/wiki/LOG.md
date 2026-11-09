@@ -8770,3 +8770,14 @@ See [shared account assessment](SPAWN_SHARED_ACCOUNT.md) and its reproducible ev
 
 Validation: 22 Spawn Node groups passed; HH CI passed (2,846 headless tests/323 specs),
 StyLua/source regeneration, isolated fixture reconstruction, wiki check and diff whitespace check passed.
+
+
+### 2026-11-09 — HH menu construction and Spawn translation audit
+
+Traced BaseUI/MenuManager boot, runtime inventory construction, nine-slice chrome, local squad
+drafts/acknowledged Activate, count projection, virtualized flat cards, context actions, focus and
+platform input constraints. Source manager close/switch paths can bypass InventoryPanel dirty
+guards; the port needs one consistent close policy. Spawn native modality does not translate
+Roblox layout, safe insets, Escape, asset IDs or input listeners automatically. Open Studio was
+in Edit with no rendered player menu tree; appearance still needs screenshots/client checks.
+No gameplay/UI implementation or deployment changed. See [menu audit](SPAWN_MENU_TRANSLATION.md).
