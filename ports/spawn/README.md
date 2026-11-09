@@ -48,7 +48,8 @@ Keep the returned CDN **name**: asset cooking can return a processed SHA differe
 source file digest, and an existing upload may omit byte/SHA fields.
 
 The Spawn world has its own git repository. Copy `world/` into its clone, preserving its `.git`,
-AGENTS.md and CLAUDE.md, review the diff, and push to its main branch. That updates development
+AGENTS.md, CLAUDE.md and Spawn-owned migration markers, review the diff, and push to its main branch.
+Spawn restores `spawn6/flat-anchor.yaml` when removed; keep that marker in sync. That updates development
 rooms, not the public published version. This lab has not been published to the feed.
 
 ## Evidence and limits

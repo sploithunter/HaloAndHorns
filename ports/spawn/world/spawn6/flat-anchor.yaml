@@ -1,0 +1,3 @@
+# spawn-flat-anchor v1
+# Every plane, circle, ring and torus this tree held when a flat part with no anchor began to stand on its lowest point was given anchor: center, and pivot: center where it had no pivot of its own, so it stands where it stood.
+crossed: true
