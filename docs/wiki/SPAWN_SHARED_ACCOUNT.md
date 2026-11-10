@@ -26,6 +26,9 @@ Roblox identity; no account linking or save migration has been implemented.
 The inventory configuration identifies secret/exclusive/huge/creator rarities as special records;
 mythic can remain an enchanted stack. A card list must use flat images rather than one live 3D
 viewport per card, following HH's inventory SSOT.
+Equip capacity is resolved from earned and replicated bonuses plus the additive extra-pet
+entitlement. The source progression ceiling of 10 increases by that paid delta; 11-slot squads
+are valid. See the [screenshot/source reconciliation](SPAWN_MENU_TRANSLATION.md).
 
 ## Merge rules that must survive the port
 

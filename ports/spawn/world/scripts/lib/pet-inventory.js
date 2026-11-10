@@ -3,6 +3,26 @@
 const copy = (value) => JSON.parse(JSON.stringify(value));
 const owns = (object, key) =>
   Object.prototype.hasOwnProperty.call(object ?? {}, key);
+// PetEquipCapacity: the progression ceiling increases by the paid entitlement delta.
+// Earned and replicated bonuses describe the same capacity axis, so they are not added.
+export function resolveEquipCapacity(args = {}) {
+  const number = (value, fallback) => {
+    const n =
+      typeof value === "number" || typeof value === "string"
+        ? Number(value)
+        : NaN;
+    return Number.isNaN(n) ? fallback : n;
+  };
+  const base = Math.max(1, number(args.baseSlots, 1)),
+    earned = Math.max(0, number(args.earnedSlots, 0)),
+    replicated = Math.max(0, number(args.replicatedSlots, 0)),
+    paid = Math.max(0, number(args.paidSlots, 0)),
+    cap = Math.max(base, number(args.progressionCap, base));
+  return Math.max(
+    1,
+    Math.min(base + Math.max(earned, replicated) + paid, cap + paid),
+  );
+}
 export function isStackEntry(record, key) {
   if (!record || typeof record !== "object") return false;
   if (key != null) {

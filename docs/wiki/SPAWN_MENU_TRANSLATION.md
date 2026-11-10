@@ -1,9 +1,9 @@
 # HH menus on Spawn: source audit
 
 2026-11-09. Companion to [shared account assessment](SPAWN_SHARED_ACCOUNT.md).
-This is an implementation/contract review, not visual parity or a shipped UI change.
-The open Merge Studio session was in Edit (`IsRunning=false`); no rendered player menu tree was
-available there. Screenshots are still useful for appearance, density, clipping and visual priority.
+This is an implementation/contract review with creator-supplied visual references, not a shipped
+menu or a visual-parity claim. The open Merge Studio session was in Edit (`IsRunning=false`);
+the creator subsequently supplied three client screenshots, recorded below.
 
 ## How HH builds menus
 
@@ -111,6 +111,38 @@ focus, drag cancellation, loss/reacquisition of cursor, delayed/rejected/duplica
 dirty close/switch/reopen, recovering slots and ownership changes while editing. Existing Roblox
 smoke suites are useful scenario inventories, not evidence that these work in Spawn.
 
-Useful visual references: the normal Pets overview; an edited squad before Activate (and its close
-prompt); an open pet tooltip/context menu. A narrow/mobile capture adds information about density
-and scrolling. These establish appearance; behavior still needs executable checks.
+## Creator screenshots, 2026-11-09
+
+The three original PNGs are preserved unmodified in the local ignored archive
+`test-results/spawn-menu-references/2026-11-09/`, with dimensions and SHA-256 in `manifest.json`.
+They are visual references, not runtime game assets. The archive is not included in the PR.
+
+| Reference | Observed presentation | Port consequence |
+| --- | --- | --- |
+| `wall-and-hotbar.png` (1286×1005) | Physical wall management board, gold-framed bottom action bar, Pets/Powers/Board flanks. The board has Rebirth, Buy Egg, Spawn Level and multiple gem upgrades. | Keep world management at the wall and player actions in the HUD. The current Spawn wall only implements the lab's Buy/Spawn actions; the other source upgrades are still outside that slice. Screenshot prices/progress are a particular account state, not default tuning. |
+| `merge-hud-and-team.png` (1664×1082) | Separate top player/progression readout, upper-right wave/People panels, right-side MY TEAM list, bottom hotbar and left-side combat rows. | Preserve distinct player-team and hatcher-combat information. The image alone does not identify every left-side row's owner; use source bindings. Reflow panels around Spawn's rail rather than copying Roblox screen coordinates. |
+| `inventory-overview.png` (1624×1040) | Near-fullscreen charcoal inventory with gold pill borders, white type and dimmed world. Header: Delete, Cards S, Hatch Auto, Hatch count, Trade, X. All/Pets/Items/Enhancements/Eggs tabs; Search, five Best Pets buttons, Reset, Activate; squad strip above a dense scrolling flat-card grid. | Use this hierarchy and HH artwork/palette as the first visual target. All is selected in this capture. Responsive card density must follow the chosen size and usable space, not fixed columns inferred from this one screenshot. |
+
+Pet cards carry several simultaneous signals: portrait, colored borders, role/identity badges,
+quantity and stat/ability indicators. Preserve the source badge meanings and exact pet identity;
+do not replace the cards with text-only tier buttons or invent missing ability outcomes. The small
+card setting is visibly dense; readable information/actions and bounded rendering remain necessary.
+The header counts 1805 = 428 Pets + 16 Items + 1353 Enhancements + 8 Eggs. These are category display
+counts, not a proof of 428 total owned pet copies. Source config counts stacks as single display
+items, and the projected equipped-stack ghost rows also contribute to the Pets tab count.
+
+**Capacity correction prompted by the image:** `Squad (deployed) — 11/11` is valid. In
+[InventoryService](../../src/Server/Services/InventoryService.lua), earned/perk/upgrade/progression
+bonus and replicated compatibility bonus feed
+[PetEquipCapacity](../../src/Shared/Game/PetEquipCapacity.lua); it takes the larger of those axes,
+then adds the paid slot delta to both current capacity and the progression ceiling. With base 3,
+earned 7, progression cap 10 and extra-pet feature 1, the result is 11; a new player with that
+feature gets 4. `max_slots=10` alone is not the final universal cap. The screenshot does not prove
+which entitlement this particular account has, and Roblox purchases do not automatically carry
+over to Spawn. The portable resolver now matches 36 executed Luau cases and validates an 11-slot
+squad through the existing ownership/equip core.
+
+These establish enough of the overview/hierarchy to begin the menu implementation. Hover details,
+dirty-close prompts, pending/rejected Activate states and mobile layout are not shown; their
+behavior remains source-backed and needs later runtime/visual checks. No such behavior can be
+inferred solely from these still images.

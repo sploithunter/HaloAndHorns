@@ -8781,3 +8781,14 @@ guards; the port needs one consistent close policy. Spawn native modality does n
 Roblox layout, safe insets, Escape, asset IDs or input listeners automatically. Open Studio was
 in Edit with no rendered player menu tree; appearance still needs screenshots/client checks.
 No gameplay/UI implementation or deployment changed. See [menu audit](SPAWN_MENU_TRANSLATION.md).
+
+
+### 2026-11-09 — Creator menu references and entitlement-aware pet capacity
+
+Preserved three unmodified creator screenshots in ignored test-results with a hash manifest.
+Recorded gold-pill inventory/hotbar hierarchy, card density and separate team/combat surfaces.
+The pictured 11/11 squad exposed an important cap distinction: paid extra-pet capacity increases
+both current slots and the progression ceiling. Ported actual PetEquipCapacity math, exported
+36 source fixtures and checked 11 accepted equipped references against ownership. Category tab
+counts are display counts, not total pet copies. Roblox entitlement import remains unimplemented.
+No live menu/deployment change; see [menu assessment](SPAWN_MENU_TRANSLATION.md).

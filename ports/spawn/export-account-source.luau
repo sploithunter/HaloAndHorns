@@ -4,6 +4,7 @@ local serde = require("@lune/serde")
 local roblox = require("@lune/roblox")
 local view = require("../../src/Shared/Inventory/PetInventoryView")
 local draft = require("../../src/Shared/Game/MergeEggDraft")
+local capacity = require("../../src/Shared/Game/PetEquipCapacity")
 local inventory = assert(
     loadstring("local Color3,Vector2=...\n" .. fs.readFile("configs/inventory.lua"), "inventory")
 )(roblox.Color3, roblox.Vector2)
@@ -52,7 +53,21 @@ local function stringKeys(values)
     end
     return out
 end
-local fixtures = { resolve = {}, build = {}, fill = {}, draft = {} }
+local fixtures = { resolve = {}, build = {}, fill = {}, draft = {}, capacity = {} }
+for _, earned in ipairs({ 0, 2, 7, 20 }) do
+    for _, replicated in ipairs({ 0, 4, 7 }) do
+        for _, paid in ipairs({ 0, 1, 2 }) do
+            local args = {
+                baseSlots = inventory.equipped.pets.slots,
+                progressionCap = inventory.equipped.pets.max_slots,
+                earnedSlots = earned,
+                replicatedSlots = replicated,
+                paidSlots = paid,
+            }
+            table.insert(fixtures.capacity, { args = args, result = capacity.resolve(args) })
+        end
+    end
+end
 local requests = {
     {},
     { "stack|bear:basic:" },

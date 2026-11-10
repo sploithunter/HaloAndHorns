@@ -7,11 +7,40 @@ import {
   fillEmptySlots,
   replaceEquipped,
   normalize,
+  resolveEquipCapacity,
 } from "../world/scripts/lib/pet-inventory.js";
 const fixtures = JSON.parse(
   fs.readFileSync(new URL("./inventory-fixtures.json", import.meta.url)),
 );
 const list = (value) => (Array.isArray(value) ? value : []);
+test("equip capacity matches HH paid-cap and replicated-bonus rules, including 11-slot squads", () => {
+  for (const f of fixtures.capacity)
+    assert.equal(resolveEquipCapacity(f.args), f.result);
+  assert.equal(
+    resolveEquipCapacity({ baseSlots: 3, progressionCap: 10, paidSlots: 1 }),
+    4,
+  );
+  const capacity = resolveEquipCapacity({
+    baseSlots: 3,
+    progressionCap: 10,
+    earnedSlots: 7,
+    paidSlots: 1,
+  });
+  assert.equal(capacity, 11);
+  const items = {
+    "bear:basic:": { id: "bear", variant: "basic", quantity: 11 },
+  };
+  const refs = Array(11).fill("stack|bear:basic:");
+  const accepted = buildEquipped(items, refs, capacity);
+  assert.equal(accepted.summary.accepted, 11);
+  assert.equal(accepted.summary.rejected, 0);
+  assert.equal(
+    Object.keys(resolveEquipped(items, accepted.equipped, capacity).slots)
+      .length,
+    11,
+  );
+  assert.equal(buildEquipped(items, refs, capacity - 1).summary.rejected, 1);
+});
 test("owned-pet resolution matches 48 executed HH Luau cases, including enchant identity and phantom refs", () => {
   for (const f of fixtures.resolve) {
     const r = resolveEquipped(f.items, f.equipped, f.capacity);

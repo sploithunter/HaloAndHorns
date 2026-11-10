@@ -102,7 +102,12 @@ Full Merge personal hatches and temporary squads. `scripts/lib/pet-inventory.js`
 equip port with 144 cases executed from the actual Luau source plus conservation/rejection checks.
 It has no engine/save dependency and is not yet bound to the production UI or director. The exported
 `shared-account.yml` records source configuration (including Roblox-only entitlement references),
-not active Spawn purchases. All 22 Node groups pass.
+not active Spawn purchases. All 23 Node groups pass.
+
+The creator's menu screenshots also prompted a capacity check: the paid extra-pet delta raises
+current capacity and the progression ceiling, so 11 deployed pets are valid. `resolveEquipCapacity`
+matches 36 source-executed cases, with an 11-slot ownership/equip regression.
+The [menu assessment](../../docs/wiki/SPAWN_MENU_TRANSLATION.md) records the visual hierarchy.
 
 [Isolated place/account protocol](../../docs/research/spawn-account-probe-2026-11-09.md) records
 normal-browser persistence, instance lifecycle and rendering tests. It does not settle full imported

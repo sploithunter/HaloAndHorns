@@ -2261,6 +2261,368 @@
       }
     }
   ],
+  "capacity": [
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 3
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 4
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 5
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 8
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 9
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 5
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 6
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 8
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 9
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    }
+  ],
   "draft": [
     {
       "candidates": [
