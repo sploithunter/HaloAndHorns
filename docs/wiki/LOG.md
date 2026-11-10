@@ -8712,3 +8712,83 @@ first-session cohort rates.
 2026-09-08 — Localization delivery recheck: 339/344 clips now load (160/160 Merge; 179/184 Farm & Fight). The five remaining Farm & Fight recordings are still awaiting Roblox review; original IDs and tested English fallback are retained. The full listening page serves all 344 original local MP3s regardless of Roblox review status.
 
 - 2026-09-08: Added optional Coin Pup angel/demon comments for both games in English, Spanish and Brazilian Portuguese. Real Marketplace non-ownership is required; unknown checks and all effective/previous collector benefits suppress them. Manual credited pickups trigger bounded opportunities, shared narration preserves gains/fallback, and purchases cancel queued/active comments. See TUTORIAL_VOICE.md.
+
+
+## 2026-11-09 — Spawn Heaven bay capability slice
+
+- Added isolated Spawn world adapters/configs, source-Luau parity fixtures and a playable bay in ColoradoPlays’ HH Merge Bay Lab.
+- Replaced the rejected generic arena with 513 authored Studio parts, 16 source meshes, actual hatcher/board placements and third-person controls. Roblox authored/runtime data were not edited.
+- Verified waves 1–2 in real browser clients, visitor command rejection, bay release, and progress across rejoin. Eight Node groups cover all ten waves/checkpoint logic; HH CI passes 2,846 tests.
+- Documented the shared-row authority limits, editor-only live test limitation, asset-ingestion workaround, inference options and remaining migration gates in [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+
+## 2026-11-09 — Spawn egg drag and stacking
+
+- Added physical-board and B-panel mouse/touch dragging, highlighted stand/egg targets, atomic equal-tier stacking on the board and installed stands, and safe empty-board moves.
+- Platform validation checks ownership, indices, observed tiers, combat state, tier cap and duplicate nonces before consuming eggs. Added drop conservation/rejection tests and a real Playwright pointer regression.
+- Verified mouse board merges, wrong-tier preservation, world/panel stand installation, installed stacking, touch input and touch/Escape cancellation in an isolated preview. Refreshed the renamed ColoradoPlays lab address.
+
+## 2026-11-09 — Spawn source tiers and real-hit choreography (Codex Spawn)
+
+Removed the four-tier lab cap: export the current HH 56-tier catalog, source prices/quotes, cost
+formatting and 3–9 team positions; imported all 28 source egg models. Corrected the previously
+mislabeled walk action and exported distinct canonical Walk/Attack clips on Doggy/Bear. Creator
+clarified that attack includes formation, spacing, lunge and streaming damage. Ported source
+formation/strike/flinch math, stable targets, slot separation, clean-root cosmetic pose sampling,
+per-hit attack channels, applied-damage streamers and elemental hit/death/merge FX. See
+[Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md) for the density/reach adaptation and remaining
+roster/power/balance limits. Verification: 18 Node groups, 273 real-Luau formation fixtures plus role
+strikes; HH CI 2,846/323. Live preview tested 4→5/28→29/55→56, T5/T29 capacities and wave 10 with
+reserve 5/checkpoint 10. No authored Roblox place edits, public publish or runtime inference.
+
+Spawn deployed verification follow-up: dev version 23/engine 289ba86c passed wave 10 with reserve 5,
+visible rising/fading damage numbers, empty error log, and actual checkpoint-10 leave/rejoin.
+Fixed reclaim to preserve completed status, covered by the existing ten-wave regression. The
+18 Node groups still pass; crash/save-rollback recovery remains unverified.
+
+## 2026-11-09 — Spawn upgrade board restored to the authored wall (Codex Spawn)
+
+Mounted functional Buy Egg / Upgrade Spawn controls on Heaven_01_WallBoard using the source
+14x8-stud panel and bottom height; removed the floating generator HUD control. Native UI-id ears
+relay through the presser's body into the existing validated command path, with a near-board
+check. Live pointer tests: T4→T5 charged 16,000; new T5 purchase charged 2,000; remote upgrade
+rejected without spending. 18 Node groups, HH CI 2,846/323. Native face root sizing/yaw details
+are recorded in [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+
+### 2026-11-09 — Spawn shared HH inventory and place/streaming assessment
+
+Reviewed actual ownership/equip, Full/Simple Merge, independent personal hatches, starter receipts,
+XP/rebirth unlock and recovery contracts. Full Merge uses owned pets; deployment remains open.
+Added a storage-independent inventory core and source exporter (48 build/48 resolve/48 fill cases).
+Isolated agent-only preview tests verified a changed mock common/unique/equip/XP profile across
+places, duplicate receipt, actual HTTP-cache-cleared ordinary-browser reload and eventual instance
+cleanup. Platform simulation continued across inactive places; imported GLB eviction and full-map
+mobile/load behavior remain unproven. Actual Roblox Merge StreamingEnabled=true (64/1024).
+No production Spawn main push, account import, Full mode or permanent inventory UI shipped.
+See [shared account assessment](SPAWN_SHARED_ACCOUNT.md) and its reproducible evidence.
+
+Validation: 22 Spawn Node groups passed; HH CI passed (2,846 headless tests/323 specs),
+StyLua/source regeneration, isolated fixture reconstruction, wiki check and diff whitespace check passed.
+
+
+### 2026-11-09 — HH menu construction and Spawn translation audit
+
+Traced BaseUI/MenuManager boot, runtime inventory construction, nine-slice chrome, local squad
+drafts/acknowledged Activate, count projection, virtualized flat cards, context actions, focus and
+platform input constraints. Source manager close/switch paths can bypass InventoryPanel dirty
+guards; the port needs one consistent close policy. Spawn native modality does not translate
+Roblox layout, safe insets, Escape, asset IDs or input listeners automatically. Open Studio was
+in Edit with no rendered player menu tree; appearance still needs screenshots/client checks.
+No gameplay/UI implementation or deployment changed. See [menu audit](SPAWN_MENU_TRANSLATION.md).
+
+
+### 2026-11-09 — Creator menu references and entitlement-aware pet capacity
+
+Preserved three unmodified creator screenshots in ignored test-results with a hash manifest.
+Recorded gold-pill inventory/hotbar hierarchy, card density and separate team/combat surfaces.
+The pictured 11/11 squad exposed an important cap distinction: paid extra-pet capacity increases
+both current slots and the progression ceiling. Ported actual PetEquipCapacity math, exported
+36 source fixtures and checked 11 accepted equipped references against ownership. Category tab
+counts are display counts, not total pet copies. Roblox entitlement import remains unimplemented.
+No live menu/deployment change; see [menu assessment](SPAWN_MENU_TRANSLATION.md).

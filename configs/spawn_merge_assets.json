@@ -1,0 +1,427 @@
+{
+  "doggy": {
+    "url": "/cdn/value.78cd5c79159f85cfd7dc4ded6396fc9a95b10ffe05097d92ec84d3a0b77f47a7.glb",
+    "sha256": "78cd5c79159f85cfd7dc4ded6396fc9a95b10ffe05097d92ec84d3a0b77f47a7",
+    "bytes": 1025600,
+    "source": "assets/model_test/rig_experiments/doggy_rigged.blend",
+    "clips": {
+      "walk": "Walk",
+      "attack": "Attack"
+    },
+    "attackSeconds": 1.7083333333,
+    "attackSource": "assets/model_test/rig_experiments/doggy_wolfattack.blend"
+  },
+  "bear": {
+    "url": "/cdn/value.e4aa43fc167870e64e87690c495ab484cb1fdd05fb085f305ce8cb96530dee92.glb",
+    "sha256": "e4aa43fc167870e64e87690c495ab484cb1fdd05fb085f305ce8cb96530dee92",
+    "bytes": 824612,
+    "source": "assets/model_test/rig_experiments/bear_rigged.blend",
+    "clips": {
+      "walk": "Walk",
+      "attack": "Attack"
+    },
+    "attackSeconds": 1.7083333333,
+    "attackSource": "assets/model_test/rig_experiments/doggy_wolfattack.blend"
+  },
+  "heavenBay": {
+    "source": "configs/spawn_merge_source_bay.json",
+    "placeId": 84544653387905,
+    "parts": 513,
+    "uniqueMeshes": 16,
+    "scaleMetersPerStud": 0.28,
+    "texturePacking": {
+      "colorMax": 1024,
+      "normalMax": 512,
+      "jpegQuality": 90
+    },
+    "groups": [
+      {
+        "name": "architecture",
+        "url": "/cdn/value.a9224b727c75f2297689694ae59f79e047c4afc54c37d5e9ff8080dbd14b6015.glb",
+        "sourceSha256": "a9224b727c75f2297689694ae59f79e047c4afc54c37d5e9ff8080dbd14b6015",
+        "bytes": 418204,
+        "feetPosition": {
+          "x": -3.1500024795532227,
+          "y": -8.653179168701172,
+          "z": -32.39600086212158
+        },
+        "parts": 154
+      },
+      {
+        "name": "127449957131266",
+        "url": "/cdn/value.d7ece5184004c2ebe96eb69499012113a33e2df1b23c36b007e2139c7322b72a.glb",
+        "sourceSha256": "d7ece5184004c2ebe96eb69499012113a33e2df1b23c36b007e2139c7322b72a",
+        "bytes": 1696492,
+        "feetPosition": {
+          "x": 10.884726524353027,
+          "y": 0.03090071678161621,
+          "z": 0.10548067092895508
+        },
+        "parts": 1
+      },
+      {
+        "name": "96641242548722",
+        "url": "/cdn/value.e22fa90c757156f93560b976ce7b2b2286caedad1f43a97f7a8f80345b5add46.glb",
+        "sourceSha256": "e22fa90c757156f93560b976ce7b2b2286caedad1f43a97f7a8f80345b5add46",
+        "bytes": 1163968,
+        "feetPosition": {
+          "x": -14.521882057189941,
+          "y": -0.11660575866699219,
+          "z": -40.40635013580322
+        },
+        "parts": 24
+      },
+      {
+        "name": "118589584566664",
+        "url": "/cdn/value.1bdb496417ff35dd2de58aee54af8f847d382c606740b8faae3733b9bb975d9f.glb",
+        "sourceSha256": "1bdb496417ff35dd2de58aee54af8f847d382c606740b8faae3733b9bb975d9f",
+        "bytes": 852564,
+        "feetPosition": {
+          "x": -9.76031494140625,
+          "y": -0.11660528182983398,
+          "z": -40.85441541671753
+        },
+        "parts": 152
+      },
+      {
+        "name": "110720328979470",
+        "url": "/cdn/value.ac123b7cee94651f590c62883506580a14b83bbe03d8e7d88c182bdcd0b4a701.glb",
+        "sourceSha256": "ac123b7cee94651f590c62883506580a14b83bbe03d8e7d88c182bdcd0b4a701",
+        "bytes": 1286772,
+        "feetPosition": {
+          "x": -13.49870777130127,
+          "y": -0.11660617589950562,
+          "z": -40.87128663063049
+        },
+        "parts": 94
+      },
+      {
+        "name": "124637031225100",
+        "url": "/cdn/value.1fabacbe2a8711d995891d4b4a0f9366eadd88c76c6145c1dc6122785fac05e7.glb",
+        "sourceSha256": "1fabacbe2a8711d995891d4b4a0f9366eadd88c76c6145c1dc6122785fac05e7",
+        "bytes": 1119824,
+        "feetPosition": {
+          "x": 19.03779649734497,
+          "y": 0.05000263452529907,
+          "z": -42.535611152648926
+        },
+        "parts": 31
+      },
+      {
+        "name": "104166201714383",
+        "url": "/cdn/value.1b5c0a317ff7cee5f5284b67a39614453045a42b1c50be2db5c5b53b1e4edc68.glb",
+        "sourceSha256": "1b5c0a317ff7cee5f5284b67a39614453045a42b1c50be2db5c5b53b1e4edc68",
+        "bytes": 1200036,
+        "feetPosition": {
+          "x": -3.610841751098633,
+          "y": -0.11660587787628174,
+          "z": -42.95628213882446
+        },
+        "parts": 21
+      },
+      {
+        "name": "96648542072137",
+        "url": "/cdn/value.ddee6bbf0e70a54783b30aba92e2a53b8e3fe017c22b37c2591fc09d8d47a5d6.glb",
+        "sourceSha256": "ddee6bbf0e70a54783b30aba92e2a53b8e3fe017c22b37c2591fc09d8d47a5d6",
+        "bytes": 941188,
+        "feetPosition": {
+          "x": -13.446198463439941,
+          "y": -0.11664760112762451,
+          "z": -37.05392837524414
+        },
+        "parts": 13
+      },
+      {
+        "name": "122843290512204",
+        "url": "/cdn/value.fd369841479760c5858f77b2bbac8ed8abeab728b3974f1fc84b3efc7df932de.glb",
+        "sourceSha256": "fd369841479760c5858f77b2bbac8ed8abeab728b3974f1fc84b3efc7df932de",
+        "bytes": 1088556,
+        "feetPosition": {
+          "x": -14.289592742919922,
+          "y": -0.11660575866699219,
+          "z": -39.34149503707886
+        },
+        "parts": 6
+      },
+      {
+        "name": "103416941338986",
+        "url": "/cdn/value.6653cc4d11efac7fb7c8a318f460373d1f5dff68c46b2733037dab66aa767bee.glb",
+        "sourceSha256": "6653cc4d11efac7fb7c8a318f460373d1f5dff68c46b2733037dab66aa767bee",
+        "bytes": 1324216,
+        "feetPosition": {
+          "x": 0.0,
+          "y": -0.0001461505889892578,
+          "z": -19.851999282836914
+        },
+        "parts": 4
+      },
+      {
+        "name": "123934269734118",
+        "url": "/cdn/value.62ba613007c174bfbd9d31039ccad04d6d04f8903d67254c4722bcc00933ad17.glb",
+        "sourceSha256": "62ba613007c174bfbd9d31039ccad04d6d04f8903d67254c4722bcc00933ad17",
+        "bytes": 795244,
+        "feetPosition": {
+          "x": 19.040000915527344,
+          "y": -6.976605415344238,
+          "z": 3.984105944633484
+        },
+        "parts": 1
+      },
+      {
+        "name": "124667039413678",
+        "url": "/cdn/value.e0171d4ef5407b67f75d6b5cfa58111b6a5faf2b09ba265e009f88d81dba200b.glb",
+        "sourceSha256": "e0171d4ef5407b67f75d6b5cfa58111b6a5faf2b09ba265e009f88d81dba200b",
+        "bytes": 942400,
+        "feetPosition": {
+          "x": 8.960000038146973,
+          "y": -5.8566060066223145,
+          "z": 4.219260096549988
+        },
+        "parts": 1
+      },
+      {
+        "name": "95514248222984",
+        "url": "/cdn/value.bc56a9d690ddc0aad7d78779075da5c698d8de6a2a3ad522e2548d4fc31ff323.glb",
+        "sourceSha256": "bc56a9d690ddc0aad7d78779075da5c698d8de6a2a3ad522e2548d4fc31ff323",
+        "bytes": 2032408,
+        "feetPosition": {
+          "x": 0.08767938613891602,
+          "y": -0.3741893768310547,
+          "z": -76.71253967285156
+        },
+        "parts": 1
+      },
+      {
+        "name": "105434094713704",
+        "url": "/cdn/value.f54f674fa3e486616ef4574247860bff843ac64791321ce7064ec1312f20c37e.glb",
+        "sourceSha256": "f54f674fa3e486616ef4574247860bff843ac64791321ce7064ec1312f20c37e",
+        "bytes": 1094772,
+        "feetPosition": {
+          "x": -34.49383354187012,
+          "y": -0.11661368608474731,
+          "z": -59.334306716918945
+        },
+        "parts": 2
+      },
+      {
+        "name": "125598281272363",
+        "url": "/cdn/value.2933098e910197f26681698332fb0572adeb60f3d9fa8b11adcb9a319215f34d.glb",
+        "sourceSha256": "2933098e910197f26681698332fb0572adeb60f3d9fa8b11adcb9a319215f34d",
+        "bytes": 829484,
+        "feetPosition": {
+          "x": -37.291324615478516,
+          "y": -0.11660623550415039,
+          "z": -39.51008605957031
+        },
+        "parts": 5
+      },
+      {
+        "name": "119087340901682",
+        "url": "/cdn/value.71a5804441c4a0274a149c3dc94ee0912c69b5b76f168766ff4f20c6ecb35f8c.glb",
+        "sourceSha256": "71a5804441c4a0274a149c3dc94ee0912c69b5b76f168766ff4f20c6ecb35f8c",
+        "bytes": 994872,
+        "feetPosition": {
+          "x": -43.24602699279785,
+          "y": -0.11660575866699219,
+          "z": -41.550405979156494
+        },
+        "parts": 2
+      },
+      {
+        "name": "132025200361754",
+        "url": "/cdn/value.890ee229fcb2d9537aa3aa9634ef592c3f3e27e0a839938b1beb08750f0757eb.glb",
+        "sourceSha256": "890ee229fcb2d9537aa3aa9634ef592c3f3e27e0a839938b1beb08750f0757eb",
+        "bytes": 1039244,
+        "feetPosition": {
+          "x": -35.459102630615234,
+          "y": -0.11663603782653809,
+          "z": -27.675729751586914
+        },
+        "parts": 1
+      },
+      {
+        "name": "terrain",
+        "url": "/cdn/value.d5720447902b39e10f6e54805768177b23f00d3c084fe0425c291794d85d8056.glb",
+        "sourceSha256": "d5720447902b39e10f6e54805768177b23f00d3c084fe0425c291794d85d8056",
+        "bytes": 242364,
+        "feetPosition": {
+          "x": -12.880000114440918,
+          "y": -11.876605987548828,
+          "z": -39.20000076293945
+        },
+        "parts": 1
+      }
+    ],
+    "bytes": 19062608
+  },
+  "eggs": {
+    "grass_egg": {
+      "url": "/cdn/value.726bc437a30da30e819042f05a56e01fe1de39a58f9cc0f4d668e66b73d51aa4.glb",
+      "sourceSha256": "726bc437a30da30e819042f05a56e01fe1de39a58f9cc0f4d668e66b73d51aa4",
+      "bytes": 1499772,
+      "height": 1.344
+    },
+    "ice_egg": {
+      "url": "/cdn/value.b1d45fecc62a54f65f370379f0979a358969c10e9c19079bf82c6daab1d9408f.glb",
+      "sourceSha256": "b1d45fecc62a54f65f370379f0979a358969c10e9c19079bf82c6daab1d9408f",
+      "bytes": 597116,
+      "height": 1.344
+    },
+    "lava_egg": {
+      "url": "/cdn/value.47f53f4f60432af27a410b45626fe399bc91bf249ffa40a5414e065e1d27dee4.glb",
+      "sourceSha256": "47f53f4f60432af27a410b45626fe399bc91bf249ffa40a5414e065e1d27dee4",
+      "bytes": 1278780,
+      "height": 1.344
+    },
+    "desert_egg": {
+      "url": "/cdn/value.fa51399a28edb59caa6aa226a84f4bd21e36f8ea3c80f1bf57a2a5f95dbd66d1.glb",
+      "sourceSha256": "fa51399a28edb59caa6aa226a84f4bd21e36f8ea3c80f1bf57a2a5f95dbd66d1",
+      "bytes": 634060,
+      "height": 1.344
+    },
+    "bloom_egg": {
+      "url": "/cdn/value.ac76182663dc69af8daf4415542d0826bb3d9be2bf3d627100995374dd05f35b.glb",
+      "sourceSha256": "ac76182663dc69af8daf4415542d0826bb3d9be2bf3d627100995374dd05f35b",
+      "bytes": 797096,
+      "height": 1.344
+    },
+    "aurora_egg": {
+      "url": "/cdn/value.402227c44d5d2641c6dea752d43302989e0fe5386313cac0955278831ecfa383.glb",
+      "sourceSha256": "402227c44d5d2641c6dea752d43302989e0fe5386313cac0955278831ecfa383",
+      "bytes": 378180,
+      "height": 1.344
+    },
+    "solar_egg": {
+      "url": "/cdn/value.8a3d8124185f56aca0607dbc6d9408211bdfadd9a031e55cab663f4297046f41.glb",
+      "sourceSha256": "8a3d8124185f56aca0607dbc6d9408211bdfadd9a031e55cab663f4297046f41",
+      "bytes": 684296,
+      "height": 1.344
+    },
+    "gilded_egg": {
+      "url": "/cdn/value.48b47b575bd9036066a9a3d2a9b0882b75ed52e8e5aba0f9c4de69bae2846558.glb",
+      "sourceSha256": "48b47b575bd9036066a9a3d2a9b0882b75ed52e8e5aba0f9c4de69bae2846558",
+      "bytes": 856920,
+      "height": 1.344
+    },
+    "blight_egg": {
+      "url": "/cdn/value.6067b0ef275374bfea2675b60ba28e7fa83d9ca344d71b3f282fd34cc618cd15.glb",
+      "sourceSha256": "6067b0ef275374bfea2675b60ba28e7fa83d9ca344d71b3f282fd34cc618cd15",
+      "bytes": 462788,
+      "height": 1.344
+    },
+    "black_ice_egg": {
+      "url": "/cdn/value.0457480a7d8e4e4c71532abe394df6671389de8727632157eb00478af6894d6d.glb",
+      "sourceSha256": "0457480a7d8e4e4c71532abe394df6671389de8727632157eb00478af6894d6d",
+      "bytes": 894700,
+      "height": 1.344
+    },
+    "infernal_egg": {
+      "url": "/cdn/value.5feac2ac15e1c4e389c3f50c533af0d280daaa0ffcce80f6c201879ca45cebee.glb",
+      "sourceSha256": "5feac2ac15e1c4e389c3f50c533af0d280daaa0ffcce80f6c201879ca45cebee",
+      "bytes": 836936,
+      "height": 1.344
+    },
+    "ash_egg": {
+      "url": "/cdn/value.5d9cad672faf3ab1aaeb817414f72796429df1630997034ccade8929819f4661.glb",
+      "sourceSha256": "5d9cad672faf3ab1aaeb817414f72796429df1630997034ccade8929819f4661",
+      "bytes": 792480,
+      "height": 1.344
+    },
+    "heaven2_grass_egg": {
+      "url": "/cdn/value.bc95b8dc8277a0593fbbbb15fe7ddca1bb0b40f2b3400aa29e63273531c4f959.glb",
+      "sourceSha256": "bc95b8dc8277a0593fbbbb15fe7ddca1bb0b40f2b3400aa29e63273531c4f959",
+      "bytes": 969368,
+      "height": 1.344
+    },
+    "heaven2_ice_egg": {
+      "url": "/cdn/value.62e1124df1526f4e403e862d030dc69aa461c783a98cfe951ac514a27921335b.glb",
+      "sourceSha256": "62e1124df1526f4e403e862d030dc69aa461c783a98cfe951ac514a27921335b",
+      "bytes": 714252,
+      "height": 1.344
+    },
+    "heaven2_fire_egg": {
+      "url": "/cdn/value.8c948a331a7e336d0cfecd2dc508027a02fe8a2ec1de0597307871c3c325383e.glb",
+      "sourceSha256": "8c948a331a7e336d0cfecd2dc508027a02fe8a2ec1de0597307871c3c325383e",
+      "bytes": 613892,
+      "height": 1.344
+    },
+    "heaven2_desert_egg": {
+      "url": "/cdn/value.0b3eead8ef941cface7dc89abb059265ecf9b76197be3696665c4c5a433d4c4f.glb",
+      "sourceSha256": "0b3eead8ef941cface7dc89abb059265ecf9b76197be3696665c4c5a433d4c4f",
+      "bytes": 641840,
+      "height": 1.344
+    },
+    "hell2_grass_egg": {
+      "url": "/cdn/value.37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954.glb",
+      "sourceSha256": "37ff89685d55f5e3e8866afacbb635f1221af676bdf6c245509c89dabe4cb954",
+      "bytes": 957672,
+      "height": 1.344
+    },
+    "hell2_ice_egg": {
+      "url": "/cdn/value.d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707.glb",
+      "sourceSha256": "d2311d984bc219ac6fcdacaaf8989811cdd66e092a279df92c64bdc5c1dbb707",
+      "bytes": 870080,
+      "height": 1.344
+    },
+    "hell2_fire_egg": {
+      "url": "/cdn/value.2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e.glb",
+      "sourceSha256": "2e464d797e700f8428c11b284e53d9bddd9c74c8e7406f3c236708e9de8cda0e",
+      "bytes": 721908,
+      "height": 1.344
+    },
+    "hell2_desert_egg": {
+      "url": "/cdn/value.c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1.glb",
+      "sourceSha256": "c5dbef535f33c0035ec48d96e286253378c500223c64039f305e26a14678eda1",
+      "bytes": 541416,
+      "height": 1.344
+    },
+    "heaven3_grass_egg": {
+      "url": "/cdn/value.6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6.glb",
+      "sourceSha256": "6f3637e40d50bd7f0b6ee2efa6cdd18ce814b1e40fdd25a2fe7b3ce7f96fddb6",
+      "bytes": 1386324,
+      "height": 1.344
+    },
+    "heaven3_ice_egg": {
+      "url": "/cdn/value.ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae.glb",
+      "sourceSha256": "ccb5c16c592b87b6fd79506a3335c635811af7fa125816b50b1d4fa25ada45ae",
+      "bytes": 1342352,
+      "height": 1.344
+    },
+    "heaven3_fire_egg": {
+      "url": "/cdn/value.fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e.glb",
+      "sourceSha256": "fa443f675dfa3ec8bd1e65d5526e0dbc2092bd2d1f80e25efa710108b6a7954e",
+      "bytes": 796060,
+      "height": 1.344
+    },
+    "heaven3_desert_egg": {
+      "url": "/cdn/value.61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec.glb",
+      "sourceSha256": "61143fed23a261ca2f2c73dcf061dd51726075524b9f4e7c5e7b78f1b504c9ec",
+      "bytes": 858152,
+      "height": 1.344
+    },
+    "hell3_grass_egg": {
+      "url": "/cdn/value.8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc.glb",
+      "sourceSha256": "8d0cba407cfe5d28d6844197bc4e9ac5d15230faac5387ac1a9a6ef9d7d6a3dc",
+      "bytes": 1274476,
+      "height": 1.344
+    },
+    "hell3_ice_egg": {
+      "url": "/cdn/value.8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7.glb",
+      "sourceSha256": "8a4b1059dbc8646d1524ee552f66293ca60e1fdaed6e74cfc6183b18519b76f7",
+      "bytes": 1267432,
+      "height": 1.344
+    },
+    "hell3_fire_egg": {
+      "url": "/cdn/value.73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0.glb",
+      "sourceSha256": "73c9d52d1d23d27b8f67483fc29fef61f57fb4f4049c350be4d2eda0014b08f0",
+      "bytes": 1265048,
+      "height": 1.344
+    },
+    "hell3_desert_egg": {
+      "url": "/cdn/value.f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179.glb",
+      "sourceSha256": "f1ef02e2feb100855f863c096d44b20bd03294ac1cac64ee3fb5e8e930ab6179",
+      "bytes": 1229252,
+      "height": 1.344
+    }
+  }
+}

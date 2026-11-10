@@ -1,0 +1,7297 @@
+{
+  "build": [
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": {},
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 1,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 1,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 0,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 0,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 1
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 3,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 3,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 2,
+        "maxSlots": 3,
+        "rejected": 1,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "summary": {
+        "accepted": 2,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 3,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 3,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 3,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:luck_copper"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "stack|bear:basic:luck_copper"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 2,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 3,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "summary": {
+        "accepted": 3,
+        "maxSlots": 3,
+        "rejected": 0,
+        "requested": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {},
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 0,
+        "maxSlots": 0,
+        "rejected": 2,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 1,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_1": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 1,
+        "requested": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "previous": {
+        "slot_2": "owned-unique"
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "summary": {
+        "accepted": 1,
+        "maxSlots": 3,
+        "rejected": 1,
+        "requested": 2
+      }
+    }
+  ],
+  "capacity": [
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 3
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 4
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 5
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 8
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 9
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 0,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 5
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 6
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 7
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 8
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 9
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 2,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 7,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 0
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 4
+      },
+      "result": 12
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 0,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 10
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 1,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 11
+    },
+    {
+      "args": {
+        "baseSlots": 3,
+        "earnedSlots": 20,
+        "paidSlots": 2,
+        "progressionCap": 10,
+        "replicatedSlots": 7
+      },
+      "result": 12
+    }
+  ],
+  "draft": [
+    {
+      "candidates": [
+        {
+          "combatPower": 12,
+          "pet": "bear",
+          "role": "tank"
+        },
+        {
+          "combatPower": 2,
+          "pet": "bunny",
+          "role": "support"
+        },
+        {
+          "combatPower": 30,
+          "pet": "kitty",
+          "role": "ranged"
+        },
+        {
+          "combatPower": 10,
+          "pet": "doggy",
+          "role": "melee"
+        }
+      ],
+      "capacity": 3,
+      "reserve": [
+        {
+          "combatPower": 2,
+          "pet": "bunny",
+          "role": "support"
+        }
+      ],
+      "squad": {
+        "1": {
+          "combatPower": 12,
+          "pet": "bear",
+          "role": "tank"
+        },
+        "2": {
+          "combatPower": 30,
+          "pet": "kitty",
+          "role": "ranged"
+        },
+        "3": {
+          "combatPower": 10,
+          "pet": "doggy",
+          "role": "melee"
+        }
+      },
+      "weakest": {
+        "combatPower": 2,
+        "pet": "bunny",
+        "role": "support"
+      },
+      "weakestIndex": 2
+    },
+    {
+      "candidates": [
+        {
+          "combatPower": 12,
+          "pet": "bear",
+          "role": "tank"
+        },
+        {
+          "combatPower": 2,
+          "pet": "bunny",
+          "role": "support"
+        },
+        {
+          "combatPower": 30,
+          "pet": "kitty",
+          "role": "ranged"
+        },
+        {
+          "combatPower": 10,
+          "pet": "doggy",
+          "role": "melee"
+        }
+      ],
+      "capacity": 4,
+      "reserve": {},
+      "squad": {
+        "1": {
+          "combatPower": 12,
+          "pet": "bear",
+          "role": "tank"
+        },
+        "2": {
+          "combatPower": 30,
+          "pet": "kitty",
+          "role": "ranged"
+        },
+        "3": {
+          "combatPower": 10,
+          "pet": "doggy",
+          "role": "melee"
+        },
+        "4": {
+          "combatPower": 2,
+          "pet": "bunny",
+          "role": "support"
+        }
+      },
+      "weakest": {
+        "combatPower": 2,
+        "pet": "bunny",
+        "role": "support"
+      },
+      "weakestIndex": 2
+    }
+  ],
+  "fill": [
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": {},
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": {},
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": {},
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": {},
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": {},
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": {},
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 2
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 2
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:",
+        "stack|bear:basic:",
+        "stack|bear:basic:"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "owned-unique"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "owned-unique"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "owned-unique",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 2,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 2,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "not-owned",
+        "stack|doggy:golden:"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:luck_copper"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:luck_copper"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:luck_copper"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "stack|bear:basic:luck_copper"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 0,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:luck_copper",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "stack|bear:basic:luck_copper",
+        "stack|bear:basic:",
+        "owned-unique"
+      ],
+      "result": {
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "owned-unique",
+        "slot_3": "stack|bear:basic:"
+      },
+      "summary": {
+        "added": 2,
+        "addedRefs": [
+          "stack|bear:basic:luck_copper",
+          "stack|bear:basic:"
+        ],
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 0,
+        "total": 3
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 0,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {},
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 0,
+        "maxSlots": 0,
+        "rejected": 0,
+        "total": 0
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {
+        "slot_1": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "special|owned-unique"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 1,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 1,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {
+        "slot_1": "owned-unique"
+      },
+      "summary": {
+        "added": 1,
+        "addedRefs": [
+          "special|owned-unique"
+        ],
+        "before": 0,
+        "maxSlots": 1,
+        "rejected": 1,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {},
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    },
+    {
+      "capacity": 3,
+      "equipped": {
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "locks": {
+        "slot_2": true
+      },
+      "refs": [
+        "temporary:run:hatcher:1",
+        "special|owned-unique"
+      ],
+      "result": {
+        "slot_2": "owned-unique"
+      },
+      "summary": {
+        "added": 0,
+        "addedRefs": {},
+        "before": 1,
+        "maxSlots": 3,
+        "rejected": 2,
+        "total": 1
+      }
+    }
+  ],
+  "resolve": [
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 3,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 3,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 2,
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "3": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 3,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 2,
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "3": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 3,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "not-owned",
+        "slot_3": "stack|bear:basic:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 2
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "stack|bear:basic:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 2
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "stack|bear:basic:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "owned-unique",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 1,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "owned-unique",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 1,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "owned-unique",
+        "slot_2": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 1,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "owned-unique",
+        "slot_2": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 1,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|doggy:golden:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|doggy:golden:"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 3,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|doggy:golden:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 3,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|doggy:golden:",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:luck_copper": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "not-owned",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:luck_copper",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 1,
+      "counts": {
+        "bear:basic:luck_copper": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "not-owned",
+        "slot_3": "owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:luck_copper",
+          "variant": "basic"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 1,
+        "bear:basic:luck_copper": 1,
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:luck_copper",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "3": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 3,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "bear:basic:": 1,
+        "bear:basic:luck_copper": 1,
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "stack|bear:basic:luck_copper",
+        "slot_2": "stack|bear:basic:",
+        "slot_3": "owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "1": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 1,
+          "stackKey": "bear:basic:luck_copper",
+          "variant": "basic"
+        },
+        "2": {
+          "id": "bear",
+          "kind": "stack",
+          "slot": 2,
+          "stackKey": "bear:basic:",
+          "variant": "basic"
+        },
+        "3": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 3,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "special|owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 0,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "not-owned",
+        "slot_2": "special|owned-unique"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "temporary:run:hatcher:1",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 1,
+      "counts": {},
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "temporary:run:hatcher:1",
+        "slot_2": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {}
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "temporary:run:hatcher:1",
+        "slot_2": "special|owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "2": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 2,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    },
+    {
+      "capacity": 3,
+      "counts": {
+        "uid:owned-unique": 1
+      },
+      "equipped": {
+        "ghost": "owned-unique",
+        "slot_0": "owned-unique",
+        "slot_1": "temporary:run:hatcher:1",
+        "slot_2": "special|owned-unique",
+        "slot_4": "not-owned"
+      },
+      "items": {
+        "bear:basic:": {
+          "enchant": "",
+          "id": "bear",
+          "quantity": 2,
+          "variant": "basic"
+        },
+        "bear:basic:luck_copper": {
+          "enchant": "luck_copper",
+          "id": "bear",
+          "quantity": 1,
+          "variant": "basic"
+        },
+        "doggy:golden:": {
+          "id": "doggy",
+          "quantity": 0,
+          "variant": "golden"
+        },
+        "owned-unique": {
+          "exp": 23,
+          "id": "doggy",
+          "level": 7,
+          "uid": "owned-unique",
+          "unique": true,
+          "variant": "rainbow"
+        }
+      },
+      "slots": {
+        "2": {
+          "id": "doggy",
+          "kind": "special",
+          "slot": 2,
+          "uid": "owned-unique",
+          "variant": "rainbow"
+        }
+      }
+    }
+  ]
+}

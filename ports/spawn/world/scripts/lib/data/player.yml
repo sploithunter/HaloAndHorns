@@ -1,0 +1,14 @@
+# walkSpeed (and the runSpeed a world adds) are the body's speeds in metres a second. The gait script
+# (scripts/humanoid-locomotion.js) picks the clip by the body's OWN measured paces: the Walk from 0.45 of its Walk
+# pace, the Run from the geometric mean of its Walk and Run paces, the Sprint from the mean of Run and Sprint, and
+# plays each at the body's speed over that clip's pace, a Run or a Sprint past its pace at the square root of that, so
+# its legs never cycle at a frantic rate; walkThreshold / runThreshold / sprintThreshold named here
+# win over the measured switches, and clips: { run: Sprint } puts another clip under the key.
+acceleration: 80
+deceleration: 120
+jumpSpeed: 10
+turnInPlace: 90
+turnSmoothing: 0.06
+turnSpeed: 900
+turnTo: movement
+walkSpeed: 6

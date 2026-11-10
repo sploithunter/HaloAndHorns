@@ -96,6 +96,12 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
 - [Egg Authoring And Admin Testing](../EGG_AUTHORING_AND_ADMIN_TESTING.md)
 
+## Platform ports
+
+- [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) — source-derived Merge bay, programming/events, authority, AI/model contracts, live evidence and migration gates.
+- [Spawn Shared HH Account](SPAWN_SHARED_ACCOUNT.md) — owned/temporary pets, Full Merge rules, place persistence and streaming experiments; deployment remains open.
+- [Spawn Menu Translation](SPAWN_MENU_TRANSLATION.md) — runtime menu construction, local squad drafts, modal/input mapping, large inventory rendering and visual verification needs.
+
 ## Maintenance Rule
 
 - [Merge Stress Testing](MERGE_STRESS_TESTING.md) — isolated eight-bay performance workload and measurement contract.

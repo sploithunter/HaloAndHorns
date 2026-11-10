@@ -1,0 +1,11 @@
+.hh-upgrade-surface{width:1400px;height:800px;padding:28px;background:#181d28;color:#f4f6fa;font-family:Arial,sans-serif;box-sizing:border-box;border:10px solid #44526c;border-radius:24px;text-align:left;display:flex;flex-direction:column;gap:24px}
+.hh-upgrade-surface *{box-sizing:border-box}
+.hh-upgrade-surface header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #44526c;padding:0 12px 20px}
+.hh-upgrade-surface h1{font-size:74px;line-height:1;margin:0;letter-spacing:5px;color:#ffe28c}
+.hh-upgrade-surface .bay-owner{text-align:right;font-size:32px;color:#b5c7dd}.hh-upgrade-surface .bay-owner b{display:block;font-size:38px;color:#fff;margin-top:8px}
+.hh-upgrade-surface main{display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;min-height:0}
+.hh-upgrade-surface button{font-family:inherit;white-space:normal;border:5px solid #78cce5;border-radius:20px;background:#244e63;color:white;padding:30px 24px;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.hh-upgrade-surface button:hover{background:#316d85}.hh-upgrade-surface button.spawn-upgrade{background:#5e482b;border-color:#dfb568}.hh-upgrade-surface button.spawn-upgrade:hover{background:#80603a}.hh-upgrade-surface button:disabled{opacity:.6;cursor:default}
+.hh-upgrade-surface .action-title{font-size:52px;letter-spacing:2px;line-height:1.1}.hh-upgrade-surface .egg-name{font-size:47px;line-height:1.15;color:#fff}.hh-upgrade-surface .egg-tier{font-size:36px;color:#dbe9f5;margin-bottom:12px}.hh-upgrade-surface .details{font-size:30px;line-height:1.3;color:#d7e3ee;margin-top:10px}
+.hh-upgrade-surface .price{font-size:62px;font-weight:900;line-height:1;color:#fff0b5}.hh-upgrade-surface .price small{font-size:25px;letter-spacing:3px;display:block;margin-top:12px;color:#e5edf5}
+.hh-upgrade-surface footer{font-size:29px;text-align:center;color:#c4d2e3;min-height:36px}

@@ -1,0 +1,14 @@
+# spawn-scene v2 yaml x0z-1
+"hh-source-collider-50":
+  "feetPosition": {"x": 0.0, "y": 0.18770605139282226, "z": -81.53600341796876}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 29.34400085449219, "height": 1.8645879364013673, "depth": 0.672000026702881}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBack"}
+
+"hh-authored-95514248222984":
+  "model": "/cdn/value.bc56a9d690ddc0aad7d78779075da5c698d8de6a2a3ad522e2548d4fc31ff323.glb"
+  "feetPosition": {"x": 0.08767938613891602, "y": -0.3741893768310547, "z": -76.71253967285156}
+  "physics": {"body": "static", "collider": "mesh"}

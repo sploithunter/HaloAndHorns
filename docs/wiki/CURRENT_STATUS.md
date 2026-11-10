@@ -2218,3 +2218,42 @@ local/GitHub CI (2,781 tests / 314 specs) and a fresh Merge Studio boot/runtime 
 an active bay and live Hell strikes. Merged feature branches and the redundant Auto Dog worktree
 were pruned; broader product-design questions remain tracked separately, not discarded.
 This reconciliation did not publish either Roblox place. Save authored Studio map edits separately.
+
+
+## Spawn Merge bay lab (2026-11-09)
+
+A playable source-derived Heaven bay is at [ColoradoPlays’ development world](https://www.spawn.co/@coloradoplays/hh-merge-bay-lab@dev). The source/config/test implementation lives under `ports/spawn` and `configs/spawn_merge_*`; Roblox production code is unchanged. Live waves 1–2 and ordinary leave/rejoin worked. Full combat parity, non-editor security, failure recovery and multi-bay/mobile performance remain unproven. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md) and draft PR #501.
+
+
+## Spawn egg dragging and stacking (2026-11-09)
+
+The [Spawn development lab](https://www.spawn.co/@coloradoplays/halo-horns-merge-bay-lab@dev) supports mouse/touch egg dragging onto stands and equal-tier eggs. Matching eggs combine on the board or an occupied stand up to T4. Invalid/cancelled drops preserve eggs; stand changes are blocked during combat. Ten Node groups and real browser gesture checks cover the new behavior. See [Spawn Capability Assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+## 2026-11-09 — Spawn bay progression and attack presentation
+
+PR #501 now includes all 56 configured HH egg tiers, 28 source egg models, canonical prices/team
+capacities, actual Walk/Attack clips, source formation/strike/flinch math, hit-linked damage text
+and native elemental FX. Live advanced-tier dragging/capacity checks and wave-10 preview passed;
+18 Node groups and 2,846 HH tests/323 specs pass. The bay remains a ten-wave basic simulation with
+Doggy/Bear stand-ins; full species drafts, powers, combat balance, ordinary-player authority and
+failure recovery are future gates. Details: [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+2026-11-09: Spawn's functional upgrade board now mounts on the creator-indicated authored wall;
+Buy Egg and Upgrade Spawn use native face buttons and validated near-board commands. The floating
+generator HUD button is removed. See [Spawn assessment](SPAWN_CAPABILITY_ASSESSMENT.md).
+
+
+### 2026-11-09 — Spawn shared HH inventory and place/streaming assessment
+
+Reviewed actual ownership/equip, Full/Simple Merge, independent personal hatches, starter receipts,
+XP/rebirth unlock and recovery contracts. Full Merge uses owned pets; deployment remains open.
+Added a storage-independent inventory core and source exporter (48 build/48 resolve/48 fill cases).
+Isolated agent-only preview tests verified a changed mock common/unique/equip/XP profile across
+places, duplicate receipt, actual HTTP-cache-cleared ordinary-browser reload and eventual instance
+cleanup. Platform simulation continued across inactive places; imported GLB eviction and full-map
+mobile/load behavior remain unproven. Actual Roblox Merge StreamingEnabled=true (64/1024).
+No production Spawn main push, account import, Full mode or permanent inventory UI shipped.
+See [shared account assessment](SPAWN_SHARED_ACCOUNT.md) and its reproducible evidence.
+
+Validation: 22 Spawn Node groups passed; HH CI passed (2,846 headless tests/323 specs),
+StyLua/source regeneration, isolated fixture reconstruction, wiki check and diff whitespace check passed.

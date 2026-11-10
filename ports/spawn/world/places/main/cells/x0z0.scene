@@ -1,0 +1,691 @@
+# spawn-scene v2 yaml x0z0
+"hh-director":
+  "behavior": "scripts/merge-director.js"
+  "simulatedBy": "platform"
+  "render": false
+  "tags": ["hh-director"]
+
+"hh-source-collider-0":
+  "feetPosition": {"x": 0.0, "y": -2.772892016844483, "z": 6.960800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_11"}
+
+"hh-source-collider-1":
+  "feetPosition": {"x": 0.0, "y": -5.462549704985352, "z": 5.74}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 6.381259002685548, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_12"}
+
+"hh-source-collider-2":
+  "feetPosition": {"x": 0.0, "y": -1.7093488497302247, "z": 5.280800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_13"}
+
+"hh-source-collider-3":
+  "feetPosition": {"x": 0.0, "y": -4.930778388457032, "z": 4.0600000000000005}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 7.4448021697998055, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_14"}
+
+"hh-source-collider-4":
+  "feetPosition": {"x": 0.0, "y": -7.855521964506837, "z": 13.3}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 1.595314750671387, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_03"}
+
+"hh-source-collider-5":
+  "feetPosition": {"x": 0.0, "y": -7.589636039213868, "z": 12.46}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 2.127086334228516, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_04"}
+
+"hh-source-collider-6":
+  "feetPosition": {"x": 0.0, "y": -7.02706455178711, "z": 13.680800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_03"}
+
+"hh-source-collider-7":
+  "feetPosition": {"x": 0.0, "y": -5.431750068144532, "z": 11.160800170898439}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_06"}
+
+"hh-source-collider-8":
+  "feetPosition": {"x": 0.0, "y": -6.4952932352587895, "z": 12.840800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_04"}
+
+"hh-source-collider-9":
+  "feetPosition": {"x": 0.0, "y": -6.791978797392579, "z": 9.940000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 3.7224010848999027, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_07"}
+
+"hh-source-collider-10":
+  "feetPosition": {"x": 0.0, "y": -7.323750113920899, "z": 11.620000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 2.6588579177856446, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_05"}
+
+"hh-source-collider-11":
+  "feetPosition": {"x": 0.0, "y": -5.963521384672852, "z": 12.000800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_05"}
+
+"hh-source-collider-12":
+  "feetPosition": {"x": 0.0, "y": -6.52609287209961, "z": 9.100000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 4.254172668457032, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_08"}
+
+"hh-source-collider-13":
+  "feetPosition": {"x": 0.0, "y": -7.057864722685547, "z": 10.780000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 3.190629501342774, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_06"}
+
+"hh-source-collider-14":
+  "feetPosition": {"x": 0.0, "y": -3.8364350504443365, "z": 8.640800170898439}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_09"}
+
+"hh-source-collider-15":
+  "feetPosition": {"x": 0.0, "y": -2.2411204332873536, "z": 6.120800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_12"}
+
+"hh-source-collider-16":
+  "feetPosition": {"x": -3.41600341796875, "y": -4.664892463164063, "z": 3.22}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 0.672000026702881, "height": 7.9765734863281255, "depth": 1.12}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.FaceL"}
+
+"hh-source-collider-18":
+  "feetPosition": {"x": 0.0, "y": -4.899978217558594, "z": 10.320800170898439}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_07"}
+
+"hh-source-collider-19":
+  "feetPosition": {"x": 0.0, "y": -4.664892463164063, "z": 3.22}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 7.9765734863281255, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_15"}
+
+"hh-source-collider-20":
+  "feetPosition": {"x": 3.41600341796875, "y": -4.664892463164063, "z": 3.22}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 0.672000026702881, "height": 7.9765734863281255, "depth": 1.12}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.FaceR"}
+
+"hh-source-collider-21":
+  "feetPosition": {"x": 0.0, "y": -5.728435630278321, "z": 6.580000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 5.84948715209961, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_11"}
+
+"hh-source-collider-22":
+  "feetPosition": {"x": 0.0, "y": -0.7326057208344651, "z": 1.9600000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.11200000166893007, "depth": 1.6800000000000002}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.TerraceLip"}
+
+"hh-source-collider-23":
+  "feetPosition": {"x": 0.0, "y": -1.1775772995516969, "z": 4.440800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_14"}
+
+"hh-source-collider-24":
+  "feetPosition": {"x": 0.0, "y": -5.99432155557129, "z": 7.420000000000001}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 5.317715835571289, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_10"}
+
+"hh-source-collider-25":
+  "feetPosition": {"x": 0.0, "y": -4.368206634001465, "z": 9.480800170898439}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_08"}
+
+"hh-source-collider-27":
+  "feetPosition": {"x": 0.0, "y": -3.3046634668872072, "z": 7.800800170898438}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.061599999666213996, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Nosing_10"}
+
+"hh-source-collider-28":
+  "feetPosition": {"x": 0.0, "y": -6.260207480864258, "z": 8.260000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 4.7859439849853525, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_09"}
+
+"hh-source-collider-29":
+  "feetPosition": {"x": 0.0, "y": -5.19666431375, "z": 4.9}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 6.913030319213868, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairHeaven_1.Step_13"}
+
+"hh-source-collider-30":
+  "feetPosition": {"x": -15.252600097656252, "y": -8.345197791533204, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.6157649612426759, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_01"}
+
+"hh-source-collider-31":
+  "feetPosition": {"x": -19.07180419921875, "y": -4.922825736479493, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_06"}
+
+"hh-source-collider-32":
+  "feetPosition": {"x": -18.23180419921875, "y": -5.53859043069336, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_05"}
+
+"hh-source-collider-33":
+  "feetPosition": {"x": -15.71180419921875, "y": -7.3858855814501965, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_02"}
+
+"hh-source-collider-34":
+  "feetPosition": {"x": -16.55180419921875, "y": -6.7701203531787115, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_03"}
+
+"hh-source-collider-35":
+  "feetPosition": {"x": -17.77260009765625, "y": -7.421550483183594, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 2.4630598449707035, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_04"}
+
+"hh-source-collider-36":
+  "feetPosition": {"x": -14.87180419921875, "y": -8.001650275664064, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_01"}
+
+"hh-source-collider-37":
+  "feetPosition": {"x": -16.932600097656252, "y": -7.729433097319337, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 1.8472950172424318, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_03"}
+
+"hh-source-collider-38":
+  "feetPosition": {"x": -16.092600097656252, "y": -8.03731571145508, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 1.2315299224853518, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_02"}
+
+"hh-source-collider-39":
+  "feetPosition": {"x": -17.39180419921875, "y": -6.154355658964844, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 0.07132972836494446, "depth": 0.09799999833106995}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Nosing_04"}
+
+"hh-source-collider-40":
+  "feetPosition": {"x": -18.61260009765625, "y": -7.113667869047852, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 3.0788250732421876, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_05"}
+
+"hh-source-collider-41":
+  "feetPosition": {"x": -19.45260009765625, "y": -6.805785788969727, "z": 14.000000000000002}
+  "pivot": "center"
+  "rotation": {"yaw": 90.0}
+  "primitive": {"kind": "box", "width": 6.16, "height": 3.6945900344848637, "depth": 0.8400000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.WalkStairs.StairNorthEndcap.Step_06"}
+
+"hh-source-collider-42":
+  "feetPosition": {"x": 0.0, "y": -0.4092865175769044, "z": -39.22783081054688}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 28.000000000000004, "height": 0.8803750896453858, "depth": 84.00000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFields.Heaven_01"}
+
+"hh-source-collider-44":
+  "feetPosition": {"x": 14.335999145507813, "y": 0.18770605139282226, "z": -39.2}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 0.672000026702881, "height": 1.8645879364013673, "depth": 84.00000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallS"}
+
+"hh-source-collider-45":
+  "feetPosition": {"x": -14.336003417968751, "y": 0.18770605139282226, "z": -39.2}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 0.672000026702881, "height": 1.8645879364013673, "depth": 84.00000000000001}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallN"}
+
+"hh-source-collider-46":
+  "feetPosition": {"x": -14.331081542968752, "y": 3.0122461324169922, "z": -2.9945166015625}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 11.561977844238282, "height": 3.807692222595215, "depth": 0.672000026702881}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBoard"}
+
+"hh-source-collider-47":
+  "feetPosition": {"x": 14.324783935546876, "y": 3.0122461324169922, "z": -2.9945166015625}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 11.561977844238282, "height": 3.807692222595215, "depth": 0.672000026702881}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallScore"}
+
+"hh-source-collider-48":
+  "feetPosition": {"x": 8.877836303710938, "y": 0.18770605139282226, "z": 3.1098025512695315}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 11.561977844238282, "height": 1.8645879364013673, "depth": 0.672000026702881}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallFrontR"}
+
+"hh-source-collider-49":
+  "feetPosition": {"x": -8.891008300781252, "y": 0.18770605139282226, "z": 3.1368856811523442}
+  "pivot": "center"
+  "rotation": {"yaw": 0.0}
+  "primitive": {"kind": "box", "width": 11.561977844238282, "height": 1.8645879364013673, "depth": 0.672000026702881}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallFrontL"}
+
+"hh-source-collider-277":
+  "feetPosition": {"x": 11.241998291015626, "y": 0.06287428907897948, "z": -17.5}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 2.3519998931884767, "height": 0.1259999966621399, "depth": 2.3519998931884767}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.TowerStations.Heaven_01_TowerPads.InitialTowerPad_Left.Foundation"}
+
+"hh-source-collider-294":
+  "feetPosition": {"x": 11.241998291015626, "y": 0.06287428907897948, "z": -12.348001708984377}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 2.3519998931884767, "height": 0.1259999966621399, "depth": 2.3519998931884767}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.TowerStations.Heaven_01_TowerPads.RebirthTowerPad_RearLeft.Foundation"}
+
+"hh-source-collider-300":
+  "feetPosition": {"x": -11.241998291015626, "y": 0.06287428907897948, "z": -12.348001708984377}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 2.3519998931884767, "height": 0.1259999966621399, "depth": 2.3519998931884767}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.TowerStations.Heaven_01_TowerPads.RebirthTowerPad_RearRight.Foundation"}
+
+"hh-source-collider-311":
+  "feetPosition": {"x": -11.241998291015626, "y": 0.06287428907897948, "z": -17.5}
+  "pivot": "center"
+  "rotation": {"yaw": -90.0}
+  "primitive": {"kind": "box", "width": 2.3519998931884767, "height": 0.1259999966621399, "depth": 2.3519998931884767}
+  "render": false
+  "physics": {"body": "static", "collider": "box"}
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.TowerStations.Heaven_01_TowerPads.InitialTowerPad_Right.Foundation"}
+
+"hh-terrain-collider":
+  "feetPosition": {"x": 0, "y": -1.3, "z": -35}
+  "primitive": {"kind": "box", "width": 42, "height": 0.5, "depth": 108}
+  "render": false
+  "physics": "static"
+
+"hh-board-slot-0":
+  "feetPosition": {"x": -3.02399658203125, "y": 0.12, "z": -7.196001281738282}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 0}
+
+"hh-board-slot-1":
+  "feetPosition": {"x": -1.0080017089843751, "y": 0.12, "z": -7.196001281738282}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 1}
+
+"hh-board-slot-2":
+  "feetPosition": {"x": 1.0080017089843751, "y": 0.12, "z": -7.196001281738282}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 2}
+
+"hh-board-slot-3":
+  "feetPosition": {"x": 3.02399658203125, "y": 0.12, "z": -7.196001281738282}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 3}
+
+"hh-board-slot-4":
+  "feetPosition": {"x": -3.02399658203125, "y": 0.12, "z": -5.180000000000001}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 4}
+
+"hh-board-slot-5":
+  "feetPosition": {"x": -1.0080017089843751, "y": 0.12, "z": -5.180000000000001}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 5}
+
+"hh-board-slot-6":
+  "feetPosition": {"x": 1.0080017089843751, "y": 0.12, "z": -5.180000000000001}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 6}
+
+"hh-board-slot-7":
+  "feetPosition": {"x": 3.02399658203125, "y": 0.12, "z": -5.180000000000001}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 7}
+
+"hh-board-slot-8":
+  "feetPosition": {"x": -3.02399658203125, "y": 0.12, "z": -3.164000854492188}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 8}
+
+"hh-board-slot-9":
+  "feetPosition": {"x": -1.0080017089843751, "y": 0.12, "z": -3.164000854492188}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 9}
+
+"hh-board-slot-10":
+  "feetPosition": {"x": 1.0080017089843751, "y": 0.12, "z": -3.164000854492188}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 10}
+
+"hh-board-slot-11":
+  "feetPosition": {"x": 3.02399658203125, "y": 0.12, "z": -3.164000854492188}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 11}
+
+"hh-board-slot-12":
+  "feetPosition": {"x": -3.02399658203125, "y": 0.12, "z": -1.1479995727539063}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 12}
+
+"hh-board-slot-13":
+  "feetPosition": {"x": -1.0080017089843751, "y": 0.12, "z": -1.1479995727539063}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 13}
+
+"hh-board-slot-14":
+  "feetPosition": {"x": 1.0080017089843751, "y": 0.12, "z": -1.1479995727539063}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 14}
+
+"hh-board-slot-15":
+  "feetPosition": {"x": 3.02399658203125, "y": 0.12, "z": -1.1479995727539063}
+  "render": false
+  "tags": ["hh-board-slot"]
+  "state": {"slot": 15}
+
+"hh-hatcher-0":
+  "feetPosition": {"x": 6.72, "y": 1.1, "z": -19.852}
+  "render": false
+  "tags": ["hh-hatcher"]
+  "state": {"slot": 0}
+
+"hh-hatcher-1":
+  "feetPosition": {"x": 2.24, "y": 1.1, "z": -19.852}
+  "render": false
+  "tags": ["hh-hatcher"]
+  "state": {"slot": 1}
+
+"hh-hatcher-2":
+  "feetPosition": {"x": -2.24, "y": 1.1, "z": -19.852}
+  "render": false
+  "tags": ["hh-hatcher"]
+  "state": {"slot": 2}
+
+"hh-hatcher-3":
+  "feetPosition": {"x": -6.72, "y": 1.1, "z": -19.852}
+  "render": false
+  "tags": ["hh-hatcher"]
+  "state": {"slot": 3}
+
+"hh-board-anchor":
+  "feetPosition": {"x": 0, "y": 0.1, "z": -4.172}
+  "render": false
+
+"hh-authored-architecture":
+  "model": {"id": "/cdn/value.a9224b727c75f2297689694ae59f79e047c4afc54c37d5e9ff8080dbd14b6015.glb", "materials": {"HH_Heaven_01_3": {"kind": "scripted", "script": "scripts/marble.js", "params": {"scale": 4.2, "warpScale": 1.1, "warp": 0.5, "veinStart": 0.65, "veinEnd": 0.9, "base": "#9ca8b3", "vein": "#c4cdd5", "roughness": 0.45}}}}
+  "feetPosition": {"x": -3.1500024795532227, "y": -8.653179168701172, "z": -32.39600086212158}
+  "physics": "none"
+
+"hh-authored-127449957131266":
+  "model": "/cdn/value.d7ece5184004c2ebe96eb69499012113a33e2df1b23c36b007e2139c7322b72a.glb"
+  "feetPosition": {"x": 10.884726524353027, "y": 0.03090071678161621, "z": 0.10548067092895508}
+  "physics": "none"
+
+"hh-authored-96641242548722":
+  "model": "/cdn/value.e22fa90c757156f93560b976ce7b2b2286caedad1f43a97f7a8f80345b5add46.glb"
+  "feetPosition": {"x": -14.521882057189941, "y": -0.11660575866699219, "z": -40.40635013580322}
+  "physics": "none"
+
+"hh-authored-118589584566664":
+  "model": "/cdn/value.1bdb496417ff35dd2de58aee54af8f847d382c606740b8faae3733b9bb975d9f.glb"
+  "feetPosition": {"x": -9.76031494140625, "y": -0.11660528182983398, "z": -40.85441541671753}
+  "physics": "none"
+
+"hh-authored-110720328979470":
+  "model": "/cdn/value.ac123b7cee94651f590c62883506580a14b83bbe03d8e7d88c182bdcd0b4a701.glb"
+  "feetPosition": {"x": -13.49870777130127, "y": -0.11660617589950562, "z": -40.87128663063049}
+  "physics": "none"
+
+"hh-authored-124637031225100":
+  "model": "/cdn/value.1fabacbe2a8711d995891d4b4a0f9366eadd88c76c6145c1dc6122785fac05e7.glb"
+  "feetPosition": {"x": 19.03779649734497, "y": 0.05000263452529907, "z": -42.535611152648926}
+  "physics": "none"
+
+"hh-authored-104166201714383":
+  "model": "/cdn/value.1b5c0a317ff7cee5f5284b67a39614453045a42b1c50be2db5c5b53b1e4edc68.glb"
+  "feetPosition": {"x": -3.610841751098633, "y": -0.11660587787628174, "z": -42.95628213882446}
+  "physics": "none"
+
+"hh-authored-96648542072137":
+  "model": "/cdn/value.ddee6bbf0e70a54783b30aba92e2a53b8e3fe017c22b37c2591fc09d8d47a5d6.glb"
+  "feetPosition": {"x": -13.446198463439941, "y": -0.11664760112762451, "z": -37.05392837524414}
+  "physics": "none"
+
+"hh-authored-122843290512204":
+  "model": "/cdn/value.fd369841479760c5858f77b2bbac8ed8abeab728b3974f1fc84b3efc7df932de.glb"
+  "feetPosition": {"x": -14.289592742919922, "y": -0.11660575866699219, "z": -39.34149503707886}
+  "physics": "none"
+
+"hh-authored-103416941338986":
+  "model": "/cdn/value.6653cc4d11efac7fb7c8a318f460373d1f5dff68c46b2733037dab66aa767bee.glb"
+  "feetPosition": {"x": 0.0, "y": -0.0001461505889892578, "z": -19.851999282836914}
+  "physics": "none"
+
+"hh-authored-123934269734118":
+  "model": "/cdn/value.62ba613007c174bfbd9d31039ccad04d6d04f8903d67254c4722bcc00933ad17.glb"
+  "feetPosition": {"x": 19.040000915527344, "y": -6.976605415344238, "z": 3.984105944633484}
+  "physics": "none"
+
+"hh-authored-124667039413678":
+  "model": "/cdn/value.e0171d4ef5407b67f75d6b5cfa58111b6a5faf2b09ba265e009f88d81dba200b.glb"
+  "feetPosition": {"x": 8.960000038146973, "y": -5.8566060066223145, "z": 4.219260096549988}
+  "physics": "none"
+
+"hh-authored-105434094713704":
+  "model": "/cdn/value.f54f674fa3e486616ef4574247860bff843ac64791321ce7064ec1312f20c37e.glb"
+  "feetPosition": {"x": -34.49383354187012, "y": -0.11661368608474731, "z": -59.334306716918945}
+  "physics": "none"
+
+"hh-authored-125598281272363":
+  "model": "/cdn/value.2933098e910197f26681698332fb0572adeb60f3d9fa8b11adcb9a319215f34d.glb"
+  "feetPosition": {"x": -37.291324615478516, "y": -0.11660623550415039, "z": -39.51008605957031}
+  "physics": "none"
+
+"hh-authored-119087340901682":
+  "model": "/cdn/value.71a5804441c4a0274a149c3dc94ee0912c69b5b76f168766ff4f20c6ecb35f8c.glb"
+  "feetPosition": {"x": -43.24602699279785, "y": -0.11660575866699219, "z": -41.550405979156494}
+  "physics": "none"
+
+"hh-authored-132025200361754":
+  "model": "/cdn/value.890ee229fcb2d9537aa3aa9634ef592c3f3e27e0a839938b1beb08750f0757eb.glb"
+  "feetPosition": {"x": -35.459102630615234, "y": -0.11663603782653809, "z": -27.675729751586914}
+  "physics": "none"
+
+"hh-authored-terrain":
+  "model": "/cdn/value.d5720447902b39e10f6e54805768177b23f00d3c084fe0425c291794d85d8056.glb"
+  "feetPosition": {"x": -12.880000114440918, "y": -11.876605987548828, "z": -39.20000076293945}
+  "physics": "none"
+
+"hh-upgrade-board":
+  "feetPosition": {"x": -13.883081542968752, "y": 2.14, "z": -2.9945166015625}
+  "pivot": "center"
+  "rotation": {"yaw": -90}
+  "primitive": {"kind": "box", "width": 3.9200000000000004, "height": 2.24, "depth": 0.168}
+  "material": {"color": "#181d28", "roughness": 0.7}
+  "behavior": "scripts/merge-upgrade-board.js"
+  "simulatedBy": "platform"
+  "tags": ["hh-upgrade-board"]
+  "state": {"sourcePath": "Workspace.GeneratedMap_MergeEggVoxel.PlayFieldWalls.Heaven_01_WallBoard"}

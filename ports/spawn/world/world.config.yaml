@@ -1,0 +1,53 @@
+{
+  "name": "Halo & Horns \u00b7 Merge Bay Lab",
+  "description": "Combine eggs. Deploy your pets. Hold the line.",
+  "camera": "templates/camera.js#camera",
+  "lighting": "scripts/lighting.js",
+  "defaultPlace": "main",
+  "engine": {
+    "behaviors": [
+      "scripts/arrival.js"
+    ],
+    "networking": {
+      "mode": "multiplayer"
+    },
+    "ui": {
+      "theme": {
+        "font": "Geist Pixel Square"
+      }
+    }
+  },
+  "inputs": {
+    "actions": {
+      "jump": {
+        "keys": [
+          "space"
+        ]
+      },
+      "select": {},
+      "command": {},
+      "dragState": {},
+      "board": {
+        "keys": [
+          "b"
+        ]
+      }
+    },
+    "axes": {
+      "moveX": {
+        "keys": "a/d"
+      },
+      "moveZ": {
+        "keys": "s/w"
+      },
+      "zoomIn": {
+        "mouse": "wheelY"
+      }
+    }
+  },
+  "player": "templates/player.js#player",
+  "ui": {
+    "render": "scripts/ui.js"
+  },
+  "nametag": "ui/nametag.js"
+}
